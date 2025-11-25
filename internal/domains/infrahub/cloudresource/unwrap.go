@@ -75,4 +75,3 @@ func UnwrapCloudResource(cloudResource *cloudresourcev1.CloudResource) (proto.Me
 
 	return unwrappedResource, nil
 }
-
