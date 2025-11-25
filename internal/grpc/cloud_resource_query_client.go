@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	cloudresourcev1 "github.com/plantoncloud-inc/planton-cloud/apis/stubs/go/ai/planton/infrahub/cloudresource/v1"
+	cloudresourcev1 "buf.build/gen/go/blintora/apis/protocolbuffers/go/ai/planton/infrahub/cloudresource/v1"
+	cloudresourcev1grpc "buf.build/gen/go/blintora/apis/grpc/go/ai/planton/infrahub/cloudresource/v1/cloudresourcev1grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -18,7 +19,7 @@ import (
 // user's actual permissions.
 type CloudResourceQueryClient struct {
 	conn   *grpc.ClientConn
-	client cloudresourcev1.CloudResourceQueryControllerClient
+	client cloudresourcev1grpc.CloudResourceQueryControllerClient
 }
 
 // NewCloudResourceQueryClient creates a new Cloud Resource Query gRPC client.
@@ -42,7 +43,7 @@ func NewCloudResourceQueryClient(grpcEndpoint, apiKey string) (*CloudResourceQue
 	}
 
 	// Create cloud resource query client
-	client := cloudresourcev1.NewCloudResourceQueryControllerClient(conn)
+	client := cloudresourcev1grpc.NewCloudResourceQueryControllerClient(conn)
 
 	log.Printf("CloudResourceQueryClient initialized for endpoint: %s", grpcEndpoint)
 

@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 
-	environmentv1 "github.com/plantoncloud-inc/planton-cloud/apis/stubs/go/ai/planton/resourcemanager/environment/v1"
-	organizationv1 "github.com/plantoncloud-inc/planton-cloud/apis/stubs/go/ai/planton/resourcemanager/organization/v1"
+	environmentv1 "buf.build/gen/go/blintora/apis/protocolbuffers/go/ai/planton/resourcemanager/environment/v1"
+	environmentv1grpc "buf.build/gen/go/blintora/apis/grpc/go/ai/planton/resourcemanager/environment/v1/environmentv1grpc"
+	organizationv1 "buf.build/gen/go/blintora/apis/protocolbuffers/go/ai/planton/resourcemanager/organization/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -19,7 +20,7 @@ import (
 // user's actual permissions.
 type EnvironmentClient struct {
 	conn   *grpc.ClientConn
-	client environmentv1.EnvironmentQueryControllerClient
+	client environmentv1grpc.EnvironmentQueryControllerClient
 }
 
 // NewEnvironmentClient creates a new Environment gRPC client.
@@ -43,7 +44,7 @@ func NewEnvironmentClient(grpcEndpoint, apiKey string) (*EnvironmentClient, erro
 	}
 
 	// Create environment query client
-	client := environmentv1.NewEnvironmentQueryControllerClient(conn)
+	client := environmentv1grpc.NewEnvironmentQueryControllerClient(conn)
 
 	log.Printf("EnvironmentClient initialized for endpoint: %s", grpcEndpoint)
 

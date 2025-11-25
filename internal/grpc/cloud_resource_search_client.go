@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	cloudresourcesearch "github.com/plantoncloud-inc/planton-cloud/apis/stubs/go/ai/planton/search/v1/infrahub/cloudresource"
-	"github.com/plantoncloud-inc/planton-cloud/apis/stubs/go/ai/planton/search/v1/apiresource"
-	cloudresourcekind "github.com/project-planton/project-planton/apis/org/project_planton/shared/cloudresourcekind"
+	cloudresourcesearch "buf.build/gen/go/blintora/apis/protocolbuffers/go/ai/planton/search/v1/infrahub/cloudresource"
+	cloudresourcesearchgrpc "buf.build/gen/go/blintora/apis/grpc/go/ai/planton/search/v1/infrahub/cloudresource/cloudresourcegrpc"
+	"buf.build/gen/go/blintora/apis/protocolbuffers/go/ai/planton/search/v1/apiresource"
+	cloudresourcekind "buf.build/gen/go/project-planton/apis/protocolbuffers/go/org/project_planton/shared/cloudresourcekind"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -20,7 +21,7 @@ import (
 // user's actual permissions.
 type CloudResourceSearchClient struct {
 	conn   *grpc.ClientConn
-	client cloudresourcesearch.CloudResourceSearchQueryControllerClient
+	client cloudresourcesearchgrpc.CloudResourceSearchQueryControllerClient
 }
 
 // NewCloudResourceSearchClient creates a new Cloud Resource Search gRPC client.
@@ -44,7 +45,7 @@ func NewCloudResourceSearchClient(grpcEndpoint, apiKey string) (*CloudResourceSe
 	}
 
 	// Create cloud resource search query client
-	client := cloudresourcesearch.NewCloudResourceSearchQueryControllerClient(conn)
+	client := cloudresourcesearchgrpc.NewCloudResourceSearchQueryControllerClient(conn)
 
 	log.Printf("CloudResourceSearchClient initialized for endpoint: %s", grpcEndpoint)
 

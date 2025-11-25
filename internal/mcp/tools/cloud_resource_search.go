@@ -9,9 +9,9 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/plantoncloud-inc/mcp-server-planton/internal/config"
 	grpcclient "github.com/plantoncloud-inc/mcp-server-planton/internal/grpc"
-	apiresourcekind "github.com/plantoncloud-inc/planton-cloud/apis/stubs/go/ai/planton/commons/apiresource/apiresourcekind"
-	cloudresourcesearch "github.com/plantoncloud-inc/planton-cloud/apis/stubs/go/ai/planton/search/v1/infrahub/cloudresource"
-	cloudresourcekind "github.com/project-planton/project-planton/apis/org/project_planton/shared/cloudresourcekind"
+	apiresourcekind "buf.build/gen/go/blintora/apis/protocolbuffers/go/ai/planton/commons/apiresource/apiresourcekind"
+	cloudresourcesearch "buf.build/gen/go/blintora/apis/protocolbuffers/go/ai/planton/search/v1/infrahub/cloudresource"
+	cloudresourcekind "buf.build/gen/go/project-planton/apis/protocolbuffers/go/org/project_planton/shared/cloudresourcekind"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

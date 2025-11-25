@@ -10,8 +10,8 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/plantoncloud-inc/mcp-server-planton/internal/config"
 	grpcclient "github.com/plantoncloud-inc/mcp-server-planton/internal/grpc"
-	apiresourcekind "github.com/plantoncloud-inc/planton-cloud/apis/stubs/go/ai/planton/commons/apiresource/apiresourcekind"
-	cloudresourcekind "github.com/project-planton/project-planton/apis/org/project_planton/shared/cloudresourcekind"
+	apiresourcekind "buf.build/gen/go/blintora/apis/protocolbuffers/go/ai/planton/commons/apiresource/apiresourcekind"
+	cloudresourcekind "buf.build/gen/go/project-planton/apis/protocolbuffers/go/org/project_planton/shared/cloudresourcekind"
 )
 
 // CreateLookupCloudResourceByNameTool creates the MCP tool definition for looking up a cloud resource by name.

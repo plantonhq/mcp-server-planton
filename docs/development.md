@@ -202,7 +202,7 @@ package grpc
 import (
     "context"
     
-    orgv1 "github.com/plantoncloud-inc/planton-cloud/apis/project/planton/provider/blintora/cloud/v1/blintora/cloud/organization/v1"
+    orgv1 "buf.build/gen/go/blintora/apis/protocolbuffers/go/ai/planton/resourcemanager/organization/v1"
     "google.golang.org/grpc"
     "google.golang.org/grpc/credentials/insecure"
 )
