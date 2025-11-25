@@ -49,10 +49,10 @@ func NewCloudResourceQueryClient(grpcEndpoint, apiKey string) (*CloudResourceQue
 		log.Printf("Using insecure transport for endpoint: %s", grpcEndpoint)
 	}
 
-	// Create gRPC dial options with auth interceptor
+	// Create gRPC dial options with per-RPC credentials (matches CLI pattern)
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(transportCreds),
-		grpc.WithUnaryInterceptor(auth.UserTokenAuthInterceptor(apiKey)),
+		grpc.WithPerRPCCredentials(auth.NewTokenAuth(apiKey)),
 	}
 
 	// Establish connection
@@ -143,10 +143,10 @@ func NewCloudResourceSearchClient(grpcEndpoint, apiKey string) (*CloudResourceSe
 		log.Printf("Using insecure transport for endpoint: %s", grpcEndpoint)
 	}
 
-	// Create gRPC dial options with auth interceptor
+	// Create gRPC dial options with per-RPC credentials (matches CLI pattern)
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(transportCreds),
-		grpc.WithUnaryInterceptor(auth.UserTokenAuthInterceptor(apiKey)),
+		grpc.WithPerRPCCredentials(auth.NewTokenAuth(apiKey)),
 	}
 
 	// Establish connection

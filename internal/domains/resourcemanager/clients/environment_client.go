@@ -46,10 +46,10 @@ func NewEnvironmentClient(grpcEndpoint, apiKey string) (*EnvironmentClient, erro
 		log.Printf("Using insecure transport for endpoint: %s", grpcEndpoint)
 	}
 
-	// Create gRPC dial options with auth interceptor
+	// Create gRPC dial options with per-RPC credentials (matches CLI pattern)
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(transportCreds),
-		grpc.WithUnaryInterceptor(auth.UserTokenAuthInterceptor(apiKey)),
+		grpc.WithPerRPCCredentials(auth.NewTokenAuth(apiKey)),
 	}
 
 	// Establish connection
