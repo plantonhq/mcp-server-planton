@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	cloudresourcev1grpc "buf.build/gen/go/blintora/apis/grpc/go/ai/planton/infrahub/cloudresource/v1/cloudresourcev1grpc"
 	cloudresourcesearchgrpc "buf.build/gen/go/blintora/apis/grpc/go/ai/planton/search/v1/infrahub/cloudresource/cloudresourcegrpc"
@@ -13,6 +14,7 @@ import (
 	cloudresourcekind "buf.build/gen/go/project-planton/apis/protocolbuffers/go/org/project_planton/shared/cloudresourcekind"
 	"github.com/plantoncloud-inc/mcp-server-planton/internal/common/auth"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
@@ -30,14 +32,26 @@ type CloudResourceQueryClient struct {
 // NewCloudResourceQueryClient creates a new Cloud Resource Query gRPC client.
 //
 // Args:
-//   - grpcEndpoint: Planton Cloud APIs endpoint (e.g., "localhost:8080")
+//   - grpcEndpoint: Planton Cloud APIs endpoint (e.g., "localhost:8080" or "api.live.planton.cloud:443")
 //   - apiKey: User's API key from environment variable (can be JWT token or API key)
 //
 // Returns a CloudResourceQueryClient and any error encountered during connection setup.
 func NewCloudResourceQueryClient(grpcEndpoint, apiKey string) (*CloudResourceQueryClient, error) {
+	// Determine transport credentials based on endpoint port
+	var transportCreds credentials.TransportCredentials
+	if strings.HasSuffix(grpcEndpoint, ":443") {
+		// Use TLS for port 443 (production endpoints)
+		transportCreds = credentials.NewTLS(nil)
+		log.Printf("Using TLS transport for endpoint: %s", grpcEndpoint)
+	} else {
+		// Use insecure for other ports (local development)
+		transportCreds = insecure.NewCredentials()
+		log.Printf("Using insecure transport for endpoint: %s", grpcEndpoint)
+	}
+
 	// Create gRPC dial options with auth interceptor
 	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(transportCreds),
 		grpc.WithUnaryInterceptor(auth.UserTokenAuthInterceptor(apiKey)),
 	}
 
@@ -112,14 +126,26 @@ type CloudResourceSearchClient struct {
 // NewCloudResourceSearchClient creates a new Cloud Resource Search gRPC client.
 //
 // Args:
-//   - grpcEndpoint: Planton Cloud APIs endpoint (e.g., "localhost:8080")
+//   - grpcEndpoint: Planton Cloud APIs endpoint (e.g., "localhost:8080" or "api.live.planton.cloud:443")
 //   - apiKey: User's API key from environment variable (can be JWT token or API key)
 //
 // Returns a CloudResourceSearchClient and any error encountered during connection setup.
 func NewCloudResourceSearchClient(grpcEndpoint, apiKey string) (*CloudResourceSearchClient, error) {
+	// Determine transport credentials based on endpoint port
+	var transportCreds credentials.TransportCredentials
+	if strings.HasSuffix(grpcEndpoint, ":443") {
+		// Use TLS for port 443 (production endpoints)
+		transportCreds = credentials.NewTLS(nil)
+		log.Printf("Using TLS transport for endpoint: %s", grpcEndpoint)
+	} else {
+		// Use insecure for other ports (local development)
+		transportCreds = insecure.NewCredentials()
+		log.Printf("Using insecure transport for endpoint: %s", grpcEndpoint)
+	}
+
 	// Create gRPC dial options with auth interceptor
 	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(transportCreds),
 		grpc.WithUnaryInterceptor(auth.UserTokenAuthInterceptor(apiKey)),
 	}
 
