@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	environmentv1grpc "buf.build/gen/go/blintora/apis/grpc/go/ai/planton/resourcemanager/environment/v1/environmentv1grpc"
 	environmentv1 "buf.build/gen/go/blintora/apis/protocolbuffers/go/ai/planton/resourcemanager/environment/v1"
 	organizationv1 "buf.build/gen/go/blintora/apis/protocolbuffers/go/ai/planton/resourcemanager/organization/v1"
 	"github.com/plantoncloud-inc/mcp-server-planton/internal/common/auth"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
@@ -27,14 +29,26 @@ type EnvironmentClient struct {
 // NewEnvironmentClient creates a new Environment gRPC client.
 //
 // Args:
-//   - grpcEndpoint: Planton Cloud APIs endpoint (e.g., "localhost:8080")
+//   - grpcEndpoint: Planton Cloud APIs endpoint (e.g., "localhost:8080" or "api.live.planton.cloud:443")
 //   - apiKey: User's API key from environment variable (can be JWT token or API key)
 //
 // Returns an EnvironmentClient and any error encountered during connection setup.
 func NewEnvironmentClient(grpcEndpoint, apiKey string) (*EnvironmentClient, error) {
+	// Determine transport credentials based on endpoint port
+	var transportCreds credentials.TransportCredentials
+	if strings.HasSuffix(grpcEndpoint, ":443") {
+		// Use TLS for port 443 (production endpoints)
+		transportCreds = credentials.NewTLS(nil)
+		log.Printf("Using TLS transport for endpoint: %s", grpcEndpoint)
+	} else {
+		// Use insecure for other ports (local development)
+		transportCreds = insecure.NewCredentials()
+		log.Printf("Using insecure transport for endpoint: %s", grpcEndpoint)
+	}
+
 	// Create gRPC dial options with auth interceptor
 	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(transportCreds),
 		grpc.WithUnaryInterceptor(auth.UserTokenAuthInterceptor(apiKey)),
 	}
 
