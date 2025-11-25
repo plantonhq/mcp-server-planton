@@ -40,6 +40,22 @@ export PLANTON_API_KEY="your-api-key"
 export PLANTON_APIS_GRPC_ENDPOINT="localhost:8080"
 ```
 
+5. (Optional) Set up pre-commit hooks:
+
+```bash
+# Install pre-commit (requires Python/pip)
+pip install pre-commit
+
+# Install the git hook scripts
+pre-commit install
+
+# Install commit-msg hook for conventional commits
+pre-commit install --hook-type commit-msg
+
+# (Optional) Run against all files to verify setup
+pre-commit run --all-files
+```
+
 ## Development Workflow
 
 ### Running the Server
@@ -103,6 +119,63 @@ go vet ./...
 ```bash
 # Format, vet, test, and lint
 go fmt ./... && go vet ./... && go test ./... && golangci-lint run
+```
+
+### Pre-commit Hooks
+
+The project includes pre-commit hooks to ensure code quality before commits.
+
+#### Setup
+
+Install pre-commit and the hooks:
+
+```bash
+# Install pre-commit (requires Python/pip)
+pip install pre-commit
+
+# Install the git hook scripts
+pre-commit install
+
+# Install commit-msg hook for conventional commits
+pre-commit install --hook-type commit-msg
+```
+
+#### What the Hooks Do
+
+The pre-commit hooks automatically:
+
+- Check for trailing whitespace
+- Ensure files end with a newline
+- Validate YAML syntax
+- Check for large files
+- Detect merge conflicts
+- Run `go fmt` to format code
+- Run `go vet` to check for errors
+- Run `go test` to execute tests
+- Run `golangci-lint` (if installed)
+- Run `go mod tidy` to clean dependencies
+- Validate commit messages follow conventional commit format
+
+#### Manual Execution
+
+Run hooks manually on all files:
+
+```bash
+pre-commit run --all-files
+```
+
+Run specific hook:
+
+```bash
+pre-commit run go-fmt --all-files
+```
+
+#### Skipping Hooks
+
+To skip hooks temporarily (not recommended):
+
+```bash
+git commit --no-verify -m "message"
 ```
 
 ### Testing

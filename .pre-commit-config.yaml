@@ -1,0 +1,90 @@
+# Pre-commit hooks for Go projects
+# See https://pre-commit.com for more information
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.md$'
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: mixed-line-ending
+
+  # Go formatting
+  - repo: local
+    hooks:
+      - id: go-fmt
+        name: go fmt
+        entry: gofmt
+        args: [-w, -s]
+        language: system
+        files: \.go$
+        pass_filenames: true
+
+  # Go vet
+  - repo: local
+    hooks:
+      - id: go-vet
+        name: go vet
+        entry: go
+        args: [vet, ./...]
+        language: system
+        files: \.go$
+        pass_filenames: false
+
+  # Go tests
+  - repo: local
+    hooks:
+      - id: go-test
+        name: go test
+        entry: go
+        args: [test, -v, ./...]
+        language: system
+        files: \.go$
+        pass_filenames: false
+        stages: [commit]
+
+  # golangci-lint (optional - requires golangci-lint installed)
+  - repo: local
+    hooks:
+      - id: golangci-lint
+        name: golangci-lint
+        entry: bash -c 'if command -v golangci-lint &> /dev/null; then golangci-lint run --fix; else echo "golangci-lint not installed, skipping..."; fi'
+        language: system
+        files: \.go$
+        pass_filenames: false
+
+  # Conventional commits check
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.0.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [--force-scope]
+
+  # Go mod tidy
+  - repo: local
+    hooks:
+      - id: go-mod-tidy
+        name: go mod tidy
+        entry: go
+        args: [mod, tidy]
+        language: system
+        files: ^go\.(mod|sum)$
+        pass_filenames: false
+
+# Configuration
+default_language_version:
+  python: python3
+
+# Install pre-commit hooks:
+# 1. Install pre-commit: pip install pre-commit
+# 2. Install hooks: pre-commit install
+# 3. Install commit-msg hook: pre-commit install --hook-type commit-msg
+# 4. (Optional) Run on all files: pre-commit run --all-files
