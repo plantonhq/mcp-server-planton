@@ -1,5 +1,11 @@
 # Planton Cloud MCP Server
 
+[![CI](https://github.com/plantoncloud-inc/mcp-server-planton/actions/workflows/ci.yml/badge.svg)](https://github.com/plantoncloud-inc/mcp-server-planton/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/plantoncloud-inc/mcp-server-planton/actions/workflows/codeql.yml/badge.svg)](https://github.com/plantoncloud-inc/mcp-server-planton/actions/workflows/codeql.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/plantoncloud-inc/mcp-server-planton)](https://goreportcard.com/report/github.com/plantoncloud-inc/mcp-server-planton)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io-blue?logo=docker)](https://github.com/plantoncloud-inc/mcp-server-planton/pkgs/container/mcp-server-planton)
+
 MCP (Model Context Protocol) server for Planton Cloud that enables AI agents to query cloud resources using user permissions.
 
 ## Overview

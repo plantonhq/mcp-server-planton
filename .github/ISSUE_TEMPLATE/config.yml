@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question or Discussion
+    url: https://github.com/plantoncloud-inc/mcp-server-planton/discussions
+    about: Ask questions or discuss ideas with the community
+  - name: Security Vulnerability
+    url: https://github.com/plantoncloud-inc/mcp-server-planton/security/advisories/new
+    about: Report security vulnerabilities privately (DO NOT create a public issue)
+  - name: Documentation
+    url: https://github.com/plantoncloud-inc/mcp-server-planton/tree/main/docs
+    about: View project documentation

@@ -160,6 +160,17 @@ func (s *Server) registerTools() {
 
 ## Submitting Changes
 
+### Branch Protection and Requirements
+
+The `main` branch is protected with the following requirements:
+
+- **Pull Request Required**: Direct pushes to `main` are blocked
+- **Review Required**: At least 1 approval from CODEOWNERS
+- **Status Checks**: CI tests and linting must pass
+- **Linear History**: Commits must maintain linear history (no merge commits)
+- **Conversation Resolution**: All PR comments must be resolved
+- **Signed Commits**: Recommended but not required
+
 ### Pull Request Process
 
 1. Fork the repository
@@ -174,17 +185,28 @@ git checkout -b feature/your-feature-name
 make test lint
 ```
 
-5. Commit your changes with clear, descriptive messages:
+5. (Optional) Set up and use pre-commit hooks:
+```bash
+pip install pre-commit
+pre-commit install
+pre-commit install --hook-type commit-msg
+```
+
+6. Commit your changes with clear, descriptive messages:
 ```bash
 git commit -m "feat: add new tool for querying organizations"
 ```
 
-6. Push to your fork:
+7. Push to your fork:
 ```bash
 git push origin feature/your-feature-name
 ```
 
-7. Open a Pull Request against the `main` branch
+8. Open a Pull Request against the `main` branch
+9. Wait for CI checks to pass (lint-and-test, golangci-lint, CodeQL)
+10. Request review from CODEOWNERS
+11. Address any review comments
+12. Once approved and all checks pass, a maintainer will merge your PR
 
 ### Commit Message Format
 
@@ -209,9 +231,24 @@ refactor: simplify error handling in tools
 
 - Keep PRs focused on a single feature or fix
 - Update documentation for any user-facing changes
-- Ensure all checks pass (tests, linting)
+- Ensure all checks pass (tests, linting, security scanning)
 - Provide clear description of changes
 - Reference related issues if applicable
+- Fill out the PR template completely
+- Resolve all review comments
+- Keep your branch up to date with `main`
+- Use the "Squash and merge" option when merging (for linear history)
+
+### Required CI Checks
+
+All PRs must pass the following automated checks:
+
+1. **lint-and-test**: Tests, linting, and code formatting
+2. **golangci-lint**: Advanced Go linting
+3. **CodeQL**: Security analysis
+4. **Dependency Review**: Checks for vulnerable dependencies (PRs only)
+
+If any check fails, you must fix the issues before the PR can be merged.
 
 ## Reporting Issues
 

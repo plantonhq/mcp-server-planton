@@ -1,0 +1,68 @@
+name: Stale Issues and PRs
+
+on:
+  schedule:
+    # Run daily at 1:00 AM UTC
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Mark stale issues and PRs
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          
+          # Issue settings
+          days-before-issue-stale: 60
+          days-before-issue-close: 7
+          stale-issue-message: |
+            This issue has been automatically marked as stale because it has not had activity in the last 60 days.
+            It will be closed in 7 days if no further activity occurs.
+            
+            If this issue is still relevant, please:
+            - Comment to keep it open
+            - Remove the "stale" label
+            - Provide additional context or updates
+            
+            Thank you for your contributions!
+          close-issue-message: |
+            This issue has been automatically closed due to inactivity.
+            
+            If you believe this issue is still relevant, please reopen it with updated information.
+          stale-issue-label: 'stale'
+          exempt-issue-labels: 'pinned,security,critical,roadmap'
+          
+          # Pull request settings
+          days-before-pr-stale: 30
+          days-before-pr-close: 7
+          stale-pr-message: |
+            This pull request has been automatically marked as stale because it has not had activity in the last 30 days.
+            It will be closed in 7 days if no further activity occurs.
+            
+            If this PR is still relevant, please:
+            - Push new commits
+            - Comment to keep it open
+            - Remove the "stale" label
+            - Rebase on the latest main branch
+            
+            Thank you for your contributions!
+          close-pr-message: |
+            This pull request has been automatically closed due to inactivity.
+            
+            If you'd like to continue working on this, please reopen it and rebase on the latest main branch.
+          stale-pr-label: 'stale'
+          exempt-pr-labels: 'pinned,security,critical,in-progress,blocked'
+          
+          # General settings
+          operations-per-run: 30
+          remove-stale-when-updated: true
+          ascending: false
+          exempt-draft-pr: true
