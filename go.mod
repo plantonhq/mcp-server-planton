@@ -7,7 +7,6 @@ require (
 	buf.build/gen/go/blintora/apis/protocolbuffers/go v1.36.10-20251125011413-52ef5c4f2840.1
 	buf.build/gen/go/project-planton/apis/protocolbuffers/go v1.36.10-20251124125039-9c224fb3651e.1
 	github.com/mark3labs/mcp-go v0.6.0
-	github.com/project-planton/project-planton v0.2.245
 	google.golang.org/grpc v1.75.0
 	google.golang.org/protobuf v1.36.10
 )
