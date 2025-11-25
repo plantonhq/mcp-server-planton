@@ -18,8 +18,9 @@ func CreateGetCloudResourceByIdTool() mcp.Tool {
 	return mcp.Tool{
 		Name: "get_cloud_resource_by_id",
 		Description: "Get the complete state and configuration of a cloud resource by its ID. " +
-			"Returns the full CloudResource object including metadata, spec with detailed configuration, " +
-			"and status information. Use this to inspect the complete manifest of a specific resource. " +
+			"Returns the specific cloud resource object (e.g., AwsEksCluster, GcpGkeCluster, KubernetesDeployment) " +
+			"with its metadata, spec, and status. The response structure depends on the resource type. " +
+			"Use this to inspect the complete manifest of a specific resource. " +
 			"Resource IDs are returned by search_cloud_resources or lookup_cloud_resource_by_name.",
 		InputSchema: mcp.ToolInputSchema{
 			Type: "object",
@@ -38,9 +39,10 @@ func CreateGetCloudResourceByIdTool() mcp.Tool {
 //
 // This function:
 //  1. Validates the resource_id argument
-//  2. Calls CloudResourceQueryClient to get the full resource
-//  3. Serializes the protobuf response to JSON
-//  4. Returns the complete CloudResource manifest
+//  2. Calls CloudResourceQueryClient to get the CloudResource wrapper
+//  3. Unwraps to extract the specific cloud resource object (e.g., AwsEksCluster, GcpGkeCluster)
+//  4. Serializes the specific resource to JSON
+//  5. Returns the resource-specific manifest (not the CloudResource wrapper)
 func HandleGetCloudResourceById(
 	ctx context.Context,
 	arguments map[string]interface{},
@@ -74,10 +76,22 @@ func HandleGetCloudResourceById(
 	}
 	defer client.Close()
 
-	// Get cloud resource by ID
+	// Get cloud resource by ID (returns CloudResource wrapper)
 	cloudResource, err := client.GetById(ctx, resourceID)
 	if err != nil {
 		return errors.HandleGRPCError(err, ""), nil
+	}
+
+	// Unwrap to get the specific cloud resource object
+	// This extracts the actual resource (e.g., AwsEksCluster, GcpGkeCluster) from the wrapper
+	unwrappedResource, err := UnwrapCloudResource(cloudResource)
+	if err != nil {
+		errResp := errors.ErrorResponse{
+			Error:   "INTERNAL_ERROR",
+			Message: fmt.Sprintf("Failed to unwrap cloud resource: %v", err),
+		}
+		errJSON, _ := json.MarshalIndent(errResp, "", "  ")
+		return mcp.NewToolResultText(string(errJSON)), nil
 	}
 
 	log.Printf("Tool completed: get_cloud_resource_by_id, retrieved resource: %s", resourceID)
@@ -90,7 +104,7 @@ func HandleGetCloudResourceById(
 		UseProtoNames:   true,  // Use proto field names (snake_case)
 	}
 
-	resultJSON, err := marshaler.Marshal(cloudResource)
+	resultJSON, err := marshaler.Marshal(unwrappedResource)
 	if err != nil {
 		errResp := errors.ErrorResponse{
 			Error:   "INTERNAL_ERROR",
