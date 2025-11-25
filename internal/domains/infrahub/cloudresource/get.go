@@ -102,4 +102,3 @@ func HandleGetCloudResourceById(
 
 	return mcp.NewToolResultText(string(resultJSON)), nil
 }
-

@@ -236,4 +236,3 @@ func (c *CloudResourceSearchClient) Close() error {
 	}
 	return nil
 }
-

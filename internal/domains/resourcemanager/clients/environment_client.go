@@ -97,4 +97,3 @@ func (c *EnvironmentClient) Close() error {
 	}
 	return nil
 }
-

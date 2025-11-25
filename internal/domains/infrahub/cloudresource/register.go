@@ -62,4 +62,3 @@ func registerListKindsTool(s *server.MCPServer, cfg *config.Config) {
 	)
 	log.Println("  - list_cloud_resource_kinds")
 }
-
