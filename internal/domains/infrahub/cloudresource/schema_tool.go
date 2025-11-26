@@ -75,11 +75,11 @@ func HandleGetCloudResourceSchema(
 	if err != nil {
 		// Kind not found - return error with helpful suggestions
 		errResp := map[string]interface{}{
-			"error":   "INVALID_CLOUD_RESOURCE_KIND",
-			"message": err.Error(),
-			"input":   kindStr,
+			"error":                     "INVALID_CLOUD_RESOURCE_KIND",
+			"message":                   err.Error(),
+			"input":                     kindStr,
 			"popular_kinds_by_category": crinternal.GetPopularKindsByCategory(),
-			"hint":    "Enable 'list_cloud_resource_kinds' tool to discover all 150+ available types",
+			"hint":                      "Enable 'list_cloud_resource_kinds' tool to discover all 150+ available types",
 		}
 		errJSON, _ := json.MarshalIndent(errResp, "", "  ")
 		return mcp.NewToolResultText(string(errJSON)), nil
@@ -113,4 +113,3 @@ func HandleGetCloudResourceSchema(
 
 	return mcp.NewToolResultText(string(schemaJSON)), nil
 }
-

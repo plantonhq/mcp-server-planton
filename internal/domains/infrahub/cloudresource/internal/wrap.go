@@ -103,4 +103,3 @@ func WrapCloudResource(
 
 	return cloudResource, nil
 }
-

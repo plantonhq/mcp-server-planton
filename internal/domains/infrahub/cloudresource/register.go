@@ -16,10 +16,10 @@ func RegisterTools(s *server.MCPServer, cfg *config.Config) {
 	registerSearchTool(s, cfg)
 	registerLookupTool(s, cfg)
 	registerListKindsTool(s, cfg)
-	
+
 	// Schema discovery
 	registerGetSchemaTool(s, cfg)
-	
+
 	// Command tools (mutations)
 	registerCreateTool(s, cfg)
 	registerUpdateTool(s, cfg)
@@ -115,4 +115,3 @@ func registerDeleteTool(s *server.MCPServer, cfg *config.Config) {
 	)
 	log.Println("  - delete_cloud_resource")
 }
-

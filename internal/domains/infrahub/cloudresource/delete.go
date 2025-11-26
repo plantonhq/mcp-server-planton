@@ -155,4 +155,3 @@ func HandleDeleteCloudResource(
 
 	return mcp.NewToolResultText(string(responseJSON)), nil
 }
-

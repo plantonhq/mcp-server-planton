@@ -82,8 +82,8 @@ func NewCloudResourceCommandClient(grpcEndpoint, apiKey string) (*CloudResourceC
 //
 // Returns the created CloudResource object or an error.
 func (c *CloudResourceCommandClient) Create(ctx context.Context, resource *cloudresourcev1.CloudResource) (*cloudresourcev1.CloudResource, error) {
-	log.Printf("Creating cloud resource: kind=%s, name=%s", 
-		resource.GetSpec().GetKind().String(), 
+	log.Printf("Creating cloud resource: kind=%s, name=%s",
+		resource.GetSpec().GetKind().String(),
 		resource.GetMetadata().GetName())
 
 	// Make gRPC call (interceptor attaches API key automatically)
@@ -110,7 +110,7 @@ func (c *CloudResourceCommandClient) Create(ctx context.Context, resource *cloud
 //
 // Returns the updated CloudResource object or an error.
 func (c *CloudResourceCommandClient) Update(ctx context.Context, resource *cloudresourcev1.CloudResource) (*cloudresourcev1.CloudResource, error) {
-	log.Printf("Updating cloud resource: id=%s, kind=%s", 
+	log.Printf("Updating cloud resource: id=%s, kind=%s",
 		resource.GetMetadata().GetId(),
 		resource.GetSpec().GetKind().String())
 
@@ -165,4 +165,3 @@ func (c *CloudResourceCommandClient) Close() error {
 	}
 	return nil
 }
-
