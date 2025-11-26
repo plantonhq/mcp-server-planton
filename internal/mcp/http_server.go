@@ -80,12 +80,17 @@ func (s *Server) ServeHTTP(opts HTTPServerOptions) error {
 	log.Println("MCP endpoints available:")
 	log.Println("  - GET  /health   - Health check endpoint")
 	if authEnabled {
-		log.Println("  - GET  /sse      - SSE connection endpoint (authenticated)")
+		log.Println("  - GET  /         - SSE connection endpoint (root, authenticated)")
+		log.Println("  - GET  /sse      - SSE connection endpoint (explicit, authenticated)")
 		log.Println("  - POST /message  - Message endpoint (authenticated)")
 	} else {
-		log.Println("  - GET  /sse      - SSE connection endpoint")
+		log.Println("  - GET  /         - SSE connection endpoint (root)")
+		log.Println("  - GET  /sse      - SSE connection endpoint (explicit)")
 		log.Println("  - POST /message  - Message endpoint")
 	}
+	log.Println("Transport support:")
+	log.Println("  - SSE transport: SUPPORTED (GET /sse, POST /message)")
+	log.Println("  - streamableHttp: NOT SUPPORTED (POST / will return HTTP 405)")
 
 	// Create logging middleware
 	loggingHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -159,13 +164,29 @@ func createAuthenticatedProxy(targetAddr string) http.HandlerFunc {
 // It properly handles SSE streaming with flushing for real-time updates.
 // It also rewrites internal port references to external port in SSE responses.
 func proxyRequest(w http.ResponseWriter, r *http.Request, targetAddr string) {
-	// Rewrite path for internal SSE server
-	// Users configure http://localhost:8080/ but internal server expects /sse
+	// Rewrite path for internal SSE server based on HTTP method
+	// This handles both SSE transport (GET /sse, POST /message) and
+	// streamableHttp attempts (POST /) which will fail with 405
 	internalPath := r.URL.Path
+	originalPath := internalPath
 
-	// Map root path and common MCP client paths to /sse
+	// Route based on HTTP method and path
 	if internalPath == "/" || internalPath == "" {
-		internalPath = "/sse"
+		if r.Method == http.MethodGet {
+			// GET / → GET /sse (SSE connection establishment)
+			internalPath = "/sse"
+		} else if r.Method == http.MethodPost {
+			// POST / → POST /message (message sending for clients that use root path)
+			// Note: streamableHttp POST to / will get proxied to /sse and fail with 405
+			internalPath = "/message"
+		}
+		// Other methods pass through as-is and will likely fail
+	}
+	// For explicit paths like /sse, /message, pass through unchanged
+
+	// Log path mapping for debugging
+	if originalPath != internalPath {
+		log.Printf("Path mapping: %s %s → %s %s (query: %s)", r.Method, originalPath, r.Method, internalPath, r.URL.RawQuery)
 	}
 
 	// Create proxy request to internal SSE server
@@ -201,6 +222,9 @@ func proxyRequest(w http.ResponseWriter, r *http.Request, targetAddr string) {
 		return
 	}
 	defer resp.Body.Close()
+
+	// Log response status for debugging
+	log.Printf("Proxy response: %s %s → status %d", r.Method, internalPath, resp.StatusCode)
 
 	// Copy response headers
 	for key, values := range resp.Header {
