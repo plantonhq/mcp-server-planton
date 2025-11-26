@@ -215,21 +215,31 @@ func proxyRequest(w http.ResponseWriter, r *http.Request, targetAddr string) {
 	// For SSE connections, we need to flush data as it arrives
 	// and rewrite internal port references to external port
 	if flusher, ok := w.(http.Flusher); ok {
+		// Determine external scheme (http or https) from request
+		scheme := "http"
+		// Check X-Forwarded-Proto header (set by reverse proxies/gateways)
+		if proto := r.Header.Get("X-Forwarded-Proto"); proto != "" {
+			scheme = proto
+		} else if r.TLS != nil {
+			scheme = "https"
+		}
+
 		// Stream response body
 		buf := make([]byte, 4096)
 		for {
 			n, err := resp.Body.Read(buf)
 			if n > 0 {
-				// Rewrite internal port (18080) to external port (from Host header)
+				// Rewrite internal URLs to external URLs
 				data := buf[:n]
 				dataStr := string(data)
-				// Replace localhost:18080 with the external host
-				if strings.Contains(dataStr, "localhost:18080") {
+				// Replace http://localhost:18080 with the external scheme and host
+				if strings.Contains(dataStr, "http://localhost:18080") {
 					host := r.Host
 					if host == "" {
 						host = "localhost:8080"
 					}
-					dataStr = strings.ReplaceAll(dataStr, "localhost:18080", host)
+					externalURL := scheme + "://" + host
+					dataStr = strings.ReplaceAll(dataStr, "http://localhost:18080", externalURL)
 					data = []byte(dataStr)
 				}
 
