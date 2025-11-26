@@ -6,6 +6,7 @@ import (
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
+	"github.com/plantoncloud-inc/mcp-server-planton/internal/common/auth"
 	"github.com/plantoncloud-inc/mcp-server-planton/internal/config"
 )
 
@@ -23,7 +24,8 @@ func registerListTool(s *server.MCPServer, cfg *config.Config) {
 	s.AddTool(
 		CreateListEnvironmentsTool(),
 		func(arguments map[string]interface{}) (*mcp.CallToolResult, error) {
-			return HandleListEnvironmentsForOrg(context.Background(), arguments, cfg)
+			ctx := auth.GetContextWithAPIKey(context.Background())
+			return HandleListEnvironmentsForOrg(ctx, arguments, cfg)
 		},
 	)
 	log.Println("  - list_environments_for_org")

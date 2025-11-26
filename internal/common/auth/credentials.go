@@ -3,6 +3,8 @@ package auth
 import (
 	"context"
 	"errors"
+	"log"
+	"sync"
 )
 
 // tokenAuth implements credentials.PerRPCCredentials interface to attach
@@ -78,4 +80,57 @@ func GetAPIKey(ctx context.Context) (string, error) {
 		return "", errors.New("no API key found in context")
 	}
 	return apiKey, nil
+}
+
+// apiKeyStore provides a simple storage for API keys from HTTP requests.
+// This is a workaround for mcp-go's AddTool not supporting context parameters.
+//
+// Since SSE connections are typically single-threaded (one request at a time per connection),
+// we store the API key when a request comes in and retrieve it in tool handlers.
+//
+// Limitations:
+//   - Race conditions possible with concurrent requests (rare in SSE)
+//   - Not suitable for high-concurrency scenarios
+//   - Better solution: upstream fix to mcp-go to support context in AddTool
+type apiKeyStore struct {
+	mu         sync.RWMutex
+	currentKey string
+}
+
+var globalAPIKeyStore = &apiKeyStore{}
+
+// SetCurrentAPIKey stores the API key for the current request context.
+// Called by HTTP proxy before forwarding requests to internal SSE server.
+func SetCurrentAPIKey(apiKey string) {
+	globalAPIKeyStore.mu.Lock()
+	defer globalAPIKeyStore.mu.Unlock()
+	globalAPIKeyStore.currentKey = apiKey
+	log.Printf("API key stored for current request")
+}
+
+// getCurrentAPIKey retrieves the API key for the current request context.
+// Called by tool handlers to get user's API key.
+func getCurrentAPIKey() string {
+	globalAPIKeyStore.mu.RLock()
+	defer globalAPIKeyStore.mu.RUnlock()
+	return globalAPIKeyStore.currentKey
+}
+
+// GetContextWithAPIKey creates a context with the API key from the current request.
+// This is used in tool handlers to create authenticated gRPC clients.
+//
+// This is a workaround for mcp-go's AddTool not supporting context parameters.
+// The API key is stored when HTTP requests arrive and retrieved here for use
+// in gRPC client creation.
+//
+// Usage in tool handlers:
+//
+//	ctx := auth.GetContextWithAPIKey(context.Background())
+//	client, err := clients.NewClientFromContext(ctx, endpoint)
+func GetContextWithAPIKey(baseContext context.Context) context.Context {
+	apiKey := getCurrentAPIKey()
+	if apiKey != "" {
+		return WithAPIKey(baseContext, apiKey)
+	}
+	return baseContext
 }

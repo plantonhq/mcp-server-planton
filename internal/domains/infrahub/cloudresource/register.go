@@ -6,6 +6,7 @@ import (
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
+	"github.com/plantoncloud-inc/mcp-server-planton/internal/common/auth"
 	"github.com/plantoncloud-inc/mcp-server-planton/internal/config"
 )
 
@@ -33,7 +34,8 @@ func registerGetTool(s *server.MCPServer, cfg *config.Config) {
 	s.AddTool(
 		CreateGetCloudResourceByIdTool(),
 		func(arguments map[string]interface{}) (*mcp.CallToolResult, error) {
-			return HandleGetCloudResourceById(context.Background(), arguments, cfg)
+			ctx := auth.GetContextWithAPIKey(context.Background())
+			return HandleGetCloudResourceById(ctx, arguments, cfg)
 		},
 	)
 	log.Println("  - get_cloud_resource_by_id")
@@ -44,7 +46,8 @@ func registerSearchTool(s *server.MCPServer, cfg *config.Config) {
 	s.AddTool(
 		CreateSearchCloudResourcesTool(),
 		func(arguments map[string]interface{}) (*mcp.CallToolResult, error) {
-			return HandleSearchCloudResources(context.Background(), arguments, cfg)
+			ctx := auth.GetContextWithAPIKey(context.Background())
+			return HandleSearchCloudResources(ctx, arguments, cfg)
 		},
 	)
 	log.Println("  - search_cloud_resources")
@@ -55,7 +58,8 @@ func registerLookupTool(s *server.MCPServer, cfg *config.Config) {
 	s.AddTool(
 		CreateLookupCloudResourceByNameTool(),
 		func(arguments map[string]interface{}) (*mcp.CallToolResult, error) {
-			return HandleLookupCloudResourceByName(context.Background(), arguments, cfg)
+			ctx := auth.GetContextWithAPIKey(context.Background())
+			return HandleLookupCloudResourceByName(ctx, arguments, cfg)
 		},
 	)
 	log.Println("  - lookup_cloud_resource_by_name")
@@ -66,7 +70,8 @@ func registerListKindsTool(s *server.MCPServer, cfg *config.Config) {
 	s.AddTool(
 		CreateListCloudResourceKindsTool(),
 		func(arguments map[string]interface{}) (*mcp.CallToolResult, error) {
-			return HandleListCloudResourceKinds(context.Background(), arguments, cfg)
+			ctx := auth.GetContextWithAPIKey(context.Background())
+			return HandleListCloudResourceKinds(ctx, arguments, cfg)
 		},
 	)
 	log.Println("  - list_cloud_resource_kinds")
@@ -77,7 +82,8 @@ func registerGetSchemaTool(s *server.MCPServer, cfg *config.Config) {
 	s.AddTool(
 		CreateGetCloudResourceSchemaTool(),
 		func(arguments map[string]interface{}) (*mcp.CallToolResult, error) {
-			return HandleGetCloudResourceSchema(context.Background(), arguments, cfg)
+			ctx := auth.GetContextWithAPIKey(context.Background())
+			return HandleGetCloudResourceSchema(ctx, arguments, cfg)
 		},
 	)
 	log.Println("  - get_cloud_resource_schema")
@@ -88,7 +94,8 @@ func registerCreateTool(s *server.MCPServer, cfg *config.Config) {
 	s.AddTool(
 		CreateCreateCloudResourceTool(),
 		func(arguments map[string]interface{}) (*mcp.CallToolResult, error) {
-			return HandleCreateCloudResource(context.Background(), arguments, cfg)
+			ctx := auth.GetContextWithAPIKey(context.Background())
+			return HandleCreateCloudResource(ctx, arguments, cfg)
 		},
 	)
 	log.Println("  - create_cloud_resource")
@@ -99,7 +106,8 @@ func registerUpdateTool(s *server.MCPServer, cfg *config.Config) {
 	s.AddTool(
 		CreateUpdateCloudResourceTool(),
 		func(arguments map[string]interface{}) (*mcp.CallToolResult, error) {
-			return HandleUpdateCloudResource(context.Background(), arguments, cfg)
+			ctx := auth.GetContextWithAPIKey(context.Background())
+			return HandleUpdateCloudResource(ctx, arguments, cfg)
 		},
 	)
 	log.Println("  - update_cloud_resource")
@@ -110,7 +118,8 @@ func registerDeleteTool(s *server.MCPServer, cfg *config.Config) {
 	s.AddTool(
 		CreateDeleteCloudResourceTool(),
 		func(arguments map[string]interface{}) (*mcp.CallToolResult, error) {
-			return HandleDeleteCloudResource(context.Background(), arguments, cfg)
+			ctx := auth.GetContextWithAPIKey(context.Background())
+			return HandleDeleteCloudResource(ctx, arguments, cfg)
 		},
 	)
 	log.Println("  - delete_cloud_resource")

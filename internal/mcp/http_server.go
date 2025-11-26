@@ -48,6 +48,8 @@ func (s *Server) ServeHTTP(opts HTTPServerOptions) error {
 	sseServer := server.NewSSEServer(s.mcpServer, "http://"+sseServerAddr)
 
 	// Start SSE server in background
+	// Note: We store API keys in the proxy before forwarding requests,
+	// so tool handlers can access them via GetContextWithAPIKey
 	go func() {
 		log.Printf("Starting internal SSE server on %s", sseServerAddr)
 		if err := sseServer.Start(":" + internalPort); err != nil {
@@ -209,6 +211,13 @@ func proxyRequest(w http.ResponseWriter, r *http.Request, targetAddr string) {
 				proxyReq.Header.Add(key, value)
 			}
 		}
+	}
+
+	// Store API key in global store for tool handlers to access
+	// This is a workaround since mcp-go's AddTool doesn't support context parameters
+	if apiKey, err := auth.GetAPIKey(r.Context()); err == nil {
+		auth.SetCurrentAPIKey(apiKey)
+		log.Printf("Stored API key for tool handlers to access")
 	}
 
 	// Forward request to internal SSE server
