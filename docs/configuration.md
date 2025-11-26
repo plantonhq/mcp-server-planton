@@ -59,6 +59,65 @@ export PLANTON_APIS_GRPC_ENDPOINT="custom-endpoint:443"
 - Non-standard endpoints
 - Testing with specific backend instances
 
+#### PLANTON_MCP_TRANSPORT
+
+Specifies the transport mode for the MCP server.
+
+```bash
+export PLANTON_MCP_TRANSPORT="stdio"  # or "http" or "both"
+```
+
+**Default:** `stdio`
+
+**Valid values:**
+- `stdio`: Standard input/output transport (default)
+- `http`: HTTP/SSE transport only
+- `both`: Run both STDIO and HTTP transports simultaneously
+
+#### PLANTON_MCP_HTTP_PORT
+
+Port for HTTP server when using HTTP transport.
+
+```bash
+export PLANTON_MCP_HTTP_PORT="8080"
+```
+
+**Default:** `8080`
+
+**When to use:**
+- When `PLANTON_MCP_TRANSPORT` is `http` or `both`
+- To avoid port conflicts with other services
+
+#### PLANTON_MCP_HTTP_AUTH_ENABLED
+
+Enable bearer token authentication for HTTP transport.
+
+```bash
+export PLANTON_MCP_HTTP_AUTH_ENABLED="true"  # or "false"
+```
+
+**Default:** `true`
+
+**When to use:**
+- Set to `true` in production for security
+- Set to `false` for local testing or when network-level security is sufficient
+
+#### PLANTON_MCP_HTTP_BEARER_TOKEN
+
+Bearer token for HTTP authentication.
+
+```bash
+export PLANTON_MCP_HTTP_BEARER_TOKEN="your-secure-random-token"
+```
+
+**Default:** None (must be provided if auth is enabled)
+
+**Required when:**
+- `PLANTON_MCP_HTTP_AUTH_ENABLED` is `true`
+- `PLANTON_MCP_TRANSPORT` is `http` or `both`
+
+**Security note:** Use a strong, randomly generated token (32+ characters). This token controls access to your MCP server instance.
+
 ## Configuration Loading
 
 The MCP server loads configuration from environment variables on startup using the Go standard library.
@@ -69,6 +128,10 @@ The MCP server loads configuration from environment variables on startup using t
 type Config struct {
     PlantonAPIKey           string
     PlantonAPIsGRPCEndpoint string
+    Transport               TransportMode
+    HTTPPort                string
+    HTTPAuthEnabled         bool
+    HTTPBearerToken         string
 }
 ```
 
@@ -112,6 +175,14 @@ PLANTON_CLOUD_ENVIRONMENT=live  # or 'test', 'local'
 
 # Optional: Override endpoint (not needed for standard environments)
 # PLANTON_APIS_GRPC_ENDPOINT=custom-endpoint:443
+
+# Optional: Transport configuration (defaults to 'stdio')
+PLANTON_MCP_TRANSPORT=stdio  # or 'http', 'both'
+
+# Optional: HTTP transport settings (when using 'http' or 'both')
+PLANTON_MCP_HTTP_PORT=8080
+PLANTON_MCP_HTTP_AUTH_ENABLED=true  # or 'false'
+PLANTON_MCP_HTTP_BEARER_TOKEN=your-secure-random-token  # required if auth enabled
 ```
 
 **Note:** The Go server doesn't automatically load `.env` files. You'll need to source them manually or use a tool like `direnv`:

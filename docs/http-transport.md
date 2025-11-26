@@ -141,29 +141,36 @@ The HTTP transport implementation uses the `mark3labs/mcp-go` library's `SSEServ
 - **SSE-based** - Real-time bidirectional communication over HTTP
 - **Standard MCP protocol** - Compatible with all MCP clients
 
-## Limitations and Future Enhancements
+## Implementation Details
 
-### Current Limitations
+### Architecture
 
-1. **Bearer Token Authentication** - Currently not fully implemented
-   - The configuration is in place but middleware integration pending
-   - The SSEServer creates its own HTTP server, making middleware integration complex
+The HTTP transport uses a reverse proxy architecture to add custom functionality on top of the mcp-go library's SSEServer:
 
-2. **Custom Endpoints** - No health check or metrics endpoints yet
-   - SSEServer.Start() creates its own HTTP server without custom routes
+1. **Internal SSE Server**: Runs on localhost:18080, handling the core MCP protocol
+2. **Proxy Layer**: Runs on the configured port (default 8080), adds:
+   - Health check endpoint at `/health`
+   - Optional bearer token authentication
+   - Request logging
+   - Custom routing
 
-3. **CORS Configuration** - Uses default CORS settings from the library
+This architecture allows us to enhance the SSEServer without modifying the library, while maintaining full compatibility with the MCP protocol.
 
-### Planned Enhancements
+### Completed Features
 
-- [ ] Custom HTTP server wrapper for middleware support
-- [ ] Bearer token authentication middleware
-- [ ] Health check endpoint (`/health`)
+- ✅ Bearer token authentication middleware
+- ✅ Health check endpoint (`/health`)
+- ✅ Custom HTTP server wrapper
+- ✅ Request logging
+- ✅ Proper SSE streaming with flushing
+
+### Future Enhancements
+
 - [ ] Metrics endpoint (`/metrics`)
-- [ ] Request logging middleware
-- [ ] Rate limiting
-- [ ] TLS/HTTPS support
+- [ ] Rate limiting middleware
+- [ ] TLS/HTTPS support (use reverse proxy like nginx/caddy for now)
 - [ ] Configurable CORS policies
+- [ ] Connection pooling and timeout configuration
 
 ## Security Considerations
 
@@ -300,9 +307,19 @@ Error: listen tcp :8080: bind: address already in use
 
 ### Authentication Errors
 
-**Note:** Full bearer token authentication is pending implementation. For now:
-- Set `PLANTON_MCP_HTTP_AUTH_ENABLED="false"` for testing
-- Ensure network-level security (VPN, firewall) for production
+If you encounter authentication issues:
+
+**401 Unauthorized - Missing Authorization header:**
+```bash
+curl http://localhost:8080/sse
+# Add the Authorization header
+curl -H "Authorization: Bearer your-token" http://localhost:8080/sse
+```
+
+**401 Unauthorized - Invalid bearer token:**
+- Verify the token matches `PLANTON_MCP_HTTP_BEARER_TOKEN`
+- Ensure the token doesn't have leading/trailing spaces
+- Check that the token wasn't truncated
 
 ## Performance Considerations
 

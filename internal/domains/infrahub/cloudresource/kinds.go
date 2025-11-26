@@ -136,8 +136,3 @@ func getDescriptionByProvider(provider, name string) string {
 
 	return desc + ": " + name
 }
-
-
-
-
-

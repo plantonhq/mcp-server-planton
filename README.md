@@ -164,6 +164,100 @@ Or using Docker:
 }
 ```
 
+## HTTP Transport
+
+The MCP server supports HTTP transport using Server-Sent Events (SSE) for remote access and integrations, in addition to the default STDIO transport.
+
+### Transport Modes
+
+- **stdio** (default): Standard input/output for local AI clients (Claude Desktop, Cursor)
+- **http**: HTTP/SSE transport for remote access, webhooks, and cloud deployments
+- **both**: Run both transports simultaneously
+
+### Running with HTTP Transport
+
+#### Local Testing (No Authentication)
+
+```bash
+export PLANTON_API_KEY="your-api-key"
+export PLANTON_MCP_TRANSPORT="http"
+export PLANTON_MCP_HTTP_PORT="8080"
+export PLANTON_MCP_HTTP_AUTH_ENABLED="false"
+
+mcp-server-planton
+```
+
+Access the server:
+```bash
+# Health check
+curl http://localhost:8080/health
+
+# SSE connection (will stay open)
+curl http://localhost:8080/sse
+```
+
+#### Production (With Authentication)
+
+```bash
+export PLANTON_API_KEY="your-api-key"
+export PLANTON_MCP_TRANSPORT="http"
+export PLANTON_MCP_HTTP_PORT="8080"
+export PLANTON_MCP_HTTP_AUTH_ENABLED="true"
+export PLANTON_MCP_HTTP_BEARER_TOKEN="your-secure-random-token"
+
+mcp-server-planton
+```
+
+Access with bearer token:
+```bash
+curl -H "Authorization: Bearer your-secure-random-token" http://localhost:8080/sse
+```
+
+### Docker with HTTP Transport
+
+```bash
+# Without authentication (for testing)
+docker run -p 8080:8080 \
+  -e PLANTON_API_KEY="your-api-key" \
+  -e PLANTON_MCP_TRANSPORT="http" \
+  -e PLANTON_MCP_HTTP_AUTH_ENABLED="false" \
+  ghcr.io/plantoncloud-inc/mcp-server-planton:latest
+
+# With authentication (recommended)
+docker run -p 8080:8080 \
+  -e PLANTON_API_KEY="your-api-key" \
+  -e PLANTON_MCP_TRANSPORT="http" \
+  -e PLANTON_MCP_HTTP_AUTH_ENABLED="true" \
+  -e PLANTON_MCP_HTTP_BEARER_TOKEN="your-secure-token" \
+  ghcr.io/plantoncloud-inc/mcp-server-planton:latest
+```
+
+### HTTP Endpoints
+
+- `GET /health` - Health check endpoint (returns `{"status":"ok"}`)
+- `GET /sse` - SSE connection endpoint for MCP protocol
+- `POST /message` - Message endpoint for MCP protocol
+
+### Use Cases
+
+**STDIO Transport:**
+- Local AI clients (Claude Desktop, Cursor)
+- Development and testing
+- Direct process spawning by LangGraph
+
+**HTTP Transport:**
+- Remote access to MCP server
+- Webhook integrations
+- Cloud deployments (Docker, Kubernetes)
+- Team shared services
+- API access from web applications
+
+**Both Transports:**
+- Development environments needing both local and remote access
+- Testing remote clients while maintaining local workflow
+
+For detailed HTTP transport documentation, see [HTTP Transport Guide](docs/http-transport.md).
+
 ## Configuration
 
 ### Environment Variables
@@ -173,6 +267,10 @@ Or using Docker:
 | `PLANTON_API_KEY` | Yes | - | User's API key for authentication (can be JWT token or API key) |
 | `PLANTON_CLOUD_ENVIRONMENT` | No | `live` | Target environment: `live`, `test`, or `local` |
 | `PLANTON_APIS_GRPC_ENDPOINT` | No | (based on env) | Override gRPC endpoint (takes precedence over environment) |
+| `PLANTON_MCP_TRANSPORT` | No | `stdio` | Transport mode: `stdio`, `http`, or `both` |
+| `PLANTON_MCP_HTTP_PORT` | No | `8080` | HTTP server port (used when transport is `http` or `both`) |
+| `PLANTON_MCP_HTTP_AUTH_ENABLED` | No | `true` | Enable bearer token authentication for HTTP transport |
+| `PLANTON_MCP_HTTP_BEARER_TOKEN` | Conditional | - | Bearer token for HTTP auth (required if auth is enabled and transport is `http` or `both`) |
 
 **Environment-based Endpoints:**
 - `live` (default): `api.live.planton.ai:443`
@@ -273,11 +371,50 @@ make build
 
 ### Running Locally
 
+#### STDIO Mode (Default - for Claude Desktop, Cursor)
+
 ```bash
 export PLANTON_API_KEY="your-api-key"
-export PLANTON_APIS_GRPC_ENDPOINT="localhost:8080"
+export PLANTON_CLOUD_ENVIRONMENT="local"  # or "live" for production
 ./bin/mcp-server-planton
 ```
+
+The server will start in STDIO mode and wait for JSON-RPC messages on stdin.
+
+#### HTTP Mode (for testing remote access)
+
+```bash
+export PLANTON_API_KEY="your-api-key"
+export PLANTON_CLOUD_ENVIRONMENT="local"
+export PLANTON_MCP_TRANSPORT="http"
+export PLANTON_MCP_HTTP_PORT="8080"
+export PLANTON_MCP_HTTP_AUTH_ENABLED="false"  # disable auth for local testing
+
+./bin/mcp-server-planton
+```
+
+Test the server:
+```bash
+# Health check
+curl http://localhost:8080/health
+
+# SSE connection (will stay open and stream events)
+curl http://localhost:8080/sse
+```
+
+#### Both Modes (STDIO + HTTP simultaneously)
+
+```bash
+export PLANTON_API_KEY="your-api-key"
+export PLANTON_CLOUD_ENVIRONMENT="local"
+export PLANTON_MCP_TRANSPORT="both"
+export PLANTON_MCP_HTTP_PORT="8080"
+export PLANTON_MCP_HTTP_AUTH_ENABLED="false"
+
+./bin/mcp-server-planton
+```
+
+This allows you to test both STDIO integration and HTTP endpoints simultaneously.
 
 ### Make Targets
 
