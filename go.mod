@@ -1,6 +1,6 @@
 module github.com/plantoncloud/mcp-server-planton
 
-go 1.24.7
+go 1.24.0
 
 require (
 	buf.build/gen/go/blintora/apis/grpc/go v1.6.0-20251203084557-cb42722e0175.1

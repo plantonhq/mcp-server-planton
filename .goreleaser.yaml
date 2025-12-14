@@ -67,7 +67,7 @@ changelog:
 
 release:
   github:
-    owner: plantoncloud-inc
+    owner: plantoncloud
     name: mcp-server-planton
   draft: false
   prerelease: auto
