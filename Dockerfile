@@ -2,9 +2,12 @@
 # Follows GitHub's MCP server Docker distribution approach
 
 # Build stage
-FROM golang:1.25-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
+
+# Enable Go toolchain auto-download for dependencies requiring newer Go versions
+ENV GOTOOLCHAIN=auto
 
 # Copy go.mod and go.sum for dependency caching
 COPY go.mod go.sum ./
@@ -18,13 +21,15 @@ COPY . .
 # Build the binary
 # CGO_ENABLED=0 for static binary
 # GOOS=linux for Linux container
-RUN CGO_ENABLED=0 GOOS=linux go build -o mcp-server-planton ./cmd/mcp-server-planton
+RUN CGO_ENABLED=0 GOOS=linux GOTOOLCHAIN=auto go build -o mcp-server-planton ./cmd/mcp-server-planton
 
 # Runtime stage
-FROM alpine:latest
+FROM debian:bookworm-slim
 
-# Install ca-certificates for HTTPS connections and wget for health checks
-RUN apk --no-cache add ca-certificates wget
+# Install ca-certificates and wget for health checks
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates wget && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root/
 
