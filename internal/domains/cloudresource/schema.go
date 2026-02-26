@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"sort"
 	"sync"
 
 	"github.com/plantoncloud/mcp-server-planton/schemas"
@@ -82,4 +83,67 @@ func parseSchemaURI(uri string) (string, error) {
 		return "", fmt.Errorf("schema URI missing kind: %q", uri)
 	}
 	return kind, nil
+}
+
+// catalogProviderEntry is the per-provider block in the kind catalog JSON.
+type catalogProviderEntry struct {
+	APIVersion string   `json:"api_version"`
+	Kinds      []string `json:"kinds"`
+}
+
+// kindCatalog is the top-level structure for the kind catalog JSON served by
+// the static cloud-resource-kinds://catalog resource.
+type kindCatalog struct {
+	SchemaURITemplate string                          `json:"schema_uri_template"`
+	TotalKinds        int                             `json:"total_kinds"`
+	Providers         map[string]catalogProviderEntry `json:"providers"`
+}
+
+var (
+	catalogOnce sync.Once
+	catalogJSON []byte
+	catalogErr  error
+)
+
+// buildKindCatalog transforms the embedded provider registry into a grouped
+// JSON catalog of all supported cloud resource kinds. The result is built once
+// and cached for the lifetime of the process.
+func buildKindCatalog() ([]byte, error) {
+	catalogOnce.Do(func() {
+		reg, err := loadRegistry()
+		if err != nil {
+			catalogErr = fmt.Errorf("building kind catalog: %w", err)
+			return
+		}
+
+		grouped := make(map[string]*catalogProviderEntry)
+		for kind, entry := range reg {
+			pe, ok := grouped[entry.CloudProvider]
+			if !ok {
+				pe = &catalogProviderEntry{APIVersion: entry.APIVersion}
+				grouped[entry.CloudProvider] = pe
+			}
+			pe.Kinds = append(pe.Kinds, kind)
+		}
+
+		totalKinds := 0
+		providers := make(map[string]catalogProviderEntry, len(grouped))
+		for provider, pe := range grouped {
+			sort.Strings(pe.Kinds)
+			totalKinds += len(pe.Kinds)
+			providers[provider] = *pe
+		}
+
+		cat := kindCatalog{
+			SchemaURITemplate: schemaScheme + "://{kind}",
+			TotalKinds:        totalKinds,
+			Providers:         providers,
+		}
+
+		catalogJSON, catalogErr = json.Marshal(cat)
+		if catalogErr != nil {
+			catalogErr = fmt.Errorf("marshaling kind catalog: %w", catalogErr)
+		}
+	})
+	return catalogJSON, catalogErr
 }

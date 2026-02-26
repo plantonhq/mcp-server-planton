@@ -54,13 +54,15 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	slog.Info("tools registered", "count", 1)
 }
 
-// registerResources wires up the URI-addressable resource templates. These
-// let MCP clients discover per-kind cloud resource schemas before calling
-// the apply tool.
+// registerResources wires up MCP resources and resource templates. The kind
+// catalog lets agents discover available kinds; the schema template lets them
+// fetch the full spec definition for a specific kind.
 func registerResources(srv *mcp.Server) {
+	srv.AddResource(cloudresource.KindCatalogResource(), cloudresource.KindCatalogHandler())
 	srv.AddResourceTemplate(cloudresource.SchemaTemplate(), cloudresource.SchemaHandler())
 
-	slog.Info("resource templates registered", "count", 1,
+	slog.Info("resources registered",
+		"static", []string{"cloud-resource-kinds://catalog"},
 		"templates", []string{"cloud-resource-schema://{kind}"},
 	)
 }

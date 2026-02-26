@@ -10,6 +10,7 @@ Plans created for the mcp-server-planton Stigmer patterns refactoring project.
 | `proto2schema-codegen-tool.plan.md` | ✅ Completed | 2026-02-26 | 2026-02-26 | Phase 2 Stage 1 — proto2schema tool parsing 362 OpenMCF provider protos to JSON schemas |
 | `schema2go-generator.plan.md` | ✅ Completed | 2026-02-26 | 2026-02-26 | Phase 2 Stage 2 — schema2go generator producing typed Go input structs for 362 providers |
 | `phase-3-apply-cloud-resource.plan.md` | ✅ Completed | 2026-02-26 | 2026-02-26 | Phase 3 — apply_cloud_resource tool, MCP resource templates, schema promotion |
+| `cloud-resource-kinds-catalog.plan.md` | ✅ Completed | 2026-02-26 | 2026-02-26 | Static MCP resource for kind discovery — agents discover all 362 kinds before using schema template |
 
 ### Status Legend
 
@@ -43,6 +44,12 @@ Plans created for the mcp-server-planton Stigmer patterns refactoring project.
 - **Phases**: 1 (single-phase plan, 6 tasks: prereq + 5 stages)
 - **Current Phase**: Complete
 - **Key outcome**: First working MCP tool registered; `cloud-resource-schema://{kind}` resource template serving 362 provider schemas; schemas promoted to top-level `schemas/` package with `go:embed`
+
+### cloud-resource-kinds-catalog.plan.md
+- **Objective**: Add static MCP resource for cloud resource kind discovery, enabling agents to enumerate all valid kinds
+- **Phases**: 1 (single-phase plan, 5 tasks)
+- **Current Phase**: Complete
+- **Key outcome**: `cloud-resource-kinds://catalog` static resource serving 362 kinds grouped by 17 cloud providers; tool descriptions updated with 3-step discovery workflow
 
 ---
 

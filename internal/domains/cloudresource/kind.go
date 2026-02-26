@@ -25,7 +25,7 @@ func extractKindFromCloudObject(co map[string]any) (string, error) {
 func resolveKind(kindStr string) (cloudresourcekind.CloudResourceKind, error) {
 	v, ok := cloudresourcekind.CloudResourceKind_value[kindStr]
 	if !ok {
-		return 0, fmt.Errorf("unknown cloud resource kind %q — use the cloud-resource-schema resource template to discover valid kinds", kindStr)
+		return 0, fmt.Errorf("unknown cloud resource kind %q — read cloud-resource-kinds://catalog for all valid kinds", kindStr)
 	}
 	return cloudresourcekind.CloudResourceKind(v), nil
 }

@@ -20,7 +20,7 @@ import (
 
 // ApplyCloudResourceInput defines the parameters for the apply_cloud_resource tool.
 type ApplyCloudResourceInput struct {
-	CloudObject map[string]any `json:"cloud_object" jsonschema:"required,The full OpenMCF cloud resource object. Must contain api_version, kind, metadata (with name, org, env), and spec. Use the cloud-resource-schema://{kind} MCP resource to discover the expected format for any provider kind."`
+	CloudObject map[string]any `json:"cloud_object" jsonschema:"required,The full OpenMCF cloud resource object. Must contain api_version, kind, metadata (with name, org, env), and spec. Read cloud-resource-kinds://catalog for available kinds, then cloud-resource-schema://{kind} for the spec format."`
 }
 
 // ApplyTool returns the MCP tool definition for apply_cloud_resource.
@@ -30,9 +30,9 @@ func ApplyTool() *mcp.Tool {
 		Description: "Create or update a cloud resource on the Planton platform (idempotent). " +
 			"The cloud_object must follow the OpenMCF format: " +
 			"{ api_version, kind, metadata: { name, org, env }, spec: { ... } }. " +
-			"Use the cloud-resource-schema://{kind} MCP resource template to discover " +
-			"the expected spec fields for any of the 362 supported provider kinds " +
-			"(e.g. AwsEksCluster, GcpGkeCluster, KubernetesDeployment).",
+			"Step 1: Read cloud-resource-kinds://catalog to discover supported kinds and api_versions. " +
+			"Step 2: Read cloud-resource-schema://{kind} to get the full spec definition. " +
+			"Step 3: Call this tool with the assembled cloud_object.",
 	}
 }
 
@@ -54,7 +54,7 @@ func ApplyHandler(serverAddress string) func(context.Context, *mcp.CallToolReque
 		parseFn, ok := cloudresource.GetParser(kindStr)
 		if !ok {
 			return nil, nil, fmt.Errorf(
-				"unsupported cloud resource kind %q — use the cloud-resource-schema resource template to discover valid kinds",
+				"unsupported cloud resource kind %q — read cloud-resource-kinds://catalog for all valid kinds",
 				kindStr,
 			)
 		}

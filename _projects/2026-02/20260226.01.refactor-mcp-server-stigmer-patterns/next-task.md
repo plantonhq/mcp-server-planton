@@ -13,7 +13,7 @@
 ---
 
 **Project**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/`
-**Current Status**: Phase 3 COMPLETED → Ready for Phase 4 (delete_cloud_resource + get_cloud_resource)
+**Current Status**: Kind Catalog Resource COMPLETED → Ready for Phase 4 (delete_cloud_resource + get_cloud_resource)
 
 ## Quick Context
 
@@ -23,6 +23,7 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
 - Codegen pipeline from day one (proto → schema → Go input types)
 - Three tools: `apply_cloud_resource`, `delete_cloud_resource`, `get_cloud_resource`
 - MCP resource templates for per-kind schema discovery
+- Static MCP resource for cloud resource kind catalog (agent discovery)
 
 ## Current Step
 
@@ -57,6 +58,11 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
   - Registered `apply_cloud_resource` tool + `cloud-resource-schema://{kind}` resource template in server
   - Added `plantonhq/planton/apis` and `plantonhq/openmcf` dependencies
   - Added shared `ResourceResult` helper to `internal/domains/toolresult.go`
+- ✅ **Kind Catalog Resource** (2026-02-26)
+  - Added static `cloud-resource-kinds://catalog` MCP resource serving 362 kinds grouped by 17 providers
+  - Thorough analysis confirmed PascalCase is canonical for kind values across all system layers (proto enum, Go stubs, codegen registry, JSON schemas, StringValueOrRef options)
+  - Updated tool descriptions with 3-step discovery workflow: catalog → schema → apply
+  - Updated error messages to direct agents to catalog resource for kind discovery
 - 🔵 Next: **Phase 4: Implement delete_cloud_resource + get_cloud_resource**
 
 ---
@@ -226,6 +232,35 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
 
 ---
 
+### ✅ COMPLETED: Kind Catalog Resource (2026-02-26)
+
+**Added a static MCP resource enabling agents to discover all supported cloud resource kinds before using the schema template or calling tools.**
+
+**What was delivered:**
+
+1. **Kind case analysis** — Thorough cross-system audit confirmed PascalCase is the canonical form for kind values across all layers: proto enum (`AwsVpc = 216`), generated Go maps (`CloudResourceKind_value["AwsVpc"]`), codegen registry, JSON schema registry, and StringValueOrRef `default_kind` options. All 362 production kinds in the codegen registry are a perfect subset of the proto enum. No case conversion needed at any boundary.
+
+2. **`cloud-resource-kinds://catalog` static resource** (`internal/domains/cloudresource/resources.go`) — `KindCatalogResource()` and `KindCatalogHandler()` serve a grouped JSON catalog of all 362 kinds across 17 cloud providers. Each provider entry includes `api_version` and sorted kind list.
+
+3. **Catalog data builder** (`internal/domains/cloudresource/schema.go`) — `buildKindCatalog()` transforms the embedded registry into the grouped catalog JSON, cached with `sync.Once`. Reuses the existing `loadRegistry()` cache.
+
+4. **Updated tool descriptions** — `apply_cloud_resource` tool description now includes a 3-step workflow: catalog → schema → apply. Error messages point agents to `cloud-resource-kinds://catalog` for kind discovery.
+
+**Key Decisions Made:**
+- PascalCase confirmed as canonical for kind values — no conversion needed anywhere
+- Static `cloud-resource-kinds://catalog` URI scheme (not parameterized) since there's only one catalog
+- Catalog grouped by cloud provider with `api_version` per group — agents can narrow by provider and get `api_version` without extra lookup
+- Catalog size is ~12.7KB covering 362 kinds across 17 providers — well within MCP resource limits
+
+**Files Changed:**
+- `internal/domains/cloudresource/schema.go` — Added `buildKindCatalog()`, `kindCatalog`, `catalogProviderEntry` types
+- `internal/domains/cloudresource/resources.go` — Added `KindCatalogResource()`, `KindCatalogHandler()`
+- `internal/server/server.go` — Registered static catalog resource via `srv.AddResource()`
+- `internal/domains/cloudresource/tools.go` — Updated tool descriptions with 3-step workflow
+- `internal/domains/cloudresource/kind.go` — Updated error message to reference catalog
+
+---
+
 ## Execution Order
 
 ### Phase 1: Clean Slate + Shared Utilities ✅
@@ -261,6 +296,7 @@ Complete the tool set.
 - **Generated schemas**: `schemas/` (promoted from `tools/codegen/schemas/` in Phase 3)
 - **Cloud resource domain**: `internal/domains/cloudresource/`
 - **Phase 3 plan**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/plans/phase-3-apply-cloud-resource.plan.md`
+- **Kind catalog plan**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/plans/cloud-resource-kinds-catalog.plan.md`
 
 ## Resolved Decisions
 
