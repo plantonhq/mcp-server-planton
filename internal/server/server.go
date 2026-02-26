@@ -46,12 +46,14 @@ func New(cfg *config.Config) *Server {
 // without reaching back into the config layer.
 func registerTools(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, cloudresource.ApplyTool(), cloudresource.ApplyHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.GetTool(), cloudresource.GetHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.DeleteTool(), cloudresource.DeleteHandler(serverAddress))
 
-	// Phase 4 will add:
-	//   mcp.AddTool(srv, cloudresource.DeleteTool(), cloudresource.DeleteHandler(serverAddress))
-	//   mcp.AddTool(srv, cloudresource.GetTool(), cloudresource.GetHandler(serverAddress))
-
-	slog.Info("tools registered", "count", 1)
+	slog.Info("tools registered", "count", 3, "tools", []string{
+		"apply_cloud_resource",
+		"get_cloud_resource",
+		"delete_cloud_resource",
+	})
 }
 
 // registerResources wires up MCP resources and resource templates. The kind
