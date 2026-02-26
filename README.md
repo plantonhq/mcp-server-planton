@@ -7,12 +7,13 @@ backend, letting Cursor, Claude Desktop, VS Code, Windsurf, and any
 MCP-compliant client create, read, and delete cloud resources across 17 cloud
 providers without leaving the editor.
 
-```
-AI IDE (Cursor / Claude Desktop / VS Code / Windsurf)
-     |  MCP protocol (stdio or Streamable HTTP)
-mcp-server-planton
-     |  gRPC (TLS on :443, plaintext otherwise)
-Planton Cloud Backend
+```mermaid
+flowchart TD
+    IDE["AI IDE\n(Cursor / Claude Desktop / VS Code / Windsurf)"]
+    MCP["mcp-server-planton\n(stdio or Streamable HTTP)"]
+    Backend["Planton Cloud Backend\n(gRPC · TLS on :443)"]
+    IDE -->|"MCP protocol"| MCP
+    MCP -->|"gRPC"| Backend
 ```
 
 This server does not store state. It is a protocol bridge: every tool call
@@ -156,75 +157,25 @@ configuration flag.
 
 ---
 
-## Tools
+## Tools & Resources
 
-### apply_cloud_resource
+Three tools cover the full lifecycle of any cloud resource:
 
-Create or update a cloud resource on the Planton platform (idempotent).
+| Tool | What It Does |
+|------|--------------|
+| `apply_cloud_resource` | Create or update a resource (idempotent — same semantics as `kubectl apply`) |
+| `get_cloud_resource` | Retrieve a resource by ID or by `(kind, org, env, slug)` |
+| `delete_cloud_resource` | Delete a resource by ID or by `(kind, org, env, slug)` |
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `cloud_object` | **yes** | Full OpenMCF cloud resource object. Must contain `api_version`, `kind`, `metadata` (with `name`, `org`, `env`), and `spec`. |
+Two read-only MCP resources drive schema discovery before any tool call:
 
-**Agent workflow:**
+| URI | What It Returns |
+|-----|-----------------|
+| `cloud-resource-kinds://catalog` | All 362 supported kinds grouped by 17 cloud providers |
+| `cloud-resource-schema://{kind}` | Full JSON schema for a specific kind — field types, validation rules, and defaults |
 
-1. Read `cloud-resource-kinds://catalog` to discover supported kinds and their `api_version` values
-2. Read `cloud-resource-schema://{kind}` to get the full spec definition for the desired kind
-3. Call `apply_cloud_resource` with the assembled `cloud_object`
-
-### get_cloud_resource
-
-Retrieve a cloud resource from the Planton platform. Identify the resource by
-`id` alone, or by all of `kind`, `org`, `env`, and `slug` together.
-
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `id` | conditional | System-assigned resource ID. Provide this alone OR provide all of kind, org, env, slug. |
-| `kind` | conditional | PascalCase cloud resource kind (e.g. `AwsEksCluster`). |
-| `org` | conditional | Organization identifier. |
-| `env` | conditional | Environment identifier. |
-| `slug` | conditional | Immutable unique resource slug within (org, env, kind). |
-
-### delete_cloud_resource
-
-Delete a cloud resource from the Planton platform. Same identification options
-as `get_cloud_resource`.
-
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `id` | conditional | System-assigned resource ID. Provide this alone OR provide all of kind, org, env, slug. |
-| `kind` | conditional | PascalCase cloud resource kind. |
-| `org` | conditional | Organization identifier. |
-| `env` | conditional | Environment identifier. |
-| `slug` | conditional | Immutable unique resource slug within (org, env, kind). |
-
-### Error handling
-
-All tools translate gRPC errors into user-friendly messages:
-
-| gRPC Status | Tool Error Message |
-|-------------|-------------------|
-| `NotFound` | Resource not found. Verify the identifier is correct. |
-| `PermissionDenied` | Permission denied. Check your API key permissions. |
-| `Unauthenticated` | Authentication failed. Check your API key. |
-| `Unavailable` | Planton backend is unavailable. Ensure it is running and reachable. |
-| `InvalidArgument` | The server's validation message is returned directly. |
-
----
-
-## Resources
-
-MCP clients can read Planton resources directly by URI via `resources/read`.
-
-| URI | Description | MIME Type |
-|-----|-------------|-----------|
-| `cloud-resource-kinds://catalog` | Catalog of all 362 supported kinds grouped by 17 cloud providers | `application/json` |
-| `cloud-resource-schema://{kind}` | JSON schema for a specific kind with field types, validation rules, and defaults | `application/json` |
-
-The kind catalog returns a JSON object with each cloud provider entry containing
-an `api_version` and a sorted list of PascalCase kind strings. Use these kind
-values with the schema template to fetch the full spec definition before calling
-`apply_cloud_resource`.
+For full parameter reference, agent workflow guidance, and error handling, see
+[docs/tools.md](docs/tools.md).
 
 ---
 
