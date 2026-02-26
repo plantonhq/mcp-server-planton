@@ -3,9 +3,9 @@ package cloudresource
 import (
 	"context"
 
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	apiresource "github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/apiresource"
 	cloudresourcev1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/infrahub/cloudresource/v1"
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 )
 

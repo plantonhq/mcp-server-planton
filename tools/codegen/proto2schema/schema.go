@@ -83,9 +83,9 @@ type Validation struct {
 
 // MetadataSchema describes CloudResourceMetadata fields shared across all providers.
 type MetadataSchema struct {
-	Name        string       `json:"name"`
+	Name        string         `json:"name"`
 	Fields      []*FieldSchema `json:"fields"`
-	NestedTypes []TypeSchema `json:"nestedTypes,omitempty"`
+	NestedTypes []TypeSchema   `json:"nestedTypes,omitempty"`
 }
 
 // Registry indexes all generated provider schemas for quick lookup.

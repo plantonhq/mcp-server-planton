@@ -195,9 +195,9 @@ func loadProviderSchema(path string) (*ProviderSchema, error) {
 // ---------------------------------------------------------------------------
 
 type registryItem struct {
-	kind      string
-	cloud     string
-	funcName  string // e.g., "ParseAwsEksCluster"
+	kind     string
+	cloud    string
+	funcName string // e.g., "ParseAwsEksCluster"
 }
 
 func groupByCloud(reg *Registry) map[string][]RegistryEntry {

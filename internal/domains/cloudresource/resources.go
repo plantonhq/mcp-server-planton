@@ -16,8 +16,8 @@ const kindCatalogURI = "cloud-resource-kinds://catalog"
 // provider kinds before fetching a per-kind schema or calling tools.
 func KindCatalogResource() *mcp.Resource {
 	return &mcp.Resource{
-		URI:  kindCatalogURI,
-		Name: "cloud_resource_kinds_catalog",
+		URI:   kindCatalogURI,
+		Name:  "cloud_resource_kinds_catalog",
 		Title: "Cloud Resource Kinds Catalog",
 		Description: "Catalog of all supported cloud resource kinds grouped by cloud provider. " +
 			"Each provider entry includes the api_version and a sorted list of PascalCase kind " +
