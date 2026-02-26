@@ -11,8 +11,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/plantoncloud/mcp-server-planton/internal/config"
-	"github.com/plantoncloud/mcp-server-planton/internal/server"
+	"github.com/plantonhq/mcp-server-planton/internal/config"
+	"github.com/plantonhq/mcp-server-planton/internal/server"
 )
 
 // Run starts the MCP server with the given configuration and blocks until

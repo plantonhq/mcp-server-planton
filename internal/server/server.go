@@ -11,9 +11,9 @@ import (
 	"log/slog"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/plantoncloud/mcp-server-planton/internal/auth"
-	"github.com/plantoncloud/mcp-server-planton/internal/config"
-	"github.com/plantoncloud/mcp-server-planton/internal/domains/cloudresource"
+	"github.com/plantonhq/mcp-server-planton/internal/auth"
+	"github.com/plantonhq/mcp-server-planton/internal/config"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/cloudresource"
 )
 
 // Server wraps an mcp.Server with Planton-specific configuration.
@@ -91,5 +91,5 @@ func version() string {
 
 // buildVersion is populated at link time:
 //
-//	go build -ldflags "-X github.com/plantoncloud/mcp-server-planton/internal/server.buildVersion=v1.0.0"
+//	go build -ldflags "-X github.com/plantonhq/mcp-server-planton/internal/server.buildVersion=v1.0.0"
 var buildVersion string

@@ -117,5 +117,5 @@ docker run -p 8080:8080 \
   -e PLANTON_MCP_TRANSPORT="http" \
   -e PLANTON_MCP_HTTP_AUTH_ENABLED="true" \
   -e PLANTON_MCP_LOG_FORMAT="json" \
-  ghcr.io/plantoncloud/mcp-server-planton:latest
+  ghcr.io/plantonhq/mcp-server-planton:latest
 ```

@@ -15,8 +15,8 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/plantoncloud/mcp-server-planton/gen/cloudresource"
-	"github.com/plantoncloud/mcp-server-planton/internal/domains"
+	"github.com/plantonhq/mcp-server-planton/gen/cloudresource"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 )
 
 // ---------------------------------------------------------------------------

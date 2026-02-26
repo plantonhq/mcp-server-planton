@@ -13,7 +13,7 @@
 ---
 
 **Project**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/`
-**Current Status**: ALL PHASES COMPLETED (Phases 1-5)
+**Current Status**: ALL PHASES COMPLETED (Phases 1-5) + Pre-PR Cleanup Done
 
 ## Quick Context
 
@@ -76,6 +76,17 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
   - README.md rewritten from scratch for the 3-tool architecture
   - Deleted 5 stale docs files (62KB of misleading content); recreated `docs/configuration.md` and `docs/development.md`
   - `go build ./...`, `go vet ./...`, and all 50 tests pass cleanly
+- ✅ **Pre-PR Cleanup: Org Rename + Hardening** (2026-02-27)
+  - Unified three org names (`plantoncloud`, `plantoncloud-inc`, `plantonhq`) to canonical `plantonhq` across go.mod, 16 hand-written Go files, codegen generator, and docs
+  - Regenerated all 367 gen/ files with correct module path via `make codegen-types`
+  - Deleted 5 stale .github files (CODEOWNERS, ISSUE_TEMPLATE/*, pull_request_template.md)
+  - Updated CI and release workflows: Go 1.24 → 1.25
+  - Hardened Dockerfile: alpine:3.19 runtime, non-root user, stripped binary
+  - Cleaned up .goreleaser.yaml: fixed org, v2 syntax, simplified templates
+  - Aligned Makefile with stigmer: version ldflags, vet excluding gen/, race detection in tests
+  - Rewrote README.md: architecture diagram, key concepts, consolidated client config, tool parameter tables, HTTP mode section with Docker networking
+  - Fixed plantoncloud references in docs/configuration.md, CONTRIBUTING.md
+  - 396 files changed, all 50 tests pass with race detection
 
 ---
 

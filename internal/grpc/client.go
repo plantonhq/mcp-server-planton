@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/plantoncloud/mcp-server-planton/internal/auth"
+	"github.com/plantonhq/mcp-server-planton/internal/auth"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"

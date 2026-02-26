@@ -1,144 +1,125 @@
-.PHONY: build install test lint fmt fmt-check release docker-build docker-run clean help codegen-schemas codegen-types codegen
+.PHONY: build install test lint fmt vet tidy docker-build docker-run clean release codegen-schemas codegen-types codegen help
 
-# Default target
+BINARY  := mcp-server-planton
+CMD     := ./cmd/mcp-server-planton
+IMAGE   := ghcr.io/plantonhq/mcp-server-planton
+VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+
 .DEFAULT_GOAL := help
 
-# Binary name
-BINARY_NAME := mcp-server-planton
-BINARY_PATH := bin/$(BINARY_NAME)
+# Build the server binary into bin/.
+build:
+	go build -ldflags="-s -w -X github.com/plantonhq/mcp-server-planton/internal/server.buildVersion=$(VERSION)" -o bin/$(BINARY) $(CMD)
 
-# Docker image
-DOCKER_IMAGE := mcp-server-planton:local
-GHCR_IMAGE := ghcr.io/plantoncloud-inc/mcp-server-planton
-
-## build: Build the binary for local architecture
-build: fmt-check
-	@echo "Building $(BINARY_NAME)..."
-	@mkdir -p bin
-	@go build -o $(BINARY_PATH) ./cmd/mcp-server-planton
-	@echo "Binary built: $(BINARY_PATH)"
-
-## install: Install the binary to GOPATH/bin
+# Install the binary to GOPATH/bin.
 install:
-	@echo "Installing $(BINARY_NAME)..."
-	@go install ./cmd/mcp-server-planton
-	@echo "Binary installed to GOPATH/bin"
+	go install $(CMD)
 
-## install-local: Build and install binary to /usr/local/bin (requires sudo)
-install-local: build
-	@echo "Installing $(BINARY_NAME) to /usr/local/bin..."
-	@sudo cp $(BINARY_PATH) /usr/local/bin/$(BINARY_NAME)
-	@sudo chmod +x /usr/local/bin/$(BINARY_NAME)
-	@echo "Binary installed to /usr/local/bin/$(BINARY_NAME)"
-	@echo "You can now use '$(BINARY_NAME)' command globally"
-
-## test: Run tests
+# Run unit tests with race detection.
 test:
-	@echo "Running tests..."
-	@go test -v ./...
+	go test -v -race -timeout 30s ./...
 
-## lint: Run linter (requires golangci-lint)
+# Run golangci-lint (falls back to go vet).
 lint:
-	@echo "Running linter..."
-	@golangci-lint run
-
-## fmt: Format Go code
-fmt:
-	@echo "Formatting Go code..."
-	@gofmt -w .
-	@echo "Code formatted"
-
-## fmt-check: Check if Go code is formatted
-fmt-check:
-	@echo "Checking Go code formatting..."
-	@if [ -n "$$(gofmt -l .)" ]; then \
-		echo "Go code is not formatted:"; \
-		gofmt -l .; \
-		echo "Run 'make fmt' to fix formatting"; \
-		exit 1; \
+	@if command -v golangci-lint >/dev/null 2>&1; then \
+		golangci-lint run; \
+	else \
+		echo "golangci-lint not installed, running go vet instead"; \
+		go vet ./...; \
 	fi
-	@echo "All Go code is properly formatted"
 
-## docker-build: Build Docker image
+# Format all Go source files.
+fmt:
+	go fmt ./...
+
+# Run go vet on hand-written packages (generated code in gen/ is excluded
+# because jsonschema-go's escaped-comma tag convention triggers false positives).
+vet:
+	go vet $$(go list ./... | grep -v '/gen/')
+
+# Tidy Go modules.
+tidy:
+	go mod tidy
+
+# Build Docker image.
 docker-build:
-	@echo "Building Docker image..."
-	@docker build -t $(DOCKER_IMAGE) .
-	@echo "Docker image built: $(DOCKER_IMAGE)"
+	docker build -t $(IMAGE):latest .
 
-## docker-run: Run Docker image with environment variables
+# Run Docker image with environment variables.
 docker-run:
-	@echo "Running Docker container..."
-	@docker run -i --rm \
+	docker run -i --rm \
 		-e PLANTON_API_KEY=$(PLANTON_API_KEY) \
 		-e PLANTON_APIS_GRPC_ENDPOINT=$(PLANTON_APIS_GRPC_ENDPOINT) \
-		$(DOCKER_IMAGE)
+		$(IMAGE):latest
 
-## clean: Remove build artifacts
+# Remove build artifacts.
 clean:
-	@echo "Cleaning build artifacts..."
-	@rm -rf bin/
-	@rm -rf dist/
-	@echo "Clean complete"
+	rm -rf bin/ dist/
 
-## release: Create and push a release version (usage: make release version=v1.0.0 [force=true])
+# Create and push a release tag (usage: make release version=v1.0.0 [force=true]).
 release: build
 ifndef version
-	@echo "Error: version is required. Usage: make release version=v1.0.0"
-	@exit 1
+	$(error version is required. Usage: make release version=v1.0.0)
 endif
-	@echo "Creating release version $(version)..."
 	@if ! echo "$(version)" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+'; then \
-		echo "Error: version must follow semantic versioning (e.g., v1.0.0, v2.1.3)"; \
+		echo "Error: version must follow semantic versioning (e.g., v1.0.0)"; \
 		exit 1; \
 	fi
-	@# Check if tag exists locally
 	@if git rev-parse $(version) >/dev/null 2>&1; then \
 		if [ "$(force)" = "true" ]; then \
-			echo "Tag $(version) exists locally. Deleting due to force=true..."; \
 			git tag -d $(version); \
 		else \
-			echo "Error: Tag $(version) already exists locally."; \
-			echo "Use 'make release version=$(version) force=true' to force delete and recreate."; \
+			echo "Error: Tag $(version) already exists locally. Use force=true to recreate."; \
 			exit 1; \
 		fi \
 	fi
-	@# Check if tag exists remotely
 	@if git ls-remote --tags origin | grep -q "refs/tags/$(version)$$"; then \
 		if [ "$(force)" = "true" ]; then \
-			echo "Tag $(version) exists remotely. Deleting due to force=true..."; \
 			git push origin :refs/tags/$(version); \
 		else \
-			echo "Error: Tag $(version) already exists remotely."; \
-			echo "Use 'make release version=$(version) force=true' to force delete and recreate."; \
+			echo "Error: Tag $(version) already exists remotely. Use force=true to recreate."; \
 			exit 1; \
 		fi \
 	fi
-	@git tag -a $(version) -m "Release $(version)"
-	@git push origin $(version)
-	@echo "Release version $(version) created and pushed"
-	@echo "GitHub Actions will now build and publish the release"
+	git tag -a $(version) -m "Release $(version)"
+	git push origin $(version)
 
-## codegen-schemas: Generate JSON schemas from OpenMCF provider protos (Stage 1)
+# Stage 1: Generate JSON schemas from OpenMCF provider protos.
 codegen-schemas:
-	@echo "Generating provider schemas..."
-	@go run ./tools/codegen/proto2schema/ --all
-	@echo "Schema generation complete"
+	go run ./tools/codegen/proto2schema/ --all
 
-## codegen-types: Generate Go input types from JSON schemas (Stage 2)
+# Stage 2: Generate Go input types from JSON schemas.
 codegen-types:
-	@echo "Generating Go input types..."
-	@rm -rf gen/cloudresource/
-	@go run ./tools/codegen/generator/ --schemas-dir=schemas --output-dir=gen/cloudresource
-	@echo "Go input type generation complete"
+	rm -rf gen/cloudresource/
+	go run ./tools/codegen/generator/ --schemas-dir=schemas --output-dir=gen/cloudresource
 
-## codegen: Run full codegen pipeline (Stage 1 + Stage 2)
+# Full codegen pipeline (Stage 1 + Stage 2).
 codegen: codegen-schemas codegen-types
-	@echo "Full codegen pipeline complete"
 
-## help: Show this help message
+# Show available targets.
 help:
 	@echo "Usage: make [target]"
 	@echo ""
-	@echo "Targets:"
-	@sed -n 's/^##//p' $(MAKEFILE_LIST) | column -t -s ':' | sed -e 's/^/ /'
-
+	@echo "Build:"
+	@echo "  build           Build binary to bin/$(BINARY)"
+	@echo "  install         Install to GOPATH/bin"
+	@echo "  docker-build    Build Docker image"
+	@echo "  docker-run      Run Docker image"
+	@echo ""
+	@echo "Test & Lint:"
+	@echo "  test            Run tests with race detection"
+	@echo "  lint            Run golangci-lint (or go vet)"
+	@echo "  vet             Run go vet (excludes gen/)"
+	@echo "  fmt             Format Go source files"
+	@echo ""
+	@echo "Codegen:"
+	@echo "  codegen-schemas Stage 1: proto -> JSON schemas"
+	@echo "  codegen-types   Stage 2: JSON schemas -> Go types"
+	@echo "  codegen         Full pipeline (Stage 1 + 2)"
+	@echo ""
+	@echo "Release:"
+	@echo "  release         Create and push a release tag"
+	@echo ""
+	@echo "Misc:"
+	@echo "  tidy            Run go mod tidy"
+	@echo "  clean           Remove build artifacts"

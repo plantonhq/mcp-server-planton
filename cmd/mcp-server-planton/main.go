@@ -27,7 +27,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/plantoncloud/mcp-server-planton/pkg/mcpserver"
+	"github.com/plantonhq/mcp-server-planton/pkg/mcpserver"
 )
 
 var validTransports = map[string]bool{

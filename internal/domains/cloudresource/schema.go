@@ -7,7 +7,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/plantoncloud/mcp-server-planton/schemas"
+	"github.com/plantonhq/mcp-server-planton/schemas"
 )
 
 const schemaScheme = "cloud-resource-schema"

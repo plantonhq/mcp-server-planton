@@ -10,7 +10,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/plantoncloud/mcp-server-planton/internal/config"
+	"github.com/plantonhq/mcp-server-planton/internal/config"
 )
 
 // Config holds runtime settings for the MCP server. All fields use plain

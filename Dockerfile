@@ -1,52 +1,45 @@
-# Multi-stage Dockerfile for mcp-server-planton
-# Follows GitHub's MCP server Docker distribution approach
+# Multi-stage Docker build for mcp-server-planton.
+#
+#   docker build -t mcp-server-planton .
 
-# Build stage
-FROM golang:1.24-alpine AS builder
+# ---- Build stage ----
+FROM golang:1.25-alpine AS builder
 
-WORKDIR /app
+RUN apk add --no-cache git
 
-# Enable Go toolchain auto-download for dependencies requiring newer Go versions
-ENV GOTOOLCHAIN=auto
+WORKDIR /build
 
-# Copy go.mod and go.sum for dependency caching
 COPY go.mod go.sum ./
-
-# Download dependencies
 RUN go mod download
 
-# Copy source code
 COPY . .
 
-# Build the binary
-# CGO_ENABLED=0 for static binary
-# GOOS=linux for Linux container
-RUN CGO_ENABLED=0 GOOS=linux GOTOOLCHAIN=auto go build -o mcp-server-planton ./cmd/mcp-server-planton
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -ldflags="-s -w" \
+    -o /mcp-server-planton \
+    ./cmd/mcp-server-planton
 
-# Runtime stage
-FROM debian:bookworm-slim
+# ---- Runtime stage ----
+FROM alpine:3.19
 
-# Install ca-certificates and wget for health checks
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates wget && \
-    rm -rf /var/lib/apt/lists/*
+# CA certificates are needed for TLS connections to the Planton backend.
+RUN apk --no-cache add ca-certificates
 
-WORKDIR /root/
+# Run as a non-root user.
+RUN addgroup -g 1000 planton && \
+    adduser -D -u 1000 -G planton planton
 
-# Copy the binary from builder stage
-COPY --from=builder /app/mcp-server-planton .
+WORKDIR /app
+COPY --from=builder /mcp-server-planton .
+RUN chown -R planton:planton /app
 
-# Copy README and LICENSE for reference
-COPY README.md LICENSE ./
+USER planton
 
-# Expose HTTP port (only used when PLANTON_MCP_TRANSPORT=http or both)
+# Default HTTP port (overridable via PLANTON_MCP_HTTP_PORT).
 EXPOSE 8080
 
-# Health check for HTTP mode
-# This will only work when the server is running in HTTP or both mode
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+# Health check for container orchestrators.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD wget -qO- http://localhost:8080/health || exit 1
 
-# Set the entrypoint
 ENTRYPOINT ["./mcp-server-planton"]
-

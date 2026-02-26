@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/plantoncloud/mcp-server-planton/internal/auth"
+	"github.com/plantonhq/mcp-server-planton/internal/auth"
 )
 
 const shutdownGracePeriod = 5 * time.Second

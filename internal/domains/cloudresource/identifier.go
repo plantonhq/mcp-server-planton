@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	cloudresourcev1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/infrahub/cloudresource/v1"
-	"github.com/plantoncloud/mcp-server-planton/internal/domains"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 )
 

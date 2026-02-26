@@ -107,7 +107,7 @@ type RegistryEntry struct {
 func main() {
 	schemasDir := flag.String("schemas-dir", "schemas", "path to schemas directory")
 	outputDir := flag.String("output-dir", "gen/cloudresource", "path to output directory for generated code")
-	goModule := flag.String("module", "github.com/plantoncloud/mcp-server-planton", "Go module path")
+	goModule := flag.String("module", "github.com/plantonhq/mcp-server-planton", "Go module path")
 	flag.Parse()
 
 	reg, err := loadRegistry(filepath.Join(*schemasDir, "providers", "registry.json"))

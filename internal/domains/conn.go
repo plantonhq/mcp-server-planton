@@ -3,8 +3,8 @@ package domains
 import (
 	"context"
 
-	"github.com/plantoncloud/mcp-server-planton/internal/auth"
-	plantongrpc "github.com/plantoncloud/mcp-server-planton/internal/grpc"
+	"github.com/plantonhq/mcp-server-planton/internal/auth"
+	plantongrpc "github.com/plantonhq/mcp-server-planton/internal/grpc"
 	"google.golang.org/grpc"
 )
 

@@ -12,6 +12,7 @@ Plans created for the mcp-server-planton Stigmer patterns refactoring project.
 | `phase-3-apply-cloud-resource.plan.md` | ✅ Completed | 2026-02-26 | 2026-02-26 | Phase 3 — apply_cloud_resource tool, MCP resource templates, schema promotion |
 | `cloud-resource-kinds-catalog.plan.md` | ✅ Completed | 2026-02-26 | 2026-02-26 | Static MCP resource for kind discovery — agents discover all 362 kinds before using schema template |
 | `phase-5-hardening.plan.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Phase 5 — Dead code cleanup, 50 unit tests for pure domain logic, README + docs rewrite |
+| `pre-pr-cleanup.plan.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Pre-PR cleanup — org rename (plantoncloud→plantonhq), Dockerfile hardening, goreleaser/Makefile alignment, README rewrite |
 
 ### Status Legend
 
@@ -57,6 +58,12 @@ Plans created for the mcp-server-planton Stigmer patterns refactoring project.
 - **Phases**: 3 stages (dead code cleanup, unit tests, documentation)
 - **Current Phase**: Complete
 - **Key outcome**: 8 test files with 50 test cases; dead code removed; README rewritten; stale docs replaced
+
+### pre-pr-cleanup.plan.md
+- **Objective**: Clean up the codebase before creating the PR — fix org name mismatch, harden build/deploy files, rewrite README
+- **Phases**: 7 tasks (org rename, .github cleanup, Dockerfile, goreleaser, Makefile, README, docs fixup)
+- **Current Phase**: Complete
+- **Key outcome**: Unified `plantonhq` org across 396 files; alpine-based non-root Dockerfile; user-first README with key concepts and tool parameter tables
 
 ---
 
