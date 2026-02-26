@@ -13,7 +13,7 @@
 ---
 
 **Project**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/`
-**Current Status**: Phase 2 Stage 2 COMPLETED → Ready for Phase 3 (apply_cloud_resource tool)
+**Current Status**: Phase 3 COMPLETED → Ready for Phase 4 (delete_cloud_resource + get_cloud_resource)
 
 ## Quick Context
 
@@ -51,7 +51,13 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
   - Hand-written internal/parse/helpers.go for shared utilities
   - `make codegen-types` and `make codegen` targets added
   - 367 generated Go files compile and vet cleanly
-- 🔵 Next: **Phase 3: Implement apply_cloud_resource + MCP Resource Templates**
+- ✅ **Phase 3: apply_cloud_resource + MCP Resource Templates** (2026-02-26)
+  - Promoted JSON schemas to top-level `schemas/` package with `go:embed` for runtime access
+  - Built `internal/domains/cloudresource/` domain package (6 files): tool, handler, apply gRPC, kind mapping, metadata extraction, schema lookup, resource template
+  - Registered `apply_cloud_resource` tool + `cloud-resource-schema://{kind}` resource template in server
+  - Added `plantonhq/planton/apis` and `plantonhq/openmcf` dependencies
+  - Added shared `ResourceResult` helper to `internal/domains/toolresult.go`
+- 🔵 Next: **Phase 4: Implement delete_cloud_resource + get_cloud_resource**
 
 ---
 
@@ -172,6 +178,54 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
 
 ---
 
+### ✅ COMPLETED: Phase 3 — apply_cloud_resource + MCP Resource Templates (2026-02-26)
+
+**Implemented the first working MCP tool with typed validation via generated parsers, and MCP resource templates for per-kind schema discovery.**
+
+**What was delivered:**
+
+1. **Schema promotion** — Moved 362 JSON schemas from `tools/codegen/schemas/` to top-level `schemas/` package. Created `schemas/embed.go` with `//go:embed` directive. Updated codegen tool defaults and Makefile targets. Clean separation: `tools/codegen/` is build tooling, `schemas/` is shared domain data.
+
+2. **`apply_cloud_resource` MCP tool** (`internal/domains/cloudresource/tools.go`) — Accepts opaque `cloud_object` map keeping tool schema small (no 50k+ token provider explosion). Handler pipeline: extract kind → get parser from registry → validate + normalize spec → build CloudResource proto → gRPC Apply → return JSON response.
+
+3. **Domain functions** (`internal/domains/cloudresource/apply.go`) — `Apply()` calls `CloudResourceCommandController.Apply` via `domains.WithConnection`, `buildCloudResource()` assembles the full proto with api_version, kind, metadata, and spec.cloud_object.
+
+4. **Kind mapping** (`internal/domains/cloudresource/kind.go`) — `resolveKind()` maps PascalCase kind strings to `CloudResourceKind` enum values from openmcf proto stubs.
+
+5. **Metadata extraction** (`internal/domains/cloudresource/metadata.go`) — `extractMetadata()` maps cloud_object["metadata"] to `ApiResourceMetadata` proto. Required: name, org, env. Optional: slug, id, labels, annotations, tags, version.message.
+
+6. **MCP resource templates** (`internal/domains/cloudresource/resources.go`, `schema.go`) — `cloud-resource-schema://{kind}` URI template backed by embedded JSON schemas. Registry-based lookup with `sync.Once` caching. Agents discover per-kind schemas before calling apply.
+
+7. **Server registration** (`internal/server/server.go`) — New `registerResources()` function alongside existing `registerTools()`. Both tool and resource template registered at startup.
+
+8. **Shared resource result helper** (`internal/domains/toolresult.go`) — Added `ResourceResult()` for constructing `ReadResourceResult` responses.
+
+**Key Decisions Made:**
+- JSON schemas promoted from `tools/codegen/schemas/` to `schemas/` — respects bounded context boundary (build tooling vs runtime data)
+- Raw JSON schemas served via resource templates (not Go struct reflection) — schemas contain richer validation rules, descriptions, and metadata than generated Go types
+- `cloud-resource-schema://` custom URI scheme — standard URL parsing, kind as host component
+- Registry cached with `sync.Once` — loaded once from embedded FS, no repeated I/O
+
+**Files Created:**
+- `schemas/embed.go` — `go:embed` package for runtime schema access
+- `internal/domains/cloudresource/tools.go` — Tool definition + typed handler
+- `internal/domains/cloudresource/apply.go` — gRPC Apply + proto assembly
+- `internal/domains/cloudresource/kind.go` — CloudResourceKind enum resolution
+- `internal/domains/cloudresource/metadata.go` — ApiResourceMetadata extraction
+- `internal/domains/cloudresource/resources.go` — MCP resource template definition + handler
+- `internal/domains/cloudresource/schema.go` — Embedded FS schema lookup + URI parsing
+
+**Files Modified:**
+- `internal/server/server.go` — Added tool + resource template registration
+- `internal/domains/toolresult.go` — Added `ResourceResult()` helper
+- `Makefile` — Updated codegen targets for new schema location
+- `tools/codegen/proto2schema/main.go` — Updated default `--output-dir`
+- `tools/codegen/generator/main.go` — Updated default `--schemas-dir`
+- `go.mod` / `go.sum` — Added `plantonhq/planton/apis`, `plantonhq/openmcf`
+- `schemas/` — 362 JSON schemas + registry + shared metadata (moved from `tools/codegen/schemas/`)
+
+---
+
 ## Execution Order
 
 ### Phase 1: Clean Slate + Shared Utilities ✅
@@ -204,7 +258,9 @@ Complete the tool set.
 - **Design decisions**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/design-decisions/`
 - **Phase 1 plan**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/plans/phase-1-foundation.plan.md`
 - **Proto2schema plan**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/plans/proto2schema-codegen-tool.plan.md`
-- **Generated schemas**: `tools/codegen/schemas/`
+- **Generated schemas**: `schemas/` (promoted from `tools/codegen/schemas/` in Phase 3)
+- **Cloud resource domain**: `internal/domains/cloudresource/`
+- **Phase 3 plan**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/plans/phase-3-apply-cloud-resource.plan.md`
 
 ## Resolved Decisions
 

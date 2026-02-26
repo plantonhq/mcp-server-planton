@@ -9,6 +9,7 @@ Plans created for the mcp-server-planton Stigmer patterns refactoring project.
 | `phase-1-foundation.plan.md` | ✅ Completed | 2026-02-26 | 2026-02-26 | Clean slate + shared utilities — SDK migration, auth, config, gRPC, domains, server, entry point |
 | `proto2schema-codegen-tool.plan.md` | ✅ Completed | 2026-02-26 | 2026-02-26 | Phase 2 Stage 1 — proto2schema tool parsing 362 OpenMCF provider protos to JSON schemas |
 | `schema2go-generator.plan.md` | ✅ Completed | 2026-02-26 | 2026-02-26 | Phase 2 Stage 2 — schema2go generator producing typed Go input structs for 362 providers |
+| `phase-3-apply-cloud-resource.plan.md` | ✅ Completed | 2026-02-26 | 2026-02-26 | Phase 3 — apply_cloud_resource tool, MCP resource templates, schema promotion |
 
 ### Status Legend
 
@@ -36,6 +37,12 @@ Plans created for the mcp-server-planton Stigmer patterns refactoring project.
 - **Phases**: 1 (single-phase plan, 10 tasks)
 - **Current Phase**: Complete
 - **Key outcome**: 367 generated Go files (362 providers, 5 shared types, 1 registry) across 17 cloud packages; `make codegen-types` and `make codegen` targets
+
+### phase-3-apply-cloud-resource.plan.md
+- **Objective**: Implement apply_cloud_resource MCP tool with typed validation and MCP resource templates for schema discovery
+- **Phases**: 1 (single-phase plan, 6 tasks: prereq + 5 stages)
+- **Current Phase**: Complete
+- **Key outcome**: First working MCP tool registered; `cloud-resource-schema://{kind}` resource template serving 362 provider schemas; schemas promoted to top-level `schemas/` package with `go:embed`
 
 ---
 

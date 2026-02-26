@@ -128,7 +128,7 @@ codegen-schemas:
 codegen-types:
 	@echo "Generating Go input types..."
 	@rm -rf gen/cloudresource/
-	@go run ./tools/codegen/generator/ --schemas-dir=tools/codegen/schemas --output-dir=gen/cloudresource
+	@go run ./tools/codegen/generator/ --schemas-dir=schemas --output-dir=gen/cloudresource
 	@echo "Go input type generation complete"
 
 ## codegen: Run full codegen pipeline (Stage 1 + Stage 2)

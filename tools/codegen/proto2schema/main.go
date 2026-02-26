@@ -25,7 +25,7 @@ func main() {
 	all := flag.Bool("all", false, "Generate schemas for all providers")
 	provider := flag.String("provider", "", "Generate schema for a single provider (e.g., aws/awsalb)")
 	openmcfAPIsDir := flag.String("openmcf-apis-dir", "", "Path to openmcf/apis directory (default: $SCM_ROOT/github.com/plantonhq/openmcf/apis)")
-	outputDir := flag.String("output-dir", "tools/codegen/schemas", "Output directory for generated schemas")
+	outputDir := flag.String("output-dir", "schemas", "Output directory for generated schemas")
 	flag.Parse()
 
 	if !*all && *provider == "" {

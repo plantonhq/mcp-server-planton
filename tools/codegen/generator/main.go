@@ -4,7 +4,7 @@
 //
 // Usage:
 //
-//	go run ./tools/codegen/generator/ --schemas-dir=tools/codegen/schemas --output-dir=gen/cloudresource
+//	go run ./tools/codegen/generator/ --schemas-dir=schemas --output-dir=gen/cloudresource
 package main
 
 import (
@@ -105,7 +105,7 @@ type RegistryEntry struct {
 // ---------------------------------------------------------------------------
 
 func main() {
-	schemasDir := flag.String("schemas-dir", "tools/codegen/schemas", "path to schemas directory")
+	schemasDir := flag.String("schemas-dir", "schemas", "path to schemas directory")
 	outputDir := flag.String("output-dir", "gen/cloudresource", "path to output directory for generated code")
 	goModule := flag.String("module", "github.com/plantoncloud/mcp-server-planton", "Go module path")
 	flag.Parse()

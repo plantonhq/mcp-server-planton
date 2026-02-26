@@ -27,3 +27,15 @@ func CallFetch(fn FetchFunc, ctx context.Context, serverAddr, org, slug string) 
 	}
 	return TextResult(text)
 }
+
+// ResourceResult constructs a ReadResourceResult with a single text content
+// entry. Use this in MCP resource template handlers.
+func ResourceResult(uri, mimeType, text string) *mcp.ReadResourceResult {
+	return &mcp.ReadResourceResult{
+		Contents: []*mcp.ResourceContents{{
+			URI:      uri,
+			MIMEType: mimeType,
+			Text:     text,
+		}},
+	}
+}

@@ -13,6 +13,7 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/plantoncloud/mcp-server-planton/internal/auth"
 	"github.com/plantoncloud/mcp-server-planton/internal/config"
+	"github.com/plantoncloud/mcp-server-planton/internal/domains/cloudresource"
 )
 
 // Server wraps an mcp.Server with Planton-specific configuration.
@@ -32,6 +33,7 @@ func New(cfg *config.Config) *Server {
 	)
 
 	registerTools(srv, cfg.ServerAddress)
+	registerResources(srv)
 
 	return &Server{
 		mcp:    srv,
@@ -43,14 +45,24 @@ func New(cfg *config.Config) *Server {
 // each handler's closure so that tool handlers can create gRPC connections
 // without reaching back into the config layer.
 func registerTools(srv *mcp.Server, serverAddress string) {
-	// Phase 3/4 will add:
-	//   mcp.AddTool(srv, cloudresource.ApplyTool(), cloudresource.ApplyHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.ApplyTool(), cloudresource.ApplyHandler(serverAddress))
+
+	// Phase 4 will add:
 	//   mcp.AddTool(srv, cloudresource.DeleteTool(), cloudresource.DeleteHandler(serverAddress))
 	//   mcp.AddTool(srv, cloudresource.GetTool(), cloudresource.GetHandler(serverAddress))
 
-	_ = serverAddress // will be used once tools are registered
+	slog.Info("tools registered", "count", 1)
+}
 
-	slog.Info("tools registered", "count", 0)
+// registerResources wires up the URI-addressable resource templates. These
+// let MCP clients discover per-kind cloud resource schemas before calling
+// the apply tool.
+func registerResources(srv *mcp.Server) {
+	srv.AddResourceTemplate(cloudresource.SchemaTemplate(), cloudresource.SchemaHandler())
+
+	slog.Info("resource templates registered", "count", 1,
+		"templates", []string{"cloud-resource-schema://{kind}"},
+	)
 }
 
 // ServeStdio runs the MCP server over stdin/stdout until the client
