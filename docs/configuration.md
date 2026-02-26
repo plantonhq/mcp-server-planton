@@ -1,580 +1,121 @@
-# Configuration Guide
+# Configuration
 
-Comprehensive configuration options for the Planton Cloud MCP Server.
+All settings are read from environment variables with a `PLANTON_` prefix. Reasonable defaults are provided for development use.
 
 ## Environment Variables
 
-### Required Variables
+### Authentication
 
-#### PLANTON_API_KEY
+#### `PLANTON_API_KEY`
 
-User's API key for authentication with Planton Cloud APIs. This can be either a JWT token or an API key obtained from the Planton Cloud console.
+API key for authenticating with the Planton Cloud backend.
 
-**Usage depends on transport mode:**
+- **STDIO mode**: Required. Loaded once at startup and used for all API calls.
+- **HTTP mode**: Not required in the environment. Each HTTP request carries its own key via the `Authorization: Bearer` header.
+- **Both mode**: Required (for the STDIO transport).
 
-- **STDIO Mode**: Required in environment variable - used directly for all API calls
-- **HTTP Mode**: Optional in environment variable - each user provides their own key in `Authorization` header
-- **Both Mode**: Required in environment variable for STDIO connections
+Obtain your key from the [Planton Cloud Console](https://console.planton.cloud) under Profile > API Keys.
 
-```bash
-# For STDIO mode (required)
-export PLANTON_API_KEY="your-api-key-or-jwt-token"
+### Backend Endpoint
 
-# For HTTP mode (optional - users provide via Authorization header)
-# No environment variable needed
-```
+#### `PLANTON_CLOUD_ENVIRONMENT`
 
-**How to obtain:**
+Selects a preset gRPC endpoint:
 
-**From Web Console:**
-1. Log in to Planton Cloud web console
-2. Click on your profile icon in the top-right corner
-3. Select **API Keys** from the menu
-4. Click **Create Key** to generate a new API key
-5. Copy the generated key
+| Value | Endpoint |
+|-------|----------|
+| `live` (default) | `api.live.planton.ai:443` |
+| `test` | `api.test.planton.cloud:443` |
+| `local` | `localhost:8080` |
 
-**Note:** Existing API keys may not be visible in the console for security reasons, so it's recommended to create a new key.
+#### `PLANTON_APIS_GRPC_ENDPOINT`
 
-**Important:** This key represents the user's identity and permissions. Keep it secure and never commit it to version control.
-
-### Optional Variables
-
-#### PLANTON_CLOUD_ENVIRONMENT
-
-Target environment for Planton Cloud APIs.
+Explicit gRPC dial target. Takes precedence over `PLANTON_CLOUD_ENVIRONMENT` when set.
 
 ```bash
-export PLANTON_CLOUD_ENVIRONMENT="live"
+export PLANTON_APIS_GRPC_ENDPOINT="custom-api.example.com:443"
 ```
 
-**Default:** `live`
+### Transport
 
-**Valid values:**
-- `live`: Production environment (`api.live.planton.ai:443`)
-- `test`: Test environment (`api.test.planton.cloud:443`)
-- `local`: Local development (`localhost:8080`)
+#### `PLANTON_MCP_TRANSPORT`
 
-#### PLANTON_APIS_GRPC_ENDPOINT
+Communication mode between MCP clients and the server.
 
-Override gRPC endpoint for Planton Cloud APIs. This takes precedence over `PLANTON_CLOUD_ENVIRONMENT`.
+| Value | Description |
+|-------|-------------|
+| `stdio` (default) | Communicates over stdin/stdout. The MCP client spawns the server as a child process. |
+| `http` | Streamable HTTP transport for remote/shared deployments. Each request carries its own Bearer token. |
+| `both` | Runs STDIO and HTTP simultaneously. |
 
-```bash
-export PLANTON_APIS_GRPC_ENDPOINT="custom-endpoint:443"
-```
+#### `PLANTON_MCP_HTTP_PORT`
 
-**Default:** Based on `PLANTON_CLOUD_ENVIRONMENT` setting
+TCP port for the HTTP transport. Default: `8080`.
 
-**When to use:**
-- Custom or private Planton Cloud installations
-- Non-standard endpoints
-- Testing with specific backend instances
+#### `PLANTON_MCP_HTTP_AUTH_ENABLED`
 
-#### PLANTON_MCP_TRANSPORT
+Whether HTTP requests require a valid `Authorization: Bearer` token. Default: `true`.
 
-Specifies the transport mode for the MCP server.
-
-```bash
-export PLANTON_MCP_TRANSPORT="stdio"  # or "http" or "both"
-```
-
-**Default:** `stdio`
-
-**Valid values:**
-- `stdio`: Standard input/output transport (default)
-- `http`: HTTP/SSE transport only
-- `both`: Run both STDIO and HTTP transports simultaneously
-
-#### PLANTON_MCP_HTTP_PORT
-
-Port for HTTP server when using HTTP transport.
-
-```bash
-export PLANTON_MCP_HTTP_PORT="8080"
-```
-
-**Default:** `8080`
-
-**When to use:**
-- When `PLANTON_MCP_TRANSPORT` is `http` or `both`
-- To avoid port conflicts with other services
-
-#### PLANTON_MCP_HTTP_AUTH_ENABLED
-
-Enable bearer token authentication for HTTP transport.
-
-```bash
-export PLANTON_MCP_HTTP_AUTH_ENABLED="true"  # or "false"
-```
-
-**Default:** `true`
-
-**When to use:**
-- Set to `true` in production for security (recommended)
-- Set to `false` for local testing or when network-level security is sufficient
-
-**Authentication mechanism:**
-When enabled, each user's API key from the `Authorization: Bearer YOUR_API_KEY` header is extracted and passed to Planton Cloud APIs. This enables proper multi-user support with per-user Fine-Grained Authorization.
-
-## Configuration Loading
-
-The MCP server loads configuration from environment variables on startup using the Go standard library.
-
-**Configuration struct:**
-
-```go
-type Config struct {
-    PlantonAPIKey           string
-    PlantonAPIsGRPCEndpoint string
-    Transport               TransportMode
-    HTTPPort                string
-    HTTPAuthEnabled         bool
-}
-```
-
-**Loading process:**
-
-```go
-func LoadFromEnv() (*Config, error) {
-    apiKey := os.Getenv("PLANTON_API_KEY")
-    if apiKey == "" {
-        return nil, fmt.Errorf(
-            "PLANTON_API_KEY environment variable required. " +
-            "This should be set by LangGraph when spawning MCP server",
-        )
-    }
-    
-    // Endpoint selection with priority:
-    // 1. PLANTON_APIS_GRPC_ENDPOINT (explicit override)
-    // 2. Based on PLANTON_CLOUD_ENVIRONMENT
-    // 3. Default to "live" (api.live.planton.cloud:443)
-    endpoint := getEndpoint()
-    
-    return &Config{
-        PlantonAPIKey:           apiKey,
-        PlantonAPIsGRPCEndpoint: endpoint,
-    }, nil
-}
-```
-
-## Configuration Files
-
-### Environment Files
-
-Create a `.env` file in your project root for local development:
-
-```env
-# Required
-PLANTON_API_KEY=your-api-key-or-jwt-token
-
-# Optional: Target environment (defaults to 'live')
-PLANTON_CLOUD_ENVIRONMENT=live  # or 'test', 'local'
-
-# Optional: Override endpoint (not needed for standard environments)
-# PLANTON_APIS_GRPC_ENDPOINT=custom-endpoint:443
-
-# Optional: Transport configuration (defaults to 'stdio')
-PLANTON_MCP_TRANSPORT=stdio  # or 'http', 'both'
-
-# Optional: HTTP transport settings (when using 'http' or 'both')
-PLANTON_MCP_HTTP_PORT=8080
-PLANTON_MCP_HTTP_AUTH_ENABLED=true  # or 'false' (extracts per-user API keys from Authorization header)
-```
-
-**Note:** The Go server doesn't automatically load `.env` files. You'll need to source them manually or use a tool like `direnv`:
-
-```bash
-# Source manually
-export $(cat .env | xargs)
-
-# Or use direnv
-echo 'export PLANTON_API_KEY="..."' > .envrc
-direnv allow
-```
-
-**Security note:** Add `.env` to your `.gitignore`:
-
-```gitignore
-.env
-.env.local
-.env.*.local
-```
-
-## Integration-Specific Configuration
-
-### LangGraph Configuration
-
-In `langgraph.json`:
-
-```json
-{
-  "mcp_servers": {
-    "planton-cloud": {
-      "command": "mcp-server-planton",
-      "env": {
-        "PLANTON_API_KEY": "${PLANTON_API_KEY}",
-        "PLANTON_CLOUD_ENVIRONMENT": "live"
-      }
-    }
-  }
-}
-```
-
-**Note:** LangGraph supports environment variable expansion with `${VAR}` syntax.
-
-For local development:
-
-```json
-{
-  "mcp_servers": {
-    "planton-cloud": {
-      "command": "mcp-server-planton",
-      "env": {
-        "PLANTON_API_KEY": "${PLANTON_API_KEY}",
-        "PLANTON_CLOUD_ENVIRONMENT": "local"
-      }
-    }
-  }
-}
-```
-
-### Claude Desktop Configuration
-
-In `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "planton-cloud": {
-      "command": "mcp-server-planton",
-      "env": {
-        "PLANTON_API_KEY": "your-api-key",
-        "PLANTON_CLOUD_ENVIRONMENT": "live"
-      }
-    }
-  }
-}
-```
-
-**Note:** Claude Desktop requires actual values, not environment variable references.
-
-For local development:
-
-```json
-{
-  "mcpServers": {
-    "planton-cloud": {
-      "command": "mcp-server-planton",
-      "env": {
-        "PLANTON_API_KEY": "your-api-key",
-        "PLANTON_CLOUD_ENVIRONMENT": "local"
-      }
-    }
-  }
-}
-```
-
-## Advanced Configuration
+Set to `false` when running behind a trusted reverse proxy that already validates tokens.
 
 ### Logging
 
-The server uses Go's standard `log` package. Configure logging in the application:
+#### `PLANTON_MCP_LOG_FORMAT`
 
-```go
-import "log"
+Structured log output encoding. Default: `text`.
 
-// Set logging flags
-log.SetFlags(log.LstdFlags | log.Lshortfile)
+| Value | Description |
+|-------|-------------|
+| `text` | Human-readable key=value format |
+| `json` | JSON lines (for log aggregation pipelines) |
 
-// Log with standard methods
-log.Println("Server starting...")
-log.Printf("Connecting to: %s", endpoint)
-log.Fatalf("Fatal error: %v", err)
-```
+#### `PLANTON_MCP_LOG_LEVEL`
 
-**Logging levels:**
+Minimum severity for emitted log records. Default: `info`.
 
-The standard Go approach doesn't have log levels, but you can control output:
+| Value | Description |
+|-------|-------------|
+| `debug` | Verbose output including internal state |
+| `info` | Normal operational messages |
+| `warn` | Warnings and recoverable errors |
+| `error` | Errors only |
 
-```bash
-# Redirect to file
-mcp-server-planton 2> server.log
+All log output goes to stderr so that stdout remains available for the STDIO MCP transport.
 
-# Suppress logs (not recommended)
-mcp-server-planton 2>/dev/null
-```
+## Transport Security
 
-For structured logging in production, consider adding a logging library like `zerolog` or `zap`.
+The gRPC client determines transport security by convention:
 
-### TLS/SSL Configuration
+- Endpoints on port **443** use TLS with the system root CA pool
+- All other ports use plaintext (suitable for localhost and internal networks)
 
-For production deployments with TLS:
+## Examples
 
-```bash
-# Use secure endpoint (port 443)
-export PLANTON_APIS_GRPC_ENDPOINT="apis.planton.cloud:443"
-```
-
-The gRPC client automatically detects and uses TLS for standard HTTPS ports.
-
-For custom TLS certificates:
-
-```go
-import (
-    "crypto/tls"
-    "crypto/x509"
-    "io/ioutil"
-    
-    "google.golang.org/grpc"
-    "google.golang.org/grpc/credentials"
-)
-
-// Load custom certificates
-cert, err := ioutil.ReadFile("ca.pem")
-if err != nil {
-    log.Fatal(err)
-}
-
-certPool := x509.NewCertPool()
-certPool.AppendCertsFromPEM(cert)
-
-tlsConfig := &tls.Config{
-    RootCAs: certPool,
-}
-
-creds := credentials.NewTLS(tlsConfig)
-opts := []grpc.DialOption{
-    grpc.WithTransportCredentials(creds),
-}
-
-conn, err := grpc.Dial(endpoint, opts...)
-```
-
-### Timeout Configuration
-
-Default gRPC timeout is context-based. To customize timeouts:
-
-```go
-import (
-    "context"
-    "time"
-)
-
-// Set timeout on context
-ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-defer cancel()
-
-// Use context in gRPC calls
-resp, err := client.ListEnvironments(ctx, req)
-```
-
-### Connection Pooling
-
-gRPC connections in Go are designed to be long-lived and multiplexed. The default behavior is optimal for most use cases:
-
-```go
-// Single connection handles multiple concurrent RPCs
-conn, err := grpc.NewClient(endpoint, opts...)
-
-// Connection is reused across multiple calls
-client := environmentv1.NewEnvironmentQueryControllerClient(conn)
-```
-
-## Security Best Practices
-
-### API Key Management
-
-1. **Never commit keys** - Use environment variables or secret managers
-2. **Rotate regularly** - API keys should be rotated periodically
-3. **Scope appropriately** - Use keys with minimum required permissions
-4. **Monitor usage** - Track key usage for audit purposes
-
-### Environment-Specific API Keys
-
-Use different keys for different environments:
+### Local Development (STDIO)
 
 ```bash
-# Development
-export PLANTON_API_KEY_DEV="dev-key..."
-
-# Staging
-export PLANTON_API_KEY_STAGING="staging-key..."
-
-# Production
-export PLANTON_API_KEY_PROD="prod-key..."
-```
-
-### Secret Management
-
-For production deployments, use secret managers:
-
-**AWS Secrets Manager:**
-```bash
-export PLANTON_API_KEY=$(aws secretsmanager get-secret-value \
-  --secret-id planton/api-key \
-  --query SecretString \
-  --output text)
-```
-
-**HashiCorp Vault:**
-```bash
-export PLANTON_API_KEY=$(vault kv get -field=key secret/planton/api)
-```
-
-**Kubernetes Secrets:**
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: planton-mcp-config
-type: Opaque
-stringData:
-  PLANTON_API_KEY: "your-api-key"
-  PLANTON_APIS_GRPC_ENDPOINT: "apis.planton.cloud:443"
-```
-
-**Using secrets in Pod:**
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: mcp-server
-spec:
-  containers:
-  - name: mcp-server
-    image: ghcr.io/plantoncloud/mcp-server-planton:latest
-    envFrom:
-    - secretRef:
-        name: planton-mcp-config
-```
-
-## Validation
-
-Verify your configuration programmatically:
-
-```go
-package main
-
-import (
-    "fmt"
-    "log"
-    
-    "github.com/plantoncloud/mcp-server-planton/internal/config"
-)
-
-func main() {
-    cfg, err := config.LoadFromEnv()
-    if err != nil {
-        log.Fatalf("Configuration error: %v", err)
-    }
-    
-    fmt.Println("Configuration valid!")
-    fmt.Printf("Endpoint: %s\n", cfg.PlantonAPIsGRPCEndpoint)
-    fmt.Printf("API key present: %t\n", cfg.PlantonAPIKey != "")
-}
-```
-
-## Troubleshooting
-
-### Missing API Key Error
-
-```
-Configuration error: PLANTON_API_KEY environment variable required
-```
-
-**Solution:** Set the `PLANTON_API_KEY` environment variable.
-
-```bash
-export PLANTON_API_KEY="your-api-key-here"
-```
-
-### Invalid API Key Error
-
-```
-rpc error: code = Unauthenticated desc = Invalid authentication credentials
-```
-
-**Solutions:**
-1. Verify API key is not expired
-2. Ensure API key is complete (no truncation)
-3. Generate a new API key from the Planton Cloud console (Profile → API Keys → Create Key)
-
-### Connection Refused
-
-```
-rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing dial tcp: connect: connection refused"
-```
-
-**Solutions:**
-1. Verify endpoint is correct
-2. Check network connectivity
-3. Ensure firewall allows gRPC traffic
-4. Try pinging the endpoint
-
-### Context Deadline Exceeded
-
-```
-rpc error: code = DeadlineExceeded desc = context deadline exceeded
-```
-
-**Solutions:**
-1. Check network latency
-2. Increase timeout in context
-3. Verify API server is responding
-
-## Configuration Examples
-
-### Local Development
-
-```bash
-export PLANTON_API_KEY="dev-key-from-local-planton"
+export PLANTON_API_KEY="your-key"
 export PLANTON_CLOUD_ENVIRONMENT="local"
-mcp-server-planton
+mcp-server-planton stdio
 ```
 
-### Production
+### Remote Deployment (HTTP)
 
 ```bash
-export PLANTON_API_KEY="$(vault kv get -field=key secret/planton/api)"
-export PLANTON_CLOUD_ENVIRONMENT="live"
-mcp-server-planton
+export PLANTON_MCP_TRANSPORT="http"
+export PLANTON_MCP_HTTP_PORT="8080"
+export PLANTON_MCP_HTTP_AUTH_ENABLED="true"
+export PLANTON_MCP_LOG_FORMAT="json"
+export PLANTON_MCP_LOG_LEVEL="info"
+mcp-server-planton http
 ```
 
-### Test Environment
+### Docker
 
 ```bash
-export PLANTON_API_KEY="test-api-key"
-export PLANTON_CLOUD_ENVIRONMENT="test"
-mcp-server-planton
+docker run -p 8080:8080 \
+  -e PLANTON_MCP_TRANSPORT="http" \
+  -e PLANTON_MCP_HTTP_AUTH_ENABLED="true" \
+  -e PLANTON_MCP_LOG_FORMAT="json" \
+  ghcr.io/plantoncloud/mcp-server-planton:latest
 ```
-
-### Docker Compose
-
-```yaml
-version: '3.8'
-services:
-  # STDIO mode (single user)
-  mcp-server-stdio:
-    image: ghcr.io/plantoncloud/mcp-server-planton:latest
-    environment:
-      PLANTON_API_KEY: ${PLANTON_API_KEY}
-      PLANTON_CLOUD_ENVIRONMENT: live
-      PLANTON_MCP_TRANSPORT: stdio
-    stdin_open: true
-    tty: true
-  
-  # HTTP mode (multi-user)
-  mcp-server-http:
-    image: ghcr.io/plantoncloud/mcp-server-planton:latest
-    ports:
-      - "8080:8080"
-    environment:
-      PLANTON_MCP_TRANSPORT: http
-      PLANTON_MCP_HTTP_AUTH_ENABLED: "true"
-      PLANTON_CLOUD_ENVIRONMENT: live
-```
-
-## Next Steps
-
-- [Installation Guide](installation.md) - Installation instructions
-- [Development Guide](development.md) - Development setup
-- [README](../README.md) - Back to main documentation

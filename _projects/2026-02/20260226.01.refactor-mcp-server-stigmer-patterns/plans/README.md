@@ -11,6 +11,7 @@ Plans created for the mcp-server-planton Stigmer patterns refactoring project.
 | `schema2go-generator.plan.md` | ✅ Completed | 2026-02-26 | 2026-02-26 | Phase 2 Stage 2 — schema2go generator producing typed Go input structs for 362 providers |
 | `phase-3-apply-cloud-resource.plan.md` | ✅ Completed | 2026-02-26 | 2026-02-26 | Phase 3 — apply_cloud_resource tool, MCP resource templates, schema promotion |
 | `cloud-resource-kinds-catalog.plan.md` | ✅ Completed | 2026-02-26 | 2026-02-26 | Static MCP resource for kind discovery — agents discover all 362 kinds before using schema template |
+| `phase-5-hardening.plan.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Phase 5 — Dead code cleanup, 50 unit tests for pure domain logic, README + docs rewrite |
 
 ### Status Legend
 
@@ -51,6 +52,12 @@ Plans created for the mcp-server-planton Stigmer patterns refactoring project.
 - **Current Phase**: Complete
 - **Key outcome**: `cloud-resource-kinds://catalog` static resource serving 362 kinds grouped by 17 cloud providers; tool descriptions updated with 3-step discovery workflow
 
+### phase-5-hardening.plan.md
+- **Objective**: Clean up dead code, write comprehensive unit tests for all pure domain logic, rewrite README and docs
+- **Phases**: 3 stages (dead code cleanup, unit tests, documentation)
+- **Current Phase**: Complete
+- **Key outcome**: 8 test files with 50 test cases; dead code removed; README rewritten; stale docs replaced
+
 ---
 
-*Last updated: 2026-02-26*
+*Last updated: 2026-02-27*

@@ -6,74 +6,46 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io-blue?logo=docker)](https://github.com/plantoncloud/mcp-server-planton/pkgs/container/mcp-server-planton)
 
-MCP (Model Context Protocol) server for Planton Cloud that enables AI agents to query and manage cloud resources using user permissions.
+MCP (Model Context Protocol) server for [Planton Cloud](https://planton.cloud) that enables AI agents to create, read, and delete cloud resources across 17 cloud providers using the [OpenMCF](https://github.com/plantonhq/openmcf) specification.
 
 ## Overview
 
-The Planton Cloud MCP Server provides AI assistants like Cursor, Claude Desktop, and LangGraph agents with tools to interact with Planton Cloud resources. All queries respect your actual permissions through API key authentication.
+The server exposes three MCP tools and two MCP resources that give any MCP-capable AI client (Cursor, Claude Desktop, Windsurf, LangGraph, etc.) full CRUD access to Planton-managed cloud infrastructure. All operations go through the Planton backend and respect per-user API key permissions.
 
-**Key Features:**
-- User-scoped permissions via API key authentication
-- Query cloud resources, environments, organizations
-- Create and manage cloud infrastructure
-- Works with any MCP client (Cursor, Claude Desktop, LangGraph)
-- Available as HTTP endpoint or local binary
+### Tools
+
+| Tool | Description |
+|------|-------------|
+| `apply_cloud_resource` | Create or update a cloud resource (idempotent) |
+| `get_cloud_resource` | Retrieve a cloud resource by ID or by kind+org+env+slug |
+| `delete_cloud_resource` | Delete a cloud resource by ID or by kind+org+env+slug |
+
+### MCP Resources
+
+| Resource | Description |
+|----------|-------------|
+| `cloud-resource-kinds://catalog` | Static catalog of all 362 supported kinds grouped by 17 cloud providers |
+| `cloud-resource-schema://{kind}` | Per-kind JSON schema with field types, descriptions, validation rules, and defaults |
+
+### Agent Workflow
+
+Agents follow a 3-step discovery pattern:
+
+1. **Discover** -- Read `cloud-resource-kinds://catalog` to find available kinds and their `api_version` values
+2. **Learn** -- Read `cloud-resource-schema://{kind}` to get the full spec definition for a specific kind
+3. **Act** -- Call `apply_cloud_resource` with the assembled `cloud_object`
 
 ## Quick Start
 
 ### Get Your API Key
 
 1. Log in to [Planton Cloud Console](https://console.planton.cloud)
-2. Click your profile icon → **API Keys**
+2. Click your profile icon > **API Keys**
 3. Click **Create Key** and copy the generated key
 
-### Integration with Cursor
+### Cursor (STDIO)
 
-Add to your Cursor MCP settings (`~/.cursor/mcp.json`):
-
-#### Remote Endpoint (Recommended)
-
-```json
-{
-  "mcpServers": {
-    "planton-cloud": {
-      "type": "http",
-      "url": "https://mcp.planton.ai/",
-      "headers": {
-        "Authorization": "Bearer YOUR_PLANTON_API_KEY"
-      }
-    }
-  }
-}
-```
-
-#### Local Testing with Docker
-
-```json
-{
-  "mcpServers": {
-    "planton-cloud": {
-      "type": "http",
-      "url": "http://localhost:8080/",
-      "headers": {
-        "Authorization": "Bearer YOUR_PLANTON_API_KEY"
-      }
-    }
-  }
-}
-```
-
-Run the Docker container:
-```bash
-docker run -p 8080:8080 \
-  -e PLANTON_MCP_TRANSPORT="http" \
-  -e PLANTON_MCP_HTTP_AUTH_ENABLED="true" \
-  ghcr.io/plantoncloud/mcp-server-planton:latest
-```
-
-**Note:** The API key is provided by each user in the `Authorization` header, not in the Docker environment. This enables proper multi-user support with per-user permissions.
-
-#### Local Binary (STDIO Mode)
+Add to `~/.cursor/mcp.json`:
 
 ```json
 {
@@ -89,22 +61,23 @@ docker run -p 8080:8080 \
 }
 ```
 
-Install the binary:
-```bash
-# macOS (ARM64)
-curl -L https://github.com/plantoncloud/mcp-server-planton/releases/latest/download/mcp-server-planton_Darwin_arm64.tar.gz | tar xz
-sudo mv mcp-server-planton /usr/local/bin/
+### Cursor (Remote HTTP)
 
-# macOS (Intel)
-curl -L https://github.com/plantoncloud/mcp-server-planton/releases/latest/download/mcp-server-planton_Darwin_x86_64.tar.gz | tar xz
-sudo mv mcp-server-planton /usr/local/bin/
-
-# Linux (AMD64)
-curl -L https://github.com/plantoncloud/mcp-server-planton/releases/latest/download/mcp-server-planton_Linux_x86_64.tar.gz | tar xz
-sudo mv mcp-server-planton /usr/local/bin/
+```json
+{
+  "mcpServers": {
+    "planton-cloud": {
+      "type": "http",
+      "url": "https://mcp.planton.ai/",
+      "headers": {
+        "Authorization": "Bearer YOUR_PLANTON_API_KEY"
+      }
+    }
+  }
+}
 ```
 
-### Integration with Claude Desktop
+### Claude Desktop
 
 Add to your Claude Desktop MCP settings:
 
@@ -122,7 +95,7 @@ Add to your Claude Desktop MCP settings:
 }
 ```
 
-### Integration with LangGraph
+### LangGraph
 
 Add to your `langgraph.json`:
 
@@ -140,96 +113,119 @@ Add to your `langgraph.json`:
 }
 ```
 
-## Available Tools
+### Docker (HTTP mode)
 
-The MCP server provides tools for querying and managing Planton Cloud resources:
+```bash
+docker run -p 8080:8080 \
+  -e PLANTON_MCP_TRANSPORT="http" \
+  -e PLANTON_MCP_HTTP_AUTH_ENABLED="true" \
+  ghcr.io/plantoncloud/mcp-server-planton:latest
+```
 
-### Cloud Resources
-- `list_cloud_resource_kinds` - List all available cloud resource types
-- `get_cloud_resource_schema` - Get schema/spec for a resource type
-- `search_cloud_resources` - Search and filter cloud resources
-- `lookup_cloud_resource_by_name` - Find resource by exact name
-- `get_cloud_resource_by_id` - Get complete resource details by ID
-- `create_cloud_resource` - Create new cloud resources
-- `update_cloud_resource` - Update existing resources
-- `delete_cloud_resource` - Delete cloud resources
+Each user provides their own API key in the `Authorization: Bearer` header. The server does not store keys.
 
-### Service Hub
-- `list_services_for_org` - List all services in an organization
-- `get_service_by_id` - Get service details by ID
-- `get_service_by_org_by_slug` - Get service by organization and name
-- `list_service_branches` - List Git branches for a service's repository
-- `get_tekton_pipeline` - Get complete Tekton pipeline definition with YAML by ID or org/name
-- `get_pipeline_by_id` - Get pipeline execution details by pipeline ID
-- `get_latest_pipeline_by_service_id` - Get most recent pipeline execution for a service
-- `get_pipeline_build_logs` - Stream and retrieve build logs for a pipeline
+## Installation
 
-### Connect (Credentials)
-- `get_github_credential_for_service` - Get GitHub credential for a service
-- `get_github_credential_by_org_by_slug` - Get GitHub credential by org and name
-- `list_github_repositories` - List repositories accessible via a credential
+### Pre-built Binary
 
-### Environments & Organizations
-- `list_environments_for_org` - List environments in an organization
-- `list_organizations` - List organizations you're a member of
+```bash
+# macOS (ARM64)
+curl -L https://github.com/plantoncloud/mcp-server-planton/releases/latest/download/mcp-server-planton_Darwin_arm64.tar.gz | tar xz
+sudo mv mcp-server-planton /usr/local/bin/
 
-All tools respect your user permissions - you can only access resources you have permission to view or manage.
+# macOS (Intel)
+curl -L https://github.com/plantoncloud/mcp-server-planton/releases/latest/download/mcp-server-planton_Darwin_x86_64.tar.gz | tar xz
+sudo mv mcp-server-planton /usr/local/bin/
 
-For detailed Service Hub tool documentation, see [Service Hub Tools Guide](docs/service-hub-tools.md).
+# Linux (AMD64)
+curl -L https://github.com/plantoncloud/mcp-server-planton/releases/latest/download/mcp-server-planton_Linux_x86_64.tar.gz | tar xz
+sudo mv mcp-server-planton /usr/local/bin/
+```
+
+### From Source
+
+```bash
+go install github.com/plantoncloud/mcp-server-planton/cmd/mcp-server-planton@latest
+```
 
 ## Configuration
 
-### Essential Environment Variables
+All settings are read from environment variables with a `PLANTON_` prefix.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PLANTON_API_KEY` | **(required)** | Your API key from Planton Cloud console |
+| `PLANTON_API_KEY` | *(required for stdio/both)* | API key for Planton Cloud |
 | `PLANTON_CLOUD_ENVIRONMENT` | `live` | Target environment: `live`, `test`, or `local` |
+| `PLANTON_APIS_GRPC_ENDPOINT` | *(from environment)* | Explicit gRPC endpoint override |
 | `PLANTON_MCP_TRANSPORT` | `stdio` | Transport mode: `stdio`, `http`, or `both` |
-| `PLANTON_MCP_HTTP_PORT` | `8080` | HTTP server port (when using HTTP transport) |
-| `PLANTON_MCP_HTTP_AUTH_ENABLED` | `true` | Enable bearer token authentication for HTTP |
+| `PLANTON_MCP_HTTP_PORT` | `8080` | HTTP listen port |
+| `PLANTON_MCP_HTTP_AUTH_ENABLED` | `true` | Require Bearer token for HTTP requests |
+| `PLANTON_MCP_LOG_FORMAT` | `text` | Log encoding: `text` or `json` |
+| `PLANTON_MCP_LOG_LEVEL` | `info` | Minimum log level: `debug`, `info`, `warn`, `error` |
 
-**Note:** When HTTP authentication is enabled, your `PLANTON_API_KEY` is used as the bearer token.
-
-For complete configuration options, see [Configuration Guide](docs/configuration.md).
+See [docs/configuration.md](docs/configuration.md) for details.
 
 ## Security
 
-This MCP server uses **user API keys** for all operations, ensuring that:
+- **STDIO mode**: API key loaded once from `PLANTON_API_KEY` at startup
+- **HTTP mode**: Each request carries its own key via `Authorization: Bearer` header -- true multi-tenant support
+- Keys are held in memory only during request execution and never persisted
+- All API calls are validated and logged with the caller's identity
+- Fine-grained authorization is enforced by the Planton backend
 
-- **Per-User Authentication**: Each user provides their own API key via Authorization header (HTTP mode) or environment variable (STDIO mode)
-- **Fine-Grained Authorization**: All queries respect each user's actual permissions
-- **No API Key Persistence**: Keys are held in memory only during request execution
-- **Complete Audit Trail**: Every API call is validated and logged with the user's identity
-- **Multi-User Support**: HTTP transport supports multiple users with different permissions accessing the same server instance
+## Architecture
 
-### HTTP Transport Security Model
+```
+cmd/mcp-server-planton/        CLI entry point (stdio | http | both)
+pkg/mcpserver/                  Public embedding API (Config, Run)
+internal/
+  auth/                         Context-based API key propagation
+  config/                       Env-var configuration with validation
+  grpc/                         Authenticated gRPC client factory
+  server/                       MCP server init, STDIO + HTTP transports
+  domains/
+    cloudresource/              Tool handlers, resource templates, schema lookup
+  parse/                        Shared helpers for generated parsers
+gen/cloudresource/              Generated typed input structs (362 providers, 17 clouds)
+schemas/                        Embedded JSON schemas (go:embed)
+tools/codegen/
+  proto2schema/                 Stage 1: OpenMCF .proto -> JSON schema
+  generator/                    Stage 2: JSON schema -> Go input types
+```
 
-When using HTTP transport, each user's API key is:
-1. Provided in the `Authorization: Bearer YOUR_API_KEY` header
-2. Extracted and validated by the MCP server
-3. Passed to Planton Cloud APIs for Fine-Grained Authorization
-4. Used only for that specific request (not stored)
+## Development
 
-This architecture ensures true multi-tenant security where users can only access resources they have permission to view or manage.
+### Prerequisites
 
-## Documentation
+- Go 1.25+
+- Access to Planton Cloud APIs (local or remote)
+- OpenMCF and Planton API repos (for codegen only)
 
-- [HTTP Transport Guide](docs/http-transport.md) - Running the server locally and HTTP deployment
-- [Configuration Guide](docs/configuration.md) - Complete environment variable reference
-- [Development Guide](docs/development.md) - Contributing and local development setup
-- [Installation Guide](docs/installation.md) - Detailed installation instructions
+### Build and Test
 
-## Support
+```bash
+make build          # Build binary to bin/
+make test           # Run all tests
+make lint           # Run golangci-lint
+make fmt            # Format Go code
+```
 
-- **Issues**: [GitHub Issues](https://github.com/plantoncloud/mcp-server-planton/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/plantoncloud/mcp-server-planton/discussions)
-- **Documentation**: [Planton Cloud Docs](https://docs.planton.cloud)
+### Codegen Pipeline
+
+The two-stage codegen pipeline generates typed Go input structs from OpenMCF provider proto definitions:
+
+```bash
+make codegen-schemas    # Stage 1: proto -> JSON schemas (requires openmcf repo)
+make codegen-types      # Stage 2: JSON schemas -> Go input types
+make codegen            # Full pipeline (Stage 1 + Stage 2)
+```
+
+See [docs/development.md](docs/development.md) for codegen details.
+
+## Supported Cloud Providers
+
+AWS, GCP, Azure, Kubernetes, AliCloud, DigitalOcean, Civo, Cloudflare, Confluent, Auth0, OpenFGA, Snowflake, MongoDB Atlas, Hetzner Cloud, OCI, OpenStack, Scaleway -- 362 resource kinds total.
 
 ## License
 
-Apache-2.0 - see [LICENSE](LICENSE) for details.
-
----
-
-Built with ❤️ by [Planton Cloud](https://planton.cloud)
+Apache-2.0 -- see [LICENSE](LICENSE) for details.

@@ -13,7 +13,7 @@
 ---
 
 **Project**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/`
-**Current Status**: Phase 4 COMPLETED → Ready for Phase 5 (Testing + Documentation)
+**Current Status**: ALL PHASES COMPLETED (Phases 1-5)
 
 ## Quick Context
 
@@ -70,7 +70,12 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
   - Both tools registered in server, tool count updated to 3
   - Design decision: slug uniqueness scoped to (org, env, kind) — confirmed by gRPC API requiring all four fields
   - `go build ./...` and `go vet ./...` pass cleanly
-- 🔵 Next: **Phase 5: Testing + Documentation**
+- ✅ **Phase 5: Hardening — Dead Code, Unit Tests, Documentation** (2026-02-27)
+  - Removed dead code: `FetchFunc`/`CallFetch` from `toolresult.go` (superseded by `ResourceIdentifier` pattern)
+  - 8 test files, 50 test cases covering all pure domain logic (zero test files → comprehensive coverage)
+  - README.md rewritten from scratch for the 3-tool architecture
+  - Deleted 5 stale docs files (62KB of misleading content); recreated `docs/configuration.md` and `docs/development.md`
+  - `go build ./...`, `go vet ./...`, and all 50 tests pass cleanly
 
 ---
 
@@ -300,6 +305,58 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
 
 ---
 
+### ✅ COMPLETED: Phase 5 — Hardening: Dead Code, Unit Tests, Documentation (2026-02-27)
+
+**Cleaned up dead code, wrote comprehensive unit tests for all pure domain logic, and rewrote the README and docs to reflect the new 3-tool architecture.**
+
+**What was delivered:**
+
+1. **Dead code removal** — Deleted `FetchFunc` type and `CallFetch` function from `internal/domains/toolresult.go`. These implemented an `org + slug` lookup pattern superseded by Phase 4's `ResourceIdentifier` dual-path pattern and were never called.
+
+2. **8 unit test files, 50 test cases** — Comprehensive coverage of all pure domain logic:
+   - `identifier_test.go` (8 tests): `validateIdentifier` branching paths, `describeIdentifier` output
+   - `kind_test.go` (6 tests): kind extraction, enum resolution, error cases
+   - `metadata_test.go` (10 tests): required/optional field extraction, type assertion edge cases
+   - `schema_test.go` (10 tests): URI parsing, embedded FS integration, catalog JSON structure
+   - `apply_test.go` (6 tests): CloudResource proto assembly, `describeResource` fallback
+   - `rpcerr_test.go` (7 tests): gRPC status code to user-facing message mapping
+   - `helpers_test.go` (10 tests): `ValidateHeader`, `ExtractSpecMap`, `RebuildCloudObject`
+   - `config_test.go` (10 tests): config validation rules, log level parsing
+
+3. **README.md rewrite** — Complete rewrite for the new 3-tool architecture: tools table, MCP resources table, 3-step agent workflow, integration guides (Cursor/Claude Desktop/LangGraph/Docker), configuration table, architecture overview, codegen pipeline.
+
+4. **Stale docs cleanup** — Deleted 5 files (62KB) under `docs/` that documented tools and domains deleted in Phase 1 (Service Hub, Connect/Credentials, old tool names). Recreated `docs/configuration.md` (current env var reference) and `docs/development.md` (build, test, codegen pipeline, project structure).
+
+**Key Decisions Made:**
+- Test pure functions, not gRPC wiring — tool handlers are thin proxies; risk is in validation/transformation logic
+- No mock gRPC server — adds complexity without proportional confidence; defer to integration testing
+- No codegen determinism tests — output validated by `go build` and `go vet`; add when codegen stabilizes
+
+**Files Created:**
+- `internal/config/config_test.go`
+- `internal/domains/rpcerr_test.go`
+- `internal/domains/cloudresource/identifier_test.go`
+- `internal/domains/cloudresource/kind_test.go`
+- `internal/domains/cloudresource/metadata_test.go`
+- `internal/domains/cloudresource/schema_test.go`
+- `internal/domains/cloudresource/apply_test.go`
+- `internal/parse/helpers_test.go`
+- `docs/configuration.md` — Rewritten
+- `docs/development.md` — Rewritten
+
+**Files Modified:**
+- `internal/domains/toolresult.go` — Removed dead `FetchFunc`/`CallFetch`
+- `README.md` — Complete rewrite
+
+**Files Deleted:**
+- `docs/service-hub-tools.md`
+- `docs/installation.md`
+- `docs/http-transport.md`
+- `docs/development.md` (old)
+- `docs/configuration.md` (old)
+
+---
+
 ## Execution Order
 
 ### Phase 1: Clean Slate + Shared Utilities ✅
@@ -321,7 +378,8 @@ Adapt Stigmer's two-stage codegen for OpenMCF provider specs:
 ### Phase 4: Implement delete_cloud_resource + get_cloud_resource ✅
 Complete the tool set with dual-path resource identification (ID or kind+org+env+slug).
 
-### Phase 5: Testing + Documentation
+### Phase 5: Hardening — Dead Code, Unit Tests, Documentation ✅
+50 unit tests, dead code cleanup, README + docs rewrite.
 
 ## Key References
 
