@@ -13,7 +13,7 @@
 ---
 
 **Project**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/`
-**Current Status**: Kind Catalog Resource COMPLETED → Ready for Phase 4 (delete_cloud_resource + get_cloud_resource)
+**Current Status**: Phase 4 COMPLETED → Ready for Phase 5 (Testing + Documentation)
 
 ## Quick Context
 
@@ -63,7 +63,14 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
   - Thorough analysis confirmed PascalCase is canonical for kind values across all system layers (proto enum, Go stubs, codegen registry, JSON schemas, StringValueOrRef options)
   - Updated tool descriptions with 3-step discovery workflow: catalog → schema → apply
   - Updated error messages to direct agents to catalog resource for kind discovery
-- 🔵 Next: **Phase 4: Implement delete_cloud_resource + get_cloud_resource**
+- ✅ **Phase 4: Implement delete_cloud_resource + get_cloud_resource** (2026-02-27)
+  - Shared `ResourceIdentifier` type with dual-path validation (ID or kind+org+env+slug)
+  - `get_cloud_resource` tool: ID path → `QueryController.Get`, slug path → `QueryController.GetByOrgByEnvByKindBySlug`
+  - `delete_cloud_resource` tool: Stigmer two-step pattern (resolve to ID via query, then `CommandController.Delete`)
+  - Both tools registered in server, tool count updated to 3
+  - Design decision: slug uniqueness scoped to (org, env, kind) — confirmed by gRPC API requiring all four fields
+  - `go build ./...` and `go vet ./...` pass cleanly
+- 🔵 Next: **Phase 5: Testing + Documentation**
 
 ---
 
@@ -261,6 +268,38 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
 
 ---
 
+### ✅ COMPLETED: Phase 4 — delete_cloud_resource + get_cloud_resource (2026-02-27)
+
+**Implemented `get_cloud_resource` and `delete_cloud_resource` MCP tools with dual-path resource identification, completing the core tool set.**
+
+**What was delivered:**
+
+1. **Shared `ResourceIdentifier`** (`internal/domains/cloudresource/identifier.go`) — Dual-path type supporting ID (single field) or composite key (kind, org, env, slug). `validateIdentifier()` ensures exactly one path is fully specified with clear error messages for partial inputs. `describeIdentifier()` for human-readable error context. `resolveResourceID()` for delete's two-step slug-to-ID resolution.
+
+2. **`get_cloud_resource` tool** (`internal/domains/cloudresource/get.go`, `tools.go`) — ID path calls `QueryController.Get(CloudResourceId)`, slug path resolves PascalCase kind to proto enum then calls `QueryController.GetByOrgByEnvByKindBySlug()`. No unnecessary resolution step — both RPCs return the full `CloudResource`.
+
+3. **`delete_cloud_resource` tool** (`internal/domains/cloudresource/delete.go`, `tools.go`) — Follows Stigmer two-step pattern: `resolveResourceID()` handles both paths within a single gRPC connection, then `CommandController.Delete(ApiResourceDeleteInput)` with the resolved ID.
+
+4. **Tool registration** (`internal/server/server.go`) — Both tools registered, tool count updated to 3 with named list in structured log.
+
+**Key Decisions Made:**
+- Slug uniqueness scoped to (org, env, kind) — confirmed by gRPC API requiring all four fields in `CloudResourceByOrgByEnvByKindBySlugRequest`
+- Delete kept simple: skipped `version_message` and `force` fields (can add later)
+- Error handling: kind validation errors pass through directly; gRPC errors classified via `domains.RPCError()`. `resolveResourceID` owns its error formatting.
+- Validation at handler boundary; business logic assumes valid inputs.
+- `FetchFunc`/`CallFetch` in `toolresult.go` not used by cloudresource (flagged as potential dead code if no other domains are added)
+
+**Files Created:**
+- `internal/domains/cloudresource/identifier.go` — ResourceIdentifier, validation, resolution
+- `internal/domains/cloudresource/get.go` — Get function (dual-path query)
+- `internal/domains/cloudresource/delete.go` — Delete function (resolve + command)
+
+**Files Modified:**
+- `internal/domains/cloudresource/tools.go` — Added GetTool/GetHandler, DeleteTool/DeleteHandler, input structs
+- `internal/server/server.go` — Registered both tools, updated log
+
+---
+
 ## Execution Order
 
 ### Phase 1: Clean Slate + Shared Utilities ✅
@@ -279,8 +318,8 @@ Adapt Stigmer's two-stage codegen for OpenMCF provider specs:
 - MCP resource templates expose per-kind typed schemas for client discovery
 - No separate schema lookup tool — agents use MCP resources
 
-### Phase 4: Implement delete_cloud_resource + get_cloud_resource
-Complete the tool set.
+### Phase 4: Implement delete_cloud_resource + get_cloud_resource ✅
+Complete the tool set with dual-path resource identification (ID or kind+org+env+slug).
 
 ### Phase 5: Testing + Documentation
 
@@ -297,6 +336,7 @@ Complete the tool set.
 - **Cloud resource domain**: `internal/domains/cloudresource/`
 - **Phase 3 plan**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/plans/phase-3-apply-cloud-resource.plan.md`
 - **Kind catalog plan**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/plans/cloud-resource-kinds-catalog.plan.md`
+- **Phase 4 plan**: `.cursor/plans/phase_4_delete_get_tools_b9314bd3.plan.md`
 
 ## Resolved Decisions
 
