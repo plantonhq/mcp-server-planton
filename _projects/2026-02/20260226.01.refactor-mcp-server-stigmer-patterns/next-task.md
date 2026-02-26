@@ -13,7 +13,7 @@
 ---
 
 **Project**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/`
-**Current Status**: Phase 2 Stage 1 COMPLETED → Ready for Phase 2 Stage 2 (generator)
+**Current Status**: Phase 2 Stage 2 COMPLETED → Ready for Phase 3 (apply_cloud_resource tool)
 
 ## Quick Context
 
@@ -41,7 +41,17 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
   - StringValueOrRef simplified to string with referenceKind metadata (Option C)
   - Extracts buf.validate rules and OpenMCF custom options via protowire
   - `make codegen-schemas` target added, zero parse errors
-- 🔵 Next: **Phase 2 Stage 2: generator** — JSON schemas → Go input types with ToProto()
+- ✅ **Phase 2 Stage 2: schema2go generator** (2026-02-26)
+  - Built schema2go codegen tool (3 source files, ~850 lines)
+  - Generates typed Go input structs from JSON schemas for all 362 providers
+  - snake_case JSON tags (matches PlantON backend `preservingProtoFieldNames()`)
+  - Per-provider Parse{Kind}() functions with validate/applyDefaults/toMap
+  - Shared type deduplication via types_gen.go per cloud package
+  - Central registry with ParseFunc dispatch by kind
+  - Hand-written gen/parse/helpers.go for shared utilities
+  - `make codegen-types` and `make codegen` targets added
+  - 367 generated Go files compile and vet cleanly
+- 🔵 Next: **Phase 3: Implement apply_cloud_resource + MCP Resource Templates**
 
 ---
 
@@ -127,6 +137,41 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
 
 ---
 
+### ✅ COMPLETED: Phase 2 Stage 2 — schema2go Generator (2026-02-26)
+
+**Built the schema2go codegen generator that transforms JSON schemas into typed Go input structs with validation, defaults, map conversion, and a central kind-to-parser registry.**
+
+**What was delivered:**
+
+1. **schema2go generator** (`tools/codegen/generator/`) — 3-file Go CLI tool. Loads provider registry and JSON schemas, generates typed Go input structs with `validate()`, `applyDefaults()`, `toMap()` methods, and top-level `Parse{Kind}()` functions per provider.
+
+2. **367 generated Go files** — 362 per-provider input types, 5 shared `types_gen.go` files for deduplicated nested types, 1 `registry_gen.go` central dispatch. All organized under `gen/cloudresource/{cloud}/` (17 cloud packages).
+
+3. **Central registry** (`gen/cloudresource/registry_gen.go`) — `ParseFunc` type, `GetParser(kind)` lookup, `KnownKinds()` enumeration. Imports all 17 cloud packages.
+
+4. **Shared parse helpers** (`gen/parse/helpers.go`) — Hand-written utilities (`ValidateHeader`, `ExtractSpecMap`, `RebuildCloudObject`) shared by all generated Parse functions. Prevents circular dependencies.
+
+5. **Makefile targets** — `make codegen-types` (Stage 2 only), `make codegen` (full pipeline: schemas + types).
+
+**Key Decisions Made:**
+- **snake_case JSON tags** — PlantON backend uses `JsonFormat.printer().preservingProtoFieldNames()` and MongoDB stores with snake_case keys. Verified via Java backend `CloudResourceMapper` and `ValueFromToValueResolver` source code.
+- **toMap() instead of ToProto()** — Generated types convert to `map[string]any` (for `structpb.Struct`) rather than concrete proto messages, since `cloud_object` uses `google.protobuf.Struct`.
+- **Multi-package structure** — One Go package per cloud provider under `gen/cloudresource/` for clean namespacing at scale (362 providers).
+- **Shared type deduplication** — Common nested types (e.g., `ContainerInput`, `ProbeInput`) generated once per cloud package in `types_gen.go`.
+- **Generate all 362 providers** — Marginal cost is minimal; ensures comprehensive coverage from day one.
+
+**Files Created:**
+- `tools/codegen/generator/main.go` — CLI entry point, schema loading, orchestration
+- `tools/codegen/generator/codegen.go` — Core struct/method/parse-function generation
+- `tools/codegen/generator/registry.go` — Registry file generation
+- `gen/parse/helpers.go` — Hand-written shared utilities
+- `gen/cloudresource/` — 367 generated `.go` files across 17 cloud packages
+
+**Files Modified:**
+- `Makefile` — Added `codegen-types` and `codegen` targets
+
+---
+
 ## Execution Order
 
 ### Phase 1: Clean Slate + Shared Utilities ✅
@@ -135,9 +180,9 @@ Delete existing domain code, set up Stigmer-style foundation.
 ### Phase 2: Codegen Pipeline
 Adapt Stigmer's two-stage codegen for OpenMCF provider specs:
 - Stage 1: `proto2schema` — Parse OpenMCF provider .proto files → JSON schemas ✅
-- Stage 2: `generator` — JSON schemas → Go input types with `ToProto()` for each provider kind
-- Generate CloudResourceKind enum validation map
-- Makefile targets: `codegen-schemas` (Stage 1) ✅, `codegen` (full pipeline)
+- Stage 2: `generator` — JSON schemas → Go input types with `toMap()` for each provider kind ✅
+- Central kind-to-parser registry for runtime dispatch ✅
+- Makefile targets: `codegen-schemas` (Stage 1) ✅, `codegen-types` (Stage 2) ✅, `codegen` (full pipeline) ✅
 
 ### Phase 3: Implement apply_cloud_resource + MCP Resource Templates
 - First working MCP tool with generated input types

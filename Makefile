@@ -1,4 +1,4 @@
-.PHONY: build install test lint fmt fmt-check release docker-build docker-run clean help codegen-schemas
+.PHONY: build install test lint fmt fmt-check release docker-build docker-run clean help codegen-schemas codegen-types codegen
 
 # Default target
 .DEFAULT_GOAL := help
@@ -123,6 +123,17 @@ codegen-schemas:
 	@echo "Generating provider schemas..."
 	@go run ./tools/codegen/proto2schema/ --all
 	@echo "Schema generation complete"
+
+## codegen-types: Generate Go input types from JSON schemas (Stage 2)
+codegen-types:
+	@echo "Generating Go input types..."
+	@rm -rf gen/cloudresource/
+	@go run ./tools/codegen/generator/ --schemas-dir=tools/codegen/schemas --output-dir=gen/cloudresource
+	@echo "Go input type generation complete"
+
+## codegen: Run full codegen pipeline (Stage 1 + Stage 2)
+codegen: codegen-schemas codegen-types
+	@echo "Full codegen pipeline complete"
 
 ## help: Show this help message
 help:
