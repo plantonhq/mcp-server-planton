@@ -50,7 +50,7 @@ flowchart TB
         REG["registry_gen.go<br/>ParseFunc dispatch"]
     end
 
-    subgraph "Hand-written (gen/parse/)"
+    subgraph "Hand-written (internal/parse/)"
         H["helpers.go<br/>ValidateHeader, ExtractSpecMap,<br/>RebuildCloudObject"]
     end
 
@@ -111,12 +111,12 @@ This eliminates any translation layer: agents send snake_case, the handler valid
 
 ### Shared Parse Helpers
 
-`gen/parse/helpers.go` is hand-written (not generated) to provide stable utilities:
+`internal/parse/helpers.go` is hand-written (not generated) to provide stable utilities:
 - `ValidateHeader()` — validates `api_version` and `kind` fields match expectations
 - `ExtractSpecMap()` — extracts the `spec` sub-map from the cloud object
 - `RebuildCloudObject()` — reconstructs the full cloud object with normalized spec, returns `*structpb.Struct`
 
-This avoids circular dependencies (generated cloud packages import `gen/parse`; `gen/cloudresource` imports cloud packages).
+This avoids circular dependencies (generated cloud packages import `internal/parse`; `gen/cloudresource` imports cloud packages).
 
 ### Shared Type Deduplication
 

@@ -48,7 +48,7 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
   - Per-provider Parse{Kind}() functions with validate/applyDefaults/toMap
   - Shared type deduplication via types_gen.go per cloud package
   - Central registry with ParseFunc dispatch by kind
-  - Hand-written gen/parse/helpers.go for shared utilities
+  - Hand-written internal/parse/helpers.go for shared utilities
   - `make codegen-types` and `make codegen` targets added
   - 367 generated Go files compile and vet cleanly
 - 🔵 Next: **Phase 3: Implement apply_cloud_resource + MCP Resource Templates**
@@ -149,7 +149,7 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
 
 3. **Central registry** (`gen/cloudresource/registry_gen.go`) — `ParseFunc` type, `GetParser(kind)` lookup, `KnownKinds()` enumeration. Imports all 17 cloud packages.
 
-4. **Shared parse helpers** (`gen/parse/helpers.go`) — Hand-written utilities (`ValidateHeader`, `ExtractSpecMap`, `RebuildCloudObject`) shared by all generated Parse functions. Prevents circular dependencies.
+4. **Shared parse helpers** (`internal/parse/helpers.go`) — Hand-written utilities (`ValidateHeader`, `ExtractSpecMap`, `RebuildCloudObject`) shared by all generated Parse functions. Prevents circular dependencies.
 
 5. **Makefile targets** — `make codegen-types` (Stage 2 only), `make codegen` (full pipeline: schemas + types).
 
@@ -164,7 +164,7 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
 - `tools/codegen/generator/main.go` — CLI entry point, schema loading, orchestration
 - `tools/codegen/generator/codegen.go` — Core struct/method/parse-function generation
 - `tools/codegen/generator/registry.go` — Registry file generation
-- `gen/parse/helpers.go` — Hand-written shared utilities
+- `internal/parse/helpers.go` — Hand-written shared utilities
 - `gen/cloudresource/` — 367 generated `.go` files across 17 cloud packages
 
 **Files Modified:**
