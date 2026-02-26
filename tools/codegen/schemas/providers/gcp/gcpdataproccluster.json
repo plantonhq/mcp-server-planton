@@ -1,0 +1,715 @@
+{
+  "name": "GcpDataprocCluster",
+  "kind": "GcpDataprocCluster",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-dataproc-cluster",
+  "protoPackage": "org.openmcf.provider.gcp.gcpdataproccluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpdataproccluster/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpdataproccluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpDataprocClusterSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the Dataproc cluster will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP region for the cluster (e.g., \"us-central1\", \"europe-west1\").\n All cluster nodes will be placed in this region.\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ClusterName",
+        "jsonName": "clusterName",
+        "protoField": "cluster_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Dataproc cluster. Must start with a lowercase letter,\n can contain lowercase letters, numbers, and hyphens, and must end\n with a lowercase letter or number. Maximum 55 characters.\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 55,
+          "pattern": "^[a-z][a-z0-9-]{0,53}[a-z0-9]$"
+        }
+      },
+      {
+        "name": "ClusterConfig",
+        "jsonName": "clusterConfig",
+        "protoField": "cluster_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpDataprocClusterConfig"
+        },
+        "description": "Cluster infrastructure configuration including nodes, software,\n networking, encryption, and lifecycle management.",
+        "required": false
+      },
+      {
+        "name": "GracefulDecommissionTimeout",
+        "jsonName": "gracefulDecommissionTimeout",
+        "protoField": "graceful_decommission_timeout",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Timeout for graceful YARN decommissioning when reducing the number\n of workers. During this period, YARN waits for running tasks to\n complete before shutting down nodes. Without this, scaling down\n can terminate running jobs.\n Format: duration in seconds with 's' suffix (e.g., \"3600s\").\n Default: \"0s\" (immediate decommission).",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpDataprocClusterAccelerator",
+      "description": "GcpDataprocClusterAccelerator configures GPU or TPU accelerators\n attached to Dataproc cluster nodes for ML and compute workloads.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataproccluster.v1.GcpDataprocClusterAccelerator",
+      "fields": [
+        {
+          "name": "AcceleratorType",
+          "jsonName": "acceleratorType",
+          "protoField": "accelerator_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Full accelerator type name (e.g., \"nvidia-tesla-t4\", \"nvidia-tesla-v100\").\n See https://cloud.google.com/compute/docs/gpus for available types.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AcceleratorCount",
+          "jsonName": "acceleratorCount",
+          "protoField": "accelerator_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of accelerators to attach. Must be at least 1.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocClusterConfig",
+      "description": "GcpDataprocClusterConfig wraps all cluster infrastructure configuration.\n\n This message mirrors the Terraform/Pulumi cluster_config structure,\n keeping the API surface familiar to infrastructure engineers coming\n from Terraform or the GCP console. All fields are optional -- GCP\n provides sensible defaults for a basic cluster when fields are omitted.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataproccluster.v1.GcpDataprocClusterConfig",
+      "fields": [
+        {
+          "name": "StagingBucket",
+          "jsonName": "stagingBucket",
+          "protoField": "staging_bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Cloud Storage bucket for staging job dependencies, jar files, and\n other temporary data. If not specified, GCP auto-creates a staging\n bucket in the cluster's project and region.",
+          "required": false,
+          "referenceKind": "GcpGcsBucket",
+          "referenceFieldPath": "status.outputs.bucket_id"
+        },
+        {
+          "name": "TempBucket",
+          "jsonName": "tempBucket",
+          "protoField": "temp_bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Cloud Storage bucket for ephemeral cluster data (shuffle, spill).\n If not specified, GCP auto-creates a temp bucket.",
+          "required": false,
+          "referenceKind": "GcpGcsBucket",
+          "referenceFieldPath": "status.outputs.bucket_id"
+        },
+        {
+          "name": "GceConfig",
+          "jsonName": "gceConfig",
+          "protoField": "gce_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpDataprocClusterGceConfig"
+          },
+          "description": "Compute Engine configuration for the cluster's nodes (networking,\n service account, zone, tags, metadata).",
+          "required": false
+        },
+        {
+          "name": "MasterConfig",
+          "jsonName": "masterConfig",
+          "protoField": "master_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpDataprocClusterMasterConfig"
+          },
+          "description": "Master node configuration. If not specified, GCP defaults to\n 1 master with n2-standard-4 and 500 GB pd-standard disk.",
+          "required": false
+        },
+        {
+          "name": "WorkerConfig",
+          "jsonName": "workerConfig",
+          "protoField": "worker_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpDataprocClusterWorkerConfig"
+          },
+          "description": "Primary worker node configuration. If not specified, GCP defaults\n to 2 workers with n2-standard-4 and 500 GB pd-standard disk.",
+          "required": false
+        },
+        {
+          "name": "SecondaryWorkerConfig",
+          "jsonName": "secondaryWorkerConfig",
+          "protoField": "secondary_worker_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpDataprocClusterSecondaryWorkerConfig"
+          },
+          "description": "Secondary (preemptible/spot) worker node configuration.\n If not specified, no secondary workers are created.",
+          "required": false
+        },
+        {
+          "name": "SoftwareConfig",
+          "jsonName": "softwareConfig",
+          "protoField": "software_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpDataprocClusterSoftwareConfig"
+          },
+          "description": "Software configuration including Dataproc image version, optional\n components, and framework property overrides.",
+          "required": false
+        },
+        {
+          "name": "InitializationActions",
+          "jsonName": "initializationActions",
+          "protoField": "initialization_actions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpDataprocClusterInitAction"
+            }
+          },
+          "description": "Initialization actions (startup scripts) that run on all nodes\n when the cluster is created.",
+          "required": false
+        },
+        {
+          "name": "AutoscalingPolicyUri",
+          "jsonName": "autoscalingPolicyUri",
+          "protoField": "autoscaling_policy_uri",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URI of an existing Dataproc autoscaling policy to apply to the\n cluster. Format: projects/{project}/locations/{location}/autoscalingPolicies/{policy}\n The autoscaling policy must be created separately.",
+          "required": false
+        },
+        {
+          "name": "EncryptionKmsKeyName",
+          "jsonName": "encryptionKmsKeyName",
+          "protoField": "encryption_kms_key_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Cloud KMS key for encrypting persistent disks attached to cluster\n nodes (CMEK). Format: projects/{project}/locations/{location}/keyRings/{keyRing}/cryptoKeys/{key}\n If not specified, disks are encrypted with Google-managed keys.",
+          "required": false,
+          "referenceKind": "GcpKmsKey",
+          "referenceFieldPath": "status.outputs.key_id"
+        },
+        {
+          "name": "EndpointConfig",
+          "jsonName": "endpointConfig",
+          "protoField": "endpoint_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpDataprocClusterEndpointConfig"
+          },
+          "description": "Component Gateway configuration for authenticated web UI access.",
+          "required": false
+        },
+        {
+          "name": "LifecycleConfig",
+          "jsonName": "lifecycleConfig",
+          "protoField": "lifecycle_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpDataprocClusterLifecycleConfig"
+          },
+          "description": "Lifecycle configuration for automatic cluster shutdown and deletion.\n Critical for cost management of ephemeral batch processing clusters.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocClusterDiskConfig",
+      "description": "GcpDataprocClusterDiskConfig configures the boot disk and local SSDs\n for Dataproc cluster node groups (master, worker, secondary worker).\n\n The boot disk type defaults to \"pd-standard\" in GCP when not specified.\n Local SSDs provide high-performance scratch storage for shuffle data.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataproccluster.v1.GcpDataprocClusterDiskConfig",
+      "fields": [
+        {
+          "name": "BootDiskSizeGb",
+          "jsonName": "bootDiskSizeGb",
+          "protoField": "boot_disk_size_gb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Size of the boot disk in GB. Minimum 10 GB.\n If not specified, GCP defaults to 500 GB for master and worker nodes.",
+          "required": false
+        },
+        {
+          "name": "BootDiskType",
+          "jsonName": "bootDiskType",
+          "protoField": "boot_disk_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Boot disk type. Valid values: \"pd-standard\", \"pd-ssd\", \"pd-balanced\".\n If not specified, GCP defaults to \"pd-standard\".",
+          "required": false
+        },
+        {
+          "name": "NumLocalSsds",
+          "jsonName": "numLocalSsds",
+          "protoField": "num_local_ssds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of local SSDs to attach. Each local SSD is 375 GB.\n Default: 0 (no local SSDs).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocClusterEndpointConfig",
+      "description": "GcpDataprocClusterEndpointConfig controls access to the Dataproc\n Component Gateway, which provides authenticated web UI access to\n cluster services like Spark UI, YARN ResourceManager, HDFS NameNode,\n Jupyter, and Zeppelin.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataproccluster.v1.GcpDataprocClusterEndpointConfig",
+      "fields": [
+        {
+          "name": "EnableHttpPortAccess",
+          "jsonName": "enableHttpPortAccess",
+          "protoField": "enable_http_port_access",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to enable the Dataproc Component Gateway for web UI access.\n When enabled, GCP creates authenticated HTTPS endpoints for each\n cluster component. Requires the cluster to have external IP access\n or appropriate Private Google Access configuration.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocClusterGceConfig",
+      "description": "GcpDataprocClusterGceConfig defines the Compute Engine environment\n for the Dataproc cluster's nodes, including networking, identity, and\n instance metadata.\n\n Either network or subnetwork may be specified, but not both.\n If neither is specified, the cluster uses the project's default VPC.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataproccluster.v1.GcpDataprocClusterGceConfig",
+      "fields": [
+        {
+          "name": "Network",
+          "jsonName": "network",
+          "protoField": "network",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VPC network for the cluster's nodes. Mutually exclusive with subnetwork.\n Expects a network self-link or resource reference.",
+          "required": false,
+          "referenceKind": "GcpVpc",
+          "referenceFieldPath": "status.outputs.network_self_link"
+        },
+        {
+          "name": "Subnetwork",
+          "jsonName": "subnetwork",
+          "protoField": "subnetwork",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VPC subnetwork for the cluster's nodes. Mutually exclusive with network.\n Using a subnetwork is recommended for production clusters with\n controlled IP ranges.",
+          "required": false,
+          "referenceKind": "GcpSubnetwork",
+          "referenceFieldPath": "status.outputs.subnetwork_self_link"
+        },
+        {
+          "name": "ServiceAccount",
+          "jsonName": "serviceAccount",
+          "protoField": "service_account",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account for the cluster's VMs. If not specified, the default\n Compute Engine service account is used. A custom service account with\n minimal permissions is recommended for production.",
+          "required": false,
+          "referenceKind": "GcpServiceAccount",
+          "referenceFieldPath": "status.outputs.email"
+        },
+        {
+          "name": "ServiceAccountScopes",
+          "jsonName": "serviceAccountScopes",
+          "protoField": "service_account_scopes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OAuth 2.0 scopes for the service account. If not specified, GCP uses\n a default set of scopes. Override only when you need to restrict or\n expand API access.",
+          "required": false
+        },
+        {
+          "name": "Zone",
+          "jsonName": "zone",
+          "protoField": "zone",
+          "type": {
+            "kind": "string"
+          },
+          "description": "GCP zone within the region for node placement. If not specified,\n GCP auto-selects a zone within the cluster's region.",
+          "required": false
+        },
+        {
+          "name": "InternalIpOnly",
+          "jsonName": "internalIpOnly",
+          "protoField": "internal_ip_only",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to use only internal IP addresses for cluster nodes.\n When true, nodes have no external IP and require Cloud NAT or\n Private Google Access for internet connectivity.\n Recommended for production to reduce attack surface.",
+          "required": false
+        },
+        {
+          "name": "Tags",
+          "jsonName": "tags",
+          "protoField": "tags",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "GCE network tags applied to all cluster nodes. Useful for\n firewall rule targeting.",
+          "required": false
+        },
+        {
+          "name": "Metadata",
+          "jsonName": "metadata",
+          "protoField": "metadata",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Compute Engine metadata key-value pairs applied to all cluster nodes.\n Common use: startup scripts, environment variables for init actions.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocClusterInitAction",
+      "description": "GcpDataprocClusterInitAction defines an initialization action (startup\n script) that runs on all nodes when the cluster is created.\n\n Initialization actions are commonly used to install additional software,\n configure networking, or set up monitoring agents.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataproccluster.v1.GcpDataprocClusterInitAction",
+      "fields": [
+        {
+          "name": "Script",
+          "jsonName": "script",
+          "protoField": "script",
+          "type": {
+            "kind": "string"
+          },
+          "description": "GCS URI of the initialization script (must start with \"gs://\").",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "TimeoutSec",
+          "jsonName": "timeoutSec",
+          "protoField": "timeout_sec",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum time (in seconds) the script is allowed to run before\n being forcefully terminated. Default: 300 (5 minutes).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocClusterLifecycleConfig",
+      "description": "GcpDataprocClusterLifecycleConfig controls automatic cluster shutdown\n and deletion, which is critical for cost management of ephemeral\n Spark/Hadoop clusters.\n\n Dataproc clusters are often ephemeral -- spun up for a batch job,\n then torn down. Without lifecycle configuration, idle clusters\n continue to incur costs indefinitely.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataproccluster.v1.GcpDataprocClusterLifecycleConfig",
+      "fields": [
+        {
+          "name": "IdleDeleteTtl",
+          "jsonName": "idleDeleteTtl",
+          "protoField": "idle_delete_ttl",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Duration of inactivity after which the cluster is automatically\n deleted. Format: duration in seconds with 's' suffix (e.g., \"1800s\"\n for 30 minutes). Valid range: 10 minutes to 14 days.\n\n A cluster is considered idle when no jobs are running and no\n interactive sessions are active.",
+          "required": false
+        },
+        {
+          "name": "AutoDeleteTime",
+          "jsonName": "autoDeleteTime",
+          "protoField": "auto_delete_time",
+          "type": {
+            "kind": "string"
+          },
+          "description": "RFC3339 timestamp at which the cluster is automatically deleted,\n regardless of activity (e.g., \"2026-03-01T00:00:00Z\").\n Useful for time-boxed clusters with a known end date.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocClusterMasterConfig",
+      "description": "GcpDataprocClusterMasterConfig defines the configuration for the\n master node(s) of the Dataproc cluster.\n\n For standard clusters, use 1 master. For high-availability clusters,\n use 3 masters (GCP requirement for HA mode).",
+      "protoType": "org.openmcf.provider.gcp.gcpdataproccluster.v1.GcpDataprocClusterMasterConfig",
+      "fields": [
+        {
+          "name": "NumInstances",
+          "jsonName": "numInstances",
+          "protoField": "num_instances",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of master instances. Valid values: 1 (standard) or 3 (HA).\n If not specified, GCP defaults to 1.",
+          "required": false
+        },
+        {
+          "name": "MachineType",
+          "jsonName": "machineType",
+          "protoField": "machine_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Compute Engine machine type (e.g., \"n2-standard-4\", \"e2-standard-8\").\n If not specified, GCP selects a default machine type.",
+          "required": false
+        },
+        {
+          "name": "DiskConfig",
+          "jsonName": "diskConfig",
+          "protoField": "disk_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpDataprocClusterDiskConfig"
+          },
+          "description": "Boot disk and local SSD configuration.",
+          "required": false
+        },
+        {
+          "name": "Accelerators",
+          "jsonName": "accelerators",
+          "protoField": "accelerators",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpDataprocClusterAccelerator"
+            }
+          },
+          "description": "GPU or TPU accelerators attached to master nodes.\n Typically not needed for masters unless running single-node ML workloads.",
+          "required": false
+        },
+        {
+          "name": "MinCpuPlatform",
+          "jsonName": "minCpuPlatform",
+          "protoField": "min_cpu_platform",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Minimum CPU platform for the instances (e.g., \"Intel Cascade Lake\").\n Forces nodes onto a specific or newer CPU generation.",
+          "required": false
+        },
+        {
+          "name": "ImageUri",
+          "jsonName": "imageUri",
+          "protoField": "image_uri",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Custom Dataproc image URI. If not specified, GCP uses the image\n determined by software_config.image_version.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocClusterSecondaryWorkerConfig",
+      "description": "GcpDataprocClusterSecondaryWorkerConfig defines the configuration\n for secondary (preemptible or spot) worker nodes.\n\n Secondary workers provide cost-optimized burst capacity for batch\n workloads. They may be preempted by GCP at any time. Spot VMs are\n the modern replacement for preemptible VMs with better pricing and\n availability.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataproccluster.v1.GcpDataprocClusterSecondaryWorkerConfig",
+      "fields": [
+        {
+          "name": "NumInstances",
+          "jsonName": "numInstances",
+          "protoField": "num_instances",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of secondary worker instances. Default: 0.",
+          "required": false
+        },
+        {
+          "name": "Preemptibility",
+          "jsonName": "preemptibility",
+          "protoField": "preemptibility",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Preemptibility of the secondary workers.\n SPOT: modern spot VMs with dynamic pricing (recommended).\n PREEMPTIBLE: legacy preemptible VMs with fixed pricing.\n NON_PREEMPTIBLE: standard on-demand pricing (unusual for secondary workers).\n If not specified, GCP defaults to PREEMPTIBLE.",
+          "required": false
+        },
+        {
+          "name": "DiskConfig",
+          "jsonName": "diskConfig",
+          "protoField": "disk_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpDataprocClusterDiskConfig"
+          },
+          "description": "Boot disk and local SSD configuration for secondary workers.\n Secondary workers do not support custom machine types or accelerators;\n they inherit machine configuration from the primary worker config.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocClusterSoftwareConfig",
+      "description": "GcpDataprocClusterSoftwareConfig defines the Dataproc image version,\n optional components, and Hadoop/Spark/YARN property overrides.\n\n The image version determines the versions of Apache Spark, Hadoop,\n Hive, Pig, and other components installed on the cluster.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataproccluster.v1.GcpDataprocClusterSoftwareConfig",
+      "fields": [
+        {
+          "name": "ImageVersion",
+          "jsonName": "imageVersion",
+          "protoField": "image_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Dataproc image version (e.g., \"2.2-debian12\", \"2.1-ubuntu20\").\n See https://cloud.google.com/dataproc/docs/concepts/versioning/dataproc-versions\n If not specified, GCP uses the latest stable version.",
+          "required": false
+        },
+        {
+          "name": "OptionalComponents",
+          "jsonName": "optionalComponents",
+          "protoField": "optional_components",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Optional components to install on the cluster. Common values:\n JUPYTER, DOCKER, PRESTO, ZEPPELIN, HIVE_WEBHCAT, FLINK, TRINO.\n See https://cloud.google.com/dataproc/docs/concepts/components/overview",
+          "required": false
+        },
+        {
+          "name": "Properties",
+          "jsonName": "properties",
+          "protoField": "properties",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Key-value pairs to override or set Hadoop, Spark, YARN, and other\n framework properties. Keys use the format \"prefix:property\", e.g.:\n   \"spark:spark.executor.memory\" = \"4g\"\n   \"hdfs:dfs.replication\" = \"2\"\n   \"yarn:yarn.nodemanager.resource.memory-mb\" = \"8192\"\n See https://cloud.google.com/dataproc/docs/concepts/configuring-clusters/cluster-properties",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocClusterWorkerConfig",
+      "description": "GcpDataprocClusterWorkerConfig defines the configuration for the\n primary worker nodes of the Dataproc cluster.\n\n Primary workers are standard, on-demand VMs that persist for the\n lifetime of the cluster. Use secondary workers for cost-optimized,\n preemptible/spot capacity.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataproccluster.v1.GcpDataprocClusterWorkerConfig",
+      "fields": [
+        {
+          "name": "NumInstances",
+          "jsonName": "numInstances",
+          "protoField": "num_instances",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of primary worker instances.\n If not specified, GCP defaults to 2.",
+          "required": false
+        },
+        {
+          "name": "MachineType",
+          "jsonName": "machineType",
+          "protoField": "machine_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Compute Engine machine type (e.g., \"n2-standard-4\", \"e2-standard-8\").\n If not specified, GCP selects a default machine type.",
+          "required": false
+        },
+        {
+          "name": "DiskConfig",
+          "jsonName": "diskConfig",
+          "protoField": "disk_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpDataprocClusterDiskConfig"
+          },
+          "description": "Boot disk and local SSD configuration.",
+          "required": false
+        },
+        {
+          "name": "Accelerators",
+          "jsonName": "accelerators",
+          "protoField": "accelerators",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpDataprocClusterAccelerator"
+            }
+          },
+          "description": "GPU or TPU accelerators attached to worker nodes.\n Common for Spark ML workloads using GPU-accelerated libraries.",
+          "required": false
+        },
+        {
+          "name": "MinCpuPlatform",
+          "jsonName": "minCpuPlatform",
+          "protoField": "min_cpu_platform",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Minimum CPU platform for the instances.",
+          "required": false
+        },
+        {
+          "name": "ImageUri",
+          "jsonName": "imageUri",
+          "protoField": "image_uri",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Custom Dataproc image URI.",
+          "required": false
+        },
+        {
+          "name": "MinNumInstances",
+          "jsonName": "minNumInstances",
+          "protoField": "min_num_instances",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of primary worker instances when autoscaling is active.\n The autoscaler will not scale below this threshold.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

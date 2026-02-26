@@ -1,0 +1,30 @@
+{
+  "name": "HetznerCloudSshKey",
+  "kind": "HetznerCloudSshKey",
+  "cloudProvider": "hetznercloud",
+  "apiVersion": "hetzner-cloud.openmcf.org/v1",
+  "description": "hetznercloud-ssh-key",
+  "protoPackage": "org.openmcf.provider.hetznercloud.hetznercloudsshkey.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/hetznercloud/hetznercloudsshkey/v1/api.proto",
+    "spec": "org/openmcf/provider/hetznercloud/hetznercloudsshkey/v1/spec.proto"
+  },
+  "spec": {
+    "name": "HetznerCloudSshKeySpec",
+    "fields": [
+      {
+        "name": "PublicKey",
+        "jsonName": "publicKey",
+        "protoField": "public_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SSH public key content in OpenSSH authorized_keys format.\n\n Supports RSA (\u003e= 1024 bits), ED25519, and ECDSA key types.\n Example: \"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA... user@host\"\n\n Changing this value forces replacement of the SSH key resource.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      }
+    ]
+  }
+}

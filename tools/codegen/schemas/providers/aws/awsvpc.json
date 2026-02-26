@@ -1,0 +1,114 @@
+{
+  "name": "AwsVpc",
+  "kind": "AwsVpc",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-vpc",
+  "protoPackage": "org.openmcf.provider.aws.awsvpc.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsvpc/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsvpc/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsVpcSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the VPC will be created.\n Example: \"us-west-2\", \"eu-west-1\", \"ap-southeast-1\"\n For a list of AWS regions, see: https://aws.amazon.com/about-aws/global-infrastructure/regions_az/",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VpcCidr",
+        "jsonName": "vpcCidr",
+        "protoField": "vpc_cidr",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The CIDR (Classless Inter-Domain Routing) block for the VPC.\n This defines the IP address range for the VPC.\n Example: \"10.0.0.0/16\" allows IP addresses from 10.0.0.0 to 10.0.255.255.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "AvailabilityZones",
+        "jsonName": "availabilityZones",
+        "protoField": "availability_zones",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "The list of availability zones where the VPC will be spanned.\n AWS regions are divided into multiple availability zones (AZs) for high availability.\n Example: [\"us-west-2a\", \"us-west-2b\"] indicates that resources will be spread across these two AZs.",
+        "required": false
+      },
+      {
+        "name": "SubnetsPerAvailabilityZone",
+        "jsonName": "subnetsPerAvailabilityZone",
+        "protoField": "subnets_per_availability_zone",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "The number of subnets to be created in each availability zone.\n Subnets are segments of the VPC's IP address range where you can place groups of isolated resources.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "recommendedDefault": "1"
+      },
+      {
+        "name": "SubnetSize",
+        "jsonName": "subnetSize",
+        "protoField": "subnet_size",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "The number of hosts (IP addresses) in each subnet.\n This determines the size of each subnet's CIDR block.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "recommendedDefault": "1"
+      },
+      {
+        "name": "IsNatGatewayEnabled",
+        "jsonName": "isNatGatewayEnabled",
+        "protoField": "is_nat_gateway_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Toggle to enable or disable a NAT (Network Address Translation) gateway for private subnets created in the VPC.\n A NAT gateway allows instances in a private subnet to connect to the internet or other AWS services, but prevents\n the internet from initiating a connection with those instances.",
+        "required": false
+      },
+      {
+        "name": "IsDnsHostnamesEnabled",
+        "jsonName": "isDnsHostnamesEnabled",
+        "protoField": "is_dns_hostnames_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Toggle to enable or disable DNS hostnames in the VPC.\n When enabled, instances with public IP addresses receive corresponding public DNS hostnames.\n See AWS documentation: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html#vpc-dns-hostnames",
+        "required": false
+      },
+      {
+        "name": "IsDnsSupportEnabled",
+        "jsonName": "isDnsSupportEnabled",
+        "protoField": "is_dns_support_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Toggle to enable or disable DNS resolution in the VPC through the Amazon-provided DNS server.\n When enabled, the Amazon DNS server resolves DNS hostnames for your instances.",
+        "required": false
+      }
+    ]
+  }
+}

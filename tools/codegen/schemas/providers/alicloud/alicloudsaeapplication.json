@@ -1,0 +1,637 @@
+{
+  "name": "AliCloudSaeApplication",
+  "kind": "AliCloudSaeApplication",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-sae-application",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudsaeapplication.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudsaeapplication/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudsaeapplication/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudSaeApplicationSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the SAE application will be created.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "AppName",
+        "jsonName": "appName",
+        "protoField": "app_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Application name. Must start with a letter, and can contain letters,\n digits, and dashes. Maximum 36 characters.\n This field is immutable after creation (ForceNew in the provider).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 36
+        }
+      },
+      {
+        "name": "AppDescription",
+        "jsonName": "appDescription",
+        "protoField": "app_description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the application. Maximum 1024 characters.",
+        "required": false,
+        "validation": {
+          "maxLength": 1024
+        }
+      },
+      {
+        "name": "PackageType",
+        "jsonName": "packageType",
+        "protoField": "package_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Application package type. Determines how the application code is\n delivered and which runtime fields apply.\n This field is immutable after creation (ForceNew in the provider).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Replicas",
+        "jsonName": "replicas",
+        "protoField": "replicas",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of application instances to run. Minimum 1.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "min": 1
+        }
+      },
+      {
+        "name": "Cpu",
+        "jsonName": "cpu",
+        "protoField": "cpu",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "CPU allocation per instance in millicores.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Memory",
+        "jsonName": "memory",
+        "protoField": "memory",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Memory allocation per instance in MB.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC ID for VPC-based deployment. When set, the application runs inside\n the specified VPC. Optional — SAE provides managed networking by default.\n This field is immutable after creation (ForceNew in the provider).",
+        "required": false,
+        "referenceKind": "AliCloudVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "VswitchId",
+        "jsonName": "vswitchId",
+        "protoField": "vswitch_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VSwitch ID for VPC-based deployment. Determines the subnet and\n availability zone.",
+        "required": false,
+        "referenceKind": "AliCloudVswitch",
+        "referenceFieldPath": "status.outputs.vswitch_id"
+      },
+      {
+        "name": "SecurityGroupId",
+        "jsonName": "securityGroupId",
+        "protoField": "security_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Security group ID for VPC-based deployment. Controls inbound/outbound\n traffic rules for the application instances.",
+        "required": false,
+        "referenceKind": "AliCloudSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "NamespaceId",
+        "jsonName": "namespaceId",
+        "protoField": "namespace_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SAE namespace ID. Format: \"{region}:{short_id}\". Applications in the\n same namespace share configuration items (ConfigMaps) and can discover\n each other via built-in service registration.\n If omitted, the application is placed in the default namespace.\n This field is immutable after creation (ForceNew in the provider).",
+        "required": false
+      },
+      {
+        "name": "ImageUrl",
+        "jsonName": "imageUrl",
+        "protoField": "image_url",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Container image URL. Required when package_type is \"Image\".\n Example: \"registry.cn-hangzhou.aliyuncs.com/my-ns/my-app:v1\"",
+        "required": false
+      },
+      {
+        "name": "PackageUrl",
+        "jsonName": "packageUrl",
+        "protoField": "package_url",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Deployment package URL (OSS or HTTP). Required when package_type is\n \"FatJar\", \"War\", \"PythonZip\", or \"PhpZip\".",
+        "required": false
+      },
+      {
+        "name": "PackageVersion",
+        "jsonName": "packageVersion",
+        "protoField": "package_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Deployment package version identifier. Recommended for non-Image\n deployments to track which version is deployed.",
+        "required": false
+      },
+      {
+        "name": "Command",
+        "jsonName": "command",
+        "protoField": "command",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Container start command override (ENTRYPOINT equivalent).",
+        "required": false
+      },
+      {
+        "name": "CommandArgs",
+        "jsonName": "commandArgs",
+        "protoField": "command_args",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Container start command arguments (CMD equivalent).\n Maps to the provider's command_args_v2 field.",
+        "required": false
+      },
+      {
+        "name": "Envs",
+        "jsonName": "envs",
+        "protoField": "envs",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Environment variables passed to the application at runtime.\n The IaC modules convert this map to the JSON array format that\n the SAE API expects: [{\"name\":\"K\",\"value\":\"V\"},...].",
+        "required": false
+      },
+      {
+        "name": "Jdk",
+        "jsonName": "jdk",
+        "protoField": "jdk",
+        "type": {
+          "kind": "string"
+        },
+        "description": "JDK version for Java applications (package_type FatJar or War).\n Examples: \"Open JDK 8\", \"Open JDK 11\", \"Open JDK 17\", \"Dragonwell 8\",\n \"Dragonwell 11\", \"Dragonwell 17\".",
+        "required": false
+      },
+      {
+        "name": "JarStartOptions",
+        "jsonName": "jarStartOptions",
+        "protoField": "jar_start_options",
+        "type": {
+          "kind": "string"
+        },
+        "description": "JVM startup options for FatJar applications.\n Example: \"-Xms512m -Xmx1024m -Dserver.port=8080\"",
+        "required": false
+      },
+      {
+        "name": "JarStartArgs",
+        "jsonName": "jarStartArgs",
+        "protoField": "jar_start_args",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Application startup arguments for FatJar applications.",
+        "required": false
+      },
+      {
+        "name": "ProgrammingLanguage",
+        "jsonName": "programmingLanguage",
+        "protoField": "programming_language",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Programming language. Affects which runtime features are available.\n This field is immutable after creation (ForceNew in the provider).",
+        "required": false,
+        "oneofGroup": "_programming_language"
+      },
+      {
+        "name": "Timezone",
+        "jsonName": "timezone",
+        "protoField": "timezone",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Application timezone. Affects log timestamps and scheduled tasks.",
+        "required": false
+      },
+      {
+        "name": "TerminationGracePeriodSeconds",
+        "jsonName": "terminationGracePeriodSeconds",
+        "protoField": "termination_grace_period_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Graceful shutdown timeout in seconds. The application receives SIGTERM\n and has this many seconds to clean up before SIGKILL.\n Range: 1-60. Provider default: 30.",
+        "required": false,
+        "oneofGroup": "_termination_grace_period_seconds"
+      },
+      {
+        "name": "MinReadyInstances",
+        "jsonName": "minReadyInstances",
+        "protoField": "min_ready_instances",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Minimum number of available instances during a rolling deployment.\n Ensures service availability while new instances are starting.",
+        "required": false,
+        "oneofGroup": "_min_ready_instances"
+      },
+      {
+        "name": "AcrInstanceId",
+        "jsonName": "acrInstanceId",
+        "protoField": "acr_instance_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ACR Enterprise Edition instance ID for pulling images from a private\n container registry. Only needed when image_url points to an ACR EE\n instance (not the default ACR Personal Edition).",
+        "required": false
+      },
+      {
+        "name": "Liveness",
+        "jsonName": "liveness",
+        "protoField": "liveness",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudSaeApplicationHealthCheck"
+        },
+        "description": "Liveness probe configuration. If the liveness check fails repeatedly,\n SAE restarts the application instance.",
+        "required": false
+      },
+      {
+        "name": "Readiness",
+        "jsonName": "readiness",
+        "protoField": "readiness",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudSaeApplicationHealthCheck"
+        },
+        "description": "Readiness probe configuration. Until the readiness check passes, SAE\n does not route traffic to the instance.",
+        "required": false
+      },
+      {
+        "name": "CustomHostAliases",
+        "jsonName": "customHostAliases",
+        "protoField": "custom_host_aliases",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudSaeApplicationCustomHostAlias"
+          }
+        },
+        "description": "Custom hostname-to-IP mappings injected into the container's /etc/hosts.\n Useful for resolving internal service names without DNS.",
+        "required": false
+      },
+      {
+        "name": "UpdateStrategy",
+        "jsonName": "updateStrategy",
+        "protoField": "update_strategy",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudSaeApplicationUpdateStrategy"
+        },
+        "description": "Deployment update strategy controlling how new versions are rolled out.",
+        "required": false
+      },
+      {
+        "name": "SlsConfigs",
+        "jsonName": "slsConfigs",
+        "protoField": "sls_configs",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SLS log collection configuration as a JSON string.\n Format: [{\"logDir\":\"/path\",\"logType\":\"stdout\"},...]\n When set, SAE collects application logs and ships them to SLS.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the SAE application resource.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudSaeApplicationBatchUpdate",
+      "description": "AliCloudSaeApplicationBatchUpdate defines the batch release configuration.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudsaeapplication.v1.AliCloudSaeApplicationBatchUpdate",
+      "fields": [
+        {
+          "name": "Batch",
+          "jsonName": "batch",
+          "protoField": "batch",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of batches to split the release into.",
+          "required": false,
+          "oneofGroup": "_batch"
+        },
+        {
+          "name": "BatchWaitTime",
+          "jsonName": "batchWaitTime",
+          "protoField": "batch_wait_time",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Seconds to wait between batches.",
+          "required": false,
+          "oneofGroup": "_batch_wait_time"
+        },
+        {
+          "name": "ReleaseType",
+          "jsonName": "releaseType",
+          "protoField": "release_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Release processing method.\n \"auto\": automatically proceed to the next batch.\n \"manual\": pause between batches for manual approval.",
+          "required": false,
+          "oneofGroup": "_release_type"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudSaeApplicationCustomHostAlias",
+      "description": "AliCloudSaeApplicationCustomHostAlias defines a hostname-to-IP mapping\n injected into the container's /etc/hosts file.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudsaeapplication.v1.AliCloudSaeApplicationCustomHostAlias",
+      "fields": [
+        {
+          "name": "HostName",
+          "jsonName": "hostName",
+          "protoField": "host_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Hostname to map.",
+          "required": false
+        },
+        {
+          "name": "Ip",
+          "jsonName": "ip",
+          "protoField": "ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP address the hostname resolves to.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudSaeApplicationExecAction",
+      "description": "AliCloudSaeApplicationExecAction defines a command-based health check.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudsaeapplication.v1.AliCloudSaeApplicationExecAction",
+      "fields": [
+        {
+          "name": "Command",
+          "jsonName": "command",
+          "protoField": "command",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Command to execute inside the container. The check succeeds if the\n command exits with code 0.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudSaeApplicationHealthCheck",
+      "description": "AliCloudSaeApplicationHealthCheck defines a health check probe for the\n SAE application. Exactly one of http_get, tcp_socket, or exec should be\n configured to specify the check mechanism.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudsaeapplication.v1.AliCloudSaeApplicationHealthCheck",
+      "fields": [
+        {
+          "name": "HttpGet",
+          "jsonName": "httpGet",
+          "protoField": "http_get",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudSaeApplicationHttpGetAction"
+          },
+          "description": "HTTP GET probe. SAE sends an HTTP GET request to the specified path\n and port, and considers the check successful if the response status\n is 200-399.",
+          "required": false
+        },
+        {
+          "name": "TcpSocket",
+          "jsonName": "tcpSocket",
+          "protoField": "tcp_socket",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudSaeApplicationTcpSocketAction"
+          },
+          "description": "TCP socket probe. SAE attempts a TCP connection to the specified port\n and considers the check successful if the connection is established.",
+          "required": false
+        },
+        {
+          "name": "Exec",
+          "jsonName": "exec",
+          "protoField": "exec",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudSaeApplicationExecAction"
+          },
+          "description": "Exec probe. SAE executes the specified command inside the container\n and considers the check successful if the command exits with code 0.",
+          "required": false
+        },
+        {
+          "name": "InitialDelaySeconds",
+          "jsonName": "initialDelaySeconds",
+          "protoField": "initial_delay_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Seconds to wait after the container starts before initiating the\n first health check.",
+          "required": false,
+          "oneofGroup": "_initial_delay_seconds"
+        },
+        {
+          "name": "PeriodSeconds",
+          "jsonName": "periodSeconds",
+          "protoField": "period_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Seconds between consecutive health checks.",
+          "required": false,
+          "oneofGroup": "_period_seconds"
+        },
+        {
+          "name": "TimeoutSeconds",
+          "jsonName": "timeoutSeconds",
+          "protoField": "timeout_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Seconds to wait for a health check response before marking it failed.",
+          "required": false,
+          "oneofGroup": "_timeout_seconds"
+        },
+        {
+          "name": "FailureThreshold",
+          "jsonName": "failureThreshold",
+          "protoField": "failure_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive failures before considering the container\n unhealthy (liveness) or not ready (readiness).",
+          "required": false,
+          "oneofGroup": "_failure_threshold"
+        },
+        {
+          "name": "SuccessThreshold",
+          "jsonName": "successThreshold",
+          "protoField": "success_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive successes before considering the container\n healthy or ready again after a failure.",
+          "required": false,
+          "oneofGroup": "_success_threshold"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudSaeApplicationHttpGetAction",
+      "description": "AliCloudSaeApplicationHttpGetAction defines an HTTP GET health check.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudsaeapplication.v1.AliCloudSaeApplicationHttpGetAction",
+      "fields": [
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URL path for the HTTP GET request (e.g., \"/healthz\").",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port to send the HTTP GET request to.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudSaeApplicationTcpSocketAction",
+      "description": "AliCloudSaeApplicationTcpSocketAction defines a TCP socket health check.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudsaeapplication.v1.AliCloudSaeApplicationTcpSocketAction",
+      "fields": [
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port to attempt a TCP connection to.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudSaeApplicationUpdateStrategy",
+      "description": "AliCloudSaeApplicationUpdateStrategy controls how new application\n versions are rolled out to instances.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudsaeapplication.v1.AliCloudSaeApplicationUpdateStrategy",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Release policy type.\n \"BatchUpdate\": release in sequential batches.\n \"GrayBatchUpdate\": canary-style phased release.",
+          "required": false,
+          "oneofGroup": "_type"
+        },
+        {
+          "name": "BatchUpdate",
+          "jsonName": "batchUpdate",
+          "protoField": "batch_update",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudSaeApplicationBatchUpdate"
+          },
+          "description": "Batch update configuration.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

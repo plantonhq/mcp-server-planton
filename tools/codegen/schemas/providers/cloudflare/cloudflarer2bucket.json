@@ -1,0 +1,134 @@
+{
+  "name": "CloudflareR2Bucket",
+  "kind": "CloudflareR2Bucket",
+  "cloudProvider": "cloudflare",
+  "apiVersion": "cloudflare.openmcf.org/v1",
+  "description": "cloudflare-r2-bucket",
+  "protoPackage": "org.openmcf.provider.cloudflare.cloudflarer2bucket.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/cloudflare/cloudflarer2bucket/v1/api.proto",
+    "spec": "org/openmcf/provider/cloudflare/cloudflarer2bucket/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CloudflareR2BucketSpec",
+    "fields": [
+      {
+        "name": "BucketName",
+        "jsonName": "bucketName",
+        "protoField": "bucket_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "bucket name (DNS-compatible, 3–63 characters)",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 3,
+          "maxLength": 63,
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "AccountId",
+        "jsonName": "accountId",
+        "protoField": "account_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Cloudflare account ID in which to create the bucket.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[0-9a-fA-F]{32}$"
+        }
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.cloudflare.cloudflarer2bucket.v1.CloudflareR2Location",
+          "enumValues": [
+            "WNAM",
+            "ENAM",
+            "WEUR",
+            "EEUR",
+            "APAC",
+            "OC"
+          ]
+        },
+        "description": "primary region for the bucket (location hint)",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "PublicAccess",
+        "jsonName": "publicAccess",
+        "protoField": "public_access",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "expose bucket via public URL (Cloudflare-managed r2.dev domain; default: false)",
+        "required": false
+      },
+      {
+        "name": "CustomDomain",
+        "jsonName": "customDomain",
+        "protoField": "custom_domain",
+        "type": {
+          "kind": "message",
+          "messageType": "CloudflareR2BucketCustomDomainConfig"
+        },
+        "description": "custom domain configuration for the bucket",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "CloudflareR2BucketCustomDomainConfig",
+      "description": "CloudflareR2BucketCustomDomainConfig configures a custom domain for accessing the R2 bucket.\n When enabled, the bucket will be accessible via the specified domain.",
+      "protoType": "org.openmcf.provider.cloudflare.cloudflarer2bucket.v1.CloudflareR2BucketCustomDomainConfig",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to enable custom domain access for the bucket.",
+          "required": false
+        },
+        {
+          "name": "ZoneId",
+          "jsonName": "zoneId",
+          "protoField": "zone_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Cloudflare Zone ID where the custom domain will be configured.\n Can be a literal value or referenced from a CloudflareDnsZone resource.\n Required when enabled is true.",
+          "required": false,
+          "referenceKind": "CloudflareDnsZone",
+          "referenceFieldPath": "status.outputs.zone_id"
+        },
+        {
+          "name": "Domain",
+          "jsonName": "domain",
+          "protoField": "domain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The full domain name to use for accessing the bucket (e.g., \"media.example.com\").\n Must be within the zone specified by zone_id.\n Required when enabled is true.",
+          "required": false,
+          "validation": {
+            "maxLength": 253
+          }
+        }
+      ]
+    }
+  ]
+}

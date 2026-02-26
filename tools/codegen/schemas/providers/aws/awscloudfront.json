@@ -1,0 +1,159 @@
+{
+  "name": "AwsCloudFront",
+  "kind": "AwsCloudFront",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsCloudFront is the top-level API resource envelope.",
+  "protoPackage": "org.openmcf.provider.aws.awscloudfront.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awscloudfront/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awscloudfront/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsCloudFrontSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Enabled",
+        "jsonName": "enabled",
+        "protoField": "enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the distribution is enabled.",
+        "required": false
+      },
+      {
+        "name": "Aliases",
+        "jsonName": "aliases",
+        "protoField": "aliases",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Aliases (CNAMEs) for the distribution, e.g., \"cdn.example.com\".",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "CertificateArn",
+        "jsonName": "certificateArn",
+        "protoField": "certificate_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ACM certificate ARN for custom domains. Must be in the us-east-1 region.\n Required when aliases are provided. Can reference an AwsCertManagerCert resource.",
+        "required": false,
+        "referenceKind": "AwsCertManagerCert",
+        "referenceFieldPath": "status.outputs.certificate_arn"
+      },
+      {
+        "name": "PriceClass",
+        "jsonName": "priceClass",
+        "protoField": "price_class",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.aws.awscloudfront.v1.PriceClass",
+          "enumValues": [
+            "PRICE_CLASS_100",
+            "PRICE_CLASS_200",
+            "PRICE_CLASS_ALL"
+          ]
+        },
+        "required": false
+      },
+      {
+        "name": "Origins",
+        "jsonName": "origins",
+        "protoField": "origins",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Origin"
+          }
+        },
+        "description": "List of origins available to the distribution.\n Must contain at least one origin with exactly one marked as default.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "DefaultRootObject",
+        "jsonName": "defaultRootObject",
+        "protoField": "default_root_object",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Default root object, e.g., \"index.html\".",
+        "required": false,
+        "validation": {
+          "pattern": "^[A-Za-z0-9\\-\\.\\_]*$"
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "Origin",
+      "description": "Origin definition.",
+      "protoType": "org.openmcf.provider.aws.awscloudfront.v1.AwsCloudFrontSpec.Origin",
+      "fields": [
+        {
+          "name": "DomainName",
+          "jsonName": "domainName",
+          "protoField": "domain_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "DNS name of the origin, e.g., \"my-bucket.s3.amazonaws.com\".",
+          "required": false,
+          "validation": {
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9\\-\\.]+\\.[A-Za-z]{2,}$"
+          }
+        },
+        {
+          "name": "OriginPath",
+          "jsonName": "originPath",
+          "protoField": "origin_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional origin path that CloudFront appends to requests.",
+          "required": false,
+          "validation": {
+            "pattern": "^$|^/[A-Za-z0-9\\-\\_\\/\\.]*$"
+          }
+        },
+        {
+          "name": "IsDefault",
+          "jsonName": "isDefault",
+          "protoField": "is_default",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether this origin is used as the default origin for the distribution.\n Exactly one origin must be marked as default.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

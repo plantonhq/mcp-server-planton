@@ -1,0 +1,79 @@
+{
+  "name": "GcpArtifactRegistryRepo",
+  "kind": "GcpArtifactRegistryRepo",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-artifact-registry-repo",
+  "protoPackage": "org.openmcf.provider.gcp.gcpartifactregistryrepo.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpartifactregistryrepo/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpartifactregistryrepo/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpArtifactRegistryRepoSpec",
+    "fields": [
+      {
+        "name": "RepoFormat",
+        "jsonName": "repoFormat",
+        "protoField": "repo_format",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.gcp.gcpartifactregistryrepo.v1.GcpArtifactRegistryRepoFormat",
+          "enumValues": [
+            "DOCKER",
+            "GENERIC",
+            "GO",
+            "KUBEFLOW",
+            "MAVEN",
+            "NPM",
+            "PYTHON",
+            "YUM"
+          ]
+        },
+        "description": "The format of the repository in the Artifact Registry.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The ID of the GCP project where the Artifact Registry resources will be created.\n Can be provided as a literal string value or as a reference to another resource's output.\n Example literal: {value: \"my-gcp-project-123\"}\n Example reference: {value_from: {kind: GcpProject, name: \"main-project\"}}",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The GCP region where the Artifact Registry will be created (e.g., \"us-west2\").\n Selecting a region close to your Kubernetes clusters can reduce service startup time\n by enabling faster downloads of container images.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "EnablePublicAccess",
+        "jsonName": "enablePublicAccess",
+        "protoField": "enable_public_access",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "A flag indicating whether to allow unauthenticated access to artifacts published in the repositories.\n Enable this for publishing artifacts for open-source projects that require public access.",
+        "required": false
+      }
+    ]
+  }
+}

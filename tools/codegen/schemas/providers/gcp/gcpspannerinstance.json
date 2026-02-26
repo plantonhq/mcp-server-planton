@@ -1,0 +1,261 @@
+{
+  "name": "GcpSpannerInstance",
+  "kind": "GcpSpannerInstance",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-spanner-instance",
+  "protoPackage": "org.openmcf.provider.gcp.gcpspannerinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpspannerinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpspannerinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpSpannerInstanceSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the Spanner instance will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "InstanceName",
+        "jsonName": "instanceName",
+        "protoField": "instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Unique name for the Spanner instance. This becomes the GCP resource name.\n Must start with a lowercase letter, can contain lowercase letters, numbers,\n and hyphens, and must end with a lowercase letter or number.\n 6-30 characters. Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 6,
+          "maxLength": 30,
+          "pattern": "^[a-z][-a-z0-9]*[a-z0-9]$"
+        }
+      },
+      {
+        "name": "Config",
+        "jsonName": "config",
+        "protoField": "config",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance configuration defining geographic placement and replication\n topology. Examples: \"regional-us-central1\", \"nam-eur-asia1\", \"nam6\".\n Regional configs provide lower latency; multi-region configs provide\n higher availability across geographic failures.\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable display name for the instance.\n Must be 4-30 characters and unique within the project.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 4,
+          "maxLength": 30
+        }
+      },
+      {
+        "name": "NumNodes",
+        "jsonName": "numNodes",
+        "protoField": "num_nodes",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of nodes allocated to the instance. Each node provides\n approximately 10,000 QPS of reads or 2,000 QPS of writes.\n Mutually exclusive with processing_units and autoscaling_config.\n Must not be set for FREE_INSTANCE.",
+        "required": false
+      },
+      {
+        "name": "ProcessingUnits",
+        "jsonName": "processingUnits",
+        "protoField": "processing_units",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of processing units allocated to the instance.\n Finer-grained than nodes: 1 node = 1000 processing units.\n For values \u003c 1000, must be multiples of 100. For \u003e= 1000, multiples of 1000.\n Mutually exclusive with num_nodes and autoscaling_config.\n Must not be set for FREE_INSTANCE.",
+        "required": false
+      },
+      {
+        "name": "AutoscalingConfig",
+        "jsonName": "autoscalingConfig",
+        "protoField": "autoscaling_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpSpannerInstanceAutoscalingConfig"
+        },
+        "description": "Autoscaling configuration. When set, Spanner automatically adjusts\n compute capacity based on utilization thresholds.\n Mutually exclusive with num_nodes and processing_units.\n Must not be set for FREE_INSTANCE.",
+        "required": false
+      },
+      {
+        "name": "InstanceType",
+        "jsonName": "instanceType",
+        "protoField": "instance_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance type. PROVISIONED (default) requires explicit capacity\n allocation. FREE_INSTANCE provides a zero-cost instance with limited\n capacity for development and testing.",
+        "required": false
+      },
+      {
+        "name": "Edition",
+        "jsonName": "edition",
+        "protoField": "edition",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Edition controlling available features and SLA level.\n STANDARD: cost-optimized, good for most workloads.\n ENTERPRISE: granular instance sizing, advanced features.\n ENTERPRISE_PLUS: 99.999% multi-region SLA, advanced compliance.\n Cannot be set when instance_type is FREE_INSTANCE.",
+        "required": false
+      },
+      {
+        "name": "DefaultBackupScheduleType",
+        "jsonName": "defaultBackupScheduleType",
+        "protoField": "default_backup_schedule_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Default backup schedule type for new databases created in this instance.\n NONE: no automatic backups (default).\n AUTOMATIC: GCP automatically creates backup schedules for new databases.\n Cannot be AUTOMATIC when instance_type is FREE_INSTANCE.",
+        "required": false
+      },
+      {
+        "name": "ForceDestroy",
+        "jsonName": "forceDestroy",
+        "protoField": "force_destroy",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to delete all backups of this instance when destroying it.\n When false (default), the destroy operation will fail if any databases\n in the instance have backups. Set to true to force destruction.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpSpannerInstanceAutoscalingConfig",
+      "description": "GcpSpannerInstanceAutoscalingConfig enables automatic scaling of compute\n capacity based on utilization thresholds. When autoscaling is enabled,\n num_nodes and processing_units become read-only outputs reflecting the\n current allocation.",
+      "protoType": "org.openmcf.provider.gcp.gcpspannerinstance.v1.GcpSpannerInstanceAutoscalingConfig",
+      "fields": [
+        {
+          "name": "AutoscalingLimits",
+          "jsonName": "autoscalingLimits",
+          "protoField": "autoscaling_limits",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpSpannerInstanceAutoscalingLimits"
+          },
+          "description": "Required. Minimum and maximum compute capacity bounds.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AutoscalingTargets",
+          "jsonName": "autoscalingTargets",
+          "protoField": "autoscaling_targets",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpSpannerInstanceAutoscalingTargets"
+          },
+          "description": "Optional. Utilization targets that trigger scaling decisions.\n If not set, GCP uses default targets.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpSpannerInstanceAutoscalingLimits",
+      "description": "GcpSpannerInstanceAutoscalingLimits defines the minimum and maximum compute\n capacity for autoscaling. Limits must use the same unit -- either nodes\n (min_nodes + max_nodes) or processing units (min_processing_units +\n max_processing_units). Mixing units is not allowed.",
+      "protoType": "org.openmcf.provider.gcp.gcpspannerinstance.v1.GcpSpannerInstanceAutoscalingLimits",
+      "fields": [
+        {
+          "name": "MinNodes",
+          "jsonName": "minNodes",
+          "protoField": "min_nodes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of nodes. Use with max_nodes.\n Each node provides approximately 10,000 QPS of read throughput.",
+          "required": false
+        },
+        {
+          "name": "MaxNodes",
+          "jsonName": "maxNodes",
+          "protoField": "max_nodes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of nodes. Must be \u003e= min_nodes.",
+          "required": false
+        },
+        {
+          "name": "MinProcessingUnits",
+          "jsonName": "minProcessingUnits",
+          "protoField": "min_processing_units",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of processing units. Use with max_processing_units.\n Must be a multiple of 1000 (for values \u003e= 1000) or 100 (for values \u003c 1000).",
+          "required": false
+        },
+        {
+          "name": "MaxProcessingUnits",
+          "jsonName": "maxProcessingUnits",
+          "protoField": "max_processing_units",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of processing units. Must be \u003e= min_processing_units.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpSpannerInstanceAutoscalingTargets",
+      "description": "GcpSpannerInstanceAutoscalingTargets defines the utilization thresholds\n that trigger autoscaling. When a target is exceeded, Spanner scales up;\n when utilization drops below, it scales down (respecting the limits).",
+      "protoType": "org.openmcf.provider.gcp.gcpspannerinstance.v1.GcpSpannerInstanceAutoscalingTargets",
+      "fields": [
+        {
+          "name": "HighPriorityCpuUtilizationPercent",
+          "jsonName": "highPriorityCpuUtilizationPercent",
+          "protoField": "high_priority_cpu_utilization_percent",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Target percentage for high-priority CPU utilization (0-100).\n High-priority tasks include reads and writes from user queries.\n Recommended: 65 for most workloads.",
+          "required": false,
+          "validation": {
+            "max": 100
+          }
+        },
+        {
+          "name": "StorageUtilizationPercent",
+          "jsonName": "storageUtilizationPercent",
+          "protoField": "storage_utilization_percent",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Target percentage for storage utilization (0-100).\n Recommended: 80 to leave headroom for growth.",
+          "required": false,
+          "validation": {
+            "max": 100
+          }
+        }
+      ]
+    }
+  ]
+}

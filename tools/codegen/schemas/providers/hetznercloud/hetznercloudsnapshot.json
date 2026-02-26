@@ -1,0 +1,42 @@
+{
+  "name": "HetznerCloudSnapshot",
+  "kind": "HetznerCloudSnapshot",
+  "cloudProvider": "hetznercloud",
+  "apiVersion": "hetzner-cloud.openmcf.org/v1",
+  "description": "hetznercloud-snapshot",
+  "protoPackage": "org.openmcf.provider.hetznercloud.hetznercloudsnapshot.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/hetznercloud/hetznercloudsnapshot/v1/api.proto",
+    "spec": "org/openmcf/provider/hetznercloud/hetznercloudsnapshot/v1/spec.proto"
+  },
+  "spec": {
+    "name": "HetznerCloudSnapshotSpec",
+    "fields": [
+      {
+        "name": "ServerId",
+        "jsonName": "serverId",
+        "protoField": "server_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Server to create the snapshot from. Required.\n\n Accepts a literal Hetzner Cloud server ID (as a string) or a reference\n to a HetznerCloudServer resource's output via valueFrom.\n\n Changing this value forces replacement of the snapshot (the existing\n snapshot is destroyed and a new one is created from the new server).\n\n Example (literal):\n   serverId:\n     value: \"12345678\"\n\n Example (reference):\n   serverId:\n     valueFrom:\n       kind: HetznerCloudServer\n       name: my-app-server\n       fieldPath: status.outputs.server_id",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "HetznerCloudServer",
+        "referenceFieldPath": "status.outputs.server_id"
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the snapshot. Optional.\n\n Useful for identifying the purpose of the snapshot (e.g.,\n \"pre-upgrade baseline\", \"golden image v2.1\"). Can be updated after\n creation without replacing the snapshot.",
+        "required": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,302 @@
+{
+  "name": "GcpBigQueryDataset",
+  "kind": "GcpBigQueryDataset",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-bigquery-dataset",
+  "protoPackage": "org.openmcf.provider.gcp.gcpbigquerydataset.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpbigquerydataset/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpbigquerydataset/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpBigQueryDatasetSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the dataset will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "DatasetId",
+        "jsonName": "datasetId",
+        "protoField": "dataset_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Unique identifier for the dataset within the project.\n Must contain only letters (upper/lower), numbers, and underscores.\n Maximum 1024 characters. Immutable after creation.\n Example: \"analytics_prod\", \"raw_events_2024\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "maxLength": 1024,
+          "pattern": "^[0-9A-Za-z_]+$"
+        }
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Geographic location where the dataset and its tables reside.\n Use multi-regional locations (e.g., \"US\", \"EU\") for maximum availability,\n or regional locations (e.g., \"us-central1\", \"europe-west1\") for data\n residency requirements. Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "FriendlyName",
+        "jsonName": "friendlyName",
+        "protoField": "friendly_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "User-friendly display name for the dataset.",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Description of the dataset's contents or purpose.",
+        "required": false
+      },
+      {
+        "name": "DefaultTableExpirationMs",
+        "jsonName": "defaultTableExpirationMs",
+        "protoField": "default_table_expiration_ms",
+        "type": {
+          "kind": "int64"
+        },
+        "description": "Default lifetime for all tables created in the dataset, in milliseconds.\n Tables created in this dataset will be automatically deleted after this\n duration from their creation time. Minimum: 3600000 (1 hour).\n If not set (0), tables do not automatically expire.",
+        "required": false
+      },
+      {
+        "name": "DefaultPartitionExpirationMs",
+        "jsonName": "defaultPartitionExpirationMs",
+        "protoField": "default_partition_expiration_ms",
+        "type": {
+          "kind": "int64"
+        },
+        "description": "Default expiration for partitions in partitioned tables, in milliseconds.\n Applies to all partitioned tables created in this dataset.\n If not set (0), partitions do not automatically expire.",
+        "required": false
+      },
+      {
+        "name": "MaxTimeTravelHours",
+        "jsonName": "maxTimeTravelHours",
+        "protoField": "max_time_travel_hours",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum hours of time travel for the dataset (point-in-time snapshots).\n Range: 48 to 168 hours (2 to 7 days). Default: 168 (7 days) if not set.\n Lower values reduce storage costs; higher values provide longer recovery windows.",
+        "required": false
+      },
+      {
+        "name": "IsCaseInsensitive",
+        "jsonName": "isCaseInsensitive",
+        "protoField": "is_case_insensitive",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether dataset and table names are treated as case-insensitive.\n When true, \"MyTable\" and \"mytable\" refer to the same table.\n Immutable after creation. Default: false (case-sensitive).",
+        "required": false
+      },
+      {
+        "name": "DefaultCollation",
+        "jsonName": "defaultCollation",
+        "protoField": "default_collation",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Default collation specification for string columns in new tables.\n Use \"und:ci\" for case-insensitive collation, or leave empty for\n case-sensitive (default) collation.",
+        "required": false
+      },
+      {
+        "name": "StorageBillingModel",
+        "jsonName": "storageBillingModel",
+        "protoField": "storage_billing_model",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Storage billing model for the dataset.\n \"LOGICAL\" (default) charges based on logical (uncompressed) bytes.\n \"PHYSICAL\" charges based on physical (compressed) bytes on disk,\n which can reduce costs 60-80% for highly compressible data.",
+        "required": false
+      },
+      {
+        "name": "DeleteContentsOnDestroy",
+        "jsonName": "deleteContentsOnDestroy",
+        "protoField": "delete_contents_on_destroy",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "If true, all tables in the dataset are deleted when the dataset is\n destroyed. If false (default), destroy fails when the dataset contains\n tables, preventing accidental data loss.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyName",
+        "jsonName": "kmsKeyName",
+        "protoField": "kms_key_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cloud KMS encryption key for default table encryption (CMEK).\n All new tables in the dataset will be encrypted with this key unless\n they specify their own encryption configuration.\n Format: projects/{project}/locations/{location}/keyRings/{keyRing}/cryptoKeys/{key}\n If not set, tables are encrypted with Google-managed keys.",
+        "required": false,
+        "referenceKind": "GcpKmsKey",
+        "referenceFieldPath": "status.outputs.key_id"
+      },
+      {
+        "name": "Access",
+        "jsonName": "access",
+        "protoField": "access",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "GcpBigQueryDatasetAccessEntry"
+          }
+        },
+        "description": "Access control entries for the dataset.\n\n This field is authoritative: BigQuery will remove any access entries\n not listed here. If omitted entirely, BigQuery applies default access:\n   - Project owners: OWNER\n   - Project editors: WRITER\n   - Project viewers: READER\n\n Each entry grants a role to one identity (user, group, domain,\n special group, or IAM member) or grants a view direct data access.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpBigQueryDatasetAccessEntry",
+      "description": "GcpBigQueryDatasetAccessEntry defines a single access control entry for\n the dataset. Each entry grants a role to exactly one identity, or grants\n a view direct access to the dataset's data.\n\n Exactly one identity field must be set: user_by_email, group_by_email,\n domain, special_group, iam_member, or view.\n\n When view is set, role should be omitted (BigQuery grants the view\n implicit read access to the underlying data).",
+      "protoType": "org.openmcf.provider.gcp.gcpbigquerydataset.v1.GcpBigQueryDatasetAccessEntry",
+      "fields": [
+        {
+          "name": "Role",
+          "jsonName": "role",
+          "protoField": "role",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The IAM role to grant. Use basic roles (OWNER, WRITER, READER) or\n predefined roles (roles/bigquery.dataOwner, roles/bigquery.dataEditor,\n roles/bigquery.dataViewer, etc.).\n\n Required unless view is set.",
+          "required": false
+        },
+        {
+          "name": "UserByEmail",
+          "jsonName": "userByEmail",
+          "protoField": "user_by_email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "An email address of a Google Account to grant access to.",
+          "required": false
+        },
+        {
+          "name": "GroupByEmail",
+          "jsonName": "groupByEmail",
+          "protoField": "group_by_email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "An email address of a Google Group to grant access to.",
+          "required": false
+        },
+        {
+          "name": "Domain",
+          "jsonName": "domain",
+          "protoField": "domain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "A domain to grant access to. All users signed in with the domain's\n account will be granted access (e.g., \"example.com\").",
+          "required": false
+        },
+        {
+          "name": "SpecialGroup",
+          "jsonName": "specialGroup",
+          "protoField": "special_group",
+          "type": {
+            "kind": "string"
+          },
+          "description": "A special group to grant access to. Valid values:\n   \"projectOwners\"  -- all project owners\n   \"projectReaders\" -- all project viewers\n   \"projectWriters\" -- all project editors\n   \"allAuthenticatedUsers\" -- all authenticated Google accounts",
+          "required": false
+        },
+        {
+          "name": "IamMember",
+          "jsonName": "iamMember",
+          "protoField": "iam_member",
+          "type": {
+            "kind": "string"
+          },
+          "description": "An IAM member expression to grant access to.\n Examples: \"allUsers\", \"serviceAccount:sa@project.iam.gserviceaccount.com\"",
+          "required": false
+        },
+        {
+          "name": "View",
+          "jsonName": "view",
+          "protoField": "view",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpBigQueryDatasetAccessView"
+          },
+          "description": "A view that is granted access to the dataset's data.\n When set, role is typically omitted.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpBigQueryDatasetAccessView",
+      "description": "GcpBigQueryDatasetAccessView identifies a BigQuery view that is granted\n access to the dataset's data without needing a role assignment.",
+      "protoType": "org.openmcf.provider.gcp.gcpbigquerydataset.v1.GcpBigQueryDatasetAccessView",
+      "fields": [
+        {
+          "name": "ProjectId",
+          "jsonName": "projectId",
+          "protoField": "project_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The GCP project that contains the view's dataset.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "DatasetId",
+          "jsonName": "datasetId",
+          "protoField": "dataset_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The dataset that contains the view.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "TableId",
+          "jsonName": "tableId",
+          "protoField": "table_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The ID of the authorized view (table resource).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "name": "ScalewayPrivateNetwork",
+  "kind": "ScalewayPrivateNetwork",
+  "cloudProvider": "scaleway",
+  "apiVersion": "scaleway.openmcf.org/v1",
+  "description": "scaleway-private-network",
+  "protoPackage": "org.openmcf.provider.scaleway.scalewayprivatenetwork.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/scaleway/scalewayprivatenetwork/v1/api.proto",
+    "spec": "org/openmcf/provider/scaleway/scalewayprivatenetwork/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ScalewayPrivateNetworkSpec",
+    "fields": [
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The VPC in which to create this Private Network.\n\n Can be a literal VPC UUID or a reference to a ScalewayVpc resource's output.\n When used inside an infra chart, this is typically wired via valueFrom:\n\n   vpcId:\n     valueFrom:\n       kind: ScalewayVpc\n       name: my-vpc\n       fieldPath: status.outputs.vpc_id\n\n The Private Network's region must match the VPC's region.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "ScalewayVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Scaleway region where the Private Network will be created.\n Examples: \"fr-par\", \"nl-ams\", \"pl-waw\"\n\n Must match the region of the parent VPC. This field is required and\n cannot be changed after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Ipv4Subnet",
+        "jsonName": "ipv4Subnet",
+        "protoField": "ipv4_subnet",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IPv4 subnet in CIDR notation to associate with this Private Network.\n Examples: \"192.168.0.0/24\", \"10.0.1.0/24\", \"172.16.0.0/22\"\n\n If omitted, Scaleway's IPAM automatically allocates a subnet from a\n default range. Specifying a subnet gives you control over the address\n space, which is important when multiple Private Networks in the same\n VPC need non-overlapping ranges for routing to work correctly.\n\n The allocated (or auto-assigned) CIDR is always available in stack\n outputs as ipv4_subnet_cidr.",
+        "required": false
+      },
+      {
+        "name": "Ipv6Subnets",
+        "jsonName": "ipv6Subnets",
+        "protoField": "ipv6_subnets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "IPv6 subnets in CIDR notation to associate with this Private Network.\n Examples: \"fd46:78ab:30b8:177c::/64\"\n\n Optional. Multiple IPv6 subnets can be attached for dual-stack networking.\n Most production deployments use IPv4 only; IPv6 is primarily useful for\n workloads that must be reachable on IPv6 or for advanced networking scenarios.",
+        "required": false
+      },
+      {
+        "name": "EnableDefaultRoutePropagation",
+        "jsonName": "enableDefaultRoutePropagation",
+        "protoField": "enable_default_route_propagation",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to propagate default IPv4 and IPv6 routes for this Private Network.\n\n When enabled, resources in this Private Network receive the VPC's default\n routes, enabling them to communicate with resources in other Private Networks\n within the same VPC (provided the VPC has routing enabled).\n\n Default: false",
+        "required": false,
+        "recommendedDefault": "false"
+      }
+    ]
+  }
+}

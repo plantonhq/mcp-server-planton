@@ -1,0 +1,220 @@
+{
+  "name": "AwsSqsQueue",
+  "kind": "AwsSqsQueue",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsSqsQueue is the Kubernetes-style resource envelope for an AWS SQS queue.",
+  "protoPackage": "org.openmcf.provider.aws.awssqsqueue.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awssqsqueue/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awssqsqueue/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsSqsQueueSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "FifoQueue",
+        "jsonName": "fifoQueue",
+        "protoField": "fifo_queue",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to create a FIFO queue. Standard queues are created when false.\n FIFO queues guarantee exactly-once processing and strict ordering within\n each message group. This setting cannot be changed after queue creation.",
+        "required": false
+      },
+      {
+        "name": "VisibilityTimeoutSeconds",
+        "jsonName": "visibilityTimeoutSeconds",
+        "protoField": "visibility_timeout_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Time in seconds that a received message is hidden from subsequent receive\n requests. After the timeout expires the message becomes visible again unless\n it was deleted. Range: 0–43200 (0s to 12h). AWS default: 30.",
+        "required": false,
+        "validation": {
+          "max": 43200
+        }
+      },
+      {
+        "name": "MessageRetentionSeconds",
+        "jsonName": "messageRetentionSeconds",
+        "protoField": "message_retention_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Duration in seconds that SQS retains a message. After the retention period\n expires SQS deletes the message regardless of whether it was consumed.\n Range: 60–1209600 (1 min to 14 days). AWS default: 345600 (4 days).\n Leave at 0 to use the AWS default.",
+        "required": false
+      },
+      {
+        "name": "MaxMessageSizeBytes",
+        "jsonName": "maxMessageSizeBytes",
+        "protoField": "max_message_size_bytes",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum size of a message body in bytes. Messages exceeding this limit are\n rejected by SQS. Range: 1024–1048576 (1 KB to 1 MB). AWS default: 262144 (256 KB).\n Leave at 0 to use the AWS default.",
+        "required": false
+      },
+      {
+        "name": "DelaySeconds",
+        "jsonName": "delaySeconds",
+        "protoField": "delay_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Delay in seconds before a newly sent message becomes visible in the queue.\n Useful for implementing delayed processing patterns.\n Range: 0–900 (0s to 15 min). AWS default: 0.",
+        "required": false,
+        "validation": {
+          "max": 900
+        }
+      },
+      {
+        "name": "ReceiveWaitTimeSeconds",
+        "jsonName": "receiveWaitTimeSeconds",
+        "protoField": "receive_wait_time_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Wait time in seconds for the ReceiveMessage API call. A value greater than\n 0 enables long polling, which reduces the number of empty responses and\n lowers cost. Range: 0–20. AWS default: 0 (short polling).",
+        "required": false,
+        "validation": {
+          "max": 20
+        }
+      },
+      {
+        "name": "ContentBasedDeduplication",
+        "jsonName": "contentBasedDeduplication",
+        "protoField": "content_based_deduplication",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable content-based deduplication for FIFO queues. When enabled SQS uses\n a SHA-256 hash of the message body as the deduplication ID, removing the\n need for the producer to supply an explicit deduplication ID.\n Only valid when `fifo_queue` is true.",
+        "required": false
+      },
+      {
+        "name": "DeduplicationScope",
+        "jsonName": "deduplicationScope",
+        "protoField": "deduplication_scope",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Deduplication scope for FIFO queues. Controls whether deduplication is\n applied per message group or across the entire queue.\n Valid values: \"messageGroup\", \"queue\". Only valid when `fifo_queue` is true.",
+        "required": false
+      },
+      {
+        "name": "FifoThroughputLimit",
+        "jsonName": "fifoThroughputLimit",
+        "protoField": "fifo_throughput_limit",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Throughput limit for FIFO queues. Controls whether throughput quota applies\n per message group ID or per queue. Set to \"perMessageGroupId\" to enable\n high throughput mode for FIFO queues.\n Valid values: \"perMessageGroupId\", \"perQueue\". Only valid when `fifo_queue` is true.",
+        "required": false
+      },
+      {
+        "name": "DeadLetterConfig",
+        "jsonName": "deadLetterConfig",
+        "protoField": "dead_letter_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsSqsQueueDeadLetterConfig"
+        },
+        "description": "Dead letter queue configuration. When a message is received more than\n `max_receive_count` times without being deleted, SQS moves it to the\n specified target queue for investigation and reprocessing.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed KMS key for server-side encryption. When set SQS encrypts\n message bodies using this key. Accepts a direct KMS key ID/ARN or a\n reference to an AwsKmsKey resource. Mutually exclusive with\n `sqs_managed_sse_enabled`.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "KmsDataKeyReusePeriodSeconds",
+        "jsonName": "kmsDataKeyReusePeriodSeconds",
+        "protoField": "kms_data_key_reuse_period_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Duration in seconds that SQS reuses a data encryption key before calling\n KMS again. Higher values reduce KMS costs but increase the window for key\n reuse. Range: 60–86400 (1 min to 24h). AWS default: 300 (5 min).\n Only relevant when `kms_key_id` is set.",
+        "required": false
+      },
+      {
+        "name": "SqsManagedSseEnabled",
+        "jsonName": "sqsManagedSseEnabled",
+        "protoField": "sqs_managed_sse_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable SQS-managed server-side encryption (SSE-SQS). SQS manages the\n encryption key automatically with no additional cost. Mutually exclusive\n with `kms_key_id`.",
+        "required": false
+      },
+      {
+        "name": "Policy",
+        "jsonName": "policy",
+        "protoField": "policy",
+        "type": {
+          "kind": "object"
+        },
+        "description": "IAM access policy for the queue. Controls which AWS principals can perform\n actions on this queue (e.g., SendMessage, ReceiveMessage). Expressed as a\n standard IAM policy document structure. Common use cases include granting\n SNS topics permission to publish to this queue or allowing cross-account\n access.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsSqsQueueDeadLetterConfig",
+      "description": "AwsSqsQueueDeadLetterConfig configures the dead letter queue for failed message routing.\n When a consumer receives a message more than `max_receive_count` times without\n deleting it, SQS automatically moves the message to the specified target queue.",
+      "protoType": "org.openmcf.provider.aws.awssqsqueue.v1.AwsSqsQueueDeadLetterConfig",
+      "fields": [
+        {
+          "name": "TargetArn",
+          "jsonName": "targetArn",
+          "protoField": "target_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of the target dead letter queue. Accepts a direct ARN or a reference\n to another AwsSqsQueue resource. Both queues must be the same type\n (both Standard or both FIFO) and reside in the same AWS account and region.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsSqsQueue",
+          "referenceFieldPath": "status.outputs.queue_arn"
+        },
+        {
+          "name": "MaxReceiveCount",
+          "jsonName": "maxReceiveCount",
+          "protoField": "max_receive_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of times a message can be received before being moved to the dead\n letter queue. Must be at least 1. Common values: 3–5 for transient errors,\n 1 for poison pill detection. Range: 1–1000.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 1000
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "name": "AzureDnsRecord",
+  "kind": "AzureDnsRecord",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureDnsRecord represents a DNS record in an Azure DNS Zone.\n This resource creates individual DNS records (A, AAAA, CNAME, MX, TXT, etc.)\n within an existing Azure DNS Zone.",
+  "protoPackage": "org.openmcf.provider.azure.azurednsrecord.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurednsrecord/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurednsrecord/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureDnsRecordSpec",
+    "fields": [
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the DNS Record will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "ZoneName",
+        "jsonName": "zoneName",
+        "protoField": "zone_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the DNS Zone where this record will be created.\n Can be provided as a literal value or referenced from an AzureDnsZone resource.\n\n When using value_from, the default kind is AzureDnsZone and the default field path\n is \"status.outputs.zone_name\", allowing you to wire this directly to a zone resource.\n\n Example literal: \"example.com\"\n Example value_from:\n   value_from:\n     name: my-azure-zone",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureDnsZone",
+        "referenceFieldPath": "status.outputs.zone_name"
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.azure.azurednsrecord.v1.RecordType",
+          "enumValues": [
+            "A",
+            "AAAA",
+            "CNAME",
+            "MX",
+            "TXT",
+            "SRV",
+            "NS",
+            "PTR",
+            "CAA"
+          ]
+        },
+        "description": "The DNS record type to create.\n Supported types: A, AAAA, CNAME, MX, TXT, SRV, NS, PTR, CAA.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the DNS record (relative to the zone).\n Use \"@\" for zone apex (root domain) or specify a subdomain name.\n Examples:\n   - \"@\" for zone apex (example.com)\n   - \"www\" for subdomain (www.example.com)\n   - \"api.v1\" for nested subdomain (api.v1.example.com)\n   - \"*\" for wildcard (*.example.com)",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Values",
+        "jsonName": "values",
+        "protoField": "values",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "The values/targets for the DNS record.\n Format depends on record type:\n   - A record: IPv4 addresses (e.g., [\"192.0.2.1\", \"192.0.2.2\"])\n   - AAAA record: IPv6 addresses (e.g., [\"2001:db8::1\"])\n   - CNAME record: Target hostname (e.g., [\"target.example.com\"])\n   - MX record: Mail server hostname (e.g., [\"mail1.example.com\", \"mail2.example.com\"])\n   - TXT record: Text values (e.g., [\"v=spf1 include:_spf.google.com ~all\"])\n   - NS record: Name server hostnames\n   - SRV record: Format \"priority weight port target\" (e.g., [\"10 5 5060 sip.example.com\"])\n   - CAA record: Format \"flags tag value\" (e.g., [\"0 issue letsencrypt.org\"])\n Multiple values create round-robin behavior for supported record types.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "TtlSeconds",
+        "jsonName": "ttlSeconds",
+        "protoField": "ttl_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Time to live (TTL) for the DNS record in seconds.\n Determines how long resolvers should cache this record.\n Common values: 60 (1 min), 300 (5 min), 3600 (1 hour), 86400 (1 day).\n Default: 300 seconds (5 minutes).",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 2147483647
+        },
+        "default": "300",
+        "oneofGroup": "_ttl_seconds"
+      },
+      {
+        "name": "MxPriority",
+        "jsonName": "mxPriority",
+        "protoField": "mx_priority",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "MX record specific: Priority value for mail exchange records.\n Lower values indicate higher priority. Required for MX records.\n Common values: 10 (primary), 20 (secondary), 30 (tertiary).\n Only applicable when type is MX.",
+        "required": false,
+        "validation": {
+          "max": 65535
+        },
+        "oneofGroup": "_mx_priority"
+      }
+    ]
+  }
+}

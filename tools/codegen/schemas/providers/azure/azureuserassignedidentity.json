@@ -1,0 +1,111 @@
+{
+  "name": "AzureUserAssignedIdentity",
+  "kind": "AzureUserAssignedIdentity",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureUserAssignedIdentity is the top-level resource definition for an Azure\n User-Assigned Managed Identity with RBAC role assignments. It follows the KRM\n (Kubernetes Resource Model) pattern with apiVersion, kind, metadata, spec, and status.\n\n User-Assigned Managed Identities provide a secure, credential-free way for Azure\n resources to authenticate to Azure services. Unlike system-assigned identities,\n user-assigned identities have an independent lifecycle and can be shared across\n multiple resources.",
+  "protoPackage": "org.openmcf.provider.azure.azureuserassignedidentity.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azureuserassignedidentity/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azureuserassignedidentity/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureUserAssignedIdentitySpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Managed Identity will be created.\n Must match the region of the resource group.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Managed Identity will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the User-Assigned Managed Identity.\n Must be unique within the resource group.\n Azure allows 3-128 characters: alphanumeric, hyphens, and underscores.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 3,
+          "maxLength": 128
+        }
+      },
+      {
+        "name": "RoleAssignments",
+        "jsonName": "roleAssignments",
+        "protoField": "role_assignments",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "RoleAssignment"
+          }
+        },
+        "description": "RBAC role assignments to grant this identity permissions on Azure resources.\n Each assignment binds a role definition to a specific Azure resource scope.\n An identity without role assignments has no permissions and cannot access\n any Azure resources.\n\n Common patterns:\n - Key Vault access: scope = Key Vault ID, role = \"Key Vault Secrets User\"\n - Storage access: scope = Storage Account ID, role = \"Storage Blob Data Contributor\"\n - Network access: scope = VNet ID, role = \"Network Contributor\"\n - Container registry: scope = ACR ID, role = \"AcrPull\"",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "RoleAssignment",
+      "description": "RoleAssignment defines a single Azure RBAC role binding for the managed identity.\n Each assignment grants the identity a specific role on a specific Azure resource.",
+      "protoType": "org.openmcf.provider.azure.azureuserassignedidentity.v1.RoleAssignment",
+      "fields": [
+        {
+          "name": "Scope",
+          "jsonName": "scope",
+          "protoField": "scope",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure resource ID to scope this role assignment to.\n Can be a subscription, resource group, or individual resource ID.\n Can be a literal Azure resource ID or a reference to another resource's output.\n\n Examples of literal scopes:\n - Subscription: \"/subscriptions/00000000-0000-0000-0000-000000000000\"\n - Resource group: \"/subscriptions/.../resourceGroups/my-rg\"\n - Resource: \"/subscriptions/.../providers/Microsoft.KeyVault/vaults/my-kv\"\n\n In infra charts, use valueFrom to reference dynamically created resources:\n   scope:\n     valueFrom:\n       kind: AzureKeyVault\n       name: platform-kv\n       fieldPath: status.outputs.key_vault_id\n\n Note: No default_kind annotation because scope is polymorphic -- it can\n reference any Azure resource type.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "RoleDefinitionName",
+          "jsonName": "roleDefinitionName",
+          "protoField": "role_definition_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of a built-in or custom Azure RBAC role to assign.\n Uses Azure's exact role definition names for clarity and direct API mapping.\n\n Common built-in roles:\n - \"Contributor\" -- full resource management except RBAC\n - \"Reader\" -- read-only access\n - \"Key Vault Secrets User\" -- read Key Vault secrets\n - \"Storage Blob Data Contributor\" -- read/write/delete blob data\n - \"AcrPull\" -- pull container images from ACR\n - \"Network Contributor\" -- manage networking resources\n - \"Monitoring Metrics Publisher\" -- publish metrics",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

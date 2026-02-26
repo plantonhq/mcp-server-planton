@@ -1,0 +1,293 @@
+{
+  "name": "ScalewayObjectBucket",
+  "kind": "ScalewayObjectBucket",
+  "cloudProvider": "scaleway",
+  "apiVersion": "scaleway.openmcf.org/v1",
+  "description": "scaleway-object-bucket",
+  "protoPackage": "org.openmcf.provider.scaleway.scalewayobjectbucket.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/scaleway/scalewayobjectbucket/v1/api.proto",
+    "spec": "org/openmcf/provider/scaleway/scalewayobjectbucket/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ScalewayObjectBucketSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Scaleway region where the bucket will be created.\n\n Available regions: \"fr-par\", \"nl-ams\", \"pl-waw\"\n\n Cannot be changed after creation (would require recreating the bucket\n and migrating all objects).\n\n Choose the region closest to your application for lowest latency.\n Consider data residency requirements (EU data in EU regions).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "VersioningEnabled",
+        "jsonName": "versioningEnabled",
+        "protoField": "versioning_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable S3-compatible object versioning.\n\n When enabled, every PUT operation creates a new version of the\n object. Previous versions are retained and can be retrieved by\n version ID. DELETE operations insert a delete marker instead of\n removing the object.\n\n IMPORTANT: Once enabled, versioning cannot be fully disabled --\n only suspended. Suspended versioning stops creating new versions\n but retains all existing versions.\n\n Use versioning for:\n   - Protecting against accidental deletions\n   - Maintaining audit trails of object changes\n   - Enabling point-in-time recovery\n\n Combine with lifecycle rules to expire old versions and control\n storage costs.\n\n Default: false",
+        "required": false,
+        "recommendedDefault": "false"
+      },
+      {
+        "name": "ObjectLockEnabled",
+        "jsonName": "objectLockEnabled",
+        "protoField": "object_lock_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable S3 Object Lock on this bucket.\n\n Object Lock enables WORM (Write Once Read Many) protection. When\n enabled, objects can be locked to prevent deletion or modification\n for a specified retention period.\n\n IMPORTANT: Object Lock requires versioning to be enabled. This\n constraint is enforced via CEL validation below.\n\n IMPORTANT: Object Lock can only be enabled at bucket creation time.\n It cannot be added to an existing bucket, and cannot be removed\n once enabled.\n\n Default retention rules are configured separately via the\n `scaleway_object_bucket_lock_configuration` Terraform resource\n (deferred to future version of this kind).\n\n Default: false",
+        "required": false
+      },
+      {
+        "name": "LifecycleRules",
+        "jsonName": "lifecycleRules",
+        "protoField": "lifecycle_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ScalewayObjectBucketLifecycleRule"
+          }
+        },
+        "description": "Lifecycle rules for automated object management.\n\n Lifecycle rules define actions that Scaleway Object Storage applies\n to groups of objects based on prefix, tags, or age. Common uses:\n\n   - **Expire old objects**: Delete logs, temp files after N days\n   - **Transition to cold storage**: Move infrequently accessed data\n     to GLACIER or ONEZONE_IA to save costs\n   - **Expire old versions**: Clean up old versions when versioning\n     is enabled (requires versioning_enabled = true)\n   - **Abort incomplete multipart uploads**: Clean up stale uploads\n\n Rules are evaluated daily. Changes take effect within 24 hours.\n\n Optional. If empty, no lifecycle automation is applied.",
+        "required": false
+      },
+      {
+        "name": "CorsRules",
+        "jsonName": "corsRules",
+        "protoField": "cors_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ScalewayObjectBucketCorsRule"
+          }
+        },
+        "description": "Cross-Origin Resource Sharing (CORS) rules for the bucket.\n\n CORS rules control which web origins can make cross-origin requests\n to the bucket. This is essential when:\n   - A web application uploads files directly to the bucket\n   - Browser-based JavaScript reads objects from the bucket\n   - A frontend SPA hosted on one domain accesses bucket content\n\n Without CORS rules, browsers block cross-origin requests to the\n bucket's S3 endpoint.\n\n Optional. If empty, no CORS headers are served (browsers will\n block cross-origin requests).",
+        "required": false
+      },
+      {
+        "name": "ForceDestroy",
+        "jsonName": "forceDestroy",
+        "protoField": "force_destroy",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to force-destroy the bucket even if it contains objects.\n\n When true, all objects (including locked objects and all versions)\n are deleted before the bucket is destroyed.\n\n WARNING: This is irreversible. All data in the bucket will be\n permanently lost.\n\n Recommended settings:\n   - false for production buckets (prevents accidental data loss)\n   - true for dev/test buckets (enables clean teardown)\n\n Default: false",
+        "required": false,
+        "recommendedDefault": "false"
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ScalewayObjectBucketCorsRule",
+      "description": "ScalewayObjectBucketCorsRule defines a Cross-Origin Resource Sharing\n rule for the bucket.\n\n CORS rules control which web origins can interact with the bucket's\n S3 endpoint. Browsers enforce CORS by sending a preflight OPTIONS\n request before the actual cross-origin request.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayobjectbucket.v1.ScalewayObjectBucketCorsRule",
+      "fields": [
+        {
+          "name": "AllowedMethods",
+          "jsonName": "allowedMethods",
+          "protoField": "allowed_methods",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "HTTP methods allowed for cross-origin requests.\n\n Common values: \"GET\", \"PUT\", \"POST\", \"DELETE\", \"HEAD\"\n\n For read-only access (e.g., serving images): [\"GET\", \"HEAD\"]\n For upload access: [\"GET\", \"PUT\", \"POST\", \"DELETE\", \"HEAD\"]",
+          "required": false,
+          "validation": {
+            "minItems": 1,
+            "unique": true
+          }
+        },
+        {
+          "name": "AllowedOrigins",
+          "jsonName": "allowedOrigins",
+          "protoField": "allowed_origins",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Origins allowed to make cross-origin requests.\n\n Format: scheme + domain (e.g., \"https://example.com\").\n Use \"*\" to allow all origins (not recommended for production).\n\n Examples:\n   - \"https://app.example.com\" -- Allow specific origin\n   - \"https://*.example.com\"   -- Allow subdomains\n   - \"*\"                       -- Allow all (development only)",
+          "required": false,
+          "validation": {
+            "minItems": 1,
+            "unique": true
+          }
+        },
+        {
+          "name": "AllowedHeaders",
+          "jsonName": "allowedHeaders",
+          "protoField": "allowed_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Headers that browsers are allowed to include in cross-origin\n requests.\n\n Common values: \"Content-Type\", \"Authorization\", \"x-amz-*\"\n Use \"*\" to allow all headers.\n\n Optional. If empty, only simple headers are allowed.",
+          "required": false
+        },
+        {
+          "name": "ExposeHeaders",
+          "jsonName": "exposeHeaders",
+          "protoField": "expose_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Headers that browsers are allowed to read from the response.\n\n By default, browsers can only read \"simple\" response headers.\n List headers here that your application needs to access.\n\n Common values: \"ETag\", \"x-amz-request-id\"\n\n Optional.",
+          "required": false
+        },
+        {
+          "name": "MaxAgeSeconds",
+          "jsonName": "maxAgeSeconds",
+          "protoField": "max_age_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum time (in seconds) that the browser should cache the\n preflight response.\n\n Higher values reduce the number of preflight OPTIONS requests\n at the cost of slower propagation of CORS policy changes.\n\n Common value: 3600 (1 hour).\n 0 = browser uses its own default (usually 5 seconds).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ScalewayObjectBucketLifecycleRule",
+      "description": "ScalewayObjectBucketLifecycleRule defines a single lifecycle automation\n rule for objects in the bucket.\n\n Each rule identifies a group of objects by prefix and/or tags, and\n defines one or more actions: expiration, storage class transition,\n noncurrent version expiration, or multipart upload abort.\n\n Rules are evaluated by Scaleway daily and take effect within 24 hours\n of creation or modification.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayobjectbucket.v1.ScalewayObjectBucketLifecycleRule",
+      "fields": [
+        {
+          "name": "Id",
+          "jsonName": "id",
+          "protoField": "id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique identifier for this rule.\n\n Used for identification in Terraform state and in Scaleway's\n lifecycle management API. Must be unique within the bucket.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether this rule is currently active.\n\n Disabled rules are retained in configuration but not evaluated.\n Useful for temporarily suspending a rule without deleting it.",
+          "required": false
+        },
+        {
+          "name": "Prefix",
+          "jsonName": "prefix",
+          "protoField": "prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Object key prefix filter.\n\n When set, the rule applies only to objects whose key starts with\n this prefix. For example, \"logs/\" applies to all objects in the\n logs directory.\n\n Empty string or omitted = rule applies to all objects in the\n bucket (subject to tag filter if present).",
+          "required": false
+        },
+        {
+          "name": "Tags",
+          "jsonName": "tags",
+          "protoField": "tags",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Tag-based filter for objects.\n\n When set, the rule applies only to objects that have ALL of these\n tags. Combined with prefix for more specific targeting.\n\n Example: {\"environment\": \"staging\"} applies only to objects tagged\n with environment=staging.",
+          "required": false
+        },
+        {
+          "name": "ExpirationDays",
+          "jsonName": "expirationDays",
+          "protoField": "expiration_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of days after object creation to expire (delete) the object.\n\n When an object reaches this age, it is automatically deleted.\n For versioned buckets, a delete marker is inserted.\n\n 0 = no expiration (default).",
+          "required": false
+        },
+        {
+          "name": "Transitions",
+          "jsonName": "transitions",
+          "protoField": "transitions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "ScalewayObjectBucketLifecycleTransition"
+            }
+          },
+          "description": "Storage class transitions.\n\n Move objects to cheaper storage classes after a specified number\n of days. Multiple transitions can be defined to create a tiered\n storage lifecycle (e.g., Standard -\u003e ONEZONE_IA -\u003e GLACIER).\n\n Available storage classes:\n   - \"GLACIER\" -- Cold storage for archival data (minutes-to-hours\n     retrieval). Significantly cheaper than Standard.\n   - \"ONEZONE_IA\" -- Infrequent Access in a single zone. Cheaper\n     than Standard but less redundant.\n\n Transition days must increase across transitions (e.g., 30 days\n to ONEZONE_IA, then 90 days to GLACIER).",
+          "required": false
+        },
+        {
+          "name": "AbortIncompleteMultipartUploadDays",
+          "jsonName": "abortIncompleteMultipartUploadDays",
+          "protoField": "abort_incomplete_multipart_upload_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of days to abort incomplete multipart uploads.\n\n Multipart uploads that are not completed within this period are\n automatically aborted and their parts are deleted.\n\n Recommended: 7 days. Incomplete multipart uploads accumulate\n storage costs silently.\n\n 0 = incomplete uploads are never aborted (default).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ScalewayObjectBucketLifecycleTransition",
+      "description": "ScalewayObjectBucketLifecycleTransition defines a storage class\n transition within a lifecycle rule.\n\n Objects matching the parent rule's filter are moved to the specified\n storage class after the given number of days.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayobjectbucket.v1.ScalewayObjectBucketLifecycleTransition",
+      "fields": [
+        {
+          "name": "Days",
+          "jsonName": "days",
+          "protoField": "days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of days after object creation to transition.\n\n Must be a positive integer. When defining multiple transitions in\n a rule, each transition's days must be greater than the previous.",
+          "required": false
+        },
+        {
+          "name": "StorageClass",
+          "jsonName": "storageClass",
+          "protoField": "storage_class",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Target storage class.\n\n Supported values:\n   - \"GLACIER\" -- Cold storage for archival (cheapest, slow retrieval)\n   - \"ONEZONE_IA\" -- Infrequent Access (cheaper, single-zone redundancy)",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "GLACIER",
+              "ONEZONE_IA"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

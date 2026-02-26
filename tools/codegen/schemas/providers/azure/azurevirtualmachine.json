@@ -1,0 +1,607 @@
+{
+  "name": "AzureVirtualMachine",
+  "kind": "AzureVirtualMachine",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "azure-virtual-machine",
+  "protoPackage": "org.openmcf.provider.azure.azurevirtualmachine.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurevirtualmachine/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurevirtualmachine/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureVirtualMachineSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Azure region where the Virtual Machine will be deployed (e.g., \"eastus\", \"westus2\", \"westeurope\").\n This is required as VMs are regional resources.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Virtual Machine will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "VmSize",
+        "jsonName": "vmSize",
+        "protoField": "vm_size",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure VM size determining vCPU count, memory, and capabilities.\n Examples: \"Standard_D2s_v3\" (2 vCPUs, 8 GiB RAM), \"Standard_D4s_v5\" (4 vCPUs, 16 GiB RAM).",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        },
+        "recommendedDefault": "Standard_D2s_v3",
+        "oneofGroup": "_vm_size"
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure resource ID of the subnet where this VM will be attached.\n This should reference a subnet within an existing Virtual Network (VNet).\n Can be a literal value or a reference to an AzureVpc resource's subnet output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureVpc",
+        "referenceFieldPath": "status.outputs.nodes_subnet_id"
+      },
+      {
+        "name": "Image",
+        "jsonName": "image",
+        "protoField": "image",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureVirtualMachineImage"
+        },
+        "description": "Operating system image configuration for the VM.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "OsDisk",
+        "jsonName": "osDisk",
+        "protoField": "os_disk",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureVirtualMachineOsDisk"
+        },
+        "description": "OS disk configuration for the VM.",
+        "required": false
+      },
+      {
+        "name": "DataDisks",
+        "jsonName": "dataDisks",
+        "protoField": "data_disks",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureVirtualMachineDataDisk"
+          }
+        },
+        "description": "Additional data disks to attach to the VM.",
+        "required": false
+      },
+      {
+        "name": "AdminUsername",
+        "jsonName": "adminUsername",
+        "protoField": "admin_username",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Admin username for the VM (Linux: SSH user, Windows: Administrator name).\n Must be a valid username according to Azure requirements.",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "default": "azureuser",
+        "oneofGroup": "_admin_username"
+      },
+      {
+        "name": "SshPublicKey",
+        "jsonName": "sshPublicKey",
+        "protoField": "ssh_public_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SSH public key for Linux VMs. Required for Linux VMs when password authentication is disabled.\n Format: \"ssh-rsa AAAAB3NzaC1yc2E... user@host\"",
+        "required": false
+      },
+      {
+        "name": "AdminPassword",
+        "jsonName": "adminPassword",
+        "protoField": "admin_password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Admin password for Windows VMs or Linux VMs with password authentication enabled.\n For production, prefer SSH keys for Linux VMs.\n Can be a literal value or a reference to an AzureKeyVault secret.",
+        "required": false,
+        "referenceKind": "AzureKeyVault",
+        "referenceFieldPath": "status.outputs.vault_uri"
+      },
+      {
+        "name": "Network",
+        "jsonName": "network",
+        "protoField": "network",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureVirtualMachineNetworkConfig"
+        },
+        "description": "Network interface configuration for the VM.",
+        "required": false
+      },
+      {
+        "name": "AvailabilityZone",
+        "jsonName": "availabilityZone",
+        "protoField": "availability_zone",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Availability zone for the VM (e.g., \"1\", \"2\", \"3\").\n Leave empty for no zone (regional placement).\n For production workloads, deploy VMs across multiple zones.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "",
+            "1",
+            "2",
+            "3"
+          ]
+        }
+      },
+      {
+        "name": "EnableBootDiagnostics",
+        "jsonName": "enableBootDiagnostics",
+        "protoField": "enable_boot_diagnostics",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable boot diagnostics for the VM.\n Boot diagnostics captures serial console output and screenshots to help diagnose boot issues.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_enable_boot_diagnostics"
+      },
+      {
+        "name": "EnableSystemAssignedIdentity",
+        "jsonName": "enableSystemAssignedIdentity",
+        "protoField": "enable_system_assigned_identity",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable system-assigned managed identity for the VM.\n Managed identities allow the VM to authenticate to Azure services without storing credentials.",
+        "required": false
+      },
+      {
+        "name": "UserAssignedIdentityIds",
+        "jsonName": "userAssignedIdentityIds",
+        "protoField": "user_assigned_identity_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "User-assigned managed identity resource IDs to attach to the VM.\n These are pre-created managed identities that can be shared across multiple resources.",
+        "required": false
+      },
+      {
+        "name": "CustomData",
+        "jsonName": "customData",
+        "protoField": "custom_data",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Custom data (cloud-init) script to execute on first boot.\n For Linux VMs, this is typically a cloud-init script.\n For Windows VMs, this can be a PowerShell script.\n Maximum size: 64 KB (base64 encoded).",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the VM and related resources.\n Tags are key-value pairs for Azure resource organization and cost tracking.",
+        "required": false
+      },
+      {
+        "name": "IsSpotInstance",
+        "jsonName": "isSpotInstance",
+        "protoField": "is_spot_instance",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable spot pricing for the VM (significantly reduced cost, can be evicted).\n Spot VMs are suitable for fault-tolerant, interruptible workloads.",
+        "required": false
+      },
+      {
+        "name": "SpotMaxPrice",
+        "jsonName": "spotMaxPrice",
+        "protoField": "spot_max_price",
+        "type": {
+          "kind": "double"
+        },
+        "description": "Maximum price per hour for Spot VMs (in USD).\n Set to -1 to use the on-demand price as the maximum.\n Only applicable when is_spot_instance is true.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureVirtualMachineDataDisk",
+      "description": "AzureVirtualMachineDataDisk defines an additional data disk configuration.",
+      "protoType": "org.openmcf.provider.azure.azurevirtualmachine.v1.AzureVirtualMachineDataDisk",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the data disk.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        {
+          "name": "SizeGb",
+          "jsonName": "sizeGb",
+          "protoField": "size_gb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Size of the data disk in GB.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1,
+            "max": 32767
+          }
+        },
+        {
+          "name": "StorageType",
+          "jsonName": "storageType",
+          "protoField": "storage_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.azure.azurevirtualmachine.v1.DiskStorageType",
+            "enumValues": [
+              "standard_lrs",
+              "standard_ssd_lrs",
+              "premium_lrs",
+              "premium_zrs"
+            ]
+          },
+          "description": "Storage account type for the data disk.",
+          "required": false,
+          "default": "premium_lrs",
+          "oneofGroup": "_storage_type"
+        },
+        {
+          "name": "Caching",
+          "jsonName": "caching",
+          "protoField": "caching",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.azure.azurevirtualmachine.v1.DiskCaching",
+            "enumValues": [
+              "none",
+              "read_only",
+              "read_write"
+            ]
+          },
+          "description": "Caching mode for the data disk.",
+          "required": false,
+          "default": "read_only",
+          "oneofGroup": "_caching"
+        },
+        {
+          "name": "Lun",
+          "jsonName": "lun",
+          "protoField": "lun",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Logical Unit Number (LUN) for the data disk.\n Each data disk must have a unique LUN (0-63).",
+          "required": false,
+          "validation": {
+            "max": 63
+          }
+        },
+        {
+          "name": "DeleteWithVm",
+          "jsonName": "deleteWithVm",
+          "protoField": "delete_with_vm",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to delete the data disk when the VM is deleted.",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_delete_with_vm"
+        }
+      ]
+    },
+    {
+      "name": "AzureVirtualMachineImage",
+      "description": "AzureVirtualMachineImage defines the OS image configuration for the VM.",
+      "protoType": "org.openmcf.provider.azure.azurevirtualmachine.v1.AzureVirtualMachineImage",
+      "fields": [
+        {
+          "name": "Publisher",
+          "jsonName": "publisher",
+          "protoField": "publisher",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Image publisher (e.g., \"Canonical\", \"MicrosoftWindowsServer\", \"RedHat\").\n Required when using marketplace images, not needed for custom images.",
+          "required": false
+        },
+        {
+          "name": "Offer",
+          "jsonName": "offer",
+          "protoField": "offer",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Image offer (e.g., \"0001-com-ubuntu-server-jammy\", \"WindowsServer\", \"RHEL\").\n Required when using marketplace images, not needed for custom images.",
+          "required": false
+        },
+        {
+          "name": "Sku",
+          "jsonName": "sku",
+          "protoField": "sku",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Image SKU (e.g., \"22_04-lts-gen2\", \"2022-datacenter-g2\", \"8-lvm-gen2\").\n Required when using marketplace images, not needed for custom images.",
+          "required": false
+        },
+        {
+          "name": "Version",
+          "jsonName": "version",
+          "protoField": "version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Image version (e.g., \"latest\", \"22.04.202301100\").\n Use \"latest\" for auto-updates or a specific version for stability.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          },
+          "default": "latest",
+          "oneofGroup": "_version"
+        },
+        {
+          "name": "CustomImageId",
+          "jsonName": "customImageId",
+          "protoField": "custom_image_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Custom image ID (Azure resource ID of a custom or shared image).\n If specified, publisher/offer/sku/version are ignored.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureVirtualMachineNetworkConfig",
+      "description": "AzureVirtualMachineNetworkConfig defines network-related settings.",
+      "protoType": "org.openmcf.provider.azure.azurevirtualmachine.v1.AzureVirtualMachineNetworkConfig",
+      "fields": [
+        {
+          "name": "EnablePublicIp",
+          "jsonName": "enablePublicIp",
+          "protoField": "enable_public_ip",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable a public IP address for the VM.\n Set to true for VMs that need direct internet access.\n For production, prefer private IPs with NAT Gateway or Azure Bastion.",
+          "required": false
+        },
+        {
+          "name": "PublicIpSku",
+          "jsonName": "publicIpSku",
+          "protoField": "public_ip_sku",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.azure.azurevirtualmachine.v1.PublicIpSku",
+            "enumValues": [
+              "basic",
+              "standard"
+            ]
+          },
+          "description": "SKU for the public IP (if enabled).\n Standard is required for availability zones.",
+          "required": false,
+          "default": "standard",
+          "oneofGroup": "_public_ip_sku"
+        },
+        {
+          "name": "PublicIpAllocation",
+          "jsonName": "publicIpAllocation",
+          "protoField": "public_ip_allocation",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.azure.azurevirtualmachine.v1.PublicIpAllocation",
+            "enumValues": [
+              "public_dynamic",
+              "public_static"
+            ]
+          },
+          "description": "Allocation method for the public IP.",
+          "required": false,
+          "default": "public_static",
+          "oneofGroup": "_public_ip_allocation"
+        },
+        {
+          "name": "NetworkSecurityGroupId",
+          "jsonName": "networkSecurityGroupId",
+          "protoField": "network_security_group_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Network Security Group (NSG) ID to associate with the VM's network interface.\n Can be a literal Azure resource ID or a reference to another resource.",
+          "required": false
+        },
+        {
+          "name": "EnableAcceleratedNetworking",
+          "jsonName": "enableAcceleratedNetworking",
+          "protoField": "enable_accelerated_networking",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable accelerated networking for improved network performance.\n Requires a compatible VM size (most D-series and above support this).",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_enable_accelerated_networking"
+        },
+        {
+          "name": "PrivateIpAllocation",
+          "jsonName": "privateIpAllocation",
+          "protoField": "private_ip_allocation",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.azure.azurevirtualmachine.v1.PrivateIpAllocation",
+            "enumValues": [
+              "private_dynamic",
+              "private_static"
+            ]
+          },
+          "description": "Allocation method for the private IP.",
+          "required": false,
+          "default": "private_dynamic",
+          "oneofGroup": "_private_ip_allocation"
+        },
+        {
+          "name": "PrivateIpAddress",
+          "jsonName": "privateIpAddress",
+          "protoField": "private_ip_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Static private IP address (required when private_ip_allocation is static).\n Must be within the subnet's address range.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureVirtualMachineOsDisk",
+      "description": "AzureVirtualMachineOsDisk defines the OS disk configuration.",
+      "protoType": "org.openmcf.provider.azure.azurevirtualmachine.v1.AzureVirtualMachineOsDisk",
+      "fields": [
+        {
+          "name": "SizeGb",
+          "jsonName": "sizeGb",
+          "protoField": "size_gb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Size of the OS disk in GB.\n If not specified, uses the default size from the image.",
+          "required": false,
+          "validation": {
+            "max": 32767
+          }
+        },
+        {
+          "name": "StorageType",
+          "jsonName": "storageType",
+          "protoField": "storage_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.azure.azurevirtualmachine.v1.DiskStorageType",
+            "enumValues": [
+              "standard_lrs",
+              "standard_ssd_lrs",
+              "premium_lrs",
+              "premium_zrs"
+            ]
+          },
+          "description": "Storage account type for the OS disk.",
+          "required": false,
+          "default": "premium_lrs",
+          "oneofGroup": "_storage_type"
+        },
+        {
+          "name": "Caching",
+          "jsonName": "caching",
+          "protoField": "caching",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.azure.azurevirtualmachine.v1.DiskCaching",
+            "enumValues": [
+              "none",
+              "read_only",
+              "read_write"
+            ]
+          },
+          "description": "Caching mode for the OS disk.",
+          "required": false,
+          "default": "read_write",
+          "oneofGroup": "_caching"
+        },
+        {
+          "name": "DeleteWithVm",
+          "jsonName": "deleteWithVm",
+          "protoField": "delete_with_vm",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to delete the OS disk when the VM is deleted.",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_delete_with_vm"
+        },
+        {
+          "name": "DiskEncryptionSetId",
+          "jsonName": "diskEncryptionSetId",
+          "protoField": "disk_encryption_set_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Azure Key Vault disk encryption set ID for customer-managed key encryption.\n Can be a literal value or a reference to an AzureKeyVault resource.",
+          "required": false,
+          "referenceKind": "AzureKeyVault",
+          "referenceFieldPath": "status.outputs.vault_id"
+        }
+      ]
+    }
+  ]
+}

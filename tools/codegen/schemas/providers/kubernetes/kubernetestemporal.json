@@ -1,0 +1,1137 @@
+{
+  "name": "KubernetesTemporal",
+  "kind": "KubernetesTemporal",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "temporal-kubernetes",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetestemporal.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetestemporal/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetestemporal/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesTemporalSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "Target Kubernetes Cluster",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes Namespace",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "CreateNamespace",
+        "jsonName": "createNamespace",
+        "protoField": "create_namespace",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "flag to indicate if the namespace should be created",
+        "required": false
+      },
+      {
+        "name": "Database",
+        "jsonName": "database",
+        "protoField": "database",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesTemporalDatabaseConfig"
+        },
+        "description": "database configuration",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "DisableWebUi",
+        "jsonName": "disableWebUi",
+        "protoField": "disable_web_ui",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "disables temporal web ui",
+        "required": false
+      },
+      {
+        "name": "EnableEmbeddedElasticsearch",
+        "jsonName": "enableEmbeddedElasticsearch",
+        "protoField": "enable_embedded_elasticsearch",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "enables embedded elasticsearch for temporal\n this is ignored if external elasticsearch is set",
+        "required": false
+      },
+      {
+        "name": "EnableMonitoringStack",
+        "jsonName": "enableMonitoringStack",
+        "protoField": "enable_monitoring_stack",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "enables monitoring stack for temporal\n enabling this will deploy prometheus and grafana",
+        "required": false
+      },
+      {
+        "name": "CassandraReplicas",
+        "jsonName": "cassandraReplicas",
+        "protoField": "cassandra_replicas",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "number of cassandra nodes to be deployed\nthis is only honored when the backend is cassandra, and no external database is provided.",
+        "required": false,
+        "default": "1",
+        "oneofGroup": "_cassandra_replicas"
+      },
+      {
+        "name": "Ingress",
+        "jsonName": "ingress",
+        "protoField": "ingress",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesTemporalIngress"
+        },
+        "description": "The ingress configuration for the temporal deployment.\nif enabled, the frontend will be exposed using a load-balancer\n and also if web ui is enabled it will be exposed using the kubernetes ingress controller.",
+        "required": false
+      },
+      {
+        "name": "ExternalElasticsearch",
+        "jsonName": "externalElasticsearch",
+        "protoField": "external_elasticsearch",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesTemporalExternalElasticsearch"
+        },
+        "description": "external elasticsearch configuration to be used by temporal for configuring observability.",
+        "required": false
+      },
+      {
+        "name": "Version",
+        "jsonName": "version",
+        "protoField": "version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "version of the Temporal Helm chart to deploy (e.g., \"0.62.0\")\n if not specified, the default version configured in the Pulumi module will be used",
+        "required": false
+      },
+      {
+        "name": "DynamicConfig",
+        "jsonName": "dynamicConfig",
+        "protoField": "dynamic_config",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesTemporalDynamicConfig"
+        },
+        "description": "Dynamic configuration values for Temporal server runtime behavior.\n These settings control workflow execution limits and can be adjusted without server restart.",
+        "required": false
+      },
+      {
+        "name": "NumHistoryShards",
+        "jsonName": "numHistoryShards",
+        "protoField": "num_history_shards",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "*\n Number of history shards for the Temporal cluster.\n This is an IMMUTABLE setting that must be decided at cluster creation time.\n Higher values enable better parallelism and throughput but require more resources.\n Default: 512 (safe for most production workloads).\n WARNING: Cannot be changed after initial deployment without data migration.",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 16384
+        },
+        "oneofGroup": "_num_history_shards"
+      },
+      {
+        "name": "Services",
+        "jsonName": "services",
+        "protoField": "services",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesTemporalServices"
+        },
+        "description": "Per-service replica and resource configuration for Temporal services.\n Allows fine-tuning resources for frontend, history, matching, and worker services.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ContainerResources",
+      "description": "**ContainerResources** specifies the CPU and memory resources for a container.\n It allows you to define resource limits and requests to manage resource allocation and ensure optimal performance.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerResources",
+      "fields": [
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource limits for the container.\n Specify the maximum amount of CPU and memory that the container can use.",
+          "required": false
+        },
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource requests for the container.\n Specify the minimum amount of CPU and memory that the container is guaranteed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CpuMemory",
+      "description": "**CpuMemory** defines CPU and memory resource quantities for a container.\n It is used to specify the limits and requests for CPU and memory resources.",
+      "protoType": "org.openmcf.provider.kubernetes.CpuMemory",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSecretKeyRef",
+      "description": "*\n **KubernetesSecretKeyRef** is a reference to a specific key within a Kubernetes Secret.\n This allows components to retrieve sensitive values from existing secrets rather than\n storing them as plain text in the configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesSecretKeyRef",
+      "fields": [
+        {
+          "name": "Namespace",
+          "jsonName": "namespace",
+          "protoField": "namespace",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The namespace of the Kubernetes Secret.\n If not specified, defaults to the namespace where the component is deployed.\n Note: Cross-namespace secret references may not be supported by all Helm charts.",
+          "required": false
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The name of the Kubernetes Secret.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The key within the Kubernetes Secret that contains the value.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSensitiveValue",
+      "description": "*\n **KubernetesSensitiveValue** represents a sensitive value that can be provided either\n as a literal string or as a reference to a Kubernetes Secret.\n\n Using secret references is recommended for production deployments to avoid storing\n sensitive values in plain text within configuration files or version control.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesSensitiveValue",
+      "fields": [
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n A literal string value.\n Warning: Using plain text for sensitive values is not recommended for production.\n Consider using secret_ref instead.",
+          "required": false,
+          "oneofGroup": "sensitive_value"
+        },
+        {
+          "name": "SecretRef",
+          "jsonName": "secretRef",
+          "protoField": "secret_ref",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSecretKeyRef"
+          },
+          "description": "*\n A reference to a key within a Kubernetes Secret.\n The secret must exist in the cluster before the component is deployed.",
+          "required": false,
+          "oneofGroup": "sensitive_value"
+        }
+      ]
+    },
+    {
+      "name": "KubernetesTemporalDatabaseConfig",
+      "description": "groups database configuration settings.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetestemporal.v1.KubernetesTemporalDatabaseConfig",
+      "fields": [
+        {
+          "name": "Backend",
+          "jsonName": "backend",
+          "protoField": "backend",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetestemporal.v1.KubernetesTemporalDatabaseBackend",
+            "enumValues": [
+              "cassandra",
+              "postgresql",
+              "mysql"
+            ]
+          },
+          "description": "selected database backend",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ExternalDatabase",
+          "jsonName": "externalDatabase",
+          "protoField": "external_database",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesTemporalExternalDatabase"
+          },
+          "description": "external database configuration, if this is not set, in-cluster cassandra would be created",
+          "required": false
+        },
+        {
+          "name": "DatabaseName",
+          "jsonName": "databaseName",
+          "protoField": "database_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "primary database or keyspace name",
+          "required": false,
+          "default": "temporal",
+          "oneofGroup": "_database_name"
+        },
+        {
+          "name": "VisibilityName",
+          "jsonName": "visibilityName",
+          "protoField": "visibility_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "visibility database or keyspace name",
+          "required": false,
+          "default": "temporal_visibility",
+          "oneofGroup": "_visibility_name"
+        },
+        {
+          "name": "DisableAutoSchemaSetup",
+          "jsonName": "disableAutoSchemaSetup",
+          "protoField": "disable_auto_schema_setup",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "disables automatic schema creation",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesTemporalDynamicConfig",
+      "description": "*\n Dynamic configuration values for Temporal server runtime behavior.\n These settings control workflow execution limits without requiring server restart.\n When not specified, Temporal uses its default values.\n\n Two types of limits:\n - **History limits**: Control total workflow history size and event count\n - **Blob limits**: Control individual payload sizes (markers, signals, activity I/O)\n\n Example:\n ```yaml\n dynamic_config:\n   history_size_limit_error: 104857600  # 100 MB total history\n   history_count_limit_error: 102400    # 100K events\n   blob_size_limit_error: 10485760      # 10 MB per payload (for large IaC diffs)\n   blob_size_limit_warn: 5242880        # 5 MB warning threshold\n ```",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetestemporal.v1.KubernetesTemporalDynamicConfig",
+      "fields": [
+        {
+          "name": "HistorySizeLimitError",
+          "jsonName": "historySizeLimitError",
+          "protoField": "history_size_limit_error",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "*\n Maximum size in bytes for workflow execution history.\n When a workflow exceeds this limit, Temporal terminates it with reason \"Workflow history size exceeds limit.\"\n Default: 52428800 (50 MB). Increase for workflows with large payloads.",
+          "required": false,
+          "validation": {
+            "min": 1048576
+          },
+          "oneofGroup": "_history_size_limit_error"
+        },
+        {
+          "name": "HistoryCountLimitError",
+          "jsonName": "historyCountLimitError",
+          "protoField": "history_count_limit_error",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "*\n Maximum number of events in workflow execution history.\n When a workflow exceeds this limit, Temporal terminates it with reason \"Workflow history size exceeds limit.\"\n Default: 51200 events. Increase for workflows with many activities/signals.\n Consider using ContinueAsNew pattern as an alternative.",
+          "required": false,
+          "validation": {
+            "min": 1000
+          },
+          "oneofGroup": "_history_count_limit_error"
+        },
+        {
+          "name": "HistorySizeLimitWarn",
+          "jsonName": "historySizeLimitWarn",
+          "protoField": "history_size_limit_warn",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "*\n Warning threshold for history size in bytes.\n Temporal logs warnings when workflows approach this limit.\n Default: 10485760 (10 MB, ~20% of error limit).",
+          "required": false,
+          "validation": {
+            "min": 524288
+          },
+          "oneofGroup": "_history_size_limit_warn"
+        },
+        {
+          "name": "HistoryCountLimitWarn",
+          "jsonName": "historyCountLimitWarn",
+          "protoField": "history_count_limit_warn",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "*\n Warning threshold for history event count.\n Temporal logs warnings when workflows approach this limit.\n Default: 10240 (~20% of error limit).",
+          "required": false,
+          "validation": {
+            "min": 500
+          },
+          "oneofGroup": "_history_count_limit_warn"
+        },
+        {
+          "name": "BlobSizeLimitError",
+          "jsonName": "blobSizeLimitError",
+          "protoField": "blob_size_limit_error",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "*\n Maximum size in bytes for a single blob/payload (marker details, signal data, activity I/O).\n When a payload exceeds this limit, Temporal rejects it with \"exceeds size limit\" error.\n This is different from history_size_limit which controls total workflow history size.\n Default: 2097152 (2 MB). Increase for workflows that send large payloads like IaC diffs.\n\n Example: Set to 10485760 (10 MB) to support large Pulumi diffs.",
+          "required": false,
+          "validation": {
+            "min": 1048576
+          },
+          "oneofGroup": "_blob_size_limit_error"
+        },
+        {
+          "name": "BlobSizeLimitWarn",
+          "jsonName": "blobSizeLimitWarn",
+          "protoField": "blob_size_limit_warn",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "*\n Warning threshold for blob/payload size in bytes.\n Temporal logs warnings when payloads approach this limit.\n Default: 524288 (512 KB, ~25% of error limit).",
+          "required": false,
+          "validation": {
+            "min": 262144
+          },
+          "oneofGroup": "_blob_size_limit_warn"
+        }
+      ]
+    },
+    {
+      "name": "KubernetesTemporalExternalDatabase",
+      "description": "describes an external database that temporal can use",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetestemporal.v1.KubernetesTemporalExternalDatabase",
+      "fields": [
+        {
+          "name": "Host",
+          "jsonName": "host",
+          "protoField": "host",
+          "type": {
+            "kind": "string"
+          },
+          "description": "hostname for external database",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "port for external database",
+          "required": false
+        },
+        {
+          "name": "Username",
+          "jsonName": "username",
+          "protoField": "username",
+          "type": {
+            "kind": "string"
+          },
+          "description": "username for database",
+          "required": false
+        },
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSensitiveValue"
+          },
+          "description": "*\n The password for authenticating to the database.\n Can be provided either as a plain string value or as a reference to an existing Kubernetes Secret.\n\n Using a secret reference is recommended for production deployments:\n ```yaml\n password:\n   secretRef:\n     name: db-credentials\n     key: password\n ```\n\n For development/testing, a plain string value can be used:\n ```yaml\n password:\n   stringValue: my-password\n ```",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesTemporalExternalElasticsearch",
+      "description": "describes an external elasticsearch cluster that temporal can use\n for advanced visibility instead of deploying an in-cluster es chart.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetestemporal.v1.KubernetesTemporalExternalElasticsearch",
+      "fields": [
+        {
+          "name": "Host",
+          "jsonName": "host",
+          "protoField": "host",
+          "type": {
+            "kind": "string"
+          },
+          "description": "the host address of the existing elasticsearch cluster",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "the port for the existing elasticsearch cluster",
+          "required": false
+        },
+        {
+          "name": "User",
+          "jsonName": "user",
+          "protoField": "user",
+          "type": {
+            "kind": "string"
+          },
+          "description": "optional username, if the external cluster requires auth",
+          "required": false
+        },
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSensitiveValue"
+          },
+          "description": "*\n Optional password for authenticating to the external Elasticsearch cluster.\n Can be provided either as a plain string value or as a reference to an existing Kubernetes Secret.\n\n Using a secret reference is recommended for production deployments:\n ```yaml\n password:\n   secretRef:\n     name: es-credentials\n     key: password\n ```\n\n For development/testing, a plain string value can be used:\n ```yaml\n password:\n   stringValue: my-password\n ```",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesTemporalFrontendIngressEndpoint",
+      "description": "frontend ingress endpoint configuration supporting both gRPC and HTTP protocols",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetestemporal.v1.KubernetesTemporalFrontendIngressEndpoint",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "flag to enable or disable frontend ingress",
+          "required": false
+        },
+        {
+          "name": "GrpcHostname",
+          "jsonName": "grpcHostname",
+          "protoField": "grpc_hostname",
+          "type": {
+            "kind": "string"
+          },
+          "description": "the full hostname for gRPC access via LoadBalancer (e.g., \"temporal-frontend-grpc.example.com\")\n required when enabled is true",
+          "required": false
+        },
+        {
+          "name": "HttpHostname",
+          "jsonName": "httpHostname",
+          "protoField": "http_hostname",
+          "type": {
+            "kind": "string"
+          },
+          "description": "the full hostname for HTTP access via Gateway API (e.g., \"temporal-frontend-http.example.com\")\n optional - only creates Gateway/HTTPRoute resources if provided",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesTemporalIngress",
+      "description": "ingress configuration for temporal deployment with separate frontend and web ui endpoints",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetestemporal.v1.KubernetesTemporalIngress",
+      "fields": [
+        {
+          "name": "Frontend",
+          "jsonName": "frontend",
+          "protoField": "frontend",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesTemporalFrontendIngressEndpoint"
+          },
+          "description": "frontend (gRPC + HTTP) ingress configuration",
+          "required": false
+        },
+        {
+          "name": "WebUi",
+          "jsonName": "webUi",
+          "protoField": "web_ui",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesTemporalWebUiIngressEndpoint"
+          },
+          "description": "web ui ingress configuration",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesTemporalServiceConfig",
+      "description": "*\n Per-service replica and resource configuration for a Temporal service.\n Allows configuring replicas and CPU/memory resources independently for each service.\n\n Example:\n ```yaml\n replicas: 3\n resources:\n   limits:\n     cpu: \"2000m\"\n     memory: \"4Gi\"\n   requests:\n     cpu: \"500m\"\n     memory: \"1Gi\"\n ```",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetestemporal.v1.KubernetesTemporalServiceConfig",
+      "fields": [
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "*\n Number of replicas for this service.\n Higher replica counts provide better availability and throughput.\n Default: 1 for development, recommend 3+ for production.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 100
+          },
+          "oneofGroup": "_replicas"
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "*\n Container resources (CPU and memory) for this service.\n Resource requirements vary by service type:\n - history: Most resource-intensive, handles workflow state\n - matching: Task dispatch, moderate resources\n - frontend: API gateway, moderate resources\n - worker: Internal workflows, light resources",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesTemporalServices",
+      "description": "*\n Service-level configuration for all Temporal services.\n Allows fine-tuning replica counts and resources for each Temporal service independently.\n\n Temporal consists of four core services:\n - **frontend**: API gateway for client requests (gRPC/HTTP)\n - **history**: Manages workflow state and execution (most resource-intensive)\n - **matching**: Task queue management and worker dispatch\n - **worker**: Runs internal Temporal system workflows\n\n Example:\n ```yaml\n services:\n   frontend:\n     replicas: 2\n     resources:\n       requests:\n         cpu: \"200m\"\n         memory: \"512Mi\"\n   history:\n     replicas: 3\n     resources:\n       requests:\n         cpu: \"500m\"\n         memory: \"1Gi\"\n       limits:\n         cpu: \"2000m\"\n         memory: \"4Gi\"\n ```",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetestemporal.v1.KubernetesTemporalServices",
+      "fields": [
+        {
+          "name": "Frontend",
+          "jsonName": "frontend",
+          "protoField": "frontend",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesTemporalServiceConfig"
+          },
+          "description": "Frontend service configuration (API gateway for gRPC/HTTP requests)",
+          "required": false
+        },
+        {
+          "name": "History",
+          "jsonName": "history",
+          "protoField": "history",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesTemporalServiceConfig"
+          },
+          "description": "History service configuration (manages workflow state, most resource-intensive)",
+          "required": false
+        },
+        {
+          "name": "Matching",
+          "jsonName": "matching",
+          "protoField": "matching",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesTemporalServiceConfig"
+          },
+          "description": "Matching service configuration (task queue management and dispatch)",
+          "required": false
+        },
+        {
+          "name": "Worker",
+          "jsonName": "worker",
+          "protoField": "worker",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesTemporalServiceConfig"
+          },
+          "description": "Worker service configuration (internal Temporal system workflows)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesTemporalWebUiIngressEndpoint",
+      "description": "web ui ingress endpoint configuration for HTTP-only access",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetestemporal.v1.KubernetesTemporalWebUiIngressEndpoint",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "flag to enable or disable web ui ingress",
+          "required": false
+        },
+        {
+          "name": "Hostname",
+          "jsonName": "hostname",
+          "protoField": "hostname",
+          "type": {
+            "kind": "string"
+          },
+          "description": "the full hostname for HTTP access via Gateway API (e.g., \"temporal-ui.example.com\")\n required when enabled is true",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

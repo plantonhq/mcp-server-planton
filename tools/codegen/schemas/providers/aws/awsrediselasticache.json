@@ -1,0 +1,468 @@
+{
+  "name": "AwsRedisElasticache",
+  "kind": "AwsRedisElasticache",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-redis-elasticache",
+  "protoPackage": "org.openmcf.provider.aws.awsrediselasticache.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsrediselasticache/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsrediselasticache/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsRedisElasticacheSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Engine",
+        "jsonName": "engine",
+        "protoField": "engine",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cache engine to use. Redis is the dominant choice; Valkey is the open-source\n Redis-compatible alternative. Values: \"redis\", \"valkey\".",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "EngineVersion",
+        "jsonName": "engineVersion",
+        "protoField": "engine_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Engine version to deploy. Examples: \"7.1\", \"7.0\", \"6.2\" for Redis;\n \"7.2\" for Valkey. Leave empty to use the provider default.",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description for the replication group. Required by AWS.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "NodeType",
+        "jsonName": "nodeType",
+        "protoField": "node_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ElastiCache node type. Determines CPU, memory, and network capacity.\n Examples: \"cache.t3.micro\" (dev), \"cache.r7g.large\" (production),\n \"cache.r6gd.xlarge\" (data tiering).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Port",
+        "jsonName": "port",
+        "protoField": "port",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Port on which the cluster accepts connections. Default: 6379.\n This is a ForceNew attribute — changing it destroys and recreates the cluster.",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 65535
+        },
+        "default": "6379",
+        "oneofGroup": "_port"
+      },
+      {
+        "name": "NumCacheClusters",
+        "jsonName": "numCacheClusters",
+        "protoField": "num_cache_clusters",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Total number of cache clusters (nodes) in the replication group. This includes\n the primary and all read replicas. For example, 3 means 1 primary + 2 replicas.\n Range: 1–6. Mutually exclusive with `num_node_groups`.",
+        "required": false
+      },
+      {
+        "name": "NumNodeGroups",
+        "jsonName": "numNodeGroups",
+        "protoField": "num_node_groups",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of node groups (shards) for Cluster Mode Enabled. Each shard holds a\n partition of the keyspace. Mutually exclusive with `num_cache_clusters`.",
+        "required": false
+      },
+      {
+        "name": "ReplicasPerNodeGroup",
+        "jsonName": "replicasPerNodeGroup",
+        "protoField": "replicas_per_node_group",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of read replicas per shard. Range: 0–5. Only valid when\n `num_node_groups` is set.",
+        "required": false,
+        "validation": {
+          "max": 5
+        }
+      },
+      {
+        "name": "AutomaticFailoverEnabled",
+        "jsonName": "automaticFailoverEnabled",
+        "protoField": "automatic_failover_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable automatic failover to a read replica if the primary fails.\n Requires `num_cache_clusters \u003e= 2` (non-clustered) or `num_node_groups \u003e 0`\n (clustered mode, where failover is always on).",
+        "required": false
+      },
+      {
+        "name": "MultiAzEnabled",
+        "jsonName": "multiAzEnabled",
+        "protoField": "multi_az_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Deploy replicas across multiple Availability Zones for resilience against\n AZ-level failures. Requires `automatic_failover_enabled` to be true.",
+        "required": false
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Subnet IDs for the ElastiCache subnet group. Provide subnets in at least two\n AZs for multi-AZ deployments. A subnet group is created automatically from\n these subnets.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "VPC security groups to attach to the cluster nodes. Controls network-level\n access to the Redis/Valkey endpoint.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "AtRestEncryptionEnabled",
+        "jsonName": "atRestEncryptionEnabled",
+        "protoField": "at_rest_encryption_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable encryption at rest for data stored on disk and in snapshots.\n ForceNew — changing this destroys and recreates the cluster.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "TransitEncryptionEnabled",
+        "jsonName": "transitEncryptionEnabled",
+        "protoField": "transit_encryption_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable encryption in transit (TLS) for all client connections and\n replication traffic. Strongly recommended for production.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "TransitEncryptionMode",
+        "jsonName": "transitEncryptionMode",
+        "protoField": "transit_encryption_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "TLS enforcement mode. \"preferred\" allows both TLS and non-TLS connections\n (useful during migration); \"required\" enforces TLS for all connections.\n Only valid when `transit_encryption_enabled` is true.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed KMS key for at-rest encryption. When set, ElastiCache uses\n this key instead of the AWS-managed key. ForceNew — changing this destroys\n and recreates the cluster.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "AuthToken",
+        "jsonName": "authToken",
+        "protoField": "auth_token",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Redis AUTH token (password) for client authentication. Requires\n `transit_encryption_enabled` to be true. 16–128 printable characters.\n Mutually exclusive with `user_group_ids`.",
+        "required": false
+      },
+      {
+        "name": "UserGroupIds",
+        "jsonName": "userGroupIds",
+        "protoField": "user_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Redis ACL user group IDs for fine-grained access control. Each user group\n defines users with specific command and key permissions. Mutually exclusive\n with `auth_token`.",
+        "required": false
+      },
+      {
+        "name": "MaintenanceWindow",
+        "jsonName": "maintenanceWindow",
+        "protoField": "maintenance_window",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Weekly maintenance window in UTC. Format: \"ddd:hh24:mi-ddd:hh24:mi\".\n Example: \"sun:05:00-sun:06:00\". Leave empty for AWS-assigned default.",
+        "required": false,
+        "validation": {
+          "pattern": "^(mon|tue|wed|thu|fri|sat|sun):([01][0-9]|2[0-3]):[0-5][0-9]-(mon|tue|wed|thu|fri|sat|sun):([01][0-9]|2[0-3]):[0-5][0-9]$"
+        }
+      },
+      {
+        "name": "SnapshotRetentionLimit",
+        "jsonName": "snapshotRetentionLimit",
+        "protoField": "snapshot_retention_limit",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of days to retain automatic snapshots before deletion. 0 disables\n automatic snapshots. Range: 0–35.",
+        "required": false,
+        "validation": {
+          "max": 35
+        }
+      },
+      {
+        "name": "SnapshotWindow",
+        "jsonName": "snapshotWindow",
+        "protoField": "snapshot_window",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Daily snapshot window in UTC. Format: \"hh24:mi-hh24:mi\".\n Example: \"03:00-04:00\". Leave empty for AWS-assigned default.",
+        "required": false,
+        "validation": {
+          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]-([01][0-9]|2[0-3]):[0-5][0-9]$"
+        }
+      },
+      {
+        "name": "FinalSnapshotIdentifier",
+        "jsonName": "finalSnapshotIdentifier",
+        "protoField": "final_snapshot_identifier",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Identifier for the final snapshot taken when the cluster is deleted. If not\n provided, no final snapshot is created.",
+        "required": false
+      },
+      {
+        "name": "ApplyImmediately",
+        "jsonName": "applyImmediately",
+        "protoField": "apply_immediately",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Apply changes immediately instead of waiting for the next maintenance window.\n May cause brief downtime for some operations.",
+        "required": false
+      },
+      {
+        "name": "ParameterGroupFamily",
+        "jsonName": "parameterGroupFamily",
+        "protoField": "parameter_group_family",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Parameter group family for custom parameters. Required when `parameters` is\n provided. Examples: \"redis7\", \"redis6.x\", \"valkey7\".",
+        "required": false
+      },
+      {
+        "name": "Parameters",
+        "jsonName": "parameters",
+        "protoField": "parameters",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsRedisElasticacheParameter"
+          }
+        },
+        "description": "Custom cache parameters to apply via a managed parameter group. Common\n examples: maxmemory-policy, timeout, tcp-keepalive.",
+        "required": false
+      },
+      {
+        "name": "LogDeliveryConfigurations",
+        "jsonName": "logDeliveryConfigurations",
+        "protoField": "log_delivery_configurations",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsRedisElasticacheLogDeliveryConfig"
+          }
+        },
+        "description": "Log delivery configurations for slow-log and/or engine-log. At most 2\n entries — one per log type. Logs can be delivered to CloudWatch Logs or\n Kinesis Data Firehose.",
+        "required": false
+      },
+      {
+        "name": "NotificationTopicArn",
+        "jsonName": "notificationTopicArn",
+        "protoField": "notification_topic_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SNS topic ARN for cluster event notifications (failover, maintenance,\n configuration changes, etc.).",
+        "required": false,
+        "referenceKind": "AwsSnsTopic",
+        "referenceFieldPath": "status.outputs.topic_arn"
+      },
+      {
+        "name": "AutoMinorVersionUpgrade",
+        "jsonName": "autoMinorVersionUpgrade",
+        "protoField": "auto_minor_version_upgrade",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Automatically apply minor engine version upgrades during maintenance windows.",
+        "required": false
+      },
+      {
+        "name": "DataTieringEnabled",
+        "jsonName": "dataTieringEnabled",
+        "protoField": "data_tiering_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable data tiering — automatically moves less-frequently-accessed data to\n SSD storage for up to 5x more data per node. Only available on r6gd node\n types. ForceNew — cannot be changed after creation.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsRedisElasticacheLogDeliveryConfig",
+      "description": "AwsRedisElasticacheLogDeliveryConfig configures delivery of Redis/Valkey engine\n logs to an external destination. Each replication group supports at most two\n configurations — one for slow-log and one for engine-log.",
+      "protoType": "org.openmcf.provider.aws.awsrediselasticache.v1.AwsRedisElasticacheLogDeliveryConfig",
+      "fields": [
+        {
+          "name": "DestinationType",
+          "jsonName": "destinationType",
+          "protoField": "destination_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Type of destination. Values: \"cloudwatch-logs\", \"kinesis-firehose\".",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Destination",
+          "jsonName": "destination",
+          "protoField": "destination",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Destination identifier. For CloudWatch Logs: the log group name.\n For Kinesis Firehose: the delivery stream name.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "LogFormat",
+          "jsonName": "logFormat",
+          "protoField": "log_format",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Log serialization format. Values: \"text\", \"json\".",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "LogType",
+          "jsonName": "logType",
+          "protoField": "log_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Type of log to deliver. Values: \"slow-log\" (commands exceeding slowlog\n threshold), \"engine-log\" (engine-level diagnostic output).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsRedisElasticacheParameter",
+      "description": "AwsRedisElasticacheParameter defines a single cache parameter override for\n the managed parameter group. Parameters tune Redis/Valkey engine behavior\n (e.g., maxmemory-policy, timeout, tcp-keepalive).",
+      "protoType": "org.openmcf.provider.aws.awsrediselasticache.v1.AwsRedisElasticacheParameter",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Parameter name (e.g., \"maxmemory-policy\", \"timeout\").",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Parameter value (e.g., \"volatile-lru\", \"300\").",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    }
+  ]
+}

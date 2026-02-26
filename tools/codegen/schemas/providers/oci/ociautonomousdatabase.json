@@ -1,0 +1,453 @@
+{
+  "name": "OciAutonomousDatabase",
+  "kind": "OciAutonomousDatabase",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciAutonomousDatabase is the top-level resource representing an Oracle Cloud\n Infrastructure Autonomous Database -- a fully managed, self-driving database\n service supporting OLTP, data warehouse, JSON, APEX, and lakehouse workloads.",
+  "protoPackage": "org.openmcf.provider.oci.ociautonomousdatabase.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ociautonomousdatabase/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ociautonomousdatabase/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciAutonomousDatabaseSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the autonomous database will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "DbName",
+        "jsonName": "dbName",
+        "protoField": "db_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The database name. Must be alphanumeric, begin with a letter, and be\n unique within the tenancy. Maximum 30 characters. Cannot be changed\n after creation.",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "maxLength": 30,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9]*$"
+        }
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable display name shown in the OCI Console.\n Falls back to metadata.name if not provided.",
+        "required": false
+      },
+      {
+        "name": "DbWorkload",
+        "jsonName": "dbWorkload",
+        "protoField": "db_workload",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ociautonomousdatabase.v1.DbWorkload",
+          "enumValues": [
+            "oltp",
+            "dw",
+            "ajd",
+            "apex",
+            "lh"
+          ]
+        },
+        "description": "The workload type of the autonomous database. Determines internal\n storage layout, query optimizer behavior, and available features.",
+        "required": false
+      },
+      {
+        "name": "DbVersion",
+        "jsonName": "dbVersion",
+        "protoField": "db_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Oracle Database version (e.g. \"19c\", \"23ai\", \"26ai\").\n When omitted, the latest available version is used.",
+        "required": false
+      },
+      {
+        "name": "DatabaseEdition",
+        "jsonName": "databaseEdition",
+        "protoField": "database_edition",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ociautonomousdatabase.v1.DatabaseEdition",
+          "enumValues": [
+            "standard_edition",
+            "enterprise_edition"
+          ]
+        },
+        "description": "The Oracle Database edition.",
+        "required": false
+      },
+      {
+        "name": "LicenseModel",
+        "jsonName": "licenseModel",
+        "protoField": "license_model",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ociautonomousdatabase.v1.LicenseModel",
+          "enumValues": [
+            "bring_your_own_license",
+            "license_included"
+          ]
+        },
+        "description": "The license model. AJD and APEX workloads always use LICENSE_INCLUDED\n regardless of this setting.",
+        "required": false
+      },
+      {
+        "name": "CharacterSet",
+        "jsonName": "characterSet",
+        "protoField": "character_set",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Character set for the database. Defaults to AL32UTF8 when omitted.\n Cannot be changed after creation.",
+        "required": false
+      },
+      {
+        "name": "NcharacterSet",
+        "jsonName": "ncharacterSet",
+        "protoField": "ncharacter_set",
+        "type": {
+          "kind": "string"
+        },
+        "description": "National character set. Defaults to AL16UTF16 when omitted.\n Valid values: AL16UTF16, UTF8. Cannot be changed after creation.",
+        "required": false
+      },
+      {
+        "name": "ComputeModel",
+        "jsonName": "computeModel",
+        "protoField": "compute_model",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ociautonomousdatabase.v1.ComputeModel",
+          "enumValues": [
+            "ecpu",
+            "ocpu"
+          ]
+        },
+        "description": "The compute model. ECPU is Oracle's current recommended model.\n OCPU is the legacy model still supported for backward compatibility.",
+        "required": false
+      },
+      {
+        "name": "ComputeCount",
+        "jsonName": "computeCount",
+        "protoField": "compute_count",
+        "type": {
+          "kind": "float"
+        },
+        "description": "Number of compute units (ECPUs or OCPUs depending on compute_model).\n Minimum 2 ECPUs for ECPU model. Minimum varies by workload for OCPU.",
+        "required": false,
+        "oneofGroup": "_compute_count"
+      },
+      {
+        "name": "DataStorageSizeInTbs",
+        "jsonName": "dataStorageSizeInTbs",
+        "protoField": "data_storage_size_in_tbs",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum storage in terabytes. Used for serverless deployments.\n Mutually exclusive with data_storage_size_in_gb.",
+        "required": false
+      },
+      {
+        "name": "DataStorageSizeInGb",
+        "jsonName": "dataStorageSizeInGb",
+        "protoField": "data_storage_size_in_gb",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum storage in gigabytes. Used for dedicated Exadata deployments\n that need finer granularity than whole terabytes.\n Mutually exclusive with data_storage_size_in_tbs.",
+        "required": false
+      },
+      {
+        "name": "IsAutoScalingEnabled",
+        "jsonName": "isAutoScalingEnabled",
+        "protoField": "is_auto_scaling_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, CPU auto-scaling is enabled, allowing the database to use\n up to three times the provisioned compute count during demand spikes.",
+        "required": false,
+        "oneofGroup": "_is_auto_scaling_enabled"
+      },
+      {
+        "name": "IsAutoScalingForStorageEnabled",
+        "jsonName": "isAutoScalingForStorageEnabled",
+        "protoField": "is_auto_scaling_for_storage_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, storage auto-scaling is enabled, automatically expanding\n storage when usage reaches the configured threshold.",
+        "required": false,
+        "oneofGroup": "_is_auto_scaling_for_storage_enabled"
+      },
+      {
+        "name": "AdminPassword",
+        "jsonName": "adminPassword",
+        "protoField": "admin_password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The administrator password for the database. Must be 12 to 30 characters,\n contain at least one uppercase, one lowercase, and one numeric character.\n Cannot contain the word \"admin\" or the double-quote character.\n Mutually exclusive with secret_id.",
+        "required": false
+      },
+      {
+        "name": "SecretId",
+        "jsonName": "secretId",
+        "protoField": "secret_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of a Vault secret containing the administrator password.\n Use this instead of admin_password for production environments where\n passwords should not appear in manifests.\n Mutually exclusive with admin_password.",
+        "required": false
+      },
+      {
+        "name": "SecretVersionNumber",
+        "jsonName": "secretVersionNumber",
+        "protoField": "secret_version_number",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Version number of the Vault secret. When omitted, the latest version\n is used. Only applicable when secret_id is set.",
+        "required": false
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the subnet for private endpoint access. When set, the database\n is only accessible from the specified subnet (and peered networks),\n disabling public secure access endpoints.",
+        "required": false,
+        "referenceKind": "OciSubnet",
+        "referenceFieldPath": "status.outputs.subnetId"
+      },
+      {
+        "name": "NsgIds",
+        "jsonName": "nsgIds",
+        "protoField": "nsg_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "OCIDs of network security groups to associate with the private endpoint.\n Maximum 5 NSGs. Only applicable when subnet_id is set.",
+        "required": false,
+        "validation": {
+          "maxItems": 5
+        },
+        "referenceKind": "OciSecurityGroup",
+        "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+      },
+      {
+        "name": "PrivateEndpointLabel",
+        "jsonName": "privateEndpointLabel",
+        "protoField": "private_endpoint_label",
+        "type": {
+          "kind": "string"
+        },
+        "description": "DNS label prefix for the private endpoint. Combined with the subnet's\n DNS domain to form the FQDN for private access.",
+        "required": false
+      },
+      {
+        "name": "PrivateEndpointIp",
+        "jsonName": "privateEndpointIp",
+        "protoField": "private_endpoint_ip",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Specific private IP address for the private endpoint within the subnet.\n When omitted, OCI auto-assigns an available IP.",
+        "required": false
+      },
+      {
+        "name": "WhitelistedIps",
+        "jsonName": "whitelistedIps",
+        "protoField": "whitelisted_ips",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Client IP access control list. Each entry can be an IP address, a CIDR\n block, or a VCN OCID (allowing all IPs in that VCN). When subnet_id is\n set, this list further restricts access within the private network.",
+        "required": false
+      },
+      {
+        "name": "IsMtlsConnectionRequired",
+        "jsonName": "isMtlsConnectionRequired",
+        "protoField": "is_mtls_connection_required",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, only mutual TLS (mTLS) connections are allowed. When false,\n both TLS and mTLS connections are accepted.",
+        "required": false,
+        "oneofGroup": "_is_mtls_connection_required"
+      },
+      {
+        "name": "IsAccessControlEnabled",
+        "jsonName": "isAccessControlEnabled",
+        "protoField": "is_access_control_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, enables database-level access control.\n Applicable for Exadata Cloud@Customer deployments.",
+        "required": false,
+        "oneofGroup": "_is_access_control_enabled"
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the KMS key for Transparent Data Encryption (TDE). When omitted,\n Oracle-managed encryption is used.",
+        "required": false
+      },
+      {
+        "name": "VaultId",
+        "jsonName": "vaultId",
+        "protoField": "vault_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the OCI Vault containing the KMS key. Required when kms_key_id\n is set.",
+        "required": false
+      },
+      {
+        "name": "IsDedicated",
+        "jsonName": "isDedicated",
+        "protoField": "is_dedicated",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, provisions the database on dedicated Exadata infrastructure\n (requires autonomous_container_database_id). When false or omitted,\n uses shared (serverless) infrastructure. Cannot be changed after creation.",
+        "required": false,
+        "oneofGroup": "_is_dedicated"
+      },
+      {
+        "name": "IsFreeTier",
+        "jsonName": "isFreeTier",
+        "protoField": "is_free_tier",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, provisions an Always Free autonomous database with limited\n compute and storage. Cannot scale and is automatically reclaimed after\n extended inactivity.",
+        "required": false,
+        "oneofGroup": "_is_free_tier"
+      },
+      {
+        "name": "IsDevTier",
+        "jsonName": "isDevTier",
+        "protoField": "is_dev_tier",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, provisions a Developer tier database with reduced cost\n suitable for development and testing workloads.",
+        "required": false,
+        "oneofGroup": "_is_dev_tier"
+      },
+      {
+        "name": "AutonomousContainerDatabaseId",
+        "jsonName": "autonomousContainerDatabaseId",
+        "protoField": "autonomous_container_database_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the autonomous container database for dedicated infrastructure\n deployments. Required when is_dedicated is true.",
+        "required": false
+      },
+      {
+        "name": "BackupRetentionPeriodInDays",
+        "jsonName": "backupRetentionPeriodInDays",
+        "protoField": "backup_retention_period_in_days",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of days to retain automatic backups.\n When omitted (zero), the service default applies.",
+        "required": false
+      },
+      {
+        "name": "IsLocalDataGuardEnabled",
+        "jsonName": "isLocalDataGuardEnabled",
+        "protoField": "is_local_data_guard_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, enables local Autonomous Data Guard for high availability.\n A standby database is automatically provisioned in a different\n availability domain within the same region.",
+        "required": false,
+        "oneofGroup": "_is_local_data_guard_enabled"
+      },
+      {
+        "name": "AutonomousMaintenanceScheduleType",
+        "jsonName": "autonomousMaintenanceScheduleType",
+        "protoField": "autonomous_maintenance_schedule_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ociautonomousdatabase.v1.MaintenanceScheduleType",
+          "enumValues": [
+            "early",
+            "regular"
+          ]
+        },
+        "description": "Maintenance schedule type controlling when patching occurs.",
+        "required": false
+      },
+      {
+        "name": "CustomerContacts",
+        "jsonName": "customerContacts",
+        "protoField": "customer_contacts",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "CustomerContact"
+          }
+        },
+        "description": "Customer contact email addresses for operational notifications\n such as maintenance windows and critical alerts.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "CustomerContact",
+      "description": "CustomerContact holds a single customer contact email for notifications.",
+      "protoType": "org.openmcf.provider.oci.ociautonomousdatabase.v1.OciAutonomousDatabaseSpec.CustomerContact",
+      "fields": [
+        {
+          "name": "Email",
+          "jsonName": "email",
+          "protoField": "email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Email address for operational notifications.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

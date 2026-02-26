@@ -1,0 +1,171 @@
+{
+  "name": "OpenStackNetworkPort",
+  "kind": "OpenStackNetworkPort",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackNetworkPort is a Kubernetes Resource Model (KRM) style resource\n for managing OpenStack Neutron ports.\n\n A port provides stable network identity (MAC address, fixed IPs, security\n groups) on a Neutron network. Explicit ports are preferred over instance-inline\n networking when you need:\n   - Stable IP addresses that survive instance rebuilds\n   - Pre-provisioned network identities for orchestration (InfraCharts)\n   - Multiple security groups per network attachment\n   - Specific MAC addresses for licensing or bonding\n\n Use this component for:\n   - Creating network interfaces before launching instances\n   - Wiring floating IPs to specific network endpoints\n   - Managing security group assignments independently of instances\n\n Downstream consumers:\n   - OpenStackFloatingIp.spec.port_id (built-in association)\n   - OpenStackFloatingIpAssociate.spec.port_id (DAG-visible association)\n   - OpenStackInstance.spec.networks[].port (future)",
+  "protoPackage": "org.openmcf.provider.openstack.openstacknetworkport.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstacknetworkport/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstacknetworkport/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackNetworkPortSpec",
+    "fields": [
+      {
+        "name": "NetworkId",
+        "jsonName": "networkId",
+        "protoField": "network_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "network_id is the ID of the network to create this port on.\n This is the defining relationship -- every port belongs to exactly one network.\n ForceNew: changing the network recreates the port.\n Can reference an OpenStackNetwork resource's output or be a literal network UUID.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackNetwork",
+        "referenceFieldPath": "status.outputs.network_id"
+      },
+      {
+        "name": "FixedIps",
+        "jsonName": "fixedIps",
+        "protoField": "fixed_ips",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "FixedIp"
+          }
+        },
+        "description": "fixed_ips defines the IP address allocations for this port.\n Each entry assigns an IP from a subnet on the port's network.\n If omitted, OpenStack auto-assigns one IP from any subnet on the network.\n Multiple entries create a multi-homed port (one IP per subnet).",
+        "required": false
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "security_group_ids is the list of security groups to apply to this port.\n Each entry can reference an OpenStackSecurityGroup resource's output\n (via value_from) or be a literal security group UUID.\n If omitted and no_security_groups is false, OpenStack applies the default\n security group for the project.\n Mutually exclusive with no_security_groups.",
+        "required": false,
+        "referenceKind": "OpenStackSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "NoSecurityGroups",
+        "jsonName": "noSecurityGroups",
+        "protoField": "no_security_groups",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "no_security_groups explicitly removes all security groups from this port,\n including the default security group that OpenStack normally applies.\n Set to true for ports that should have unrestricted traffic (e.g., load\n balancer VIPs, network appliance ports).\n Mutually exclusive with security_group_ids.",
+        "required": false
+      },
+      {
+        "name": "AdminStateUp",
+        "jsonName": "adminStateUp",
+        "protoField": "admin_state_up",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "admin_state_up controls the administrative state of the port.\n When false, the port is administratively down and will not forward traffic.\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_admin_state_up"
+      },
+      {
+        "name": "MacAddress",
+        "jsonName": "macAddress",
+        "protoField": "mac_address",
+        "type": {
+          "kind": "string"
+        },
+        "description": "mac_address specifies a specific MAC address for this port.\n If omitted, OpenStack auto-assigns a MAC from the network's allocation pool.\n ForceNew: changing the MAC recreates the port.\n Use case: network bonding, DPDK, or license-tied MAC addresses.",
+        "required": false
+      },
+      {
+        "name": "PortSecurityEnabled",
+        "jsonName": "portSecurityEnabled",
+        "protoField": "port_security_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "port_security_enabled controls whether port security is enforced on this port.\n When enabled, only traffic matching the port's security groups and allowed\n address pairs is permitted. When disabled, all traffic passes regardless of\n security groups.\n If omitted, inherits from the network's port_security_enabled setting.",
+        "required": false,
+        "oneofGroup": "_port_security_enabled"
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description is a human-readable description of the port.\n Stored on the OpenStack resource and visible in Horizon and API responses.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "tags are string tags to associate with the port in OpenStack.\n Tags are stored on the OpenStack resource and can be used for filtering\n and organization in the OpenStack API and Horizon dashboard.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this port.\n If omitted, the region from the OpenStack provider config is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "FixedIp",
+      "description": "FixedIp defines an IP address allocation for a port.\n Each fixed IP binds the port to a subnet and optionally requests a specific\n IP address from that subnet's allocation pool.",
+      "protoType": "org.openmcf.provider.openstack.openstacknetworkport.v1.FixedIp",
+      "fields": [
+        {
+          "name": "SubnetId",
+          "jsonName": "subnetId",
+          "protoField": "subnet_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "subnet_id is the ID of the subnet to allocate an IP address from.\n Can reference an OpenStackSubnet resource's output (via value_from for\n InfraChart DAG wiring) or be a literal subnet UUID.\n If omitted, OpenStack auto-selects a subnet on the port's network.",
+          "required": false,
+          "referenceKind": "OpenStackSubnet",
+          "referenceFieldPath": "status.outputs.subnet_id"
+        },
+        {
+          "name": "IpAddress",
+          "jsonName": "ipAddress",
+          "protoField": "ip_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ip_address requests a specific IP address from the subnet.\n If omitted, an available IP from the subnet's allocation pool is assigned.\n The IP must belong to the subnet's CIDR and be within an allocation pool.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,460 @@
+{
+  "name": "AwsNeptuneCluster",
+  "kind": "AwsNeptuneCluster",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsNeptuneCluster is a deployment component for creating and managing\n Amazon Neptune graph database clusters. Neptune supports property-graph\n queries via Apache TinkerPop Gremlin and RDF queries via SPARQL.",
+  "protoPackage": "org.openmcf.provider.aws.awsneptunecluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsneptunecluster/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsneptunecluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsNeptuneClusterSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "subnet_ids is the list of subnet IDs for the Neptune subnet group.\n Provide at least two subnets in distinct Availability Zones for high availability.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "NeptuneSubnetGroupName",
+        "jsonName": "neptuneSubnetGroupName",
+        "protoField": "neptune_subnet_group_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "neptune_subnet_group_name is an optional name of an existing Neptune subnet group\n to use instead of creating one from subnet_ids.",
+        "required": false
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "security_group_ids are the VPC security groups to associate with the cluster.\n Ingress rules are created on a managed security group for these source SGs.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "AllowedCidrBlocks",
+        "jsonName": "allowedCidrBlocks",
+        "protoField": "allowed_cidr_blocks",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "allowed_cidr_blocks are IPv4 CIDRs to allow ingress to the cluster security group\n on the Neptune port.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "vpc_id is the VPC where the cluster will be deployed. Required when creating\n a managed security group via security_group_ids or allowed_cidr_blocks.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "EngineVersion",
+        "jsonName": "engineVersion",
+        "protoField": "engine_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "engine_version is the Neptune engine version to deploy.\n Examples: \"1.2.1.0\", \"1.3.0.0\", \"1.3.1.0\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        },
+        "default": "1.3.0.0",
+        "oneofGroup": "_engine_version"
+      },
+      {
+        "name": "Port",
+        "jsonName": "port",
+        "protoField": "port",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "port is the TCP port on which the cluster accepts connections.",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 65535
+        },
+        "default": "8182",
+        "oneofGroup": "_port"
+      },
+      {
+        "name": "StorageType",
+        "jsonName": "storageType",
+        "protoField": "storage_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "storage_type controls the storage I/O model for the cluster.\n \"standard\" is the default; \"iopt1\" enables I/O-Optimized storage for\n read-heavy workloads with higher throughput and predictable pricing.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "standard",
+            "iopt1"
+          ]
+        }
+      },
+      {
+        "name": "InstanceCount",
+        "jsonName": "instanceCount",
+        "protoField": "instance_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "instance_count is the number of instances to create in the cluster.\n The first instance is the primary writer; additional instances are read replicas.",
+        "required": false,
+        "validation": {
+          "min": 1
+        },
+        "default": "1",
+        "oneofGroup": "_instance_count"
+      },
+      {
+        "name": "InstanceClass",
+        "jsonName": "instanceClass",
+        "protoField": "instance_class",
+        "type": {
+          "kind": "string"
+        },
+        "description": "instance_class is the compute and memory capacity of the DB instances.\n Examples: \"db.r6g.large\", \"db.r6g.xlarge\", \"db.r5.large\"\n Use \"db.serverless\" for Neptune Serverless (requires serverless_v2_scaling).",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        },
+        "default": "db.r6g.large",
+        "oneofGroup": "_instance_class"
+      },
+      {
+        "name": "ServerlessV2Scaling",
+        "jsonName": "serverlessV2Scaling",
+        "protoField": "serverless_v2_scaling",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsNeptuneClusterServerlessV2ScalingConfiguration"
+        },
+        "description": "serverless_v2_scaling configures Neptune Serverless capacity scaling.\n When set, instance_class should be \"db.serverless\".\n Neptune Capacity Units (NCUs): min 1.0, max 128.0.",
+        "required": false
+      },
+      {
+        "name": "StorageEncrypted",
+        "jsonName": "storageEncrypted",
+        "protoField": "storage_encrypted",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "storage_encrypted indicates whether to encrypt the cluster storage at rest.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_storage_encrypted"
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "kms_key_id is the ARN of the KMS key for storage encryption.\n When storage_encrypted is true and this is not set, the AWS-managed key is used.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "IamDatabaseAuthenticationEnabled",
+        "jsonName": "iamDatabaseAuthenticationEnabled",
+        "protoField": "iam_database_authentication_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "iam_database_authentication_enabled enables IAM database authentication,\n allowing IAM users and roles to authenticate to Neptune using temporary credentials.",
+        "required": false
+      },
+      {
+        "name": "IamRoles",
+        "jsonName": "iamRoles",
+        "protoField": "iam_roles",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "iam_roles is a list of IAM role ARNs to associate with the Neptune cluster.\n These roles allow Neptune to access other AWS services (e.g., S3 for bulk data loading).",
+        "required": false,
+        "referenceKind": "AwsIamRole",
+        "referenceFieldPath": "status.outputs.role_arn"
+      },
+      {
+        "name": "BackupRetentionPeriod",
+        "jsonName": "backupRetentionPeriod",
+        "protoField": "backup_retention_period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "backup_retention_period is the number of days to retain automated backups (1-35).",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 35
+        },
+        "default": "7",
+        "oneofGroup": "_backup_retention_period"
+      },
+      {
+        "name": "PreferredBackupWindow",
+        "jsonName": "preferredBackupWindow",
+        "protoField": "preferred_backup_window",
+        "type": {
+          "kind": "string"
+        },
+        "description": "preferred_backup_window is the daily time range for automated backups in UTC.\n Format: \"hh24:mi-hh24:mi\" (e.g., \"03:00-04:00\").",
+        "required": false,
+        "validation": {
+          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]-([01][0-9]|2[0-3]):[0-5][0-9]$"
+        }
+      },
+      {
+        "name": "PreferredMaintenanceWindow",
+        "jsonName": "preferredMaintenanceWindow",
+        "protoField": "preferred_maintenance_window",
+        "type": {
+          "kind": "string"
+        },
+        "description": "preferred_maintenance_window is the weekly time range for maintenance in UTC.\n Format: \"ddd:hh24:mi-ddd:hh24:mi\" (e.g., \"sun:05:00-sun:06:00\").",
+        "required": false,
+        "validation": {
+          "pattern": "^(mon|tue|wed|thu|fri|sat|sun):([01][0-9]|2[0-3]):[0-5][0-9]-(mon|tue|wed|thu|fri|sat|sun):([01][0-9]|2[0-3]):[0-5][0-9]$"
+        }
+      },
+      {
+        "name": "DeletionProtection",
+        "jsonName": "deletionProtection",
+        "protoField": "deletion_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "deletion_protection prevents accidental cluster deletion when enabled.",
+        "required": false
+      },
+      {
+        "name": "SkipFinalSnapshot",
+        "jsonName": "skipFinalSnapshot",
+        "protoField": "skip_final_snapshot",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "skip_final_snapshot controls whether a final snapshot is created on deletion.",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_skip_final_snapshot"
+      },
+      {
+        "name": "FinalSnapshotIdentifier",
+        "jsonName": "finalSnapshotIdentifier",
+        "protoField": "final_snapshot_identifier",
+        "type": {
+          "kind": "string"
+        },
+        "description": "final_snapshot_identifier is the identifier for the final snapshot when\n skip_final_snapshot is false.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "EnabledCloudwatchLogsExports",
+        "jsonName": "enabledCloudwatchLogsExports",
+        "protoField": "enabled_cloudwatch_logs_exports",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "enabled_cloudwatch_logs_exports lists log types to export to CloudWatch Logs.\n Valid values for Neptune: \"audit\", \"slowquery\"",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "ApplyImmediately",
+        "jsonName": "applyImmediately",
+        "protoField": "apply_immediately",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "apply_immediately specifies whether modifications are applied immediately\n or during the next maintenance window.",
+        "required": false
+      },
+      {
+        "name": "CopyTagsToSnapshot",
+        "jsonName": "copyTagsToSnapshot",
+        "protoField": "copy_tags_to_snapshot",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "copy_tags_to_snapshot copies cluster tags to snapshots when enabled.",
+        "required": false
+      },
+      {
+        "name": "AllowMajorVersionUpgrade",
+        "jsonName": "allowMajorVersionUpgrade",
+        "protoField": "allow_major_version_upgrade",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "allow_major_version_upgrade allows major engine version upgrades when applying\n changes. Required when updating engine_version to a new major version.",
+        "required": false
+      },
+      {
+        "name": "ClusterParameterGroupName",
+        "jsonName": "clusterParameterGroupName",
+        "protoField": "cluster_parameter_group_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cluster_parameter_group_name is the name of an existing Neptune cluster\n parameter group to use.",
+        "required": false
+      },
+      {
+        "name": "ClusterParameters",
+        "jsonName": "clusterParameters",
+        "protoField": "cluster_parameters",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsNeptuneClusterParameter"
+          }
+        },
+        "description": "cluster_parameters are custom parameters for the cluster parameter group.\n When provided (and cluster_parameter_group_name is not set), a new parameter\n group is created with these parameters.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsNeptuneClusterParameter",
+      "description": "AwsNeptuneClusterParameter represents a parameter for the Neptune cluster parameter group.",
+      "protoType": "org.openmcf.provider.aws.awsneptunecluster.v1.AwsNeptuneClusterParameter",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is the parameter name (e.g., \"neptune_enable_audit_log\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "value is the parameter value.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ApplyMethod",
+          "jsonName": "applyMethod",
+          "protoField": "apply_method",
+          "type": {
+            "kind": "string"
+          },
+          "description": "apply_method specifies when the parameter is applied: \"immediate\" or \"pending-reboot\".",
+          "required": false,
+          "validation": {
+            "enum": [
+              "immediate",
+              "pending-reboot"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsNeptuneClusterServerlessV2ScalingConfiguration",
+      "description": "AwsNeptuneClusterServerlessV2ScalingConfiguration configures Neptune Serverless\n capacity scaling. Neptune Capacity Units (NCUs) determine the compute and memory\n resources available.",
+      "protoType": "org.openmcf.provider.aws.awsneptunecluster.v1.AwsNeptuneClusterServerlessV2ScalingConfiguration",
+      "fields": [
+        {
+          "name": "MinCapacity",
+          "jsonName": "minCapacity",
+          "protoField": "min_capacity",
+          "type": {
+            "kind": "double"
+          },
+          "description": "min_capacity is the minimum Neptune Capacity Units (NCUs).\n Valid range: 1.0 to 128.0.",
+          "required": false
+        },
+        {
+          "name": "MaxCapacity",
+          "jsonName": "maxCapacity",
+          "protoField": "max_capacity",
+          "type": {
+            "kind": "double"
+          },
+          "description": "max_capacity is the maximum Neptune Capacity Units (NCUs).\n Valid range: 1.0 to 128.0. Must be \u003e= min_capacity.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

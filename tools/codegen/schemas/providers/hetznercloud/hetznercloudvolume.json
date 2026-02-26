@@ -1,0 +1,91 @@
+{
+  "name": "HetznerCloudVolume",
+  "kind": "HetznerCloudVolume",
+  "cloudProvider": "hetznercloud",
+  "apiVersion": "hetzner-cloud.openmcf.org/v1",
+  "description": "hetznercloud-volume",
+  "protoPackage": "org.openmcf.provider.hetznercloud.hetznercloudvolume.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/hetznercloud/hetznercloudvolume/v1/api.proto",
+    "spec": "org/openmcf/provider/hetznercloud/hetznercloudvolume/v1/spec.proto"
+  },
+  "spec": {
+    "name": "HetznerCloudVolumeSpec",
+    "fields": [
+      {
+        "name": "Size",
+        "jsonName": "size",
+        "protoField": "size",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Volume size in GB. Minimum is 10 GB, maximum is 10240 GB (10 TB).\n\n Size can be increased after creation (the provider resizes the underlying\n block device), but it can never be decreased -- the Hetzner Cloud API\n rejects size reductions.",
+        "required": false,
+        "validation": {
+          "min": 10,
+          "max": 10240
+        }
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Hetzner Cloud location where the volume is stored (e.g., \"fsn1\", \"nbg1\",\n \"hel1\", \"ash\", \"hil\", \"sin\"). Determines the physical datacenter for\n the block storage device.\n\n The volume can only be attached to servers in the same location.\n\n Changing this value forces replacement of the volume (data loss).",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Format",
+        "jsonName": "format",
+        "protoField": "format",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.hetznercloud.hetznercloudvolume.v1.Format",
+          "enumValues": [
+            "ext4",
+            "xfs"
+          ]
+        },
+        "description": "Filesystem format applied when the volume is first created.\n\n If unspecified (format_unspecified / 0), the volume is created raw without\n a filesystem. A raw volume must be formatted manually from the server\n before it can be mounted.\n\n This is a create-time-only setting: the provider does not read it back\n after creation. Changing it in the spec after the initial apply has no\n effect on the existing volume.",
+        "required": false
+      },
+      {
+        "name": "ServerId",
+        "jsonName": "serverId",
+        "protoField": "server_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Server to attach this volume to. Optional.\n\n Accepts a literal Hetzner Cloud server ID (as a string) or a reference\n to a HetznerCloudServer resource's output via valueFrom. The referenced\n server must be in the same location as the volume.\n\n If omitted, the volume is created unattached (available). Attachment can\n be added later by updating the spec.\n\n When set, an hcloud_volume_attachment resource is created to manage the\n attachment lifecycle separately from the volume itself.\n\n Example (literal):\n   serverId:\n     value: \"12345678\"\n\n Example (reference):\n   serverId:\n     valueFrom:\n       kind: HetznerCloudServer\n       name: my-server\n       fieldPath: status.outputs.server_id",
+        "required": false,
+        "referenceKind": "HetznerCloudServer",
+        "referenceFieldPath": "status.outputs.server_id"
+      },
+      {
+        "name": "Automount",
+        "jsonName": "automount",
+        "protoField": "automount",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Automatically mount the volume on the server after attaching.\n\n Only meaningful when server_id is set. When true, Hetzner Cloud\n automatically mounts the volume at a system-assigned mount point\n after attachment.\n\n This is a create-time-only setting: the provider does not read it back\n after creation. Changing it in the spec after the initial apply has no\n effect.",
+        "required": false
+      },
+      {
+        "name": "DeleteProtection",
+        "jsonName": "deleteProtection",
+        "protoField": "delete_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Prevent accidental deletion of the volume via the Hetzner Cloud API.\n When enabled, the volume cannot be deleted until protection is removed.",
+        "required": false
+      }
+    ]
+  }
+}

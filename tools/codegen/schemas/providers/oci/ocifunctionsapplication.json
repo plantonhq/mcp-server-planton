@@ -1,0 +1,222 @@
+{
+  "name": "OciFunctionsApplication",
+  "kind": "OciFunctionsApplication",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciFunctionsApplication is the top-level resource representing an OCI\n Functions Application -- the organizational container for serverless\n functions in Oracle Cloud Infrastructure.",
+  "protoPackage": "org.openmcf.provider.oci.ocifunctionsapplication.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocifunctionsapplication/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocifunctionsapplication/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciFunctionsApplicationSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the application will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "OCIDs of the subnets in which to run functions. At least one subnet\n is required. Functions execute in these subnets and can reach resources\n accessible from them. Immutable after creation.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        },
+        "referenceKind": "OciSubnet",
+        "referenceFieldPath": "status.outputs.subnetId"
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Display name for the application. Must be unique within the compartment.\n When omitted, the metadata name is used. Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "Shape",
+        "jsonName": "shape",
+        "protoField": "shape",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ocifunctionsapplication.v1.Shape",
+          "enumValues": [
+            "generic_x86",
+            "generic_arm",
+            "generic_x86_arm"
+          ]
+        },
+        "description": "Processor architecture for running functions. When omitted, OCI\n defaults to GENERIC_X86. Immutable after creation.\n   - generic_x86:     Intel/AMD x86-64\n   - generic_arm:     Arm-based (Ampere A1)\n   - generic_x86_arm: multi-architecture (runs on either)",
+        "required": false
+      },
+      {
+        "name": "Config",
+        "jsonName": "config",
+        "protoField": "config",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Application configuration passed as environment variables to all\n functions in this application. Keys must be ASCII strings consisting\n of letters, digits, and underscores; must not begin with a digit.\n Maximum total size for all keys and values is 4 KB.",
+        "required": false
+      },
+      {
+        "name": "NetworkSecurityGroupIds",
+        "jsonName": "networkSecurityGroupIds",
+        "protoField": "network_security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "OCIDs of network security groups applied to the application.",
+        "required": false,
+        "referenceKind": "OciSecurityGroup",
+        "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+      },
+      {
+        "name": "SyslogUrl",
+        "jsonName": "syslogUrl",
+        "protoField": "syslog_url",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Syslog URL to send all function logs. Supports tcp, udp, and tcp+tls\n schemes (e.g., \"tcp://logserver.example.com:514\"). Must be reachable\n from the configured subnets. Ignored when OCI Logging service is enabled.",
+        "required": false
+      },
+      {
+        "name": "ImagePolicyConfig",
+        "jsonName": "imagePolicyConfig",
+        "protoField": "image_policy_config",
+        "type": {
+          "kind": "message",
+          "messageType": "ImagePolicyConfig"
+        },
+        "description": "Image signature verification policy. When enabled, only container\n images signed by the specified KMS keys can be used for functions.",
+        "required": false
+      },
+      {
+        "name": "TraceConfig",
+        "jsonName": "traceConfig",
+        "protoField": "trace_config",
+        "type": {
+          "kind": "message",
+          "messageType": "TraceConfig"
+        },
+        "description": "Distributed tracing configuration for integration with OCI\n Application Performance Monitoring (APM).",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ImagePolicyConfig",
+      "description": "ImagePolicyConfig controls container image signature verification\n for functions deployed in this application.",
+      "protoType": "org.openmcf.provider.oci.ocifunctionsapplication.v1.OciFunctionsApplicationSpec.ImagePolicyConfig",
+      "fields": [
+        {
+          "name": "IsPolicyEnabled",
+          "jsonName": "isPolicyEnabled",
+          "protoField": "is_policy_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether image signature verification is enabled.",
+          "required": false
+        },
+        {
+          "name": "KeyDetails",
+          "jsonName": "keyDetails",
+          "protoField": "key_details",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "ImagePolicyKeyDetail"
+            }
+          },
+          "description": "KMS keys used to verify image signatures. Required when\n is_policy_enabled is true (enforced by CEL on the parent message).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ImagePolicyKeyDetail",
+      "description": "ImagePolicyKeyDetail identifies a KMS key used for image signature\n verification.",
+      "protoType": "org.openmcf.provider.oci.ocifunctionsapplication.v1.OciFunctionsApplicationSpec.ImagePolicyKeyDetail",
+      "fields": [
+        {
+          "name": "KmsKeyId",
+          "jsonName": "kmsKeyId",
+          "protoField": "kms_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the KMS key used to verify image signatures.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "OciKmsKey",
+          "referenceFieldPath": "status.outputs.keyId"
+        }
+      ]
+    },
+    {
+      "name": "TraceConfig",
+      "description": "TraceConfig configures distributed tracing via OCI Application\n Performance Monitoring (APM).",
+      "protoType": "org.openmcf.provider.oci.ocifunctionsapplication.v1.OciFunctionsApplicationSpec.TraceConfig",
+      "fields": [
+        {
+          "name": "IsEnabled",
+          "jsonName": "isEnabled",
+          "protoField": "is_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether tracing is enabled for this application.",
+          "required": false,
+          "oneofGroup": "_is_enabled"
+        },
+        {
+          "name": "DomainId",
+          "jsonName": "domainId",
+          "protoField": "domain_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the APM domain (collector) where trace events are sent.\n Only meaningful when is_enabled is true.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

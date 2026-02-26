@@ -1,0 +1,326 @@
+{
+  "name": "OciAlarm",
+  "kind": "OciAlarm",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciAlarm is the top-level resource representing an OCI Monitoring\n Alarm -- a rule that evaluates metrics via MQL and triggers\n notifications when thresholds are breached.",
+  "protoPackage": "org.openmcf.provider.oci.ocialarm.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocialarm/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocialarm/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciAlarmSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the alarm will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "MetricCompartmentId",
+        "jsonName": "metricCompartmentId",
+        "protoField": "metric_compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment containing the metric being evaluated.\n Often the same as compartment_id, but can differ when monitoring\n metrics from another compartment.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Source service or application emitting the metric.\n Examples: \"oci_computeagent\", \"oci_blockstore\",\n \"oci_autonomous_database\", \"oci_vcn\".",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Query",
+        "jsonName": "query",
+        "protoField": "query",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Monitoring Query Language (MQL) expression to evaluate.\n Must specify metric, statistic, interval, and trigger rule.\n Example: \"CpuUtilization[5m].mean() \u003e 80\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Severity",
+        "jsonName": "severity",
+        "protoField": "severity",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ocialarm.v1.Severity",
+          "enumValues": [
+            "critical",
+            "error",
+            "warning",
+            "info"
+          ]
+        },
+        "description": "Perceived severity when the alarm is in the FIRING state.\n Must be explicitly set (unspecified is rejected).",
+        "required": false
+      },
+      {
+        "name": "Destinations",
+        "jsonName": "destinations",
+        "protoField": "destinations",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "OCIDs of notification destinations. Each OCID must reference an\n ONS Notification Topic or a Streaming stream. At least one\n destination is required.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "IsEnabled",
+        "jsonName": "isEnabled",
+        "protoField": "is_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the alarm is enabled. When false, the alarm does not\n evaluate metrics or send notifications.\n Proto3 default is false -- alarms start disabled unless\n explicitly set to true.",
+        "required": false
+      },
+      {
+        "name": "Body",
+        "jsonName": "body",
+        "protoField": "body",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable content of the delivered alarm notification.\n Supports dynamic variables: {{severity}}, {{query}},\n {{metricValues}}, {{resourceId}}, {{timestamp}}.",
+        "required": false
+      },
+      {
+        "name": "AlarmSummary",
+        "jsonName": "alarmSummary",
+        "protoField": "alarm_summary",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customizable alarm summary. Appears in the alarm message body\n and API responses. Supports the same dynamic variables as body.",
+        "required": false
+      },
+      {
+        "name": "NotificationTitle",
+        "jsonName": "notificationTitle",
+        "protoField": "notification_title",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Custom notification title. Appears as the email subject line\n or Slack notification title. Supports dynamic variables.",
+        "required": false
+      },
+      {
+        "name": "PendingDuration",
+        "jsonName": "pendingDuration",
+        "protoField": "pending_duration",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Period of time the condition must persist before the alarm\n transitions from OK to FIRING. ISO 8601 duration format.\n Minimum: PT1M. Maximum: PT1H. OCI default: PT1M.",
+        "required": false
+      },
+      {
+        "name": "EvaluationSlackDuration",
+        "jsonName": "evaluationSlackDuration",
+        "protoField": "evaluation_slack_duration",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Slack period to wait for metric ingestion before evaluating\n the alarm. Accounts for delayed metric delivery. ISO 8601\n duration format. Minimum: PT3M. Maximum: PT2H. OCI default: PT3M.",
+        "required": false
+      },
+      {
+        "name": "RepeatNotificationDuration",
+        "jsonName": "repeatNotificationDuration",
+        "protoField": "repeat_notification_duration",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Frequency for re-submitting alarm notifications while the\n alarm remains in FIRING state. ISO 8601 duration format.\n Minimum: PT1M. Maximum: P30D. When omitted, notifications\n are not re-submitted.",
+        "required": false
+      },
+      {
+        "name": "MessageFormat",
+        "jsonName": "messageFormat",
+        "protoField": "message_format",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ocialarm.v1.MessageFormat",
+          "enumValues": [
+            "pretty_json",
+            "ons_optimized"
+          ]
+        },
+        "description": "Format for alarm notification delivery.\n When omitted (zero-value), OCI applies RAW format.",
+        "required": false
+      },
+      {
+        "name": "MetricCompartmentIdInSubtree",
+        "jsonName": "metricCompartmentIdInSubtree",
+        "protoField": "metric_compartment_id_in_subtree",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, evaluates metrics from the specified compartment\n and all of its sub-compartments. Can only be true when\n metric_compartment_id is a tenancy OCID.",
+        "required": false,
+        "oneofGroup": "_metric_compartment_id_in_subtree"
+      },
+      {
+        "name": "IsNotificationsPerMetricDimensionEnabled",
+        "jsonName": "isNotificationsPerMetricDimensionEnabled",
+        "protoField": "is_notifications_per_metric_dimension_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, splits alarm notifications per metric stream\n dimension. When false (default), groups notifications across\n all metric streams matching the query.",
+        "required": false,
+        "oneofGroup": "_is_notifications_per_metric_dimension_enabled"
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Resource group to match when filtering metric data.\n When omitted, only metric data with no resource group is\n returned.",
+        "required": false
+      },
+      {
+        "name": "NotificationVersion",
+        "jsonName": "notificationVersion",
+        "protoField": "notification_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Version of the alarm notification to be delivered.\n Format: a number (up to 4 digits) followed by a period\n and uppercase X (e.g., \"1.X\").",
+        "required": false
+      },
+      {
+        "name": "RuleName",
+        "jsonName": "ruleName",
+        "protoField": "rule_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Identifier for the alarm's base values for evaluation.\n Default value is \"BASE\". Only meaningful when overrides\n are configured. Must be unique across all rule_name values\n (including those in overrides).",
+        "required": false
+      },
+      {
+        "name": "Overrides",
+        "jsonName": "overrides",
+        "protoField": "overrides",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AlarmOverride"
+          }
+        },
+        "description": "Overrides controlling alarm evaluation at different thresholds.\n Each override can specify its own query, severity, body, and\n pending duration. Evaluated in order before the base rule.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AlarmOverride",
+      "description": "AlarmOverride specifies alternative evaluation parameters for\n an alarm. Overrides are evaluated in order before the base\n rule (rule_name = \"BASE\"). Each override can customize the\n query, severity, notification body, and pending duration\n independently.",
+      "protoType": "org.openmcf.provider.oci.ocialarm.v1.OciAlarmSpec.AlarmOverride",
+      "fields": [
+        {
+          "name": "RuleName",
+          "jsonName": "ruleName",
+          "protoField": "rule_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "User-friendly identifier for this override. Must be unique\n across all rule_name values for the alarm.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Query",
+          "jsonName": "query",
+          "protoField": "query",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Override MQL query. When omitted, the base query is used.",
+          "required": false
+        },
+        {
+          "name": "Severity",
+          "jsonName": "severity",
+          "protoField": "severity",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocialarm.v1.Severity",
+            "enumValues": [
+              "critical",
+              "error",
+              "warning",
+              "info"
+            ]
+          },
+          "description": "Override severity. When unspecified (zero-value), the base\n severity is used.",
+          "required": false
+        },
+        {
+          "name": "Body",
+          "jsonName": "body",
+          "protoField": "body",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Override notification body. When omitted, the base body\n is used. Supports the same dynamic variables.",
+          "required": false
+        },
+        {
+          "name": "PendingDuration",
+          "jsonName": "pendingDuration",
+          "protoField": "pending_duration",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Override pending duration. When omitted, the base pending\n duration is used. ISO 8601 format.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,580 @@
+{
+  "name": "GcpAlloydbCluster",
+  "kind": "GcpAlloydbCluster",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-alloydb-cluster",
+  "protoPackage": "org.openmcf.provider.gcp.gcpalloydbcluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpalloydbcluster/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpalloydbcluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpAlloydbClusterSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the AlloyDB cluster will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "ClusterName",
+        "jsonName": "clusterName",
+        "protoField": "cluster_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the AlloyDB cluster. This becomes the GCP resource cluster_id.\n Must start with a lowercase letter, can contain lowercase letters,\n numbers, and hyphens, and must end with a lowercase letter or number.\n Maximum 63 characters. Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 63,
+          "pattern": "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+        }
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP region where the cluster will be deployed (e.g., \"us-central1\").\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Network",
+        "jsonName": "network",
+        "protoField": "network",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC network for the cluster's private connectivity. The VPC must have\n Private Service Access configured. Expects a VPC network self-link or\n resource reference.\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpVpc",
+        "referenceFieldPath": "status.outputs.network_self_link"
+      },
+      {
+        "name": "AllocatedIpRange",
+        "jsonName": "allocatedIpRange",
+        "protoField": "allocated_ip_range",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the allocated IP range for Private Service Access.\n When set, the cluster uses this specific IP range for its private\n connectivity instead of an auto-allocated range. This is common in\n enterprise setups where IP ranges are pre-planned.",
+        "required": false
+      },
+      {
+        "name": "DatabaseVersion",
+        "jsonName": "databaseVersion",
+        "protoField": "database_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "PostgreSQL major version for the cluster.\n Supported values: \"POSTGRES_14\", \"POSTGRES_15\", \"POSTGRES_16\".\n If not specified, GCP selects the latest stable version.",
+        "required": false
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable display name for the cluster.",
+        "required": false
+      },
+      {
+        "name": "InitialUser",
+        "jsonName": "initialUser",
+        "protoField": "initial_user",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpAlloydbClusterInitialUser"
+        },
+        "description": "Initial database user created during cluster provisioning.\n If not specified, no initial user is created. Access must then be\n configured via AlloyDB Auth Proxy with IAM authentication.",
+        "required": false
+      },
+      {
+        "name": "AutomatedBackupPolicy",
+        "jsonName": "automatedBackupPolicy",
+        "protoField": "automated_backup_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpAlloydbClusterAutomatedBackupPolicy"
+        },
+        "description": "Automated backup policy for periodic snapshot backups.\n When not specified, GCP uses its default policy (enabled, daily, 14-day retention).",
+        "required": false
+      },
+      {
+        "name": "ContinuousBackupConfig",
+        "jsonName": "continuousBackupConfig",
+        "protoField": "continuous_backup_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpAlloydbClusterContinuousBackupConfig"
+        },
+        "description": "Continuous backup configuration for point-in-time recovery (PITR).\n Enabled by default with a 14-day recovery window.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyName",
+        "jsonName": "kmsKeyName",
+        "protoField": "kms_key_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cloud KMS key for encrypting the cluster's data at rest (CMEK).\n Format: projects/{project}/locations/{location}/keyRings/{keyRing}/cryptoKeys/{key}\n If not specified, data is encrypted with Google-managed keys.\n Immutable after creation.",
+        "required": false,
+        "referenceKind": "GcpKmsKey",
+        "referenceFieldPath": "status.outputs.key_id"
+      },
+      {
+        "name": "MaintenanceWindow",
+        "jsonName": "maintenanceWindow",
+        "protoField": "maintenance_window",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpAlloydbClusterMaintenanceWindow"
+        },
+        "description": "Preferred maintenance window for system updates.",
+        "required": false
+      },
+      {
+        "name": "DeletionProtection",
+        "jsonName": "deletionProtection",
+        "protoField": "deletion_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether deletion protection is enabled. When true (the default),\n the cluster cannot be destroyed without first setting this to false.\n Strongly recommended for production clusters.",
+        "required": false
+      },
+      {
+        "name": "PrimaryInstance",
+        "jsonName": "primaryInstance",
+        "protoField": "primary_instance",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpAlloydbClusterPrimaryInstance"
+        },
+        "description": "Primary instance configuration. Required -- a cluster without a\n primary instance cannot serve queries.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpAlloydbClusterAutomatedBackupPolicy",
+      "description": "GcpAlloydbClusterAutomatedBackupPolicy configures periodic snapshot backups\n for the AlloyDB cluster. These are point-in-time full backups stored in\n the specified (or default) location.\n\n When this block is not specified, GCP uses its default automated backup\n policy (enabled, daily, 14-day time-based retention).\n\n Retention can be either quantity-based (keep N backups) or time-based\n (keep backups for N seconds). These are mutually exclusive.",
+      "protoType": "org.openmcf.provider.gcp.gcpalloydbcluster.v1.GcpAlloydbClusterAutomatedBackupPolicy",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether automated backups are enabled. Set to false to explicitly\n disable automated backups.",
+          "required": false
+        },
+        {
+          "name": "BackupWindow",
+          "jsonName": "backupWindow",
+          "protoField": "backup_window",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Length of the time window during which a backup can be taken.\n Duration in seconds with 's' suffix, e.g., \"3600s\" (1 hour).\n Default: \"3600s\".",
+          "required": false
+        },
+        {
+          "name": "Location",
+          "jsonName": "location",
+          "protoField": "location",
+          "type": {
+            "kind": "string"
+          },
+          "description": "GCP region where backups will be stored. If not specified,\n backups are stored in the same region as the cluster.",
+          "required": false
+        },
+        {
+          "name": "QuantityBasedRetentionCount",
+          "jsonName": "quantityBasedRetentionCount",
+          "protoField": "quantity_based_retention_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of backups to retain. Mutually exclusive with\n time_based_retention_period.",
+          "required": false
+        },
+        {
+          "name": "TimeBasedRetentionPeriod",
+          "jsonName": "timeBasedRetentionPeriod",
+          "protoField": "time_based_retention_period",
+          "type": {
+            "kind": "string"
+          },
+          "description": "How long to retain backups. Duration in seconds with 's' suffix,\n e.g., \"1209600s\" (14 days). Mutually exclusive with\n quantity_based_retention_count.",
+          "required": false
+        },
+        {
+          "name": "WeeklySchedule",
+          "jsonName": "weeklySchedule",
+          "protoField": "weekly_schedule",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpAlloydbClusterBackupSchedule"
+          },
+          "description": "Weekly schedule defining when backups are taken.",
+          "required": false
+        },
+        {
+          "name": "EncryptionKmsKeyName",
+          "jsonName": "encryptionKmsKeyName",
+          "protoField": "encryption_kms_key_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Cloud KMS key for encrypting automated backups. If not specified,\n backups use Google-managed encryption. When using a different key\n from the cluster's encryption, this enables independent backup\n encryption lifecycle management.",
+          "required": false,
+          "referenceKind": "GcpKmsKey",
+          "referenceFieldPath": "status.outputs.key_id"
+        }
+      ]
+    },
+    {
+      "name": "GcpAlloydbClusterBackupSchedule",
+      "description": "GcpAlloydbClusterBackupSchedule defines when automated backups are taken.\n AlloyDB supports weekly schedules with configurable start times.",
+      "protoType": "org.openmcf.provider.gcp.gcpalloydbcluster.v1.GcpAlloydbClusterBackupSchedule",
+      "fields": [
+        {
+          "name": "DaysOfWeek",
+          "jsonName": "daysOfWeek",
+          "protoField": "days_of_week",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Days of the week to take backups.\n If not specified, GCP defaults to daily backups.",
+          "required": false,
+          "validation": {
+            "unique": true
+          }
+        },
+        {
+          "name": "StartHour",
+          "jsonName": "startHour",
+          "protoField": "start_hour",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Hour of day (0-23 UTC) to start backups. GCP's TimeOfDay structure\n is simplified here since minutes/seconds/nanos are always zero for\n AlloyDB backup schedules.",
+          "required": false,
+          "validation": {
+            "max": 23
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpAlloydbClusterContinuousBackupConfig",
+      "description": "GcpAlloydbClusterContinuousBackupConfig configures continuous backup\n (write-ahead log streaming) that enables point-in-time recovery (PITR).\n\n Continuous backup is enabled by default with a 14-day recovery window.\n This is separate from automated backups: automated backups are periodic\n snapshots, while continuous backups capture every write for PITR.",
+      "protoType": "org.openmcf.provider.gcp.gcpalloydbcluster.v1.GcpAlloydbClusterContinuousBackupConfig",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether continuous backup is enabled. Defaults to true.\n Set to false only if you do not need point-in-time recovery.",
+          "required": false
+        },
+        {
+          "name": "RecoveryWindowDays",
+          "jsonName": "recoveryWindowDays",
+          "protoField": "recovery_window_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of days for which continuous backup data is retained,\n enabling PITR within this window. Range: 1-35. Default: 14.",
+          "required": false
+        },
+        {
+          "name": "EncryptionKmsKeyName",
+          "jsonName": "encryptionKmsKeyName",
+          "protoField": "encryption_kms_key_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Cloud KMS key for encrypting continuous backup data. If not specified,\n continuous backups use Google-managed encryption.",
+          "required": false,
+          "referenceKind": "GcpKmsKey",
+          "referenceFieldPath": "status.outputs.key_id"
+        }
+      ]
+    },
+    {
+      "name": "GcpAlloydbClusterInitialUser",
+      "description": "GcpAlloydbClusterInitialUser defines the initial database superuser\n created during cluster provisioning. AlloyDB is PostgreSQL-compatible,\n so this user has full superuser privileges in the cluster.\n\n If not specified, no initial user is created and access must be configured\n manually after provisioning (e.g., via AlloyDB Auth Proxy + IAM).",
+      "protoType": "org.openmcf.provider.gcp.gcpalloydbcluster.v1.GcpAlloydbClusterInitialUser",
+      "fields": [
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Password for the initial user. Must be at least 8 characters.\n This value is sensitive and should be handled accordingly.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 8
+          }
+        },
+        {
+          "name": "User",
+          "jsonName": "user",
+          "protoField": "user",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Username for the initial user. If not specified, defaults to \"postgres\"\n per GCP AlloyDB conventions.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpAlloydbClusterMaintenanceWindow",
+      "description": "GcpAlloydbClusterMaintenanceWindow defines the preferred time for\n GCP to apply system updates and patches to the AlloyDB cluster.\n Currently AlloyDB supports a single maintenance window per cluster.",
+      "protoType": "org.openmcf.provider.gcp.gcpalloydbcluster.v1.GcpAlloydbClusterMaintenanceWindow",
+      "fields": [
+        {
+          "name": "Day",
+          "jsonName": "day",
+          "protoField": "day",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Day of the week for maintenance.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "MONDAY",
+              "TUESDAY",
+              "WEDNESDAY",
+              "THURSDAY",
+              "FRIDAY",
+              "SATURDAY",
+              "SUNDAY"
+            ]
+          }
+        },
+        {
+          "name": "StartHour",
+          "jsonName": "startHour",
+          "protoField": "start_hour",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Hour of day (0-23, UTC) when the maintenance window starts.",
+          "required": false,
+          "validation": {
+            "max": 23
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpAlloydbClusterPrimaryInstance",
+      "description": "GcpAlloydbClusterPrimaryInstance defines the configuration for the\n primary compute instance bundled with the AlloyDB cluster.\n\n A cluster without a primary instance cannot serve queries. This is why\n the primary instance is bundled rather than being a separate component.\n Read pool instances have independent scaling lifecycles and are NOT\n included here.\n\n Machine configuration can be specified via either cpu_count (simpler,\n lets GCP choose the machine family) or machine_type (explicit machine\n family selection). These are mutually exclusive.",
+      "protoType": "org.openmcf.provider.gcp.gcpalloydbcluster.v1.GcpAlloydbClusterPrimaryInstance",
+      "fields": [
+        {
+          "name": "InstanceId",
+          "jsonName": "instanceId",
+          "protoField": "instance_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ID for the primary instance. This becomes the GCP resource name.\n Must start with a lowercase letter, can contain lowercase letters,\n numbers, and hyphens, and must end with a lowercase letter or number.\n Maximum 63 characters. Immutable after creation.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 2,
+            "maxLength": 63,
+            "pattern": "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+          }
+        },
+        {
+          "name": "CpuCount",
+          "jsonName": "cpuCount",
+          "protoField": "cpu_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of CPUs for the instance. Valid values: 2, 4, 8, 16, 32, 64, 96, 128.\n GCP selects the appropriate machine family automatically.\n Mutually exclusive with machine_type.",
+          "required": false
+        },
+        {
+          "name": "MachineType",
+          "jsonName": "machineType",
+          "protoField": "machine_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Explicit machine type (e.g., \"n2-highmem-4\", \"c4a-highmem-4-lssd\").\n Use this for advanced scenarios where you need a specific machine family.\n Mutually exclusive with cpu_count.",
+          "required": false
+        },
+        {
+          "name": "AvailabilityType",
+          "jsonName": "availabilityType",
+          "protoField": "availability_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Availability type controlling the placement of the instance.\n ZONAL: single-zone deployment (lower cost, single zone of failure).\n REGIONAL: multi-zone deployment with automatic failover (recommended\n for production). Default: determined by GCP.",
+          "required": false
+        },
+        {
+          "name": "DatabaseFlags",
+          "jsonName": "databaseFlags",
+          "protoField": "database_flags",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "PostgreSQL database flags as key-value pairs.\n These correspond to PostgreSQL server parameters (e.g.,\n \"max_connections\", \"work_mem\", \"shared_buffers\").\n See GCP AlloyDB documentation for supported flags.",
+          "required": false
+        },
+        {
+          "name": "DisplayName",
+          "jsonName": "displayName",
+          "protoField": "display_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable display name for the primary instance.",
+          "required": false
+        },
+        {
+          "name": "QueryInsightsConfig",
+          "jsonName": "queryInsightsConfig",
+          "protoField": "query_insights_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpAlloydbClusterQueryInsightsConfig"
+          },
+          "description": "Query insights configuration for performance monitoring.\n If not specified, GCP uses default query insights settings\n (enabled with sensible defaults).",
+          "required": false
+        },
+        {
+          "name": "RequireConnectors",
+          "jsonName": "requireConnectors",
+          "protoField": "require_connectors",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to require the AlloyDB Auth Proxy or AlloyDB Language Connectors\n for all connections. When true, direct IP connections are rejected.\n This enforces IAM-based authentication for all database access.",
+          "required": false
+        },
+        {
+          "name": "SslMode",
+          "jsonName": "sslMode",
+          "protoField": "ssl_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "SSL mode for client connections.\n ENCRYPTED_ONLY: all connections must use TLS (recommended for production).\n ALLOW_UNENCRYPTED_AND_ENCRYPTED: both TLS and plaintext allowed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpAlloydbClusterQueryInsightsConfig",
+      "description": "GcpAlloydbClusterQueryInsightsConfig configures query performance\n monitoring for the primary instance. Query insights captures execution\n plans, application context, and client information to help diagnose\n slow queries and performance issues.",
+      "protoType": "org.openmcf.provider.gcp.gcpalloydbcluster.v1.GcpAlloydbClusterQueryInsightsConfig",
+      "fields": [
+        {
+          "name": "QueryPlansPerMinute",
+          "jsonName": "queryPlansPerMinute",
+          "protoField": "query_plans_per_minute",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of query execution plans captured per minute.\n Range: 0-20. Default: 5. Set to 0 to disable plan capture.",
+          "required": false,
+          "validation": {
+            "max": 20
+          }
+        },
+        {
+          "name": "QueryStringLength",
+          "jsonName": "queryStringLength",
+          "protoField": "query_string_length",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum length of the query string stored in insights.\n Range: 256-4500. Default: 1024. Longer strings help debug\n complex queries but use more storage.",
+          "required": false,
+          "validation": {
+            "min": 256,
+            "max": 4500
+          }
+        },
+        {
+          "name": "RecordApplicationTags",
+          "jsonName": "recordApplicationTags",
+          "protoField": "record_application_tags",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to record application tags set via\n pg_stat_statements.track_activity_query_size.\n Useful for tagging queries by application or feature.",
+          "required": false
+        },
+        {
+          "name": "RecordClientAddress",
+          "jsonName": "recordClientAddress",
+          "protoField": "record_client_address",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to record the client IP address for each query.\n Useful for identifying which application instances generate load.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

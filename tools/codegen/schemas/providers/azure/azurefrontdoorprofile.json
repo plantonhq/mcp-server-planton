@@ -1,0 +1,730 @@
+{
+  "name": "AzureFrontDoorProfile",
+  "kind": "AzureFrontDoorProfile",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureFrontDoorProfile is the top-level API resource for an Azure Front Door\n profile. Azure Front Door is a global, scalable CDN and application delivery\n network that combines HTTP load balancing, SSL offloading, caching, and\n application acceleration across Microsoft's worldwide edge network.",
+  "protoPackage": "org.openmcf.provider.azure.azurefrontdoorprofile.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurefrontdoorprofile/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurefrontdoorprofile/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureFrontDoorProfileSpec",
+    "fields": [
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Front Door profile will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.\n\n While Front Door is a global resource (no region), it must belong to\n a resource group for Azure Resource Manager organization.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Front Door profile.\n Must be globally unique within Azure. Used to identify the profile\n in the Azure portal and API.\n\n Naming rules:\n - 2 to 46 characters\n - Must start and end with a letter or number\n - Can contain letters, numbers, and hyphens\n\n **ForceNew**: Changing this destroys and recreates the profile.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 46
+        }
+      },
+      {
+        "name": "Sku",
+        "jsonName": "sku",
+        "protoField": "sku",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The SKU tier for the Front Door profile.\n Uses Azure's exact API values for provider authenticity.\n\n Valid values:\n - \"Standard_AzureFrontDoor\" (default): Global load balancing, SSL\n   offloading, caching, compression, URL routing. 99.99% SLA.\n - \"Premium_AzureFrontDoor\": All Standard features plus private link\n   to origins, enhanced WAF, and Bot Manager. Required for private\n   backend connectivity.\n\n **ForceNew**: SKU cannot be changed after creation.",
+        "required": false,
+        "default": "Standard_AzureFrontDoor",
+        "oneofGroup": "_sku"
+      },
+      {
+        "name": "ResponseTimeoutSeconds",
+        "jsonName": "responseTimeoutSeconds",
+        "protoField": "response_timeout_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Response timeout in seconds for the Front Door profile.\n Controls how long Front Door waits for a response from the origin\n before returning a timeout error to the client.\n\n Range: 16-240 seconds.\n Default: 120 seconds.\n\n Increase for slow APIs or large file downloads. Decrease for\n latency-sensitive applications where fast failover is preferred.",
+        "required": false,
+        "validation": {
+          "min": 16,
+          "max": 240
+        },
+        "default": "120",
+        "oneofGroup": "_response_timeout_seconds"
+      },
+      {
+        "name": "Endpoints",
+        "jsonName": "endpoints",
+        "protoField": "endpoints",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureFrontDoorEndpoint"
+          }
+        },
+        "description": "Endpoints for this Front Door profile.\n Each endpoint gets a unique hostname (*.azurefd.net) that serves\n as the entry point for client traffic. Routes connect endpoints\n to origin groups.\n\n At least one endpoint is required for the profile to serve traffic.",
+        "required": false
+      },
+      {
+        "name": "OriginGroups",
+        "jsonName": "originGroups",
+        "protoField": "origin_groups",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureFrontDoorOriginGroup"
+          }
+        },
+        "description": "Origin groups for this Front Door profile.\n Each origin group is a logical grouping of origins (backends) with\n load balancing and health probe configuration. Origins are nested\n within their origin group.\n\n At least one origin group with at least one origin is required.",
+        "required": false
+      },
+      {
+        "name": "Routes",
+        "jsonName": "routes",
+        "protoField": "routes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureFrontDoorRoute"
+          }
+        },
+        "description": "Routes for this Front Door profile.\n Routes connect endpoints to origin groups by matching URL patterns\n to specific backend pools. Each route defines which endpoint receives\n traffic, which origin group serves it, and optional caching behavior.\n\n At least one route is required for traffic to flow through the profile.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureFrontDoorEndpoint",
+      "description": "AzureFrontDoorEndpoint defines an endpoint within the Front Door profile.\n\n An endpoint is the public-facing entry point. Each endpoint gets a\n generated hostname like `{name}-{hash}.z01.azurefd.net` that clients\n connect to. Endpoints can be enabled/disabled without deletion.\n\n **ForceNew fields**: `name`.",
+      "protoType": "org.openmcf.provider.azure.azurefrontdoorprofile.v1.AzureFrontDoorEndpoint",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The endpoint name.\n Must be unique within the profile. Used to generate the public\n hostname: `{name}-{hash}.z01.azurefd.net`.\n\n Naming rules:\n - 2 to 46 characters\n - Must start and end with a letter or number\n - Can contain letters, numbers, and hyphens\n\n **ForceNew**: Changing this destroys and recreates the endpoint.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 2,
+            "maxLength": 46
+          }
+        },
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the endpoint is enabled and serving traffic.\n When false, the endpoint stops accepting requests but is not deleted.\n Useful for maintenance windows or gradual rollouts.\n\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_enabled"
+        }
+      ]
+    },
+    {
+      "name": "AzureFrontDoorHealthProbe",
+      "description": "AzureFrontDoorHealthProbe configures periodic health checks for origins.\n\n Front Door sends probe requests at the specified interval to each origin\n in the group. Origins that fail to respond successfully are marked\n unhealthy and removed from the load balancing rotation until they recover.",
+      "protoType": "org.openmcf.provider.azure.azurefrontdoorprofile.v1.AzureFrontDoorHealthProbe",
+      "fields": [
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol used for health probe requests.\n Uses Azure's exact API values.\n\n Valid values:\n - \"Http\": Probe over HTTP (port 80 by default)\n - \"Https\": Probe over HTTPS (port 443 by default)",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URL path for the health probe request.\n Front Door sends the probe to `{protocol}://{origin_host}:{port}{path}`.\n\n Common patterns:\n - \"/\" (default): Simple connectivity check\n - \"/health\": Dedicated health endpoint\n - \"/api/healthz\": Kubernetes-style health check\n\n Default: \"/\"",
+          "required": false,
+          "default": "/",
+          "oneofGroup": "_path"
+        },
+        {
+          "name": "RequestType",
+          "jsonName": "requestType",
+          "protoField": "request_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP method for the health probe request.\n Uses Azure's exact API values.\n\n Valid values:\n - \"HEAD\" (default): Sends a HEAD request (no body). More efficient,\n   checks only that the origin responds with 200.\n - \"GET\": Sends a GET request. Use when the health endpoint needs\n   to evaluate the response body.\n\n Default: \"HEAD\"",
+          "required": false,
+          "default": "HEAD",
+          "oneofGroup": "_request_type"
+        },
+        {
+          "name": "IntervalInSeconds",
+          "jsonName": "intervalInSeconds",
+          "protoField": "interval_in_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Interval between health probe requests in seconds.\n Shorter intervals detect failures faster but generate more probe traffic.\n\n Range: 1-255 seconds.\n\n Guidelines:\n - 5-15 seconds: Fast detection for latency-sensitive workloads\n - 30-60 seconds: Balanced for most production workloads\n - 120-255 seconds: Low probe overhead for stable backends",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1,
+            "max": 255
+          }
+        }
+      ]
+    },
+    {
+      "name": "AzureFrontDoorLoadBalancing",
+      "description": "AzureFrontDoorLoadBalancing configures how Front Door distributes\n traffic across origins within an origin group.\n\n Front Door uses a latency-aware, weighted algorithm:\n 1. Sample a number of recent health probe results (sample_size)\n 2. Identify origins with enough successful probes (successful_samples_required)\n 3. Among healthy origins, select based on latency + additional_latency threshold\n 4. Apply priority (lower = preferred) and weight (higher = more traffic)",
+      "protoType": "org.openmcf.provider.azure.azurefrontdoorprofile.v1.AzureFrontDoorLoadBalancing",
+      "fields": [
+        {
+          "name": "SampleSize",
+          "jsonName": "sampleSize",
+          "protoField": "sample_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of recent health probe samples to evaluate.\n Front Door considers this many of the most recent probe results\n when determining origin health.\n\n Range: 0-255. Default: 4.",
+          "required": false,
+          "validation": {
+            "max": 255
+          },
+          "default": "4",
+          "oneofGroup": "_sample_size"
+        },
+        {
+          "name": "SuccessfulSamplesRequired",
+          "jsonName": "successfulSamplesRequired",
+          "protoField": "successful_samples_required",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of successful probe samples required to consider an origin healthy.\n Out of the `sample_size` samples, at least this many must be successful\n for the origin to remain in the healthy pool.\n\n Range: 0-255. Default: 3.",
+          "required": false,
+          "validation": {
+            "max": 255
+          },
+          "default": "3",
+          "oneofGroup": "_successful_samples_required"
+        },
+        {
+          "name": "AdditionalLatencyInMilliseconds",
+          "jsonName": "additionalLatencyInMilliseconds",
+          "protoField": "additional_latency_in_milliseconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Additional latency tolerance in milliseconds for origin selection.\n Origins whose latency is within this threshold of the fastest origin\n are considered equally fast and receive traffic based on weight.\n\n Higher values = more even distribution across geographically dispersed origins.\n Lower values = stricter preference for the lowest-latency origin.\n\n Range: 0-1000 milliseconds. Default: 50.",
+          "required": false,
+          "validation": {
+            "max": 1000
+          },
+          "default": "50",
+          "oneofGroup": "_additional_latency_in_milliseconds"
+        }
+      ]
+    },
+    {
+      "name": "AzureFrontDoorOrigin",
+      "description": "AzureFrontDoorOrigin defines a backend origin within an origin group.\n\n An origin is a backend server or service that Front Door routes\n traffic to. Origins can be any publicly accessible (or privately\n linked for Premium SKU) endpoint: App Service, Container Apps,\n Storage Account, custom server, another CDN, etc.\n\n **ForceNew fields**: `name`.",
+      "protoType": "org.openmcf.provider.azure.azurefrontdoorprofile.v1.AzureFrontDoorOrigin",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The origin name.\n Must be unique within the origin group.\n\n **ForceNew**: Changing this destroys and recreates the origin.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "HostName",
+          "jsonName": "hostName",
+          "protoField": "host_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The hostname of the origin.\n Front Door connects to this address to retrieve content.\n\n Examples:\n - \"myapp.azurewebsites.net\" (App Service)\n - \"myapp.eastus.azurecontainerapps.io\" (Container Apps)\n - \"mystorageaccount.blob.core.windows.net\" (Blob Storage)\n - \"api.example.com\" (custom server)\n\n Cannot be empty or null.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "CertificateNameCheckEnabled",
+          "jsonName": "certificateNameCheckEnabled",
+          "protoField": "certificate_name_check_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether Front Door validates the origin's SSL certificate hostname.\n When true, Front Door verifies that the certificate CN or SAN\n matches the origin host header or host name.\n\n **IMPORTANT**: Set to true for production workloads. Setting to false\n disables certificate validation and is a security risk.\n\n Required by Azure when private_link is configured (must be true).\n\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_certificate_name_check_enabled"
+        },
+        {
+          "name": "OriginHostHeader",
+          "jsonName": "originHostHeader",
+          "protoField": "origin_host_header",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Host header value sent to the origin.\n Overrides the default Host header (which is the origin hostname).\n\n **Critical for multi-tenant backends**: Azure App Service, Function Apps,\n and Container Apps use the Host header to route to the correct app.\n Without this, origins may return 404 or route to the wrong app.\n\n Common patterns:\n - Omit: Uses host_name as the Host header (simple backends)\n - \"myapp.azurewebsites.net\": For App Service origins\n - \"myapp.eastus.azurecontainerapps.io\": For Container App origins",
+          "required": false,
+          "oneofGroup": "_origin_host_header"
+        },
+        {
+          "name": "HttpPort",
+          "jsonName": "httpPort",
+          "protoField": "http_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "HTTP port for the origin.\n Used when Front Door connects to the origin over HTTP.\n\n Range: 1-65535. Default: 80.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          },
+          "default": "80",
+          "oneofGroup": "_http_port"
+        },
+        {
+          "name": "HttpsPort",
+          "jsonName": "httpsPort",
+          "protoField": "https_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "HTTPS port for the origin.\n Used when Front Door connects to the origin over HTTPS.\n\n Range: 1-65535. Default: 443.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          },
+          "default": "443",
+          "oneofGroup": "_https_port"
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Priority of this origin within the origin group.\n Lower priority origins receive traffic first. Traffic shifts to\n higher priority origins only when all lower priority origins are\n unhealthy.\n\n Range: 1-5. Default: 1.\n\n Use priorities to define active-passive failover:\n - Priority 1: Primary origins (active)\n - Priority 2+: Failover origins (used only when primaries are down)",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 5
+          },
+          "default": "1",
+          "oneofGroup": "_priority"
+        },
+        {
+          "name": "Weight",
+          "jsonName": "weight",
+          "protoField": "weight",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Traffic weight for this origin within the same priority level.\n Among origins with equal priority, traffic is distributed\n proportionally by weight.\n\n Range: 1-1000. Default: 500.\n\n Examples:\n - Equal distribution: All origins weight 500\n - 70/30 split: Origin A weight 700, Origin B weight 300\n - Canary: Main origin weight 950, canary origin weight 50",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 1000
+          },
+          "default": "500",
+          "oneofGroup": "_weight"
+        },
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether this origin is enabled and receiving traffic.\n When false, Front Door skips this origin during load balancing\n but does not delete it.\n\n Useful for draining traffic during maintenance.\n\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_enabled"
+        },
+        {
+          "name": "PrivateLink",
+          "jsonName": "privateLink",
+          "protoField": "private_link",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureFrontDoorPrivateLink"
+          },
+          "description": "Private link configuration for connecting to the origin privately.\n When configured, Front Door connects to the origin through Azure\n Private Link instead of over the public internet.\n\n **Requires Premium_AzureFrontDoor SKU.**\n Also requires certificate_name_check_enabled = true.\n\n After provisioning, the private link connection must be approved\n on the target resource (auto-approval is not supported via IaC).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureFrontDoorOriginGroup",
+      "description": "AzureFrontDoorOriginGroup defines an origin group within the profile.\n\n An origin group is a collection of origins (backends) that Front Door\n load-balances traffic across. Each group has its own load balancing\n configuration and optional health probes to detect unhealthy origins.\n\n Origins are nested within origin groups because an origin without\n a group has no routing context. This matches DD03 bundling rules.",
+      "protoType": "org.openmcf.provider.azure.azurefrontdoorprofile.v1.AzureFrontDoorOriginGroup",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The origin group name.\n Must be unique within the profile. Referenced by routes to direct\n traffic to this group of backends.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "SessionAffinityEnabled",
+          "jsonName": "sessionAffinityEnabled",
+          "protoField": "session_affinity_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable session affinity (sticky sessions) for this origin group.\n When enabled, Front Door routes subsequent requests from the same\n client to cookies.\n\n Important for stateful backends (e.g., session-based web apps).\n Disable for stateless APIs where even distribution is preferred.\n\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_session_affinity_enabled"
+        },
+        {
+          "name": "LoadBalancing",
+          "jsonName": "loadBalancing",
+          "protoField": "load_balancing",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureFrontDoorLoadBalancing"
+          },
+          "description": "Load balancing configuration for distributing traffic across origins.\n Controls how Front Door samples origin health and selects origins.",
+          "required": false
+        },
+        {
+          "name": "HealthProbe",
+          "jsonName": "healthProbe",
+          "protoField": "health_probe",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureFrontDoorHealthProbe"
+          },
+          "description": "Health probe configuration for detecting unhealthy origins.\n When configured, Front Door periodically sends requests to each origin\n to verify availability. Unhealthy origins are removed from rotation.\n\n Omit to disable health probing (all origins assumed healthy).\n Recommended for production workloads.",
+          "required": false
+        },
+        {
+          "name": "Origins",
+          "jsonName": "origins",
+          "protoField": "origins",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AzureFrontDoorOrigin"
+            }
+          },
+          "description": "Origins (backends) in this origin group.\n Front Door distributes traffic across these origins based on\n priority and weight. At least one origin is required.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureFrontDoorPrivateLink",
+      "description": "AzureFrontDoorPrivateLink configures private connectivity from\n Front Door to an origin through Azure Private Link.\n\n This enables Front Door to access backend origins without exposing\n them to the public internet. The origin can have public access\n completely disabled while still being reachable from Front Door.\n\n **Premium SKU only.** Standard SKU does not support private link.\n\n After the private link is provisioned, the connection request must\n be approved on the target resource. This is a manual step in the\n Azure portal or via CLI.",
+      "protoType": "org.openmcf.provider.azure.azurefrontdoorprofile.v1.AzureFrontDoorPrivateLink",
+      "fields": [
+        {
+          "name": "Location",
+          "jsonName": "location",
+          "protoField": "location",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure region where the private link target is located.\n Private link connections are regional -- the location must match\n the target resource's region.\n\n Examples: \"eastus\", \"westus2\", \"westeurope\"",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "PrivateLinkTargetId",
+          "jsonName": "privateLinkTargetId",
+          "protoField": "private_link_target_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure Resource Manager ID of the private link target.\n This is the resource that Front Door will connect to privately.\n\n Common targets:\n - App Service: /subscriptions/.../sites/{name}\n - Storage Account: /subscriptions/.../storageAccounts/{name}\n - Container Apps Environment: /subscriptions/.../managedEnvironments/{name}",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "RequestMessage",
+          "jsonName": "requestMessage",
+          "protoField": "request_message",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The approval message sent to the target resource owner.\n Appears in the private endpoint connection approval screen.\n\n Maximum: 140 characters.\n\n Default: \"Access request for CDN FrontDoor Private Link Origin\"",
+          "required": false,
+          "validation": {
+            "maxLength": 140
+          },
+          "default": "Access request for CDN FrontDoor Private Link Origin",
+          "oneofGroup": "_request_message"
+        },
+        {
+          "name": "TargetType",
+          "jsonName": "targetType",
+          "protoField": "target_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The target sub-resource type for the private link connection.\n Required for most target types except Private Link Services.\n\n Common values:\n - \"sites\": App Service / Function App\n - \"blob\": Storage Account Blob\n - \"blob_secondary\": Storage Account Blob (secondary)\n - \"web\": Static Web App\n - \"web_secondary\": Static Web App (secondary)\n - \"managedEnvironments\": Container Apps Environment\n - \"Gateway\": Application Gateway",
+          "required": false,
+          "oneofGroup": "_target_type"
+        }
+      ]
+    },
+    {
+      "name": "AzureFrontDoorRoute",
+      "description": "AzureFrontDoorRoute defines how traffic flows from an endpoint\n to an origin group based on URL pattern matching.\n\n Routes are the glue that connects Front Door endpoints (entry points)\n to origin groups (backends). Each route matches URL patterns and\n forwards matching requests to the specified origin group, with\n optional caching and protocol behavior.\n\n **ForceNew fields**: `name`.",
+      "protoType": "org.openmcf.provider.azure.azurefrontdoorprofile.v1.AzureFrontDoorRoute",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The route name.\n Must be unique within the profile.\n\n **ForceNew**: Changing this destroys and recreates the route.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "EndpointName",
+          "jsonName": "endpointName",
+          "protoField": "endpoint_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The endpoint name this route is associated with.\n Must reference an endpoint defined in `endpoints[]` by name.\n Traffic arriving at this endpoint matching `patterns_to_match`\n is routed through this route.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "OriginGroupName",
+          "jsonName": "originGroupName",
+          "protoField": "origin_group_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The origin group name this route forwards traffic to.\n Must reference an origin group defined in `origin_groups[]` by name.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "PatternsToMatch",
+          "jsonName": "patternsToMatch",
+          "protoField": "patterns_to_match",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "URL patterns to match for this route.\n Front Door evaluates incoming request paths against these patterns\n and routes matching requests to the origin group.\n\n Pattern syntax:\n - \"/*\" matches all paths (catch-all)\n - \"/api/*\" matches all paths under /api/\n - \"/images/*\" matches all paths under /images/\n\n At least one pattern is required.",
+          "required": false
+        },
+        {
+          "name": "SupportedProtocols",
+          "jsonName": "supportedProtocols",
+          "protoField": "supported_protocols",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Protocols supported by this route.\n Uses Azure's exact API values.\n\n Valid values: \"Http\", \"Https\"\n\n Include both \"Http\" and \"Https\" when https_redirect_enabled is true\n (so HTTP requests can be received and redirected to HTTPS).",
+          "required": false
+        },
+        {
+          "name": "ForwardingProtocol",
+          "jsonName": "forwardingProtocol",
+          "protoField": "forwarding_protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol used when forwarding requests from Front Door to the origin.\n Uses Azure's exact API values.\n\n Valid values:\n - \"MatchRequest\" (default): Use the same protocol as the client request\n - \"HttpOnly\": Always forward to origin over HTTP\n - \"HttpsOnly\": Always forward to origin over HTTPS\n\n Default: \"MatchRequest\"",
+          "required": false,
+          "default": "MatchRequest",
+          "oneofGroup": "_forwarding_protocol"
+        },
+        {
+          "name": "HttpsRedirectEnabled",
+          "jsonName": "httpsRedirectEnabled",
+          "protoField": "https_redirect_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable automatic HTTPS redirect for HTTP requests.\n When true, HTTP requests are automatically redirected to HTTPS\n with a 301 status code.\n\n Requires both \"Http\" and \"Https\" in supported_protocols.\n\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_https_redirect_enabled"
+        },
+        {
+          "name": "LinkToDefaultDomain",
+          "jsonName": "linkToDefaultDomain",
+          "protoField": "link_to_default_domain",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to link this route to the endpoint's default domain.\n When true, the route is accessible via the endpoint's generated\n hostname (*.azurefd.net).\n\n Must be true if no custom domains are associated with the route.\n\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_link_to_default_domain"
+        },
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether this route is enabled and processing traffic.\n When false, the route stops matching requests but is not deleted.\n\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_enabled"
+        },
+        {
+          "name": "Cache",
+          "jsonName": "cache",
+          "protoField": "cache",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureFrontDoorRouteCache"
+          },
+          "description": "Cache configuration for this route.\n When configured, Front Door caches responses from the origin at\n edge locations to reduce origin load and improve latency.\n\n Omit to disable caching (all requests forwarded to origin).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureFrontDoorRouteCache",
+      "description": "AzureFrontDoorRouteCache configures caching behavior for a route.\n\n Caching is the primary value proposition of a CDN. When enabled,\n Front Door stores origin responses at edge locations worldwide\n and serves subsequent requests from cache, reducing origin load\n and improving end-user latency.",
+      "protoType": "org.openmcf.provider.azure.azurefrontdoorprofile.v1.AzureFrontDoorRouteCache",
+      "fields": [
+        {
+          "name": "QueryStringCachingBehavior",
+          "jsonName": "queryStringCachingBehavior",
+          "protoField": "query_string_caching_behavior",
+          "type": {
+            "kind": "string"
+          },
+          "description": "How query strings affect cache key generation.\n Uses Azure's exact API values.\n\n Valid values:\n - \"IgnoreQueryString\" (default): All query string variations share\n   the same cache entry. Best for static content.\n - \"UseQueryString\": Each unique query string produces a separate\n   cache entry. Best for dynamic content with query parameters.\n - \"IgnoreSpecifiedQueryStrings\": Specified query strings are removed\n   from the cache key. Use with query_strings field.\n - \"IncludeSpecifiedQueryStrings\": Only specified query strings are\n   included in the cache key. Use with query_strings field.\n\n Default: \"IgnoreQueryString\"",
+          "required": false,
+          "default": "IgnoreQueryString",
+          "oneofGroup": "_query_string_caching_behavior"
+        },
+        {
+          "name": "QueryStrings",
+          "jsonName": "queryStrings",
+          "protoField": "query_strings",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Query strings to include or exclude from cache keys.\n Behavior depends on query_string_caching_behavior:\n - IgnoreSpecifiedQueryStrings: These strings are excluded from cache key\n - IncludeSpecifiedQueryStrings: Only these strings are included in cache key\n\n Ignored when behavior is IgnoreQueryString or UseQueryString.",
+          "required": false
+        },
+        {
+          "name": "CompressionEnabled",
+          "jsonName": "compressionEnabled",
+          "protoField": "compression_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable compression for cached content.\n When true, Front Door compresses responses using gzip or brotli\n before delivering to clients, reducing bandwidth.\n\n Only compresses content types listed in content_types_to_compress.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_compression_enabled"
+        },
+        {
+          "name": "ContentTypesToCompress",
+          "jsonName": "contentTypesToCompress",
+          "protoField": "content_types_to_compress",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "MIME types eligible for compression.\n Front Door compresses responses matching these content types.\n\n Only used when compression_enabled is true.\n\n Common web content types:\n - \"text/html\", \"text/css\", \"text/javascript\"\n - \"application/javascript\", \"application/json\"\n - \"application/xml\", \"image/svg+xml\"\n\n If empty and compression is enabled, IaC modules apply a default\n set of web content types.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,503 @@
+{
+  "name": "OciPostgresqlDbSystem",
+  "kind": "OciPostgresqlDbSystem",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciPostgresqlDbSystem is the top-level resource representing an Oracle Cloud\n Infrastructure PostgreSQL Database System -- a fully managed PostgreSQL\n service with configurable compute, storage, and backup policies.",
+  "protoPackage": "org.openmcf.provider.oci.ocipostgresqldbsystem.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocipostgresqldbsystem/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocipostgresqldbsystem/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciPostgresqlDbSystemSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the PostgreSQL DB System will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable name shown in the OCI Console.\n Falls back to metadata.name if not provided.",
+        "required": false
+      },
+      {
+        "name": "DbVersion",
+        "jsonName": "dbVersion",
+        "protoField": "db_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "PostgreSQL major version (e.g. \"14\", \"15\", \"16\").\n Only the major version is stored; minor versions are managed by OCI.\n Changing this forces recreation.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Shape",
+        "jsonName": "shape",
+        "protoField": "shape",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Compute shape for the DB System instances. The provider automatically\n prefixes \"PostgreSQL.\" if not present. For flexible shapes, set\n instance_ocpu_count and instance_memory_size_in_gbs separately.\n Example: \"VM.Standard.E4.Flex\".",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "InstanceOcpuCount",
+        "jsonName": "instanceOcpuCount",
+        "protoField": "instance_ocpu_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of OCPUs allocated to each database instance. Used with\n flexible shapes (e.g. VM.Standard.E4.Flex). Updatable.",
+        "required": false
+      },
+      {
+        "name": "InstanceMemorySizeInGbs",
+        "jsonName": "instanceMemorySizeInGbs",
+        "protoField": "instance_memory_size_in_gbs",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Amount of memory in gigabytes allocated to each database instance.\n Used with flexible shapes. Updatable.",
+        "required": false
+      },
+      {
+        "name": "InstanceCount",
+        "jsonName": "instanceCount",
+        "protoField": "instance_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of database instances (nodes). 1 creates a standalone system;\n 2 or more creates read replicas for read scaling and availability.",
+        "required": false
+      },
+      {
+        "name": "NetworkDetails",
+        "jsonName": "networkDetails",
+        "protoField": "network_details",
+        "type": {
+          "kind": "message",
+          "messageType": "NetworkDetails"
+        },
+        "description": "Network configuration for the DB System. Required.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "StorageDetails",
+        "jsonName": "storageDetails",
+        "protoField": "storage_details",
+        "type": {
+          "kind": "message",
+          "messageType": "StorageDetails"
+        },
+        "description": "Storage configuration for the DB System. Required.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Credentials",
+        "jsonName": "credentials",
+        "protoField": "credentials",
+        "type": {
+          "kind": "message",
+          "messageType": "Credentials"
+        },
+        "description": "Initial database credentials. When omitted, the provider applies\n defaults. The entire credentials block is immutable after creation\n (changing it forces recreation).",
+        "required": false
+      },
+      {
+        "name": "ManagementPolicy",
+        "jsonName": "managementPolicy",
+        "protoField": "management_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "ManagementPolicy"
+        },
+        "description": "Management policy controlling backup schedule and maintenance window.",
+        "required": false
+      },
+      {
+        "name": "ConfigId",
+        "jsonName": "configId",
+        "protoField": "config_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of a PostgreSQL configuration to apply. Configurations define\n server parameter settings (shared_buffers, max_connections, etc.).\n When omitted, the default configuration for the shape is used.",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "User-provided description of the DB System.",
+        "required": false
+      },
+      {
+        "name": "InstancesDetails",
+        "jsonName": "instancesDetails",
+        "protoField": "instances_details",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "InstanceDetails"
+          }
+        },
+        "description": "Per-instance configuration details. When specified, the list size\n must match instance_count. Allows pinning display names, descriptions,\n and private IP addresses per instance. Changing this forces recreation.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "BackupPolicy",
+      "description": "BackupPolicy configures automatic backups for the DB System.\n The kind field determines which schedule fields are relevant:\n daily requires backup_start; weekly adds days_of_the_week;\n monthly adds days_of_the_month; none disables backups.",
+      "protoType": "org.openmcf.provider.oci.ocipostgresqldbsystem.v1.OciPostgresqlDbSystemSpec.BackupPolicy",
+      "fields": [
+        {
+          "name": "Kind",
+          "jsonName": "kind",
+          "protoField": "kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocipostgresqldbsystem.v1.BackupKind",
+            "enumValues": [
+              "daily",
+              "weekly",
+              "monthly",
+              "none"
+            ]
+          },
+          "description": "Backup schedule kind.",
+          "required": false
+        },
+        {
+          "name": "BackupStart",
+          "jsonName": "backupStart",
+          "protoField": "backup_start",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Hour of the day (UTC) when the backup starts.\n Required for daily, weekly, and monthly kinds.",
+          "required": false
+        },
+        {
+          "name": "RetentionDays",
+          "jsonName": "retentionDays",
+          "protoField": "retention_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of days to retain backups after the DB System is deleted.",
+          "required": false
+        },
+        {
+          "name": "DaysOfTheMonth",
+          "jsonName": "daysOfTheMonth",
+          "protoField": "days_of_the_month",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "int32"
+            }
+          },
+          "description": "Days of the month when backups run (1-28). Required for monthly.",
+          "required": false,
+          "validation": {
+            "maxItems": 28
+          }
+        },
+        {
+          "name": "DaysOfTheWeek",
+          "jsonName": "daysOfTheWeek",
+          "protoField": "days_of_the_week",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Days of the week when backups run (e.g. \"MONDAY\", \"FRIDAY\").\n Required for weekly.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Credentials",
+      "description": "Credentials configures the initial database administrator account.\n The entire block is immutable after creation.",
+      "protoType": "org.openmcf.provider.oci.ocipostgresqldbsystem.v1.OciPostgresqlDbSystemSpec.Credentials",
+      "fields": [
+        {
+          "name": "Username",
+          "jsonName": "username",
+          "protoField": "username",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Administrator username. Changing this forces recreation.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "PasswordDetails",
+          "jsonName": "passwordDetails",
+          "protoField": "password_details",
+          "type": {
+            "kind": "message",
+            "messageType": "PasswordDetails"
+          },
+          "description": "Password configuration using either a plain-text password or\n an OCI Vault secret reference.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "InstanceDetails",
+      "description": "InstanceDetails configures per-instance properties. When provided,\n the list size should match instance_count. All fields in this message\n are immutable after creation.",
+      "protoType": "org.openmcf.provider.oci.ocipostgresqldbsystem.v1.OciPostgresqlDbSystemSpec.InstanceDetails",
+      "fields": [
+        {
+          "name": "DisplayName",
+          "jsonName": "displayName",
+          "protoField": "display_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Display name for this database instance node.",
+          "required": false
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Description of this database instance node.",
+          "required": false
+        },
+        {
+          "name": "PrivateIp",
+          "jsonName": "privateIp",
+          "protoField": "private_ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specific private IP address for this instance within the subnet.\n When omitted, OCI auto-assigns an available IP.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ManagementPolicy",
+      "description": "ManagementPolicy configures backup scheduling and maintenance windows.",
+      "protoType": "org.openmcf.provider.oci.ocipostgresqldbsystem.v1.OciPostgresqlDbSystemSpec.ManagementPolicy",
+      "fields": [
+        {
+          "name": "BackupPolicy",
+          "jsonName": "backupPolicy",
+          "protoField": "backup_policy",
+          "type": {
+            "kind": "message",
+            "messageType": "BackupPolicy"
+          },
+          "description": "Backup policy for the DB System.",
+          "required": false
+        },
+        {
+          "name": "MaintenanceWindowStart",
+          "jsonName": "maintenanceWindowStart",
+          "protoField": "maintenance_window_start",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Start of the maintenance window in UTC. Format:\n \"{day-of-week} {time-of-day}\" (e.g. \"tue 02:00:00\").",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "NetworkDetails",
+      "description": "NetworkDetails configures the network placement for the DB System.",
+      "protoType": "org.openmcf.provider.oci.ocipostgresqldbsystem.v1.OciPostgresqlDbSystemSpec.NetworkDetails",
+      "fields": [
+        {
+          "name": "SubnetId",
+          "jsonName": "subnetId",
+          "protoField": "subnet_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the subnet where the DB System will be placed.\n Changing this forces recreation.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "OciSubnet",
+          "referenceFieldPath": "status.outputs.subnetId"
+        },
+        {
+          "name": "NsgIds",
+          "jsonName": "nsgIds",
+          "protoField": "nsg_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OCIDs of network security groups for the DB System instances.",
+          "required": false,
+          "referenceKind": "OciSecurityGroup",
+          "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+        },
+        {
+          "name": "IsReaderEndpointEnabled",
+          "jsonName": "isReaderEndpointEnabled",
+          "protoField": "is_reader_endpoint_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, a reader endpoint is created for distributing read\n queries across replica instances.",
+          "required": false,
+          "oneofGroup": "_is_reader_endpoint_enabled"
+        },
+        {
+          "name": "PrimaryDbEndpointPrivateIp",
+          "jsonName": "primaryDbEndpointPrivateIp",
+          "protoField": "primary_db_endpoint_private_ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specific private IP address for the primary (read-write) endpoint.\n When omitted, OCI auto-assigns an available IP from the subnet.\n Changing this forces recreation.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "PasswordDetails",
+      "description": "PasswordDetails configures the database administrator password.\n Uses a discriminator pattern: set password_type to select between\n plain-text and Vault secret approaches.",
+      "protoType": "org.openmcf.provider.oci.ocipostgresqldbsystem.v1.OciPostgresqlDbSystemSpec.PasswordDetails",
+      "fields": [
+        {
+          "name": "PasswordType",
+          "jsonName": "passwordType",
+          "protoField": "password_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocipostgresqldbsystem.v1.PasswordType",
+            "enumValues": [
+              "plain_text",
+              "vault_secret"
+            ]
+          },
+          "description": "Password type discriminator.",
+          "required": false
+        },
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Database password in plain text. Required when password_type\n is plain_text. Not returned by the API after creation.",
+          "required": false
+        },
+        {
+          "name": "SecretId",
+          "jsonName": "secretId",
+          "protoField": "secret_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the OCI Vault secret containing the password.\n Required when password_type is vault_secret.",
+          "required": false
+        },
+        {
+          "name": "SecretVersion",
+          "jsonName": "secretVersion",
+          "protoField": "secret_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Version of the Vault secret to use. When omitted, the latest\n version is used.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "StorageDetails",
+      "description": "StorageDetails configures the storage backend for the DB System.\n The storage system_type is hardcoded to OCI_OPTIMIZED_STORAGE in IaC\n modules (the only valid value today).",
+      "protoType": "org.openmcf.provider.oci.ocipostgresqldbsystem.v1.OciPostgresqlDbSystemSpec.StorageDetails",
+      "fields": [
+        {
+          "name": "IsRegionallyDurable",
+          "jsonName": "isRegionallyDurable",
+          "protoField": "is_regionally_durable",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, data is replicated across multiple availability domains\n for regional durability. When false, data resides in a single AD\n and availability_domain must be specified. Changing this forces\n recreation.",
+          "required": false
+        },
+        {
+          "name": "AvailabilityDomain",
+          "jsonName": "availabilityDomain",
+          "protoField": "availability_domain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Availability domain for AD-local storage. Required when\n is_regionally_durable is false. Ignored when is_regionally_durable\n is true. Example: \"Uocm:PHX-AD-1\". Changing this forces recreation.",
+          "required": false
+        },
+        {
+          "name": "Iops",
+          "jsonName": "iops",
+          "protoField": "iops",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Guaranteed input/output storage requests per second (IOPS).\n Determines the performance tier. See OCI documentation for\n supported values per shape. Updatable.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

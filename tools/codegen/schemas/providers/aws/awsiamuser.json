@@ -1,0 +1,86 @@
+{
+  "name": "AwsIamUser",
+  "kind": "AwsIamUser",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsIamUser represents an AWS IAM User resource for programmatic access.\n IAM users provide long-lived credentials for CI/CD pipelines, third-party integrations,\n and service accounts that require AWS API access.",
+  "protoPackage": "org.openmcf.provider.aws.awsiamuser.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsiamuser/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsiamuser/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsIamUserSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "UserName",
+        "jsonName": "userName",
+        "protoField": "user_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "user_name is the IAM user name. Must be 1-64 characters and match the regex\n pattern \"^[a-zA-Z0-9+=,.@_-]{1,64}$\" (letters, digits, and +=,.@_-).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-zA-Z0-9+=,.@_-]{1,64}$"
+        }
+      },
+      {
+        "name": "ManagedPolicyArns",
+        "jsonName": "managedPolicyArns",
+        "protoField": "managed_policy_arns",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "managed_policy_arns is a list of IAM managed policy ARNs to attach to the user.\n Each ARN must start with \"arn:aws:iam::\". The list must be unique.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "InlinePolicies",
+        "jsonName": "inlinePolicies",
+        "protoField": "inline_policies",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "object"
+          }
+        },
+        "description": "inline_policies is a map of inline policy documents to attach to the user.\n Keys are policy names (max 128 characters); values are the IAM policy JSON (as a Struct).",
+        "required": false
+      },
+      {
+        "name": "DisableAccessKeys",
+        "jsonName": "disableAccessKeys",
+        "protoField": "disable_access_keys",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "disable_access_keys, if true, prevents creation of access keys for this user.\n If false (default), one active access key will be created for the user.",
+        "required": false
+      }
+    ]
+  }
+}

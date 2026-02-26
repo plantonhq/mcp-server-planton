@@ -1,0 +1,259 @@
+{
+  "name": "AwsSnsTopic",
+  "kind": "AwsSnsTopic",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsSnsTopic is the Kubernetes-style resource envelope for an AWS SNS topic.",
+  "protoPackage": "org.openmcf.provider.aws.awssnstopic.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awssnstopic/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awssnstopic/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsSnsTopicSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "FifoTopic",
+        "jsonName": "fifoTopic",
+        "protoField": "fifo_topic",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to create a FIFO topic. Standard topics are created when false.\n FIFO topics guarantee strict ordering and exactly-once delivery to SQS FIFO\n queue subscribers. This setting cannot be changed after topic creation.",
+        "required": false
+      },
+      {
+        "name": "ContentBasedDeduplication",
+        "jsonName": "contentBasedDeduplication",
+        "protoField": "content_based_deduplication",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable content-based deduplication for FIFO topics. When enabled, SNS uses\n a SHA-256 hash of the message body as the deduplication ID, removing the\n need for the publisher to supply an explicit deduplication ID.\n Only valid when `fifo_topic` is true.",
+        "required": false
+      },
+      {
+        "name": "FifoThroughputScope",
+        "jsonName": "fifoThroughputScope",
+        "protoField": "fifo_throughput_scope",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Throughput scope for FIFO topics. Controls whether the throughput quota\n applies per topic or per message group.\n Valid values: \"Topic\", \"MessageGroup\". Only valid when `fifo_topic` is true.",
+        "required": false
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable display name for the topic. Used as the \"from\" label in SMS\n messages and as a readable identifier in the AWS console. Maximum 256\n characters for Standard topics, 10 characters for SMS display names.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed KMS key for server-side encryption. When set, SNS encrypts\n message bodies using this key. Accepts a direct KMS key ID/ARN or a\n reference to an AwsKmsKey resource. When not set, SNS does not encrypt\n messages at rest (unlike SQS, SNS has no \"managed SSE\" option — encryption\n requires an explicit KMS key).",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "Policy",
+        "jsonName": "policy",
+        "protoField": "policy",
+        "type": {
+          "kind": "object"
+        },
+        "description": "IAM access policy for the topic. Controls which AWS principals can perform\n actions on this topic (e.g., Publish, Subscribe). Expressed as a standard\n IAM policy document structure. Common use cases include granting EventBridge\n permission to publish, allowing cross-account subscriptions, or restricting\n publishing to specific IAM roles.",
+        "required": false
+      },
+      {
+        "name": "DeliveryPolicy",
+        "jsonName": "deliveryPolicy",
+        "protoField": "delivery_policy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "HTTP/HTTPS delivery retry policy for the topic. Expressed as a JSON string\n matching the SNS delivery policy format. Controls retry backoff, max retries,\n and throttle behavior for HTTP/S subscriptions. Most users do not need to\n customize this. When not set, AWS applies its default delivery policy.",
+        "required": false
+      },
+      {
+        "name": "TracingConfig",
+        "jsonName": "tracingConfig",
+        "protoField": "tracing_config",
+        "type": {
+          "kind": "string"
+        },
+        "description": "AWS X-Ray tracing configuration. When set to \"Active\", SNS publishes trace\n data for messages. When set to \"PassThrough\", SNS passes through the trace\n header but does not sample. Leave empty to use the AWS default (PassThrough).\n Valid values: \"Active\", \"PassThrough\".",
+        "required": false
+      },
+      {
+        "name": "SignatureVersion",
+        "jsonName": "signatureVersion",
+        "protoField": "signature_version",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "SNS message signature version. Version 1 uses SHA1, version 2 uses SHA256.\n SHA256 (version 2) is recommended for new topics. Leave at 0 to use the\n AWS default (version 1).",
+        "required": false
+      },
+      {
+        "name": "Subscriptions",
+        "jsonName": "subscriptions",
+        "protoField": "subscriptions",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsSnsTopicSubscription"
+          }
+        },
+        "description": "Inline subscriptions for this topic. Each subscription defines a protocol,\n endpoint, and optional filtering configuration. The subscription `name` field\n is used as the key in the `subscription_arns` output map, enabling downstream\n resources to reference specific subscription ARNs via `valueFrom`.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsSnsSubscriptionRedriveConfig",
+      "description": "AwsSnsSubscriptionRedriveConfig configures the dead letter queue for a\n subscription's delivery failures. When SNS cannot deliver a message after\n all retry attempts, the message is moved to the specified SQS queue.",
+      "protoType": "org.openmcf.provider.aws.awssnstopic.v1.AwsSnsSubscriptionRedriveConfig",
+      "fields": [
+        {
+          "name": "DeadLetterTargetArn",
+          "jsonName": "deadLetterTargetArn",
+          "protoField": "dead_letter_target_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of the SQS dead letter queue for failed message deliveries. Accepts a\n direct ARN or a reference to an AwsSqsQueue resource. The SQS queue must\n reside in the same AWS account and region as the SNS topic.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsSqsQueue",
+          "referenceFieldPath": "status.outputs.queue_arn"
+        }
+      ]
+    },
+    {
+      "name": "AwsSnsTopicSubscription",
+      "description": "AwsSnsTopicSubscription defines an inline subscription to deliver messages\n from the parent SNS topic to a target endpoint.\n\n Subscriptions are bundled with the topic because they are tightly coupled —\n a subscription cannot exist without a topic, and most users define them\n together. Each subscription's `name` field serves as a key in the\n `subscription_arns` output map.",
+      "protoType": "org.openmcf.provider.aws.awssnstopic.v1.AwsSnsTopicSubscription",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "User-assigned name for this subscription. Used as a key in the\n `subscription_arns` output map so downstream resources can reference\n specific subscription ARNs. Must be unique within the topic's subscriptions.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol for message delivery. Determines how SNS delivers messages to the\n endpoint. Each protocol has specific endpoint format requirements:\n - \"sqs\": SQS queue ARN\n - \"lambda\": Lambda function ARN\n - \"http\" / \"https\": URL endpoint\n - \"email\" / \"email-json\": email address\n - \"sms\": phone number in E.164 format\n - \"firehose\": Kinesis Firehose delivery stream ARN\n - \"application\": mobile platform endpoint ARN",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Endpoint",
+          "jsonName": "endpoint",
+          "protoField": "endpoint",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Endpoint to deliver messages to. The format depends on the protocol (see\n `protocol` field documentation). Accepts a direct value or a reference to\n another resource's output. For example, an SQS subscription can reference\n an AwsSqsQueue's queue ARN via `valueFrom`.\n\n No `default_kind` is set because the target resource varies by protocol\n (SQS queue, Lambda function, etc.).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "FilterPolicy",
+          "jsonName": "filterPolicy",
+          "protoField": "filter_policy",
+          "type": {
+            "kind": "object"
+          },
+          "description": "Filter policy to select which messages this subscription receives. Messages\n that do not match the filter are not delivered. The filter can be applied to\n message attributes (default) or the message body (see `filter_policy_scope`).\n Expressed as a JSON structure in YAML.",
+          "required": false
+        },
+        {
+          "name": "FilterPolicyScope",
+          "jsonName": "filterPolicyScope",
+          "protoField": "filter_policy_scope",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Scope for the filter policy. Controls whether the filter is evaluated against\n message attributes or the message body.\n Valid values: \"MessageAttributes\" (default), \"MessageBody\".\n Only relevant when `filter_policy` is set.",
+          "required": false
+        },
+        {
+          "name": "RawMessageDelivery",
+          "jsonName": "rawMessageDelivery",
+          "protoField": "raw_message_delivery",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, messages are delivered as-is without JSON wrapping. Supported\n for SQS, HTTP/S, and Firehose protocols. When false (default), SNS wraps\n the message in a JSON envelope containing metadata (MessageId, TopicArn,\n Timestamp, etc.).",
+          "required": false
+        },
+        {
+          "name": "RedriveConfig",
+          "jsonName": "redriveConfig",
+          "protoField": "redrive_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsSnsSubscriptionRedriveConfig"
+          },
+          "description": "Dead letter queue configuration for this subscription. When message delivery\n fails after all retry attempts, the message is routed to the specified SQS\n queue for investigation. This is separate from the SQS queue's own DLQ —\n this handles SNS-to-subscriber delivery failures.",
+          "required": false
+        },
+        {
+          "name": "SubscriptionRoleArn",
+          "jsonName": "subscriptionRoleArn",
+          "protoField": "subscription_role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM role ARN for Firehose delivery. Required when protocol is \"firehose\".\n The role must grant SNS permission to write to the Firehose delivery stream.\n Accepts a direct ARN or a reference to an AwsIamRole resource.",
+          "required": false,
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        }
+      ]
+    }
+  ]
+}

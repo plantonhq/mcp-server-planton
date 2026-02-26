@@ -1,0 +1,120 @@
+{
+  "name": "AliCloudEipAddress",
+  "kind": "AliCloudEipAddress",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-eip-address",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudeipaddress.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudeipaddress/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudeipaddress/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudEipAddressSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the EIP will be allocated.\n The EIP can only be associated with resources in the same region.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "AddressName",
+        "jsonName": "addressName",
+        "protoField": "address_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "EIP display name. 1-128 characters; must start with a letter or Chinese\n character; can contain digits, underscores, periods, and hyphens.\n Maps to the provider field `address_name`.",
+        "required": false,
+        "validation": {
+          "maxLength": 128
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the EIP's intended use.\n 2-256 characters; cannot start with http:// or https://.",
+        "required": false
+      },
+      {
+        "name": "Bandwidth",
+        "jsonName": "bandwidth",
+        "protoField": "bandwidth",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum outbound bandwidth in Mbps.\n When internet_charge_type is \"PayByTraffic\", this is the bandwidth ceiling\n (you pay per GB transferred, not per Mbps reserved).\n When internet_charge_type is \"PayByBandwidth\", this is the guaranteed\n bandwidth (you pay for the full allocation regardless of usage).\n Default: 5",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 1000
+        },
+        "default": "5",
+        "oneofGroup": "_bandwidth"
+      },
+      {
+        "name": "InternetChargeType",
+        "jsonName": "internetChargeType",
+        "protoField": "internet_charge_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Metering method for the EIP.\n\n \"PayByTraffic\" -- billed per GB of outbound traffic. Best for bursty or\n   unpredictable workloads. The bandwidth field acts as a ceiling.\n \"PayByBandwidth\" -- billed for the reserved bandwidth regardless of usage.\n   Best for steady, high-throughput workloads.\n\n This field is immutable after creation (ForceNew in the provider).\n Default: \"PayByTraffic\"",
+        "required": false,
+        "default": "PayByTraffic",
+        "oneofGroup": "_internet_charge_type"
+      },
+      {
+        "name": "Isp",
+        "jsonName": "isp",
+        "protoField": "isp",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Internet Service Provider line type for the EIP.\n\n \"BGP\" -- multi-line BGP (default, recommended for most regions).\n \"BGP_PRO\" -- premium BGP with optimized routing for China mainland.\n \"ChinaTelecom\", \"ChinaUnicom\", \"ChinaMobile\" -- single-carrier lines.\n \"ChinaTelecom_L2\", \"ChinaUnicom_L2\", \"ChinaMobile_L2\" -- L2 single-carrier.\n \"BGP_FinanceCloud\" -- BGP for Chinese finance cloud regions.\n \"BGP_International\" -- international BGP (outside mainland China).\n\n Availability varies by region. BGP is available in all regions.\n This field is immutable after creation (ForceNew in the provider).\n Default: \"BGP\"",
+        "required": false,
+        "default": "BGP",
+        "oneofGroup": "_isp"
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the EIP is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the EIP.",
+        "required": false
+      }
+    ]
+  }
+}

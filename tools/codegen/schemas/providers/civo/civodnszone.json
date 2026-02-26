@@ -1,0 +1,122 @@
+{
+  "name": "CivoDnsZone",
+  "kind": "CivoDnsZone",
+  "cloudProvider": "civo",
+  "apiVersion": "civo.openmcf.org/v1",
+  "description": "civo-dns-zone",
+  "protoPackage": "org.openmcf.provider.civo.civodnszone.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/civo/civodnszone/v1/api.proto",
+    "spec": "org/openmcf/provider/civo/civodnszone/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CivoDnsZoneSpec",
+    "fields": [
+      {
+        "name": "DomainName",
+        "jsonName": "domainName",
+        "protoField": "domain_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The domain name for the DNS zone.\n Must be a valid fully-qualified domain name (e.g., \"example.com\").",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^(?:[A-Za-z0-9-]+\\.)+[A-Za-z]{2,}$"
+        }
+      },
+      {
+        "name": "Records",
+        "jsonName": "records",
+        "protoField": "records",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "CivoDnsZoneRecord"
+          }
+        },
+        "description": "A list of DNS records to create within the zone (optional).\n Each record includes its type, name, value(s), and TTL.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "CivoDnsZoneRecord",
+      "description": "CivoDnsZoneRecord represents a DNS record entry to be created in the zone.",
+      "protoType": "org.openmcf.provider.civo.civodnszone.v1.CivoDnsZoneRecord",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The host/name for the DNS record, relative to the zone.\n For root (apex) records, use \"@\" to denote the zone itself.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Values",
+          "jsonName": "values",
+          "protoField": "values",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "The value or values for the DNS record.\n - For A/AAAA: one or more IP addresses.\n - For CNAME: the target domain name.\n - For TXT: the text data (if multiple strings, they will be concatenated by DNS).\n - For MX: one or more entries like \"\u003cpriority\u003e \u003cmail-server-domain\u003e\".\n Each value can be a literal or a reference to another resource’s output.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minItems": 1
+          }
+        },
+        {
+          "name": "TtlSeconds",
+          "jsonName": "ttlSeconds",
+          "protoField": "ttl_seconds",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "The time-to-live (TTL) for this DNS record, in seconds.\n Determines how long resolvers cache the record. Defaults to 3600 seconds (1 hour) if not set.",
+          "required": false,
+          "recommendedDefault": "3600"
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.networking.enums.dnsrecordtype.DnsRecordType",
+            "enumValues": [
+              "A",
+              "AAAA",
+              "ALIAS",
+              "CNAME",
+              "MX",
+              "NS",
+              "PTR",
+              "SOA",
+              "SRV",
+              "TXT",
+              "CAA"
+            ]
+          },
+          "description": "The DNS record type.\n This field is required and must be one of the supported record types (A, AAAA, CNAME, MX, TXT, etc.).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    }
+  ]
+}

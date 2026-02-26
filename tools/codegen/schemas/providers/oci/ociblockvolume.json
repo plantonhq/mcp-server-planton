@@ -1,0 +1,218 @@
+{
+  "name": "OciBlockVolume",
+  "kind": "OciBlockVolume",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciBlockVolume is the top-level resource representing an OCI Block Volume\n with optional backup policy assignment and cross-region replicas.",
+  "protoPackage": "org.openmcf.provider.oci.ociblockvolume.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ociblockvolume/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ociblockvolume/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciBlockVolumeSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the block volume will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "AvailabilityDomain",
+        "jsonName": "availabilityDomain",
+        "protoField": "availability_domain",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Availability domain where the volume is placed (e.g., \"Uocm:US-ASHBURN-AD-1\").\n The volume and any attached compute instance must be in the same AD.\n Changing this forces recreation.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Display name for the volume. When omitted, the metadata name is used.",
+        "required": false
+      },
+      {
+        "name": "SizeInGbs",
+        "jsonName": "sizeInGbs",
+        "protoField": "size_in_gbs",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Size of the volume in gigabytes. Valid range: 50-32768 (50 GB to 32 TB).\n Must be specified explicitly to prevent accidental creation at OCI's\n 1 TB default.",
+        "required": false
+      },
+      {
+        "name": "VpusPerGb",
+        "jsonName": "vpusPerGb",
+        "protoField": "vpus_per_gb",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Volume Performance Units per GB. Controls IOPS and throughput.\n When unset, OCI defaults to 10 (Balanced). Set to 0 for Lower Cost.\n Valid values: 0, 10, 20, 30-120 (in increments of 10).\n Stored as Int64 string in OCI API.",
+        "required": false,
+        "oneofGroup": "_vpus_per_gb"
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of a KMS master encryption key for volume encryption.\n When unset, Oracle-managed keys are used.",
+        "required": false
+      },
+      {
+        "name": "IsReservationsEnabled",
+        "jsonName": "isReservationsEnabled",
+        "protoField": "is_reservations_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enables SCSI persistent reservation support on the volume.\n Required for shared-storage clustering scenarios (e.g., Oracle RAC).",
+        "required": false
+      },
+      {
+        "name": "AutotunePolicies",
+        "jsonName": "autotunePolicies",
+        "protoField": "autotune_policies",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AutotunePolicy"
+          }
+        },
+        "description": "Autotune policies that automatically adjust volume performance\n (VPUs/GB) based on detachment state or workload patterns.",
+        "required": false
+      },
+      {
+        "name": "BlockVolumeReplicas",
+        "jsonName": "blockVolumeReplicas",
+        "protoField": "block_volume_replicas",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "BlockVolumeReplica"
+          }
+        },
+        "description": "Cross-region block volume replicas for disaster recovery.\n Each replica is placed in a target availability domain (can be\n in a different region) and asynchronously replicated.",
+        "required": false
+      },
+      {
+        "name": "BackupPolicyId",
+        "jsonName": "backupPolicyId",
+        "protoField": "backup_policy_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of a backup policy to assign to this volume.\n OCI provides Oracle-defined policies (Gold, Silver, Bronze) or\n custom user-defined policies. When set, the component creates an\n oci_core_volume_backup_policy_assignment sub-resource.",
+        "required": false
+      },
+      {
+        "name": "XrcKmsKeyId",
+        "jsonName": "xrcKmsKeyId",
+        "protoField": "xrc_kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of a KMS key used to encrypt cross-region volume backups.\n Only relevant when a backup policy with cross-region copy is assigned.\n Changing this forces recreation.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AutotunePolicy",
+      "description": "AutotunePolicy controls automatic performance adjustment for the volume.",
+      "protoType": "org.openmcf.provider.oci.ociblockvolume.v1.OciBlockVolumeSpec.AutotunePolicy",
+      "fields": [
+        {
+          "name": "AutotuneType",
+          "jsonName": "autotuneType",
+          "protoField": "autotune_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociblockvolume.v1.AutotuneType",
+            "enumValues": [
+              "detached_volume",
+              "performance_based"
+            ]
+          },
+          "description": "Type of autotune policy to apply.",
+          "required": false
+        },
+        {
+          "name": "MaxVpusPerGb",
+          "jsonName": "maxVpusPerGb",
+          "protoField": "max_vpus_per_gb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum VPUs/GB for performance-based autotune.\n Required when autotune_type is performance_based.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "BlockVolumeReplica",
+      "description": "BlockVolumeReplica configures an asynchronous cross-region volume replica.",
+      "protoType": "org.openmcf.provider.oci.ociblockvolume.v1.OciBlockVolumeSpec.BlockVolumeReplica",
+      "fields": [
+        {
+          "name": "AvailabilityDomain",
+          "jsonName": "availabilityDomain",
+          "protoField": "availability_domain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Availability domain for the replica (e.g., \"Uocm:US-PHOENIX-AD-1\").\n Can be in a different region from the source volume.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DisplayName",
+          "jsonName": "displayName",
+          "protoField": "display_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Display name for the replica. When omitted, OCI generates one.",
+          "required": false
+        },
+        {
+          "name": "XrrKmsKeyId",
+          "jsonName": "xrrKmsKeyId",
+          "protoField": "xrr_kms_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of a KMS key for encrypting the cross-region replica.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

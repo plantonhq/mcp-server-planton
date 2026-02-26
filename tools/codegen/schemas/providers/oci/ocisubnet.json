@@ -1,0 +1,230 @@
+{
+  "name": "OciSubnet",
+  "kind": "OciSubnet",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciSubnet is the top-level resource representing an Oracle Cloud Infrastructure\n subnet within a Virtual Cloud Network (VCN).",
+  "protoPackage": "org.openmcf.provider.oci.ocisubnet.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocisubnet/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocisubnet/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciSubnetSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the subnet will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "VcnId",
+        "jsonName": "vcnId",
+        "protoField": "vcn_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the VCN that this subnet belongs to.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciVcn",
+        "referenceFieldPath": "status.outputs.vcnId"
+      },
+      {
+        "name": "CidrBlock",
+        "jsonName": "cidrBlock",
+        "protoField": "cidr_block",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IPv4 CIDR block for the subnet (e.g. \"10.0.1.0/24\").\n Must be within one of the VCN's CIDR blocks and not overlap with other subnets.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable name shown in the OCI Console.\n Falls back to metadata.name if not provided.",
+        "required": false
+      },
+      {
+        "name": "DnsLabel",
+        "jsonName": "dnsLabel",
+        "protoField": "dns_label",
+        "type": {
+          "kind": "string"
+        },
+        "description": "DNS label for the subnet. Combined with the VCN and subnet domain, forms\n the FQDN: \u003cdns_label\u003e.\u003cvcn_dns_label\u003e.oraclevcn.com\n Must be alphanumeric, start with a letter, and be at most 15 characters.",
+        "required": false
+      },
+      {
+        "name": "AvailabilityDomain",
+        "jsonName": "availabilityDomain",
+        "protoField": "availability_domain",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Availability domain name (e.g. \"Iocq:US-ASHBURN-AD-1\").\n When omitted, the subnet is regional and spans all ADs in the region.\n When set, the subnet is scoped to a single AD.",
+        "required": false
+      },
+      {
+        "name": "ProhibitPublicIpOnVnic",
+        "jsonName": "prohibitPublicIpOnVnic",
+        "protoField": "prohibit_public_ip_on_vnic",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, VNICs in this subnet cannot have public IP addresses.\n This is the primary control for making a subnet private.",
+        "required": false
+      },
+      {
+        "name": "ProhibitInternetIngress",
+        "jsonName": "prohibitInternetIngress",
+        "protoField": "prohibit_internet_ingress",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, the subnet blocks all inbound internet traffic to VNICs,\n even if a security rule or NSG would otherwise allow it.",
+        "required": false
+      },
+      {
+        "name": "DhcpOptionsId",
+        "jsonName": "dhcpOptionsId",
+        "protoField": "dhcp_options_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of custom DHCP options to use instead of the VCN's default.",
+        "required": false
+      },
+      {
+        "name": "RouteTableId",
+        "jsonName": "routeTableId",
+        "protoField": "route_table_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of an existing route table to associate with this subnet.\n Mutually exclusive with route_rules. If neither is provided, the VCN's\n default route table is used.",
+        "required": false
+      },
+      {
+        "name": "SecurityListIds",
+        "jsonName": "securityListIds",
+        "protoField": "security_list_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Security list OCIDs to associate with this subnet. OCI allows a maximum\n of 5 security lists per subnet.",
+        "required": false,
+        "validation": {
+          "maxItems": 5
+        }
+      },
+      {
+        "name": "Ipv6CidrBlock",
+        "jsonName": "ipv6CidrBlock",
+        "protoField": "ipv6_cidr_block",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IPv6 CIDR block for dual-stack subnets (e.g. \"2001:0db8:0123:1111::/64\").\n Only valid when the parent VCN has IPv6 enabled.",
+        "required": false
+      },
+      {
+        "name": "RouteRules",
+        "jsonName": "routeRules",
+        "protoField": "route_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "RouteRule"
+          }
+        },
+        "description": "Route rules for a custom route table that will be created and owned by\n this subnet. Mutually exclusive with route_table_id.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "RouteRule",
+      "description": "RouteRule defines a single routing rule within a custom route table.",
+      "protoType": "org.openmcf.provider.oci.ocisubnet.v1.OciSubnetSpec.RouteRule",
+      "fields": [
+        {
+          "name": "Destination",
+          "jsonName": "destination",
+          "protoField": "destination",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Target IP range in CIDR notation (e.g. \"0.0.0.0/0\") or a service CIDR\n label (e.g. \"all-iad-services-in-oracle-services-network\").",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "DestinationType",
+          "jsonName": "destinationType",
+          "protoField": "destination_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocisubnet.v1.DestinationType",
+            "enumValues": [
+              "cidr_block",
+              "service_cidr_block"
+            ]
+          },
+          "description": "Whether destination is a CIDR block or a service CIDR block.",
+          "required": false
+        },
+        {
+          "name": "NetworkEntityId",
+          "jsonName": "networkEntityId",
+          "protoField": "network_entity_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the network entity to route matching traffic to\n (Internet Gateway, NAT Gateway, DRG, Service Gateway, Local Peering Gateway, etc.).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional human-readable description for this rule.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

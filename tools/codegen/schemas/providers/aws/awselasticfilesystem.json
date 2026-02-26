@@ -1,0 +1,359 @@
+{
+  "name": "AwsElasticFileSystem",
+  "kind": "AwsElasticFileSystem",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-elastic-file-system",
+  "protoPackage": "org.openmcf.provider.aws.awselasticfilesystem.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awselasticfilesystem/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awselasticfilesystem/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsElasticFileSystemSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Encrypted",
+        "jsonName": "encrypted",
+        "protoField": "encrypted",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable encryption at rest for all data and metadata stored in the file system.\n ForceNew — cannot be added after creation. Production environments should\n always enable encryption.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed KMS key for encryption at rest. When omitted, EFS uses the\n AWS-managed key `aws/elasticfilesystem`. ForceNew — the KMS key cannot be\n changed after creation. Requires `encrypted` to be true.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "PerformanceMode",
+        "jsonName": "performanceMode",
+        "protoField": "performance_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "File system performance mode. ForceNew — cannot be changed after creation.\n\n - \"generalPurpose\" (default): lowest latency, suitable for most workloads.\n   Recommended for all new file systems, especially with \"elastic\" throughput.\n - \"maxIO\": higher aggregate throughput for highly parallelized workloads\n   (thousands of EC2 instances). Slightly higher per-operation latency.\n   Note: AWS recommends generalPurpose + elastic throughput as a replacement.",
+        "required": false
+      },
+      {
+        "name": "ThroughputMode",
+        "jsonName": "throughputMode",
+        "protoField": "throughput_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Throughput mode controlling how EFS delivers read/write bandwidth.\n\n - \"bursting\" (default): throughput scales with file system size. 50 MiB/s\n   per TiB of Standard storage, with bursts up to 100 MiB/s.\n - \"provisioned\": fixed throughput independent of storage size. Set\n   `provisioned_throughput_in_mibps` to specify the exact value.\n - \"elastic\": automatically scales throughput up/down based on workload.\n   Recommended for unpredictable or spiky access patterns. Requires\n   generalPurpose performance mode.",
+        "required": false
+      },
+      {
+        "name": "ProvisionedThroughputInMibps",
+        "jsonName": "provisionedThroughputInMibps",
+        "protoField": "provisioned_throughput_in_mibps",
+        "type": {
+          "kind": "double"
+        },
+        "description": "Provisioned throughput in MiB/s. Only applicable when `throughput_mode` is\n \"provisioned\". Range: 1.0–3414.0 for generalPurpose; 1.0–1024.0 for maxIO.",
+        "required": false
+      },
+      {
+        "name": "AvailabilityZoneName",
+        "jsonName": "availabilityZoneName",
+        "protoField": "availability_zone_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "AWS Availability Zone name for One Zone storage classes (e.g., \"us-east-1a\").\n ForceNew — cannot be changed after creation. One Zone storage is ~47% cheaper\n than Standard (multi-AZ) but data is stored in a single AZ with no cross-AZ\n redundancy. Suitable for dev/test or workloads that tolerate AZ-level failure.\n\n When set, only a single mount target can be created (in a subnet belonging\n to this AZ).",
+        "required": false
+      },
+      {
+        "name": "TransitionToIa",
+        "jsonName": "transitionToIa",
+        "protoField": "transition_to_ia",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Transition files to Infrequent Access (IA) storage after the specified period\n of not being accessed. IA storage costs ~92% less than Standard but charges\n per-access fees.\n\n Valid values: AFTER_1_DAY, AFTER_7_DAYS, AFTER_14_DAYS, AFTER_30_DAYS,\n AFTER_60_DAYS, AFTER_90_DAYS, AFTER_180_DAYS, AFTER_270_DAYS, AFTER_365_DAYS.",
+        "required": false
+      },
+      {
+        "name": "TransitionToArchive",
+        "jsonName": "transitionToArchive",
+        "protoField": "transition_to_archive",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Transition IA files to Archive storage after the specified period. Archive\n storage costs ~96% less than Standard. Requires `transition_to_ia` to be set\n (files must pass through IA before reaching Archive).\n\n Same valid values as transition_to_ia.",
+        "required": false
+      },
+      {
+        "name": "TransitionToPrimaryStorageClass",
+        "jsonName": "transitionToPrimaryStorageClass",
+        "protoField": "transition_to_primary_storage_class",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Transition files back to Standard storage when accessed from IA or Archive.\n This enables automatic \"warming\" of frequently accessed files.\n\n Only valid value: \"AFTER_1_ACCESS\". Leave empty to keep files in IA/Archive\n even after access.",
+        "required": false
+      },
+      {
+        "name": "BackupEnabled",
+        "jsonName": "backupEnabled",
+        "protoField": "backup_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable automatic daily backups via AWS Backup. AWS recommends enabling\n backups for all production file systems. Mutable — can be toggled at any time.",
+        "required": false
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Subnet IDs to create mount targets in. Required (min 1). One mount target is\n created per subnet. AWS allows at most one mount target per Availability Zone\n — providing two subnets in the same AZ will cause an API error at deploy time.\n\n For regional (multi-AZ) file systems, provide one subnet per AZ for maximum\n availability. For One Zone file systems, provide exactly one subnet in the\n AZ specified by `availability_zone_name`.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 1
+        },
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Security groups to apply to all mount targets. These must allow inbound NFS\n traffic (TCP port 2049) from the clients that will mount the file system.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "AccessPoints",
+        "jsonName": "accessPoints",
+        "protoField": "access_points",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsElasticFileSystemAccessPoint"
+          }
+        },
+        "description": "Access points provide application-specific entry points into the file system,\n each with its own POSIX user/group identity and root directory. Commonly used\n with ECS tasks and Lambda functions to enforce least-privilege file access.\n\n Each access point must have a unique `name` which serves as the map key in\n the `access_point_ids` and `access_point_arns` stack outputs.",
+        "required": false
+      },
+      {
+        "name": "Policy",
+        "jsonName": "policy",
+        "protoField": "policy",
+        "type": {
+          "kind": "object"
+        },
+        "description": "IAM resource policy for the file system. Common uses:\n - Enforce encryption in transit (deny unencrypted NFS connections)\n - Restrict access to specific IAM principals or VPCs\n - Prevent root access from NFS clients\n\n Provide as a JSON object structure. Serialized to JSON by IaC modules.\n Consistent with SQS policy, SNS policy, and EventBridge event_pattern.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsElasticFileSystemAccessPoint",
+      "description": "AwsElasticFileSystemAccessPoint defines an EFS access point — an application-\n specific entry point into the file system that enforces a POSIX user/group\n identity and optionally restricts the visible root directory.\n\n Access points are the recommended way to give ECS tasks and Lambda functions\n file system access, as they enforce least-privilege without requiring the\n application to manage POSIX permissions.",
+      "protoType": "org.openmcf.provider.aws.awselasticfilesystem.v1.AwsElasticFileSystemAccessPoint",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this access point within the file system. Used as the map key\n in `access_point_ids` and `access_point_arns` stack outputs.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "PosixUser",
+          "jsonName": "posixUser",
+          "protoField": "posix_user",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsElasticFileSystemAccessPointPosixUser"
+          },
+          "description": "POSIX user and group identity enforced for all file operations through this\n access point. When set, the NFS client's identity is overridden — regardless\n of what UID/GID the client claims, all operations use these values.",
+          "required": false
+        },
+        {
+          "name": "RootDirectory",
+          "jsonName": "rootDirectory",
+          "protoField": "root_directory",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsElasticFileSystemAccessPointRootDirectory"
+          },
+          "description": "Root directory exposed as \"/\" when mounting through this access point. If the\n directory does not exist, provide `creation_info` to have EFS create it\n automatically with the specified ownership and permissions.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsElasticFileSystemAccessPointCreationInfo",
+      "description": "AwsElasticFileSystemAccessPointCreationInfo specifies the POSIX ownership and\n permissions applied when EFS automatically creates the access point's root\n directory.",
+      "protoType": "org.openmcf.provider.aws.awselasticfilesystem.v1.AwsElasticFileSystemAccessPointCreationInfo",
+      "fields": [
+        {
+          "name": "OwnerUid",
+          "jsonName": "ownerUid",
+          "protoField": "owner_uid",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "POSIX user ID for the directory owner.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "OwnerGid",
+          "jsonName": "ownerGid",
+          "protoField": "owner_gid",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "POSIX group ID for the directory owner.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Permissions",
+          "jsonName": "permissions",
+          "protoField": "permissions",
+          "type": {
+            "kind": "string"
+          },
+          "description": "POSIX permissions for the directory, in octal notation (e.g., \"0755\", \"0750\").",
+          "required": true,
+          "validation": {
+            "required": true,
+            "pattern": "^0[0-7]{3}$"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsElasticFileSystemAccessPointPosixUser",
+      "description": "AwsElasticFileSystemAccessPointPosixUser defines the POSIX identity enforced\n for all file operations through an access point.",
+      "protoType": "org.openmcf.provider.aws.awselasticfilesystem.v1.AwsElasticFileSystemAccessPointPosixUser",
+      "fields": [
+        {
+          "name": "Uid",
+          "jsonName": "uid",
+          "protoField": "uid",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "POSIX user ID. All file system operations through this access point use\n this UID as the file owner.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Gid",
+          "jsonName": "gid",
+          "protoField": "gid",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "POSIX primary group ID. All file system operations through this access point\n use this GID as the file group.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "SecondaryGids",
+          "jsonName": "secondaryGids",
+          "protoField": "secondary_gids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "int32"
+            }
+          },
+          "description": "Secondary POSIX group IDs. These supplement the primary GID for group\n permission checks.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsElasticFileSystemAccessPointRootDirectory",
+      "description": "AwsElasticFileSystemAccessPointRootDirectory configures the directory on the\n EFS file system that is exposed as the root when mounting through an access\n point.",
+      "protoType": "org.openmcf.provider.aws.awselasticfilesystem.v1.AwsElasticFileSystemAccessPointRootDirectory",
+      "fields": [
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path on the EFS file system to expose as the root directory. Must be an\n absolute path (starts with \"/\"). Up to 4 subdirectories deep.\n Default: \"/\" (entire file system).\n\n If this path does not exist and `creation_info` is provided, EFS creates\n the directory with the specified POSIX ownership and permissions.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "CreationInfo",
+          "jsonName": "creationInfo",
+          "protoField": "creation_info",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsElasticFileSystemAccessPointCreationInfo"
+          },
+          "description": "POSIX ownership and permissions to apply when creating the root directory.\n Required when the path does not already exist on the file system.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

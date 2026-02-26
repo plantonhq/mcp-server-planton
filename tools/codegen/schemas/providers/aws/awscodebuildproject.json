@@ -1,0 +1,947 @@
+{
+  "name": "AwsCodeBuildProject",
+  "kind": "AwsCodeBuildProject",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsCodeBuildProject is a deployment component for creating and managing\n AWS CodeBuild projects with an optional webhook for source-triggered builds.\n CodeBuild compiles source code, runs tests, and produces deployable artifacts\n in fully managed build containers.",
+  "protoPackage": "org.openmcf.provider.aws.awscodebuildproject.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awscodebuildproject/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awscodebuildproject/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsCodeBuildProjectSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Source",
+        "jsonName": "source",
+        "protoField": "source",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCodeBuildSource"
+        },
+        "description": "source defines where the build input comes from and how to fetch it.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Environment",
+        "jsonName": "environment",
+        "protoField": "environment",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCodeBuildEnvironment"
+        },
+        "description": "environment defines the build container: image, compute, and variables.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Artifacts",
+        "jsonName": "artifacts",
+        "protoField": "artifacts",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCodeBuildArtifacts"
+        },
+        "description": "artifacts defines where the build output goes.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ServiceRole",
+        "jsonName": "serviceRole",
+        "protoField": "service_role",
+        "type": {
+          "kind": "string"
+        },
+        "description": "service_role is the IAM role ARN that grants CodeBuild permission to\n access source code, write artifacts, publish logs, and interact with\n other AWS services during the build.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsIamRole",
+        "referenceFieldPath": "status.outputs.role_arn"
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description is a human-readable description of the project (max 255 chars).",
+        "required": false,
+        "validation": {
+          "maxLength": 255
+        }
+      },
+      {
+        "name": "EncryptionKey",
+        "jsonName": "encryptionKey",
+        "protoField": "encryption_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "encryption_key is the ARN of a KMS key used to encrypt build artifacts.\n If omitted, CodeBuild uses the AWS-managed key for S3.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "BuildTimeout",
+        "jsonName": "buildTimeout",
+        "protoField": "build_timeout",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "build_timeout is the maximum duration of a single build, in minutes.\n Range: 5-2160 (36 hours). Default: 60.",
+        "required": false,
+        "validation": {
+          "min": 5,
+          "max": 2160
+        },
+        "default": "60",
+        "oneofGroup": "_build_timeout"
+      },
+      {
+        "name": "QueuedTimeout",
+        "jsonName": "queuedTimeout",
+        "protoField": "queued_timeout",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "queued_timeout is the maximum time a build can wait in the queue before\n timing out, in minutes. Range: 5-480 (8 hours). Default: 480.",
+        "required": false,
+        "validation": {
+          "min": 5,
+          "max": 480
+        },
+        "default": "480",
+        "oneofGroup": "_queued_timeout"
+      },
+      {
+        "name": "ConcurrentBuildLimit",
+        "jsonName": "concurrentBuildLimit",
+        "protoField": "concurrent_build_limit",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "concurrent_build_limit caps the number of concurrent builds. Useful for\n cost control. Minimum 1. Omit to allow unlimited concurrency.",
+        "required": false,
+        "validation": {
+          "min": 1
+        }
+      },
+      {
+        "name": "SourceVersion",
+        "jsonName": "sourceVersion",
+        "protoField": "source_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "source_version is the default branch, tag, or commit ID to build.\n For GitHub: branch name, tag, or full commit SHA.\n For S3: object version ID.",
+        "required": false
+      },
+      {
+        "name": "Cache",
+        "jsonName": "cache",
+        "protoField": "cache",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCodeBuildCache"
+        },
+        "description": "cache configures build caching to speed up subsequent builds.",
+        "required": false
+      },
+      {
+        "name": "LogsConfig",
+        "jsonName": "logsConfig",
+        "protoField": "logs_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCodeBuildLogsConfig"
+        },
+        "description": "logs_config controls where build logs are sent.",
+        "required": false
+      },
+      {
+        "name": "VpcConfig",
+        "jsonName": "vpcConfig",
+        "protoField": "vpc_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCodeBuildVpcConfig"
+        },
+        "description": "vpc_config places the build in a VPC, giving it access to private\n resources such as RDS databases, ElastiCache clusters, or internal APIs.",
+        "required": false
+      },
+      {
+        "name": "Webhook",
+        "jsonName": "webhook",
+        "protoField": "webhook",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCodeBuildWebhook"
+        },
+        "description": "webhook configures automatic build triggers from the source provider.\n Only valid when source type supports webhooks: GITHUB, BITBUCKET,\n GITHUB_ENTERPRISE, GITLAB, GITLAB_SELF_MANAGED, CODECOMMIT.\n Omit for CodePipeline-triggered or manual-only projects.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsCodeBuildArtifacts",
+      "description": "AwsCodeBuildArtifacts defines the build output configuration.",
+      "protoType": "org.openmcf.provider.aws.awscodebuildproject.v1.AwsCodeBuildArtifacts",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "type is the artifact output type.\n   NO_ARTIFACTS:  No output artifacts (CI-only builds, or push to ECR in buildspec)\n   S3:            Write artifacts to an S3 bucket\n   CODEPIPELINE:  Artifacts managed by CodePipeline",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "NO_ARTIFACTS",
+              "S3",
+              "CODEPIPELINE"
+            ]
+          }
+        },
+        {
+          "name": "Location",
+          "jsonName": "location",
+          "protoField": "location",
+          "type": {
+            "kind": "string"
+          },
+          "description": "location is the S3 bucket name for artifact output.\n Required when type is S3.",
+          "required": false,
+          "referenceKind": "AwsS3Bucket",
+          "referenceFieldPath": "status.outputs.bucket_name"
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is the artifact output name (object key in S3).",
+          "required": false
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "path is the S3 prefix for the artifact output.",
+          "required": false
+        },
+        {
+          "name": "Packaging",
+          "jsonName": "packaging",
+          "protoField": "packaging",
+          "type": {
+            "kind": "string"
+          },
+          "description": "packaging controls how artifacts are packaged.\n   NONE: No packaging (files uploaded as-is)\n   ZIP:  Files packaged into a ZIP archive",
+          "required": false,
+          "validation": {
+            "enum": [
+              "NONE",
+              "ZIP"
+            ]
+          }
+        },
+        {
+          "name": "NamespaceType",
+          "jsonName": "namespaceType",
+          "protoField": "namespace_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "namespace_type controls whether artifact paths include the build ID.\n   NONE:     No namespace (artifacts at path/name)\n   BUILD_ID: Artifacts at path/\u003cbuild-id\u003e/name",
+          "required": false,
+          "validation": {
+            "enum": [
+              "NONE",
+              "BUILD_ID"
+            ]
+          }
+        },
+        {
+          "name": "EncryptionDisabled",
+          "jsonName": "encryptionDisabled",
+          "protoField": "encryption_disabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "encryption_disabled disables server-side encryption for artifacts.\n By default, CodeBuild encrypts artifacts using the project's encryption key.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCodeBuildCache",
+      "description": "AwsCodeBuildCache configures build caching to speed up subsequent builds.",
+      "protoType": "org.openmcf.provider.aws.awscodebuildproject.v1.AwsCodeBuildCache",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "type is the cache type.\n   NO_CACHE: Caching disabled (default)\n   S3:       Cache stored in an S3 bucket\n   LOCAL:    Cache stored on the build host (ephemeral, useful for Docker layers)",
+          "required": false,
+          "validation": {
+            "enum": [
+              "NO_CACHE",
+              "S3",
+              "LOCAL"
+            ]
+          },
+          "default": "NO_CACHE",
+          "oneofGroup": "_type"
+        },
+        {
+          "name": "Location",
+          "jsonName": "location",
+          "protoField": "location",
+          "type": {
+            "kind": "string"
+          },
+          "description": "location is the S3 bucket and optional prefix for cache storage.\n Required when type is S3. Format: \"bucket-name\" or \"bucket-name/prefix\".",
+          "required": false,
+          "referenceKind": "AwsS3Bucket",
+          "referenceFieldPath": "status.outputs.bucket_name"
+        },
+        {
+          "name": "Modes",
+          "jsonName": "modes",
+          "protoField": "modes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "modes specifies what to cache when type is LOCAL.\n   LOCAL_SOURCE_CACHE:        Cache Git metadata\n   LOCAL_DOCKER_LAYER_CACHE:  Cache Docker layers\n   LOCAL_CUSTOM_CACHE:        Cache paths specified in buildspec",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCodeBuildCloudWatchLogs",
+      "description": "AwsCodeBuildCloudWatchLogs configures CloudWatch Logs for builds.",
+      "protoType": "org.openmcf.provider.aws.awscodebuildproject.v1.AwsCodeBuildCloudWatchLogs",
+      "fields": [
+        {
+          "name": "Status",
+          "jsonName": "status",
+          "protoField": "status",
+          "type": {
+            "kind": "string"
+          },
+          "description": "status controls whether CloudWatch logging is enabled.\n Default: ENABLED.",
+          "required": false,
+          "validation": {
+            "enum": [
+              "ENABLED",
+              "DISABLED"
+            ]
+          },
+          "default": "ENABLED",
+          "oneofGroup": "_status"
+        },
+        {
+          "name": "GroupName",
+          "jsonName": "groupName",
+          "protoField": "group_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "group_name is the CloudWatch Logs log group name.\n If omitted, CodeBuild creates a default log group.",
+          "required": false,
+          "referenceKind": "AwsCloudwatchLogGroup",
+          "referenceFieldPath": "status.outputs.log_group_name"
+        },
+        {
+          "name": "StreamName",
+          "jsonName": "streamName",
+          "protoField": "stream_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "stream_name is the CloudWatch Logs log stream name prefix.\n If omitted, CodeBuild generates a default stream name.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCodeBuildEnvironment",
+      "description": "AwsCodeBuildEnvironment defines the build container configuration.",
+      "protoType": "org.openmcf.provider.aws.awscodebuildproject.v1.AwsCodeBuildEnvironment",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "type is the build environment type.\n   LINUX_CONTAINER:              Standard Linux (x86_64)\n   LINUX_GPU_CONTAINER:          Linux with GPU support\n   ARM_CONTAINER:                Linux (ARM64)\n   WINDOWS_SERVER_2019_CONTAINER: Windows Server 2019\n   WINDOWS_SERVER_2022_CONTAINER: Windows Server 2022\n   LINUX_LAMBDA_CONTAINER:       Lambda-based Linux (x86_64)\n   ARM_LAMBDA_CONTAINER:         Lambda-based Linux (ARM64)",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "LINUX_CONTAINER",
+              "LINUX_GPU_CONTAINER",
+              "ARM_CONTAINER",
+              "WINDOWS_SERVER_2019_CONTAINER",
+              "WINDOWS_SERVER_2022_CONTAINER",
+              "LINUX_LAMBDA_CONTAINER",
+              "ARM_LAMBDA_CONTAINER"
+            ]
+          }
+        },
+        {
+          "name": "ComputeType",
+          "jsonName": "computeType",
+          "protoField": "compute_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "compute_type is the compute capacity for the build container.\n   Standard:     BUILD_GENERAL1_SMALL, BUILD_GENERAL1_MEDIUM,\n                 BUILD_GENERAL1_LARGE, BUILD_GENERAL1_XLARGE, BUILD_GENERAL1_2XLARGE\n   Lambda:       BUILD_LAMBDA_1GB through BUILD_LAMBDA_10GB",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "BUILD_GENERAL1_SMALL",
+              "BUILD_GENERAL1_MEDIUM",
+              "BUILD_GENERAL1_LARGE",
+              "BUILD_GENERAL1_XLARGE",
+              "BUILD_GENERAL1_2XLARGE",
+              "BUILD_LAMBDA_1GB",
+              "BUILD_LAMBDA_2GB",
+              "BUILD_LAMBDA_4GB",
+              "BUILD_LAMBDA_8GB",
+              "BUILD_LAMBDA_10GB"
+            ]
+          }
+        },
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "string"
+          },
+          "description": "image is the Docker image identifier for the build environment.\n Use AWS managed images (e.g., \"aws/codebuild/amazonlinux2-x86_64-standard:5.0\")\n or a custom image URI from ECR or Docker Hub.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "PrivilegedMode",
+          "jsonName": "privilegedMode",
+          "protoField": "privileged_mode",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "privileged_mode enables Docker daemon access inside the build container.\n Required for building Docker images. Only applicable to non-Lambda types.",
+          "required": false
+        },
+        {
+          "name": "ImagePullCredentialsType",
+          "jsonName": "imagePullCredentialsType",
+          "protoField": "image_pull_credentials_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "image_pull_credentials_type controls how the build image is pulled.\n   CODEBUILD:    CodeBuild uses its own credentials (default, for AWS images)\n   SERVICE_ROLE: CodeBuild uses the project's service role (for ECR private images)",
+          "required": false,
+          "validation": {
+            "enum": [
+              "CODEBUILD",
+              "SERVICE_ROLE"
+            ]
+          },
+          "default": "CODEBUILD",
+          "oneofGroup": "_image_pull_credentials_type"
+        },
+        {
+          "name": "EnvironmentVariables",
+          "jsonName": "environmentVariables",
+          "protoField": "environment_variables",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsCodeBuildEnvironmentVariable"
+            }
+          },
+          "description": "environment_variables define key-value pairs available during the build.\n Supports plaintext values, SSM Parameter Store references, and\n Secrets Manager references.",
+          "required": false
+        },
+        {
+          "name": "RegistryCredential",
+          "jsonName": "registryCredential",
+          "protoField": "registry_credential",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsCodeBuildRegistryCredential"
+          },
+          "description": "registry_credential provides credentials for pulling the build image\n from a private Docker registry. Only needed when image_pull_credentials_type\n is SERVICE_ROLE and the image is in a non-ECR private registry.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCodeBuildEnvironmentVariable",
+      "description": "AwsCodeBuildEnvironmentVariable defines a build environment variable.",
+      "protoType": "org.openmcf.provider.aws.awscodebuildproject.v1.AwsCodeBuildEnvironmentVariable",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is the environment variable name.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "value is the environment variable value. For PARAMETER_STORE type,\n this is the SSM parameter name. For SECRETS_MANAGER, this is the\n secret ARN or name.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "type controls how the value is interpreted.\n   PLAINTEXT:       Value is used as-is (default)\n   PARAMETER_STORE: Value is an SSM Parameter Store parameter name\n   SECRETS_MANAGER: Value is a Secrets Manager secret ARN or name",
+          "required": false,
+          "validation": {
+            "enum": [
+              "PLAINTEXT",
+              "PARAMETER_STORE",
+              "SECRETS_MANAGER"
+            ]
+          },
+          "default": "PLAINTEXT",
+          "oneofGroup": "_type"
+        }
+      ]
+    },
+    {
+      "name": "AwsCodeBuildLogsConfig",
+      "description": "AwsCodeBuildLogsConfig controls where build logs are sent.",
+      "protoType": "org.openmcf.provider.aws.awscodebuildproject.v1.AwsCodeBuildLogsConfig",
+      "fields": [
+        {
+          "name": "CloudwatchLogs",
+          "jsonName": "cloudwatchLogs",
+          "protoField": "cloudwatch_logs",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsCodeBuildCloudWatchLogs"
+          },
+          "description": "cloudwatch_logs configures CloudWatch Logs for build output.",
+          "required": false
+        },
+        {
+          "name": "S3Logs",
+          "jsonName": "s3Logs",
+          "protoField": "s3_logs",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsCodeBuildS3Logs"
+          },
+          "description": "s3_logs configures S3 logging for build output.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCodeBuildRegistryCredential",
+      "description": "AwsCodeBuildRegistryCredential provides credentials for pulling images\n from a private Docker registry.",
+      "protoType": "org.openmcf.provider.aws.awscodebuildproject.v1.AwsCodeBuildRegistryCredential",
+      "fields": [
+        {
+          "name": "Credential",
+          "jsonName": "credential",
+          "protoField": "credential",
+          "type": {
+            "kind": "string"
+          },
+          "description": "credential is the ARN or name of the Secrets Manager secret containing\n the Docker registry credentials (username + password).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "CredentialProvider",
+          "jsonName": "credentialProvider",
+          "protoField": "credential_provider",
+          "type": {
+            "kind": "string"
+          },
+          "description": "credential_provider is the credential provider type.\n Currently only SECRETS_MANAGER is supported by AWS.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "const": "SECRETS_MANAGER"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsCodeBuildS3Logs",
+      "description": "AwsCodeBuildS3Logs configures S3 logging for builds.",
+      "protoType": "org.openmcf.provider.aws.awscodebuildproject.v1.AwsCodeBuildS3Logs",
+      "fields": [
+        {
+          "name": "Status",
+          "jsonName": "status",
+          "protoField": "status",
+          "type": {
+            "kind": "string"
+          },
+          "description": "status controls whether S3 logging is enabled.\n Default: DISABLED.",
+          "required": false,
+          "validation": {
+            "enum": [
+              "ENABLED",
+              "DISABLED"
+            ]
+          },
+          "default": "DISABLED",
+          "oneofGroup": "_status"
+        },
+        {
+          "name": "Location",
+          "jsonName": "location",
+          "protoField": "location",
+          "type": {
+            "kind": "string"
+          },
+          "description": "location is the S3 bucket and prefix for log storage.\n Format: \"bucket-name\" or \"bucket-name/prefix\".",
+          "required": false,
+          "referenceKind": "AwsS3Bucket",
+          "referenceFieldPath": "status.outputs.bucket_name"
+        },
+        {
+          "name": "EncryptionDisabled",
+          "jsonName": "encryptionDisabled",
+          "protoField": "encryption_disabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "encryption_disabled disables server-side encryption for log files.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCodeBuildSource",
+      "description": "AwsCodeBuildSource defines the source code location and retrieval settings.",
+      "protoType": "org.openmcf.provider.aws.awscodebuildproject.v1.AwsCodeBuildSource",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "type is the source provider.\n   GITHUB:                GitHub.com repository (via CodeStar Connections)\n   BITBUCKET:             Bitbucket Cloud repository\n   CODECOMMIT:            AWS CodeCommit repository\n   CODEPIPELINE:          Source provided by CodePipeline (no location needed)\n   GITHUB_ENTERPRISE:     GitHub Enterprise Server\n   GITLAB:                GitLab.com repository\n   GITLAB_SELF_MANAGED:   Self-hosted GitLab instance\n   NO_SOURCE:             No source — buildspec must be provided inline\n   S3:                    S3 bucket containing source archive",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "GITHUB",
+              "BITBUCKET",
+              "CODECOMMIT",
+              "CODEPIPELINE",
+              "GITHUB_ENTERPRISE",
+              "GITLAB",
+              "GITLAB_SELF_MANAGED",
+              "NO_SOURCE",
+              "S3"
+            ]
+          }
+        },
+        {
+          "name": "Location",
+          "jsonName": "location",
+          "protoField": "location",
+          "type": {
+            "kind": "string"
+          },
+          "description": "location is the source code repository URL or S3 path.\n Required for all types except CODEPIPELINE and NO_SOURCE.\n Format depends on type:\n   GITHUB/BITBUCKET/GITLAB: https URL (e.g., https://github.com/owner/repo.git)\n   CODECOMMIT: HTTPS clone URL\n   S3: bucket/path (e.g., my-bucket/source.zip)\n   GITHUB_ENTERPRISE: HTTPS URL of the repo",
+          "required": false
+        },
+        {
+          "name": "Buildspec",
+          "jsonName": "buildspec",
+          "protoField": "buildspec",
+          "type": {
+            "kind": "string"
+          },
+          "description": "buildspec is the build specification, either as an inline YAML string or\n a path relative to the source root (e.g., \"buildspec.yml\").\n If omitted, CodeBuild looks for buildspec.yml at the source root.\n Required when source type is NO_SOURCE.",
+          "required": false
+        },
+        {
+          "name": "GitCloneDepth",
+          "jsonName": "gitCloneDepth",
+          "protoField": "git_clone_depth",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "git_clone_depth limits the Git clone depth. 0 means full clone.\n Only applicable for Git-based source types.",
+          "required": false
+        },
+        {
+          "name": "ReportBuildStatus",
+          "jsonName": "reportBuildStatus",
+          "protoField": "report_build_status",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "report_build_status reports build start and finish status back to the\n source provider (e.g., GitHub commit status checks).\n Only applicable for GITHUB, BITBUCKET, GITHUB_ENTERPRISE, GITLAB, GITLAB_SELF_MANAGED.",
+          "required": false
+        },
+        {
+          "name": "FetchSubmodules",
+          "jsonName": "fetchSubmodules",
+          "protoField": "fetch_submodules",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "fetch_submodules controls whether Git submodules are fetched during the\n source download phase. Only applicable for Git-based source types.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCodeBuildVpcConfig",
+      "description": "AwsCodeBuildVpcConfig places the build environment inside a VPC, enabling\n access to private resources (RDS, ElastiCache, internal APIs, etc.).",
+      "protoType": "org.openmcf.provider.aws.awscodebuildproject.v1.AwsCodeBuildVpcConfig",
+      "fields": [
+        {
+          "name": "VpcId",
+          "jsonName": "vpcId",
+          "protoField": "vpc_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "vpc_id is the VPC where build containers are launched.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsVpc",
+          "referenceFieldPath": "status.outputs.vpc_id"
+        },
+        {
+          "name": "SubnetIds",
+          "jsonName": "subnetIds",
+          "protoField": "subnet_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "subnet_ids are the VPC subnets where build containers are placed.\n Use private subnets for security. Maximum 16 subnets.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minItems": 1,
+            "maxItems": 16
+          },
+          "referenceKind": "AwsVpc",
+          "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+        },
+        {
+          "name": "SecurityGroupIds",
+          "jsonName": "securityGroupIds",
+          "protoField": "security_group_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "security_group_ids are the VPC security groups applied to build containers.\n Maximum 5 security groups.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minItems": 1,
+            "maxItems": 5
+          },
+          "referenceKind": "AwsSecurityGroup",
+          "referenceFieldPath": "status.outputs.security_group_id"
+        }
+      ]
+    },
+    {
+      "name": "AwsCodeBuildWebhook",
+      "description": "AwsCodeBuildWebhook configures automatic build triggers from the source\n provider. Creates a webhook that listens for repository events.",
+      "protoType": "org.openmcf.provider.aws.awscodebuildproject.v1.AwsCodeBuildWebhook",
+      "fields": [
+        {
+          "name": "BuildType",
+          "jsonName": "buildType",
+          "protoField": "build_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "build_type controls the build type triggered by the webhook.\n   BUILD:             Standard single build (default)\n   BUILD_BATCH:       Batch build",
+          "required": false,
+          "validation": {
+            "enum": [
+              "BUILD",
+              "BUILD_BATCH"
+            ]
+          }
+        },
+        {
+          "name": "FilterGroups",
+          "jsonName": "filterGroups",
+          "protoField": "filter_groups",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsCodeBuildWebhookFilterGroup"
+            }
+          },
+          "description": "filter_groups define which repository events trigger a build.\n Multiple groups are OR'd together — a build triggers if ANY group matches.\n Within a group, filters are AND'd — ALL filters in the group must match.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCodeBuildWebhookFilter",
+      "description": "AwsCodeBuildWebhookFilter defines a single condition for webhook filtering.",
+      "protoType": "org.openmcf.provider.aws.awscodebuildproject.v1.AwsCodeBuildWebhookFilter",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "type is the event field to match against.\n   EVENT:            Event type (PUSH, PULL_REQUEST_CREATED, etc.)\n   BASE_REF:         Base branch for PRs (regex)\n   HEAD_REF:         Branch or tag name (regex)\n   ACTOR_ACCOUNT_ID: Source provider account ID\n   FILE_PATH:        Changed file paths (regex)\n   COMMIT_MESSAGE:   Commit message (regex)",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "EVENT",
+              "BASE_REF",
+              "HEAD_REF",
+              "ACTOR_ACCOUNT_ID",
+              "FILE_PATH",
+              "COMMIT_MESSAGE"
+            ]
+          }
+        },
+        {
+          "name": "Pattern",
+          "jsonName": "pattern",
+          "protoField": "pattern",
+          "type": {
+            "kind": "string"
+          },
+          "description": "pattern is the regex pattern or comma-separated event list to match.\n For EVENT type: comma-separated values like \"PUSH, PULL_REQUEST_CREATED\".\n For other types: a regex pattern (e.g., \"^refs/heads/main$\").",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ExcludeMatchedPattern",
+          "jsonName": "excludeMatchedPattern",
+          "protoField": "exclude_matched_pattern",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "exclude_matched_pattern inverts the match — the filter passes when the\n pattern does NOT match. Useful for excluding branches or paths.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCodeBuildWebhookFilterGroup",
+      "description": "AwsCodeBuildWebhookFilterGroup is a set of filters that are AND'd together.\n A build triggers when ALL filters in the group match the webhook event.",
+      "protoType": "org.openmcf.provider.aws.awscodebuildproject.v1.AwsCodeBuildWebhookFilterGroup",
+      "fields": [
+        {
+          "name": "Filters",
+          "jsonName": "filters",
+          "protoField": "filters",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsCodeBuildWebhookFilter"
+            }
+          },
+          "description": "filters are the individual conditions in this group.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        }
+      ]
+    }
+  ]
+}

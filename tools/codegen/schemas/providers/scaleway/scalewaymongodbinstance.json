@@ -1,0 +1,298 @@
+{
+  "name": "ScalewayMongodbInstance",
+  "kind": "ScalewayMongodbInstance",
+  "cloudProvider": "scaleway",
+  "apiVersion": "scaleway.openmcf.org/v1",
+  "description": "scaleway-mongodb-instance",
+  "protoPackage": "org.openmcf.provider.scaleway.scalewaymongodbinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/scaleway/scalewaymongodbinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/scaleway/scalewaymongodbinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ScalewayMongodbInstanceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Scaleway region where the instance will be created.\n\n Currently, Managed MongoDB is only available in \"fr-par\" (Paris).\n Additional regions may become available in the future.\n\n This field is required and cannot be changed after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Version",
+        "jsonName": "version",
+        "protoField": "version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "MongoDB engine version.\n\n Format: semantic version string (e.g., \"7.0.12\").\n\n The Scaleway provider normalizes this to major.minor internally.\n Check Scaleway documentation for currently supported versions.\n\n Cannot be changed after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        }
+      },
+      {
+        "name": "NodeType",
+        "jsonName": "nodeType",
+        "protoField": "node_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Node type determining CPU, RAM, and baseline performance.\n\n Shared vCPU (cost-optimized):\n   - \"MGDB-PLAY2-NANO\"  -- 2 vCPU, 4 GB RAM. Development/testing.\n   - \"MGDB-PRO2-XXS\"    -- 2 vCPU, 8 GB RAM. Light production.\n   - \"MGDB-PRO2-XS\"     -- 4 vCPU, 16 GB RAM.\n   - \"MGDB-PRO2-S\"      -- 8 vCPU, 32 GB RAM.\n   - \"MGDB-PRO2-M\"      -- 16 vCPU, 64 GB RAM.\n   - \"MGDB-PRO2-L\"      -- 32 vCPU, 128 GB RAM.\n\n Dedicated vCPU (production-optimized):\n   - \"MGDB-POP2-2C-8G\"     -- 2 vCPU, 8 GB RAM.\n   - \"MGDB-POP2-4C-16G\"    -- 4 vCPU, 16 GB RAM.\n   - \"MGDB-POP2-8C-32G\"    -- 8 vCPU, 32 GB RAM.\n   - \"MGDB-POP2-16C-64G\"   -- 16 vCPU, 64 GB RAM.\n   - \"MGDB-POP2-32C-128G\"  -- 32 vCPU, 128 GB RAM.\n   - \"MGDB-POP2-64C-256G\"  -- 64 vCPU, 256 GB RAM.\n\n Node type can be changed after creation (vertical scaling).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "NodeNumber",
+        "jsonName": "nodeNumber",
+        "protoField": "node_number",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Number of nodes in the instance.\n\n Valid values:\n   - 1: Standalone mode (single node, no redundancy).\n   - 3: Replica set (1 primary + 2 secondaries, automatic failover).\n\n There is no 2-node mode. MongoDB requires an odd number of voting\n members for replica set elections.\n\n IMPORTANT: Changing from 1 to 3 or 3 to 1 may destroy and recreate\n the instance. Plan node count before initial deployment.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "recommendedDefault": "1"
+      },
+      {
+        "name": "PrivateNetworkId",
+        "jsonName": "privateNetworkId",
+        "protoField": "private_network_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Private Network to attach the instance to.\n\n When set, the instance receives a private endpoint reachable only\n from resources on the same Private Network. This is the recommended\n topology for production.\n\n When a Private Network is attached and `enable_public_network` is\n false (the default), the instance is private-only -- no public\n endpoint is created. This is the most secure configuration.\n\n IPAM (automatic IP assignment) is used by default.\n\n In infra charts, this is typically wired via valueFrom:\n\n   privateNetworkId:\n     valueFrom:\n       kind: ScalewayPrivateNetwork\n       name: app-network\n       fieldPath: status.outputs.private_network_id\n\n Optional. If omitted, the instance gets a public endpoint by default.",
+        "required": false,
+        "referenceKind": "ScalewayPrivateNetwork",
+        "referenceFieldPath": "status.outputs.private_network_id"
+      },
+      {
+        "name": "EnablePublicNetwork",
+        "jsonName": "enablePublicNetwork",
+        "protoField": "enable_public_network",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to also create a public network endpoint when a Private\n Network is attached.\n\n This field only takes effect when `private_network_id` is set.\n When `private_network_id` is not set, a public endpoint is always\n created (Scaleway's default behavior).\n\n Use cases for enabling both endpoints:\n   - Admin access from outside the Private Network\n   - Debugging connectivity from a local machine\n   - Migration tooling running outside the VPC\n\n WARNING: MongoDB on Scaleway has no IP-based ACL rules (unlike RDB).\n The public endpoint is accessible from ANY IP address. Only enable\n this if you have other network-level controls (e.g., firewall) or\n accept the security risk.\n\n Default: false (private-only when PN is attached).",
+        "required": false
+      },
+      {
+        "name": "VolumeType",
+        "jsonName": "volumeType",
+        "protoField": "volume_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Volume type for database storage.\n\n Options:\n   - \"sbs_5k\"  (default) -- Block Storage SSD with 5K IOPS.\n   - \"sbs_15k\"           -- Block Storage SSD with 15K IOPS.\n     Higher throughput for I/O-intensive workloads.\n\n Unlike RDB (which supports local SSD), MongoDB uses only block\n storage volumes.\n\n Cannot be changed after creation.",
+        "required": false,
+        "recommendedDefault": "sbs_5k"
+      },
+      {
+        "name": "VolumeSizeInGb",
+        "jsonName": "volumeSizeInGb",
+        "protoField": "volume_size_in_gb",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Volume size in GB.\n\n Must be a multiple of 5. Minimum 5 GB.\n\n If 0 or omitted, uses the default size (5 GB). The size determines\n how much data the database can store.\n\n Can only be increased after creation, never decreased.",
+        "required": false
+      },
+      {
+        "name": "EnableSnapshotSchedule",
+        "jsonName": "enableSnapshotSchedule",
+        "protoField": "enable_snapshot_schedule",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable automatic snapshot scheduling.\n\n When enabled, Scaleway takes periodic snapshots of the database at\n the configured frequency and retains them for the configured period.\n\n Default: false (no automatic snapshots).",
+        "required": false
+      },
+      {
+        "name": "SnapshotScheduleFrequencyHours",
+        "jsonName": "snapshotScheduleFrequencyHours",
+        "protoField": "snapshot_schedule_frequency_hours",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Hours between automatic snapshots.\n\n Only used when `enable_snapshot_schedule` is true.\n If 0 or omitted when snapshots are enabled, uses Scaleway's default.",
+        "required": false
+      },
+      {
+        "name": "SnapshotScheduleRetentionDays",
+        "jsonName": "snapshotScheduleRetentionDays",
+        "protoField": "snapshot_schedule_retention_days",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Days to retain automatic snapshots.\n\n Only used when `enable_snapshot_schedule` is true.\n If 0 or omitted when snapshots are enabled, uses Scaleway's default.",
+        "required": false
+      },
+      {
+        "name": "AdminUser",
+        "jsonName": "adminUser",
+        "protoField": "admin_user",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Username for the initial admin user created with the instance.\n\n This user is created as part of instance provisioning and has full\n administrative privileges. It cannot be removed through this resource.\n\n Must be different from any user in the `users` list.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "maxLength": 63
+        }
+      },
+      {
+        "name": "AdminPassword",
+        "jsonName": "adminPassword",
+        "protoField": "admin_password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Password for the initial admin user.\n\n Must meet minimum complexity requirements. For production, use a\n strong, randomly generated password and manage it through your\n organization's secrets workflow.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 8
+        }
+      },
+      {
+        "name": "Users",
+        "jsonName": "users",
+        "protoField": "users",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ScalewayMongodbUser"
+          }
+        },
+        "description": "Additional database users to create on the instance.\n\n Each entry creates a `scaleway_mongodb_user` Terraform resource.\n Each user's roles define what databases they can access and at what\n permission level.\n\n The admin user (specified above) always exists with full access.\n Users listed here are typically application-level accounts with\n restricted roles (e.g., \"read_write\" on a specific database).\n\n Optional. If empty, only the admin user exists.",
+        "required": false
+      },
+      {
+        "name": "Settings",
+        "jsonName": "settings",
+        "protoField": "settings",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "MongoDB-specific configuration settings.\n\n Key-value pairs passed to the MongoDB engine configuration.\n Applied on both creation and updates. Keys are engine-specific.\n\n Optional. If empty, Scaleway uses MongoDB defaults optimized for\n the node type.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ScalewayMongodbUser",
+      "description": "ScalewayMongodbUser defines an additional database user.\n\n Users are authentication principals that connect to the MongoDB instance.\n Each user has a name, password, and a set of role assignments that define\n their access level on specific databases or all databases.\n\n The initial admin user (defined in the spec's admin_user field) is\n separate and always has full access. Users defined here are typically\n application-level accounts with restricted roles.",
+      "protoType": "org.openmcf.provider.scaleway.scalewaymongodbinstance.v1.ScalewayMongodbUser",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Username.\n\n Must be unique within the instance and different from the admin_user\n specified in the spec. 1-63 characters.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "maxLength": 63
+          }
+        },
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Password for this user.\n\n Must meet minimum complexity requirements. For production, use a\n strong, randomly generated password.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 8
+          }
+        },
+        {
+          "name": "Roles",
+          "jsonName": "roles",
+          "protoField": "roles",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "ScalewayMongodbUserRole"
+            }
+          },
+          "description": "Role assignments for this user.\n\n Each role grants a specific permission level scoped to a database\n name or all databases. Multiple roles can be assigned to one user.\n\n If empty, the user exists but has no database access until roles\n are assigned (via this field or manually).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ScalewayMongodbUserRole",
+      "description": "ScalewayMongodbUserRole defines a role assignment for a MongoDB user.\n\n Each role combines a permission level (read, read_write, db_admin) with\n a scope (specific database or all databases). The scope is determined by\n setting exactly one of `database_name` or `any_database`.\n\n This maps directly to the `roles` block on the `scaleway_mongodb_user`\n Terraform resource.",
+      "protoType": "org.openmcf.provider.scaleway.scalewaymongodbinstance.v1.ScalewayMongodbUserRole",
+      "fields": [
+        {
+          "name": "Role",
+          "jsonName": "role",
+          "protoField": "role",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The role to assign.\n\n Available roles:\n   - \"read\"       -- Read-only access (find, count, aggregate).\n   - \"read_write\" -- Read and write access (insert, update, delete).\n   - \"db_admin\"   -- Database administration (index management,\n                     collection management, schema validation).\n\n The \"sync\" role is intentionally excluded: it is a niche replication\n role (aggregates clusterMonitor, backup, and restore) that most\n users do not need. It can be added via the Scaleway console if\n required.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "read",
+              "read_write",
+              "db_admin"
+            ]
+          }
+        },
+        {
+          "name": "DatabaseName",
+          "jsonName": "databaseName",
+          "protoField": "database_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The specific database to scope this role to.\n\n When set, the role applies only to this database. The database does\n not need to exist at provisioning time -- MongoDB creates databases\n implicitly when data is first written.\n\n Mutually exclusive with `any_database`. Exactly one must be set.",
+          "required": false
+        },
+        {
+          "name": "AnyDatabase",
+          "jsonName": "anyDatabase",
+          "protoField": "any_database",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to apply this role to ALL databases on the instance.\n\n When true, the role grants access to every current and future\n database on the instance. Useful for admin or monitoring accounts.\n\n Mutually exclusive with `database_name`. Exactly one must be set.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

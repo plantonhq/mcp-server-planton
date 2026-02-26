@@ -1,0 +1,1396 @@
+{
+  "name": "OciApplicationLoadBalancer",
+  "kind": "OciApplicationLoadBalancer",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciApplicationLoadBalancer is the top-level resource representing an Oracle Cloud\n Infrastructure Application Load Balancer (Layer 7).",
+  "protoPackage": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ociapplicationloadbalancer/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ociapplicationloadbalancer/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciApplicationLoadBalancerSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the load balancer will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable name for the load balancer shown in the OCI Console.\n Falls back to metadata.name if not provided.",
+        "required": false
+      },
+      {
+        "name": "Shape",
+        "jsonName": "shape",
+        "protoField": "shape",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Load balancer shape. Use \"flexible\" for configurable bandwidth (recommended).\n Deprecated fixed shapes (\"100Mbps\", \"400Mbps\", \"8000Mbps\") are accepted\n for backward compatibility.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ShapeDetails",
+        "jsonName": "shapeDetails",
+        "protoField": "shape_details",
+        "type": {
+          "kind": "message",
+          "messageType": "ShapeDetails"
+        },
+        "description": "Bandwidth configuration for flexible-shape load balancers.\n Required when shape is \"flexible\". Ignored for fixed shapes.",
+        "required": false
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "OCIDs of subnets where the load balancer will be provisioned.\n At least one subnet is required. For regional (recommended) load balancers,\n provide subnets in two different availability domains for high availability.\n Changing subnets after creation forces load balancer recreation.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        },
+        "referenceKind": "OciSubnet",
+        "referenceFieldPath": "status.outputs.subnetId"
+      },
+      {
+        "name": "IsPrivate",
+        "jsonName": "isPrivate",
+        "protoField": "is_private",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, creates a private load balancer that is not accessible from\n the public internet. Private load balancers receive only private IP\n addresses from the assigned subnets.\n Changing this after creation forces load balancer recreation.",
+        "required": false
+      },
+      {
+        "name": "NetworkSecurityGroupIds",
+        "jsonName": "networkSecurityGroupIds",
+        "protoField": "network_security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "OCIDs of network security groups applied to the load balancer.",
+        "required": false,
+        "referenceKind": "OciSecurityGroup",
+        "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+      },
+      {
+        "name": "IsDeleteProtectionEnabled",
+        "jsonName": "isDeleteProtectionEnabled",
+        "protoField": "is_delete_protection_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, prevents accidental deletion of the load balancer.\n The protection must be explicitly disabled before the load balancer\n can be deleted.",
+        "required": false
+      },
+      {
+        "name": "IpMode",
+        "jsonName": "ipMode",
+        "protoField": "ip_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IP version mode for the load balancer. Accepted values: \"IPV4\", \"IPV6\".\n When omitted, defaults to \"IPV4\".",
+        "required": false
+      },
+      {
+        "name": "ReservedIps",
+        "jsonName": "reservedIps",
+        "protoField": "reserved_ips",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ReservedIp"
+          }
+        },
+        "description": "Pre-created reserved public IPs to assign to the load balancer.\n When omitted, OCI assigns ephemeral public IPs.",
+        "required": false
+      },
+      {
+        "name": "IsRequestIdEnabled",
+        "jsonName": "isRequestIdEnabled",
+        "protoField": "is_request_id_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, the load balancer adds a request ID header to each request\n for tracing and debugging purposes.",
+        "required": false
+      },
+      {
+        "name": "RequestIdHeader",
+        "jsonName": "requestIdHeader",
+        "protoField": "request_id_header",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Custom header name for the request ID. Only effective when\n is_request_id_enabled is true. When omitted, OCI uses a default header.",
+        "required": false
+      },
+      {
+        "name": "BackendSets",
+        "jsonName": "backendSets",
+        "protoField": "backend_sets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "BackendSet"
+          }
+        },
+        "description": "Backend sets define groups of backend servers with load balancing\n policies and health checking. At least one backend set is required.\n Each listener routes traffic to exactly one default backend set.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Listeners",
+        "jsonName": "listeners",
+        "protoField": "listeners",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Listener"
+          }
+        },
+        "description": "Listeners define the ports and protocols on which the load balancer\n accepts client connections. At least one listener is required.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Certificates",
+        "jsonName": "certificates",
+        "protoField": "certificates",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Certificate"
+          }
+        },
+        "description": "TLS/SSL certificates for HTTPS termination. Certificates are referenced\n by name in listener and backend set SSL configurations.",
+        "required": false
+      },
+      {
+        "name": "Hostnames",
+        "jsonName": "hostnames",
+        "protoField": "hostnames",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Hostname"
+          }
+        },
+        "description": "Virtual hostnames for host-based routing. Hostnames are referenced\n by name in listener configurations to route requests based on the\n HTTP Host header.",
+        "required": false
+      },
+      {
+        "name": "RuleSets",
+        "jsonName": "ruleSets",
+        "protoField": "rule_sets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "RuleSet"
+          }
+        },
+        "description": "Rule sets for advanced request/response manipulation. Rule sets are\n referenced by name in listener configurations.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "Backend",
+      "description": "Backend represents an individual server that receives traffic from\n the load balancer through a backend set.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.Backend",
+      "fields": [
+        {
+          "name": "IpAddress",
+          "jsonName": "ipAddress",
+          "protoField": "ip_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP address of the backend server.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port on which the backend server listens for traffic.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "Weight",
+          "jsonName": "weight",
+          "protoField": "weight",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Relative weight for traffic distribution. Higher weights receive\n proportionally more traffic. When omitted, defaults to 1.",
+          "required": false
+        },
+        {
+          "name": "Backup",
+          "jsonName": "backup",
+          "protoField": "backup",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, this backend only receives traffic when all non-backup\n backends are unhealthy.",
+          "required": false
+        },
+        {
+          "name": "Drain",
+          "jsonName": "drain",
+          "protoField": "drain",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, the backend is in drain mode -- existing connections\n complete but no new connections are sent to this backend.",
+          "required": false
+        },
+        {
+          "name": "Offline",
+          "jsonName": "offline",
+          "protoField": "offline",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, the backend is temporarily taken offline. No traffic\n is sent to offline backends.",
+          "required": false
+        },
+        {
+          "name": "MaxConnections",
+          "jsonName": "maxConnections",
+          "protoField": "max_connections",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of simultaneous connections to this backend.\n When omitted, the backend set's backend_max_connections applies.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "BackendSet",
+      "description": "BackendSet defines a group of backend servers that receive traffic\n from the load balancer, along with the load balancing policy and\n health checking configuration.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.BackendSet",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this backend set within the load balancer.\n Listeners reference backend sets by this name.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Policy",
+          "jsonName": "policy",
+          "protoField": "policy",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.Policy",
+            "enumValues": [
+              "round_robin",
+              "least_connections",
+              "ip_hash"
+            ]
+          },
+          "description": "Load balancing policy that determines how traffic is distributed\n across backends.",
+          "required": false
+        },
+        {
+          "name": "HealthChecker",
+          "jsonName": "healthChecker",
+          "protoField": "health_checker",
+          "type": {
+            "kind": "message",
+            "messageType": "HealthChecker"
+          },
+          "description": "Health checker configuration that monitors backend availability.\n The load balancer removes unhealthy backends from the rotation\n until they pass health checks again.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Backends",
+          "jsonName": "backends",
+          "protoField": "backends",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "Backend"
+            }
+          },
+          "description": "Backend servers in this set. When omitted, the backend set is\n created without backends (useful when backends are added dynamically).",
+          "required": false
+        },
+        {
+          "name": "SslConfiguration",
+          "jsonName": "sslConfiguration",
+          "protoField": "ssl_configuration",
+          "type": {
+            "kind": "message",
+            "messageType": "SslConfiguration"
+          },
+          "description": "SSL configuration for encrypting traffic between the load balancer\n and the backend servers (backend SSL / re-encryption).",
+          "required": false
+        },
+        {
+          "name": "BackendMaxConnections",
+          "jsonName": "backendMaxConnections",
+          "protoField": "backend_max_connections",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of simultaneous connections to allow per backend.\n When omitted, connections are unlimited.",
+          "required": false
+        },
+        {
+          "name": "LbCookieSessionPersistence",
+          "jsonName": "lbCookieSessionPersistence",
+          "protoField": "lb_cookie_session_persistence",
+          "type": {
+            "kind": "message",
+            "messageType": "LbCookieSessionPersistenceConfig"
+          },
+          "description": "Load-balancer-managed cookie persistence. The LB injects and tracks\n a cookie to pin clients to specific backends.",
+          "required": false,
+          "oneofGroup": "session_persistence_config"
+        },
+        {
+          "name": "AppCookieSessionPersistence",
+          "jsonName": "appCookieSessionPersistence",
+          "protoField": "app_cookie_session_persistence",
+          "type": {
+            "kind": "message",
+            "messageType": "SessionPersistenceConfig"
+          },
+          "description": "Application-managed cookie persistence. The LB reads an existing\n application cookie to determine backend affinity.",
+          "required": false,
+          "oneofGroup": "session_persistence_config"
+        }
+      ]
+    },
+    {
+      "name": "Certificate",
+      "description": "Certificate defines a TLS/SSL certificate uploaded to the load balancer.\n Certificates are referenced by name in SSL configurations.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.Certificate",
+      "fields": [
+        {
+          "name": "CertificateName",
+          "jsonName": "certificateName",
+          "protoField": "certificate_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this certificate within the load balancer.\n SSL configurations reference certificates by this name.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "CaCertificate",
+          "jsonName": "caCertificate",
+          "protoField": "ca_certificate",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PEM-encoded CA certificate chain.",
+          "required": false
+        },
+        {
+          "name": "PublicCertificate",
+          "jsonName": "publicCertificate",
+          "protoField": "public_certificate",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PEM-encoded public certificate.",
+          "required": false
+        },
+        {
+          "name": "PrivateKey",
+          "jsonName": "privateKey",
+          "protoField": "private_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PEM-encoded private key for the certificate. Sensitive.",
+          "required": false
+        },
+        {
+          "name": "Passphrase",
+          "jsonName": "passphrase",
+          "protoField": "passphrase",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Passphrase for an encrypted private key. Sensitive.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ConnectionConfiguration",
+      "description": "ConnectionConfiguration controls TCP connection behavior for a listener.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.ConnectionConfiguration",
+      "fields": [
+        {
+          "name": "IdleTimeoutInSeconds",
+          "jsonName": "idleTimeoutInSeconds",
+          "protoField": "idle_timeout_in_seconds",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Maximum idle time in seconds before the load balancer closes the\n connection. Applies to both client-side and backend-side connections.",
+          "required": false
+        },
+        {
+          "name": "BackendTcpProxyProtocolVersion",
+          "jsonName": "backendTcpProxyProtocolVersion",
+          "protoField": "backend_tcp_proxy_protocol_version",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Backend TCP proxy protocol version. When set, the load balancer\n prepends proxy protocol headers to backend connections, allowing\n backends to see the original client IP.\n Accepted values: 1 or 2.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "HealthChecker",
+      "description": "HealthChecker configures periodic health probes sent to backend servers.\n Backends that fail health checks are temporarily removed from the load\n balancing rotation.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.HealthChecker",
+      "fields": [
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.Protocol",
+            "enumValues": [
+              "http",
+              "tcp"
+            ]
+          },
+          "description": "Protocol used for health checks.",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port on the backend server to probe. When omitted or set to 0,\n the health checker uses the backend's traffic port.",
+          "required": false
+        },
+        {
+          "name": "UrlPath",
+          "jsonName": "urlPath",
+          "protoField": "url_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URL path for HTTP health checks (e.g., \"/health\", \"/ready\").\n Required when protocol is http. Ignored for tcp.",
+          "required": false
+        },
+        {
+          "name": "ReturnCode",
+          "jsonName": "returnCode",
+          "protoField": "return_code",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Expected HTTP status code from healthy backends (e.g., 200).\n When omitted, any 2xx status is considered healthy.",
+          "required": false
+        },
+        {
+          "name": "ResponseBodyRegex",
+          "jsonName": "responseBodyRegex",
+          "protoField": "response_body_regex",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Regex pattern to match against the response body. The backend is\n considered healthy only if the response body matches this pattern.\n When omitted, body content is not checked.",
+          "required": false
+        },
+        {
+          "name": "IntervalMs",
+          "jsonName": "intervalMs",
+          "protoField": "interval_ms",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Interval between consecutive health checks in milliseconds.\n When omitted, defaults to 30000 (30 seconds).",
+          "required": false
+        },
+        {
+          "name": "TimeoutInMillis",
+          "jsonName": "timeoutInMillis",
+          "protoField": "timeout_in_millis",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum time to wait for a health check response in milliseconds.\n When omitted, defaults to 3000 (3 seconds).",
+          "required": false
+        },
+        {
+          "name": "Retries",
+          "jsonName": "retries",
+          "protoField": "retries",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive failed health checks before marking a backend\n as unhealthy. When omitted, defaults to 3.",
+          "required": false
+        },
+        {
+          "name": "IsForcePlainText",
+          "jsonName": "isForcePlainText",
+          "protoField": "is_force_plain_text",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, forces health checks over plain text even when the\n backend set has SSL configured.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Hostname",
+      "description": "Hostname defines a virtual hostname for host-based routing.\n Listeners reference hostnames by name to restrict which requests\n they handle based on the HTTP Host header.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.Hostname",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this hostname resource within the load balancer.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Hostname",
+          "jsonName": "hostname",
+          "protoField": "hostname",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The fully qualified domain name (FQDN) to match against the\n HTTP Host header. Example: \"app.example.com\".",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "IpMaxConnection",
+      "description": "IpMaxConnection defines per-IP connection limits for the\n ip_based_max_connections rule action.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.IpMaxConnection",
+      "fields": [
+        {
+          "name": "IpAddresses",
+          "jsonName": "ipAddresses",
+          "protoField": "ip_addresses",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "IP addresses to apply this connection limit to.",
+          "required": false
+        },
+        {
+          "name": "MaxConnections",
+          "jsonName": "maxConnections",
+          "protoField": "max_connections",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum simultaneous connections allowed from these IPs.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "LbCookieSessionPersistenceConfig",
+      "description": "LbCookieSessionPersistenceConfig configures session persistence using\n a cookie managed by the load balancer. The LB injects a Set-Cookie\n header to pin client sessions to specific backends.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.LbCookieSessionPersistenceConfig",
+      "fields": [
+        {
+          "name": "CookieName",
+          "jsonName": "cookieName",
+          "protoField": "cookie_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the cookie. When omitted, OCI generates a default name.",
+          "required": false
+        },
+        {
+          "name": "DisableFallback",
+          "jsonName": "disableFallback",
+          "protoField": "disable_fallback",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, connections from clients without the cookie are rejected\n rather than being assigned to a new backend. Useful for preventing\n session migration.",
+          "required": false
+        },
+        {
+          "name": "Domain",
+          "jsonName": "domain",
+          "protoField": "domain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Domain attribute for the Set-Cookie header.\n When omitted, the cookie applies to the request domain.",
+          "required": false
+        },
+        {
+          "name": "IsHttpOnly",
+          "jsonName": "isHttpOnly",
+          "protoField": "is_http_only",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, the cookie is marked HttpOnly (not accessible to JavaScript).",
+          "required": false
+        },
+        {
+          "name": "IsSecure",
+          "jsonName": "isSecure",
+          "protoField": "is_secure",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, the cookie is marked Secure (only sent over HTTPS).",
+          "required": false
+        },
+        {
+          "name": "MaxAgeInSeconds",
+          "jsonName": "maxAgeInSeconds",
+          "protoField": "max_age_in_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Cookie lifetime in seconds. When omitted or set to 0, the cookie\n is a session cookie (expires when the browser closes).",
+          "required": false
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path attribute for the Set-Cookie header.\n When omitted, defaults to \"/\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Listener",
+      "description": "Listener defines a port and protocol on which the load balancer accepts\n incoming client connections and routes them to a backend set.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.Listener",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this listener within the load balancer.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port on which the listener accepts connections.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.Protocol",
+            "enumValues": [
+              "http",
+              "http2",
+              "tcp",
+              "grpc"
+            ]
+          },
+          "description": "Protocol for the listener.",
+          "required": false
+        },
+        {
+          "name": "DefaultBackendSetName",
+          "jsonName": "defaultBackendSetName",
+          "protoField": "default_backend_set_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the backend set that receives traffic from this listener.\n Must match a backend set defined in backend_sets.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "SslConfiguration",
+          "jsonName": "sslConfiguration",
+          "protoField": "ssl_configuration",
+          "type": {
+            "kind": "message",
+            "messageType": "SslConfiguration"
+          },
+          "description": "SSL configuration for encrypting traffic between clients and\n the load balancer (SSL termination). Required for HTTPS listeners.",
+          "required": false
+        },
+        {
+          "name": "ConnectionConfiguration",
+          "jsonName": "connectionConfiguration",
+          "protoField": "connection_configuration",
+          "type": {
+            "kind": "message",
+            "messageType": "ConnectionConfiguration"
+          },
+          "description": "Connection configuration for idle timeout and proxy protocol settings.",
+          "required": false
+        },
+        {
+          "name": "HostnameNames",
+          "jsonName": "hostnameNames",
+          "protoField": "hostname_names",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Names of hostname resources defined in this load balancer's hostnames\n list. When set, the listener only handles requests matching these\n hostnames (virtual host routing).",
+          "required": false
+        },
+        {
+          "name": "RuleSetNames",
+          "jsonName": "ruleSetNames",
+          "protoField": "rule_set_names",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Names of rule set resources defined in this load balancer's rule_sets\n list. Rule sets are applied in the order specified.",
+          "required": false
+        },
+        {
+          "name": "RoutingPolicyName",
+          "jsonName": "routingPolicyName",
+          "protoField": "routing_policy_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of a routing policy for content-based routing.\n Routing policies are an advanced OCI feature managed outside\n this component.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "RedirectUri",
+      "description": "RedirectUri defines the target URI template for redirect rules.\n Template variables {protocol}, {host}, {port}, {path}, {query}\n are replaced with values from the original request.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.RedirectUri",
+      "fields": [
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Target protocol. Use \"{protocol}\" to preserve the original.",
+          "required": false
+        },
+        {
+          "name": "Host",
+          "jsonName": "host",
+          "protoField": "host",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Target hostname. Use \"{host}\" to preserve the original.",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Target port. Use 0 to preserve the original.",
+          "required": false
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Target path. Use \"{path}\" to preserve the original.",
+          "required": false
+        },
+        {
+          "name": "Query",
+          "jsonName": "query",
+          "protoField": "query",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Target query string. Use \"{query}\" to preserve the original.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ReservedIp",
+      "description": "ReservedIp references a pre-created OCI reserved public IP.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.ReservedIp",
+      "fields": [
+        {
+          "name": "Id",
+          "jsonName": "id",
+          "protoField": "id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the reserved public IP to assign to the load balancer.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "RuleSet",
+      "description": "RuleSet groups one or more rules for request/response manipulation.\n Rule sets are applied to listeners for advanced traffic management\n including HTTP redirects, header manipulation, and access control.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.RuleSet",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this rule set within the load balancer.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Items",
+          "jsonName": "items",
+          "protoField": "items",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "RuleSetItem"
+            }
+          },
+          "description": "Rules in this set. At least one rule is required.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "RuleSetItem",
+      "description": "RuleSetItem defines a single rule within a rule set. The action field\n determines which other fields are relevant:\n\n   add_http_request_header:          header, value\n   add_http_response_header:         header, value\n   extend_http_request_header_value: header, prefix, suffix\n   extend_http_response_header_value: header, prefix, suffix\n   remove_http_request_header:       header\n   remove_http_response_header:      header\n   redirect:                         redirect_uri, response_code, conditions\n   allow:                            conditions\n   control_access_using_http_methods: allowed_methods, status_code\n   http_header:                      are_invalid_characters_allowed,\n                                     http_large_header_size_in_kb\n   ip_based_max_connections:         default_max_connections, ip_max_connections",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.RuleSetItem",
+      "fields": [
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.Action",
+            "enumValues": [
+              "add_http_request_header",
+              "add_http_response_header",
+              "extend_http_request_header_value",
+              "extend_http_response_header_value",
+              "remove_http_request_header",
+              "remove_http_response_header",
+              "redirect",
+              "allow",
+              "control_access_using_http_methods",
+              "http_header",
+              "ip_based_max_connections"
+            ]
+          },
+          "description": "The type of rule. Determines which fields are applicable.",
+          "required": false
+        },
+        {
+          "name": "Header",
+          "jsonName": "header",
+          "protoField": "header",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP header name. Used by header add/remove/extend actions.",
+          "required": false
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Header value. Used by add_http_request_header and\n add_http_response_header actions.",
+          "required": false
+        },
+        {
+          "name": "Prefix",
+          "jsonName": "prefix",
+          "protoField": "prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Prefix to prepend to an existing header value.\n Used by extend_http_request_header_value and\n extend_http_response_header_value actions.",
+          "required": false
+        },
+        {
+          "name": "Suffix",
+          "jsonName": "suffix",
+          "protoField": "suffix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Suffix to append to an existing header value.\n Used by extend_http_request_header_value and\n extend_http_response_header_value actions.",
+          "required": false
+        },
+        {
+          "name": "RedirectUri",
+          "jsonName": "redirectUri",
+          "protoField": "redirect_uri",
+          "type": {
+            "kind": "message",
+            "messageType": "RedirectUri"
+          },
+          "description": "Redirect URI template. Used by the redirect action.",
+          "required": false
+        },
+        {
+          "name": "ResponseCode",
+          "jsonName": "responseCode",
+          "protoField": "response_code",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "HTTP response code for the redirect (e.g., 301, 302, 307, 308).\n Used by the redirect action.",
+          "required": false
+        },
+        {
+          "name": "Conditions",
+          "jsonName": "conditions",
+          "protoField": "conditions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "RuleSetItemCondition"
+            }
+          },
+          "description": "Conditions that must be met for this rule to apply.\n Used by redirect and allow actions.",
+          "required": false
+        },
+        {
+          "name": "AllowedMethods",
+          "jsonName": "allowedMethods",
+          "protoField": "allowed_methods",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Allowed HTTP methods. Requests using other methods receive the\n status_code response. Used by control_access_using_http_methods.",
+          "required": false
+        },
+        {
+          "name": "StatusCode",
+          "jsonName": "statusCode",
+          "protoField": "status_code",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "HTTP status code returned when access is denied (e.g., 403, 405).\n Used by control_access_using_http_methods.",
+          "required": false
+        },
+        {
+          "name": "AreInvalidCharactersAllowed",
+          "jsonName": "areInvalidCharactersAllowed",
+          "protoField": "are_invalid_characters_allowed",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, allows invalid characters in HTTP headers.\n Used by the http_header action.",
+          "required": false
+        },
+        {
+          "name": "HttpLargeHeaderSizeInKb",
+          "jsonName": "httpLargeHeaderSizeInKb",
+          "protoField": "http_large_header_size_in_kb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum HTTP header size in KB.\n Used by the http_header action.",
+          "required": false
+        },
+        {
+          "name": "DefaultMaxConnections",
+          "jsonName": "defaultMaxConnections",
+          "protoField": "default_max_connections",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Default maximum connections per IP when no specific IP rule matches.\n Used by ip_based_max_connections.",
+          "required": false
+        },
+        {
+          "name": "IpMaxConnections",
+          "jsonName": "ipMaxConnections",
+          "protoField": "ip_max_connections",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "IpMaxConnection"
+            }
+          },
+          "description": "Per-IP connection limits.\n Used by ip_based_max_connections.",
+          "required": false
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Description of the rule.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "RuleSetItemCondition",
+      "description": "RuleSetItemCondition defines a condition for conditional rule application.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.RuleSetItemCondition",
+      "fields": [
+        {
+          "name": "AttributeName",
+          "jsonName": "attributeName",
+          "protoField": "attribute_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Attribute to evaluate. Accepted values:\n   \"PATH\", \"SOURCE_IP_ADDRESS\", \"SOURCE_VCN_ID\", \"SOURCE_VCN_IP_ADDRESS\".",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "AttributeValue",
+          "jsonName": "attributeValue",
+          "protoField": "attribute_value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Value to match against the attribute.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Operator",
+          "jsonName": "operator",
+          "protoField": "operator",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Matching operator. Accepted values:\n   \"EXACT_MATCH\", \"FORCE_LONGEST_PREFIX_MATCH\", \"PREFIX_MATCH\", \"SUFFIX_MATCH\".\n When omitted, defaults to \"EXACT_MATCH\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "SessionPersistenceConfig",
+      "description": "SessionPersistenceConfig configures session persistence using an\n existing cookie managed by the backend application. The load balancer\n reads this cookie to determine backend affinity.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.SessionPersistenceConfig",
+      "fields": [
+        {
+          "name": "CookieName",
+          "jsonName": "cookieName",
+          "protoField": "cookie_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the application cookie used for session affinity.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DisableFallback",
+          "jsonName": "disableFallback",
+          "protoField": "disable_fallback",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, connections from clients without the cookie are rejected\n rather than being assigned to a new backend.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ShapeDetails",
+      "description": "ShapeDetails configures bandwidth for flexible-shape load balancers.",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.ShapeDetails",
+      "fields": [
+        {
+          "name": "MinimumBandwidthInMbps",
+          "jsonName": "minimumBandwidthInMbps",
+          "protoField": "minimum_bandwidth_in_mbps",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum bandwidth in Mbps. The load balancer always provides at least\n this bandwidth. Valid range: 10-8000.",
+          "required": false,
+          "validation": {
+            "min": 10,
+            "max": 8000
+          }
+        },
+        {
+          "name": "MaximumBandwidthInMbps",
+          "jsonName": "maximumBandwidthInMbps",
+          "protoField": "maximum_bandwidth_in_mbps",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum bandwidth in Mbps. The load balancer can burst up to this\n bandwidth. Must be \u003e= minimum_bandwidth_in_mbps. Valid range: 10-8000.",
+          "required": false,
+          "validation": {
+            "min": 10,
+            "max": 8000
+          }
+        }
+      ]
+    },
+    {
+      "name": "SslConfiguration",
+      "description": "SslConfiguration controls TLS/SSL settings for encrypted communication.\n Used in both backend sets (backend-facing SSL) and listeners\n (client-facing SSL).",
+      "protoType": "org.openmcf.provider.oci.ociapplicationloadbalancer.v1.OciApplicationLoadBalancerSpec.SslConfiguration",
+      "fields": [
+        {
+          "name": "CertificateIds",
+          "jsonName": "certificateIds",
+          "protoField": "certificate_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OCIDs of OCI Certificate Service certificates.\n Preferred over certificate_name for certificate lifecycle management.",
+          "required": false
+        },
+        {
+          "name": "CertificateName",
+          "jsonName": "certificateName",
+          "protoField": "certificate_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of a certificate resource defined in this load balancer's\n certificates list. Use certificate_ids instead for managed certificates.",
+          "required": false
+        },
+        {
+          "name": "CipherSuiteName",
+          "jsonName": "cipherSuiteName",
+          "protoField": "cipher_suite_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the cipher suite for SSL negotiation.\n Example: \"oci-default-ssl-cipher-suite-v1\".",
+          "required": false
+        },
+        {
+          "name": "Protocols",
+          "jsonName": "protocols",
+          "protoField": "protocols",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "TLS protocol versions to accept.\n Example: [\"TLSv1.2\", \"TLSv1.3\"].",
+          "required": false
+        },
+        {
+          "name": "ServerOrderPreference",
+          "jsonName": "serverOrderPreference",
+          "protoField": "server_order_preference",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Server cipher order preference. Accepted values:\n \"ENABLED\" (server preference) or \"DISABLED\" (client preference).",
+          "required": false
+        },
+        {
+          "name": "TrustedCertificateAuthorityIds",
+          "jsonName": "trustedCertificateAuthorityIds",
+          "protoField": "trusted_certificate_authority_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OCIDs of trusted CA certificates for verifying backend server\n certificates (backend SSL) or client certificates (mutual TLS).",
+          "required": false
+        },
+        {
+          "name": "VerifyDepth",
+          "jsonName": "verifyDepth",
+          "protoField": "verify_depth",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum depth for certificate chain verification.\n When omitted, defaults to 5.",
+          "required": false
+        },
+        {
+          "name": "VerifyPeerCertificate",
+          "jsonName": "verifyPeerCertificate",
+          "protoField": "verify_peer_certificate",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, the load balancer verifies the peer's certificate.\n For backend SSL: verifies the backend server certificate.\n For listener SSL with mutual TLS: verifies the client certificate.",
+          "required": false
+        },
+        {
+          "name": "HasSessionResumption",
+          "jsonName": "hasSessionResumption",
+          "protoField": "has_session_resumption",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, enables TLS session resumption for improved performance.\n Only applicable in listener SSL context. Ignored for backend set SSL.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

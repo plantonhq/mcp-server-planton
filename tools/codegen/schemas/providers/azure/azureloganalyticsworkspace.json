@@ -1,0 +1,101 @@
+{
+  "name": "AzureLogAnalyticsWorkspace",
+  "kind": "AzureLogAnalyticsWorkspace",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureLogAnalyticsWorkspace is the top-level API resource for an Azure Log Analytics Workspace.\n Log Analytics Workspaces are the central data platform for Azure Monitor, collecting\n and analyzing log data from Azure resources, on-premises servers, and applications.",
+  "protoPackage": "org.openmcf.provider.azure.azureloganalyticsworkspace.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azureloganalyticsworkspace/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azureloganalyticsworkspace/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureLogAnalyticsWorkspaceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Log Analytics Workspace will be deployed.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".\n Choose a region close to the resources that will send logs to this workspace\n to minimize data egress costs and latency.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the workspace will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Log Analytics Workspace.\n Must be unique within the resource group.\n Allowed characters: alphanumeric and hyphens. Must start with a letter.\n Length: 4 to 63 characters.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 4,
+          "maxLength": 63
+        }
+      },
+      {
+        "name": "Sku",
+        "jsonName": "sku",
+        "protoField": "sku",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The pricing tier (SKU) of the workspace.\n - \"PerGB2018\": Pay-as-you-go pricing per GB ingested (recommended for most workloads)\n - \"CapacityReservation\": Commitment tier with discount (requires reservation_capacity_in_gb_per_day)\n - \"Standalone\": Legacy per-node pricing\n - \"PerNode\": Legacy OMS per-node pricing\n Default: PerGB2018",
+        "required": false,
+        "default": "PerGB2018",
+        "oneofGroup": "_sku"
+      },
+      {
+        "name": "RetentionInDays",
+        "jsonName": "retentionInDays",
+        "protoField": "retention_in_days",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "The number of days to retain data in the workspace.\n Range: 30 to 730 days.\n Free tier allows 7 days. PerGB2018 includes 31 days free; beyond that, retention\n is billed per GB per month. For compliance workloads, 90-365 days is typical.\n Default: 30",
+        "required": false,
+        "validation": {
+          "min": 30,
+          "max": 730
+        },
+        "default": "30",
+        "oneofGroup": "_retention_in_days"
+      },
+      {
+        "name": "DailyQuotaGb",
+        "jsonName": "dailyQuotaGb",
+        "protoField": "daily_quota_gb",
+        "type": {
+          "kind": "double"
+        },
+        "description": "The daily ingestion quota in GB.\n Set to -1 for unlimited ingestion (no cap).\n Set to a positive value to cap daily ingestion and prevent cost overruns.\n When the cap is reached, ingestion stops until the next UTC day.\n Default: -1 (unlimited)",
+        "required": false,
+        "default": "-1",
+        "oneofGroup": "_daily_quota_gb"
+      }
+    ]
+  }
+}

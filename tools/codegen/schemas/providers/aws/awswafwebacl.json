@@ -1,0 +1,842 @@
+{
+  "name": "AwsWafWebAcl",
+  "kind": "AwsWafWebAcl",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsWafWebAcl represents an AWS WAFv2 Web Access Control List that protects\n web applications from common exploits, bots, and volumetric attacks. The\n Web ACL contains an ordered set of rules that inspect incoming requests and\n take actions based on matching conditions.\n\n Associate the Web ACL with ALB, API Gateway, CloudFront, AppSync, Cognito,\n or App Runner by referencing the web_acl_arn output via StringValueOrRef.",
+  "protoPackage": "org.openmcf.provider.aws.awswafwebacl.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awswafwebacl/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awswafwebacl/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsWafWebAclSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Scope",
+        "jsonName": "scope",
+        "protoField": "scope",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Scope determines where the Web ACL can be used.\n\n \"REGIONAL\" — protects ALB, API Gateway, AppSync, Cognito, App Runner\n resources in any AWS region.\n\n \"CLOUDFRONT\" — protects CloudFront distributions. The Web ACL MUST be\n created in the us-east-1 region. Ensure your provider configuration\n targets us-east-1 when using CLOUDFRONT scope.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "DefaultAction",
+        "jsonName": "defaultAction",
+        "protoField": "default_action",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsWafWebAclDefaultAction"
+        },
+        "description": "Action to take when no rule matches a request. This is the \"baseline\"\n security posture:\n - \"allow\" (permissive): allow all traffic unless a rule blocks it.\n   Use when most traffic is legitimate (e.g., public website).\n - \"block\" (restrictive): block all traffic unless a rule allows it.\n   Use when most traffic should be denied (e.g., private API).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the Web ACL. Max 256 characters.",
+        "required": false,
+        "validation": {
+          "maxLength": 256
+        }
+      },
+      {
+        "name": "Rules",
+        "jsonName": "rules",
+        "protoField": "rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsWafWebAclRule"
+          }
+        },
+        "description": "Ordered set of rules evaluated against each incoming request. Rules are\n evaluated by priority (lowest number first). When a rule matches, its\n action is taken and evaluation stops for that request.\n\n When no rules are provided, only the default_action applies. This is\n valid but uncommon — most Web ACLs have at least one managed rule group.",
+        "required": false
+      },
+      {
+        "name": "VisibilityConfig",
+        "jsonName": "visibilityConfig",
+        "protoField": "visibility_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsWafWebAclVisibilityConfig"
+        },
+        "description": "CloudWatch metrics configuration for the Web ACL itself.\n\n When omitted, the IaC module applies sensible defaults:\n - cloudwatch_metrics_enabled = true\n - sampled_requests_enabled = true\n - metric_name = resource name",
+        "required": false
+      },
+      {
+        "name": "CustomResponseBodies",
+        "jsonName": "customResponseBodies",
+        "protoField": "custom_response_bodies",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsWafWebAclCustomResponseBody"
+          }
+        },
+        "description": "Reusable response body templates that can be referenced by block actions\n via custom_response_body_key. Define branded error pages or structured\n error responses here and reference them by key from individual rules.\n\n Each entry requires a unique key (used as the reference), content string,\n and content_type.",
+        "required": false
+      },
+      {
+        "name": "TokenDomains",
+        "jsonName": "tokenDomains",
+        "protoField": "token_domains",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Domains to accept in web request tokens for CAPTCHA and Challenge actions.\n Required when using CAPTCHA/Challenge with multiple domains that share\n the same Web ACL. When omitted, tokens are scoped to the request domain.",
+        "required": false
+      },
+      {
+        "name": "Logging",
+        "jsonName": "logging",
+        "protoField": "logging",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsWafWebAclLoggingConfig"
+        },
+        "description": "Optional logging configuration. When provided, WAF sends detailed request\n logs to the specified destination (CloudWatch Logs, S3, or Kinesis\n Firehose).\n\n Important naming constraint: the destination resource name must start with\n \"aws-waf-logs-\" (enforced by AWS). For example:\n - CloudWatch Log Group: \"aws-waf-logs-my-acl\"\n - S3 Bucket: \"aws-waf-logs-my-acl\"\n - Kinesis Firehose: \"aws-waf-logs-my-acl\"",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsWafWebAclCustomHeader",
+      "description": "AwsWafWebAclCustomHeader defines an HTTP header name-value pair for custom\n request handling (inserted into forwarded requests) or custom responses\n (returned in block responses).",
+      "protoType": "org.openmcf.provider.aws.awswafwebacl.v1.AwsWafWebAclCustomHeader",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP header name (case-insensitive).",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP header value.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsWafWebAclCustomResponse",
+      "description": "AwsWafWebAclCustomResponse defines the HTTP response returned to clients\n when a request is blocked. Use this to provide branded error pages or\n structured API error responses instead of the default AWS WAF block page.",
+      "protoType": "org.openmcf.provider.aws.awswafwebacl.v1.AwsWafWebAclCustomResponse",
+      "fields": [
+        {
+          "name": "ResponseCode",
+          "jsonName": "responseCode",
+          "protoField": "response_code",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "HTTP response status code to return. Range: 200-600.\n Common values: 403 (Forbidden), 429 (Too Many Requests), 503 (Service Unavailable).",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 200,
+            "max": 600
+          }
+        },
+        {
+          "name": "CustomResponseBodyKey",
+          "jsonName": "customResponseBodyKey",
+          "protoField": "custom_response_body_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Key referencing a custom_response_body defined at the Web ACL level.\n When set, the response body from the matching custom_response_body is\n returned with the specified response_code and content type.",
+          "required": false
+        },
+        {
+          "name": "ResponseHeaders",
+          "jsonName": "responseHeaders",
+          "protoField": "response_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsWafWebAclCustomHeader"
+            }
+          },
+          "description": "Additional HTTP headers to include in the block response.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsWafWebAclCustomResponseBody",
+      "description": "AwsWafWebAclCustomResponseBody defines a reusable response body template\n that can be referenced by block actions via custom_response_body_key.\n\n Define common error pages once and reference them from multiple rules to\n maintain consistent user experience across different block scenarios.",
+      "protoType": "org.openmcf.provider.aws.awswafwebacl.v1.AwsWafWebAclCustomResponseBody",
+      "fields": [
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique key used to reference this response body from custom_response\n configurations. Must be unique within the Web ACL.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Content",
+          "jsonName": "content",
+          "protoField": "content",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The response body content (HTML, plain text, or JSON).",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ContentType",
+          "jsonName": "contentType",
+          "protoField": "content_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "MIME type of the content.\n Valid values: \"TEXT_PLAIN\", \"TEXT_HTML\", \"APPLICATION_JSON\".",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsWafWebAclDefaultAction",
+      "description": "AwsWafWebAclDefaultAction defines the action taken when no rule matches\n an incoming request.",
+      "protoType": "org.openmcf.provider.aws.awswafwebacl.v1.AwsWafWebAclDefaultAction",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action type: \"allow\" or \"block\".",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "CustomResponse",
+          "jsonName": "customResponse",
+          "protoField": "custom_response",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsWafWebAclCustomResponse"
+          },
+          "description": "Custom response configuration for block actions. Only valid when\n type is \"block\". Specifies the HTTP response code and optional body\n to return to blocked requests.",
+          "required": false
+        },
+        {
+          "name": "CustomRequestHeaders",
+          "jsonName": "customRequestHeaders",
+          "protoField": "custom_request_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsWafWebAclCustomHeader"
+            }
+          },
+          "description": "Custom request headers to insert for allow actions. Only valid when\n type is \"allow\". Headers are added to the request before forwarding\n to the protected resource.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsWafWebAclForwardedIpConfig",
+      "description": "AwsWafWebAclForwardedIpConfig specifies how to extract the real client IP\n from a forwarded header when the Web ACL sits behind a proxy, CDN, or\n load balancer that adds client IP information to the request.\n\n Used by: geo_match, ip_set_reference, and rate_based (FORWARDED_IP) rules.",
+      "protoType": "org.openmcf.provider.aws.awswafwebacl.v1.AwsWafWebAclForwardedIpConfig",
+      "fields": [
+        {
+          "name": "HeaderName",
+          "jsonName": "headerName",
+          "protoField": "header_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the HTTP header containing the forwarded IP address.\n Common values: \"X-Forwarded-For\", \"X-Real-IP\", \"True-Client-IP\".",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "FallbackBehavior",
+          "jsonName": "fallbackBehavior",
+          "protoField": "fallback_behavior",
+          "type": {
+            "kind": "string"
+          },
+          "description": "How to handle requests with missing or invalid forwarded IP headers.\n - \"MATCH\": Treat as a match (allows the rule to process the request).\n - \"NO_MATCH\": Treat as no match (skips the rule for this request).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Position",
+          "jsonName": "position",
+          "protoField": "position",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Which IP address to use from multi-value forwarded headers.\n Only applicable for IP Set reference rules (ignored by geo_match and\n rate_based).\n\n - \"FIRST\": Use the first IP in the header (closest to the client).\n - \"LAST\": Use the last IP (closest to the server).\n - \"ANY\": Match if any IP in the header matches the IP Set.\n\n When omitted, defaults to \"FIRST\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsWafWebAclGeoMatchStatement",
+      "description": "AwsWafWebAclGeoMatchStatement matches requests based on the country of\n origin determined from the source IP address (or a forwarded IP header).\n\n Common use cases:\n - Block traffic from embargoed or high-risk countries\n - Allow traffic only from countries where your service operates\n - Apply different rules based on geographic region",
+      "protoType": "org.openmcf.provider.aws.awswafwebacl.v1.AwsWafWebAclGeoMatchStatement",
+      "fields": [
+        {
+          "name": "CountryCodes",
+          "jsonName": "countryCodes",
+          "protoField": "country_codes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "ISO 3166-1 alpha-2 country codes to match against.\n Examples: \"US\", \"CA\", \"GB\", \"DE\", \"JP\", \"AU\".\n\n At least one country code is required.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minItems": 1
+          }
+        },
+        {
+          "name": "ForwardedIpConfig",
+          "jsonName": "forwardedIpConfig",
+          "protoField": "forwarded_ip_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsWafWebAclForwardedIpConfig"
+          },
+          "description": "Optional forwarded IP configuration. Use when the Web ACL is behind a\n proxy or CDN and the real client IP is in a forwarded header.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsWafWebAclIpSetReferenceStatement",
+      "description": "AwsWafWebAclIpSetReferenceStatement matches requests against a pre-defined\n WAFv2 IP Set. IP Sets are separate WAFv2 resources that contain lists of\n IP addresses or CIDR ranges.\n\n Common use cases:\n - Allowlist known partner or office IP ranges\n - Blocklist known malicious IP addresses\n - Restrict API access to specific IP ranges\n\n Note: AwsWafIpSet is not yet an OpenMCF component. Provide the IP Set\n ARN as a plain string. IP Sets must be created separately via the AWS\n console, CLI, or Terraform.",
+      "protoType": "org.openmcf.provider.aws.awswafwebacl.v1.AwsWafWebAclIpSetReferenceStatement",
+      "fields": [
+        {
+          "name": "Arn",
+          "jsonName": "arn",
+          "protoField": "arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of the WAFv2 IP Set to reference. The IP Set must exist in the\n same region and account as the Web ACL (or in us-east-1 for CLOUDFRONT\n scope).",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ForwardedIpConfig",
+          "jsonName": "forwardedIpConfig",
+          "protoField": "forwarded_ip_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsWafWebAclForwardedIpConfig"
+          },
+          "description": "Optional forwarded IP configuration. Use when the Web ACL is behind a\n proxy or CDN and the real client IP is in a forwarded header.\n\n When set, the position field controls which IP from the forwarded header\n is matched against the IP Set (FIRST, LAST, or ANY).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsWafWebAclLoggingConfig",
+      "description": "AwsWafWebAclLoggingConfig defines the logging destination and optional\n field redaction for WAF request logs.\n\n WAF logging captures detailed information about each request inspected by\n the Web ACL, including matched rules, actions taken, and request metadata.\n This data is essential for security monitoring, forensics, and WAF tuning.\n\n Important: The destination resource name must start with \"aws-waf-logs-\"\n (enforced by AWS at the API level).",
+      "protoType": "org.openmcf.provider.aws.awswafwebacl.v1.AwsWafWebAclLoggingConfig",
+      "fields": [
+        {
+          "name": "DestinationArn",
+          "jsonName": "destinationArn",
+          "protoField": "destination_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of the logging destination. Must be one of:\n - CloudWatch Logs log group ARN\n - S3 bucket ARN\n - Kinesis Firehose delivery stream ARN\n\n The destination resource name must start with \"aws-waf-logs-\".\n\n No default_kind is set because the destination can be any of three\n different resource types.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "RedactedHeaderNames",
+          "jsonName": "redactedHeaderNames",
+          "protoField": "redacted_header_names",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "HTTP header names to redact from logs. Redacted headers appear as\n \"REDACTED\" in log entries instead of their actual values.\n\n Common headers to redact: \"Authorization\", \"Cookie\", \"X-Api-Key\".",
+          "required": false
+        },
+        {
+          "name": "RedactUriPath",
+          "jsonName": "redactUriPath",
+          "protoField": "redact_uri_path",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Redact the URI path from log entries. When true, the URI path appears\n as \"REDACTED\" in logs.",
+          "required": false
+        },
+        {
+          "name": "RedactQueryString",
+          "jsonName": "redactQueryString",
+          "protoField": "redact_query_string",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Redact the query string from log entries. When true, query string\n parameters appear as \"REDACTED\" in logs.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsWafWebAclManagedRuleGroupStatement",
+      "description": "AwsWafWebAclManagedRuleGroupStatement references an AWS Managed Rule Group\n or a marketplace rule group. Managed rule groups are pre-configured\n collections of rules maintained by AWS or third-party vendors.\n\n Common AWS Managed Rule Groups:\n - AWSManagedRulesCommonRuleSet — Core rule set (XSS, file inclusion, etc.)\n - AWSManagedRulesKnownBadInputsRuleSet — Known bad input patterns\n - AWSManagedRulesSQLiRuleSet — SQL injection protection\n - AWSManagedRulesAmazonIpReputationList — IP reputation filtering\n - AWSManagedRulesAnonymousIpList — Anonymous IP blocking (VPN, Tor, etc.)\n - AWSManagedRulesBotControlRuleSet — Bot detection and control\n\n Each managed rule group consumes Web ACL Capacity Units (WCUs). The total\n across all rules must not exceed 5,000 WCUs per Web ACL.",
+      "protoType": "org.openmcf.provider.aws.awswafwebacl.v1.AwsWafWebAclManagedRuleGroupStatement",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the managed rule group (e.g., \"AWSManagedRulesCommonRuleSet\").",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        {
+          "name": "VendorName",
+          "jsonName": "vendorName",
+          "protoField": "vendor_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Vendor that publishes the rule group.\n \"AWS\" for AWS Managed Rules, or the marketplace vendor name.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        {
+          "name": "Version",
+          "jsonName": "version",
+          "protoField": "version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Pin to a specific version of the managed rule group (e.g., \"Version_1.0\").\n When omitted, WAF uses the vendor's default (typically the latest) version.\n Pinning prevents unexpected behavior changes when the vendor updates rules.",
+          "required": false
+        },
+        {
+          "name": "RuleActionOverrides",
+          "jsonName": "ruleActionOverrides",
+          "protoField": "rule_action_overrides",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsWafWebAclRuleActionOverride"
+            }
+          },
+          "description": "Override the action for specific rules within the managed group. This is\n essential for tuning: you can set individual rules to \"count\" while the\n rest of the group enforces, allowing you to identify false positives\n before enabling enforcement.",
+          "required": false
+        },
+        {
+          "name": "ScopeDownStatement",
+          "jsonName": "scopeDownStatement",
+          "protoField": "scope_down_statement",
+          "type": {
+            "kind": "object"
+          },
+          "description": "Optional scope-down statement to narrow which requests the managed rule\n group evaluates. Only requests matching the scope-down statement are\n inspected by the rule group.\n\n Provide the raw AWS WAFv2 JSON statement structure as a Struct. Uses the\n same format as the custom_statement escape hatch on AwsWafWebAclRule.\n\n Example (only evaluate requests from US):\n   scopeDownStatement:\n     GeoMatchStatement:\n       CountryCodes:\n         - US",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsWafWebAclRateBasedStatement",
+      "description": "AwsWafWebAclRateBasedStatement tracks and limits request rates. When the\n rate of requests from a tracked key (typically an IP address) exceeds the\n configured limit within an evaluation window, the rule's action is taken\n for subsequent requests from that key until the rate drops below the limit.\n\n Rate-based rules are effective against:\n - DDoS attacks and HTTP floods\n - Brute-force login attempts\n - API abuse and scraping\n - Credential stuffing",
+      "protoType": "org.openmcf.provider.aws.awswafwebacl.v1.AwsWafWebAclRateBasedStatement",
+      "fields": [
+        {
+          "name": "Limit",
+          "jsonName": "limit",
+          "protoField": "limit",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of requests allowed from a single tracked key within the\n evaluation window. When exceeded, the rule's action applies.\n Range: 10 to 2,000,000,000.\n\n Common values:\n - 100-500: Strict API rate limiting\n - 1000-2000: Standard web application protection\n - 10000+: DDoS mitigation for high-traffic endpoints",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 10,
+            "max": 2000000000
+          }
+        },
+        {
+          "name": "EvaluationWindowSec",
+          "jsonName": "evaluationWindowSec",
+          "protoField": "evaluation_window_sec",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Duration in seconds over which request rates are evaluated.\n Valid values: 60, 120, 300 (default), 600.\n Shorter windows detect bursts faster but may produce more false positives.",
+          "required": false
+        },
+        {
+          "name": "AggregateKeyType",
+          "jsonName": "aggregateKeyType",
+          "protoField": "aggregate_key_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "How to aggregate requests for rate tracking.\n\n Valid values:\n - \"IP\" (default): Track by source IP address. Simplest and most common.\n - \"FORWARDED_IP\": Track by IP from a forwarded header (e.g., X-Forwarded-For).\n   Requires forwarded_ip_config. Use when behind a proxy or CDN.\n - \"CONSTANT\": Count all requests as one group (global rate limit).\n   Requires a scope_down_statement to be useful.\n - \"CUSTOM_KEYS\": Track by custom combinations of request fields.\n   Note: custom_keys configuration is not supported in v1. Use\n   custom_statement for complex aggregation patterns.",
+          "required": false
+        },
+        {
+          "name": "ForwardedIpConfig",
+          "jsonName": "forwardedIpConfig",
+          "protoField": "forwarded_ip_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsWafWebAclForwardedIpConfig"
+          },
+          "description": "Forwarded IP configuration. Required when aggregate_key_type is\n \"FORWARDED_IP\". Specifies which header contains the real client IP\n and how to handle missing or invalid headers.",
+          "required": false
+        },
+        {
+          "name": "ScopeDownStatement",
+          "jsonName": "scopeDownStatement",
+          "protoField": "scope_down_statement",
+          "type": {
+            "kind": "object"
+          },
+          "description": "Optional scope-down statement to narrow which requests are counted\n toward the rate limit. Only requests matching this statement contribute\n to the rate calculation.\n\n Example (rate limit only POST requests to /login):\n   scopeDownStatement:\n     ByteMatchStatement:\n       SearchString: /login\n       FieldToMatch:\n         UriPath: {}\n       PositionalConstraint: STARTS_WITH\n       TextTransformations:\n         - Priority: 0\n           Type: NONE",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsWafWebAclRule",
+      "description": "AwsWafWebAclRule defines a single rule in the Web ACL. Each rule evaluates\n incoming requests against a statement (match condition) and takes an action\n when the statement matches.\n\n Rules are evaluated in priority order (lowest priority number first). When\n a rule matches, its action is taken and evaluation stops for that request.\n\n There are two action models:\n - Custom rules (rate_based, geo_match, ip_set_reference, custom_statement):\n   Use the `action` field to specify what happens on match.\n - Rule group rules (managed_rule_group): Use the `override_action` field\n   to either use the group's own actions (\"none\") or override everything\n   to count (\"count\") for testing/monitoring.",
+      "protoType": "org.openmcf.provider.aws.awswafwebacl.v1.AwsWafWebAclRule",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this rule. Used in CloudWatch metrics and log entries.\n 1-128 characters, must be unique within the Web ACL.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Evaluation priority. Lower numbers are evaluated first. Must be unique\n across all rules in the Web ACL. Range: 0-2147483647.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ManagedRuleGroup",
+          "jsonName": "managedRuleGroup",
+          "protoField": "managed_rule_group",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsWafWebAclManagedRuleGroupStatement"
+          },
+          "description": "AWS Managed Rule Group or marketplace rule group. Use override_action\n to control whether the group's own actions apply (\"none\") or are\n overridden to count (\"count\").",
+          "required": false,
+          "oneofGroup": "statement"
+        },
+        {
+          "name": "RateBased",
+          "jsonName": "rateBased",
+          "protoField": "rate_based",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsWafWebAclRateBasedStatement"
+          },
+          "description": "Rate-based rule that tracks and limits request rates from individual\n IP addresses or custom aggregation keys. Use action to specify what\n happens when the rate limit is exceeded.",
+          "required": false,
+          "oneofGroup": "statement"
+        },
+        {
+          "name": "GeoMatch",
+          "jsonName": "geoMatch",
+          "protoField": "geo_match",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsWafWebAclGeoMatchStatement"
+          },
+          "description": "Geographic match statement that matches requests based on the country\n of origin. Use action to allow or block traffic from specific countries.",
+          "required": false,
+          "oneofGroup": "statement"
+        },
+        {
+          "name": "IpSetReference",
+          "jsonName": "ipSetReference",
+          "protoField": "ip_set_reference",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsWafWebAclIpSetReferenceStatement"
+          },
+          "description": "IP set reference statement that matches requests against a pre-defined\n WAFv2 IP Set (allowlist or blocklist). Use action to specify behavior.",
+          "required": false,
+          "oneofGroup": "statement"
+        },
+        {
+          "name": "CustomStatement",
+          "jsonName": "customStatement",
+          "protoField": "custom_statement",
+          "type": {
+            "kind": "object"
+          },
+          "description": "Escape hatch for any WAFv2 statement type not modeled as a first-class\n message. Provide the raw AWS WAFv2 JSON statement structure as a Struct.\n\n Common uses: SqliMatchStatement, XssMatchStatement, ByteMatchStatement,\n RegexMatchStatement, SizeConstraintStatement, LabelMatchStatement,\n AndStatement, OrStatement, NotStatement, RuleGroupReferenceStatement.\n\n The Struct keys must use PascalCase matching the AWS WAFv2 API format.\n Example (SQL injection detection):\n   customStatement:\n     SqliMatchStatement:\n       FieldToMatch:\n         Body: {}\n       TextTransformations:\n         - Priority: 0\n           Type: URL_DECODE",
+          "required": false,
+          "oneofGroup": "statement"
+        },
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action for custom rules (rate_based, geo_match, ip_set_reference,\n custom_statement). Specifies what happens when the rule matches.\n\n Valid values: \"allow\", \"block\", \"count\", \"captcha\", \"challenge\".\n\n Required for custom rules. Must NOT be set for managed_rule_group rules.",
+          "required": false
+        },
+        {
+          "name": "OverrideAction",
+          "jsonName": "overrideAction",
+          "protoField": "override_action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Override action for rule group rules (managed_rule_group). Controls\n whether the group's own actions are used or overridden.\n\n Valid values:\n - \"none\": Use the rule group's configured actions as-is (most common).\n - \"count\": Override all actions to count (useful for testing/monitoring\n   a new rule group before enforcing).\n\n Required for managed_rule_group rules. Must NOT be set for custom rules.",
+          "required": false
+        },
+        {
+          "name": "CustomResponse",
+          "jsonName": "customResponse",
+          "protoField": "custom_response",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsWafWebAclCustomResponse"
+          },
+          "description": "Custom response for block actions. Only valid when action is \"block\".\n Specifies the HTTP response code and optional body.",
+          "required": false
+        },
+        {
+          "name": "CustomRequestHeaders",
+          "jsonName": "customRequestHeaders",
+          "protoField": "custom_request_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsWafWebAclCustomHeader"
+            }
+          },
+          "description": "Custom request headers to insert for allow/count/captcha/challenge actions.\n Headers are added to the request before forwarding to the protected resource.",
+          "required": false
+        },
+        {
+          "name": "RuleLabels",
+          "jsonName": "ruleLabels",
+          "protoField": "rule_labels",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Labels added to requests that match this rule. Labels are key-value pairs\n (namespace:name format) that can be matched by LabelMatchStatement in\n subsequent rules, enabling multi-stage rule evaluation.",
+          "required": false
+        },
+        {
+          "name": "VisibilityConfig",
+          "jsonName": "visibilityConfig",
+          "protoField": "visibility_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsWafWebAclVisibilityConfig"
+          },
+          "description": "CloudWatch metrics configuration for this rule. When omitted, the IaC\n module applies sensible defaults:\n - cloudwatch_metrics_enabled = true\n - sampled_requests_enabled = true\n - metric_name = rule name",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsWafWebAclRuleActionOverride",
+      "description": "AwsWafWebAclRuleActionOverride overrides the action for a specific rule\n within a managed rule group. This is the primary mechanism for tuning\n managed rule groups without disabling them entirely.\n\n Common workflow: Set a new managed rule group's override_action to \"none\"\n (enforce), but override specific noisy rules to \"count\" until you verify\n they don't produce false positives. Then remove the override to enforce.",
+      "protoType": "org.openmcf.provider.aws.awswafwebacl.v1.AwsWafWebAclRuleActionOverride",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the rule within the managed group to override.\n Must match a rule name defined in the managed rule group.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action to use instead of the rule's configured action.\n Valid values: \"allow\", \"block\", \"count\", \"captcha\", \"challenge\".\n Most commonly set to \"count\" for monitoring without enforcement.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsWafWebAclVisibilityConfig",
+      "description": "AwsWafWebAclVisibilityConfig controls CloudWatch metrics and request\n sampling for a Web ACL or individual rule. Every Web ACL and rule in AWS\n requires a visibility configuration.\n\n When this message is omitted (on either the spec or a rule), the IaC module\n applies sensible defaults: metrics enabled, sampling enabled, and the\n metric_name derived from the resource or rule name.",
+      "protoType": "org.openmcf.provider.aws.awswafwebacl.v1.AwsWafWebAclVisibilityConfig",
+      "fields": [
+        {
+          "name": "CloudwatchMetricsEnabled",
+          "jsonName": "cloudwatchMetricsEnabled",
+          "protoField": "cloudwatch_metrics_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable CloudWatch metrics for this Web ACL or rule.\n Default: true (applied by IaC module when omitted).",
+          "required": false
+        },
+        {
+          "name": "SampledRequestsEnabled",
+          "jsonName": "sampledRequestsEnabled",
+          "protoField": "sampled_requests_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable request sampling for this Web ACL or rule. Sampled requests are\n viewable in the AWS WAF console for debugging rule matches.\n Default: true (applied by IaC module when omitted).",
+          "required": false
+        },
+        {
+          "name": "MetricName",
+          "jsonName": "metricName",
+          "protoField": "metric_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "CloudWatch metric name for this Web ACL or rule. Must be unique within\n the Web ACL's rules.\n Default: resource name (Web ACL) or rule name (applied by IaC module).",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

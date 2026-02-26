@@ -1,0 +1,106 @@
+{
+  "name": "AliCloudVpc",
+  "kind": "AliCloudVpc",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-vpc",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudvpc.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudvpc/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudvpc/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudVpcSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the VPC will be created.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VpcName",
+        "jsonName": "vpcName",
+        "protoField": "vpc_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC name. 1-128 characters; cannot start with http:// or https://.\n Maps to the provider field `vpc_name`.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      {
+        "name": "CidrBlock",
+        "jsonName": "cidrBlock",
+        "protoField": "cidr_block",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Primary IPv4 CIDR block for the VPC.\n Must be a valid private CIDR in one of the following ranges:\n   10.0.0.0/8   - 10.255.255.255\n   172.16.0.0/12 - 172.31.255.255\n   192.168.0.0/16 - 192.168.255.255\n Mask length: 8-28.\n Example: \"10.0.0.0/8\", \"172.16.0.0/12\", \"192.168.0.0/16\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the VPC.\n 1-256 characters; cannot start with http:// or https://.",
+        "required": false
+      },
+      {
+        "name": "EnableIpv6",
+        "jsonName": "enableIpv6",
+        "protoField": "enable_ipv6",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable IPv6 for this VPC.\n When enabled, Alibaba Cloud allocates an IPv6 CIDR block (/56) to the VPC.\n VSwitches within this VPC can then be assigned IPv6 CIDR blocks.\n Default: false",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the VPC is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the VPC.",
+        "required": false
+      }
+    ]
+  }
+}

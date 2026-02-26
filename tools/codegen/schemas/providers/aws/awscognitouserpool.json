@@ -1,0 +1,815 @@
+{
+  "name": "AwsCognitoUserPool",
+  "kind": "AwsCognitoUserPool",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-cognito-user-pool",
+  "protoPackage": "org.openmcf.provider.aws.awscognitouserpool.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awscognitouserpool/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awscognitouserpool/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsCognitoUserPoolSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "UsernameAttributes",
+        "jsonName": "usernameAttributes",
+        "protoField": "username_attributes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Attributes that users can use as their username when signing in. When set,\n the chosen attribute(s) become the sign-in identifier. Common choice: [\"email\"]\n to let users sign in with their email address.\n\n Valid values: \"email\", \"phone_number\".\n Mutually exclusive with `alias_attributes`. ForceNew.",
+        "required": false
+      },
+      {
+        "name": "AliasAttributes",
+        "jsonName": "aliasAttributes",
+        "protoField": "alias_attributes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Attributes that can be used as aliases for the username. Unlike `username_attributes`,\n users always have a separate username and the alias attributes are alternative sign-in\n identifiers. Common choice: [\"email\", \"preferred_username\"].\n\n Valid values: \"email\", \"phone_number\", \"preferred_username\".\n Mutually exclusive with `username_attributes`. ForceNew.",
+        "required": false
+      },
+      {
+        "name": "UsernameCaseSensitive",
+        "jsonName": "usernameCaseSensitive",
+        "protoField": "username_case_sensitive",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether usernames are case-sensitive. When false (default in AWS), \"User\" and \"user\"\n are treated as the same username. ForceNew — cannot be changed after pool creation.",
+        "required": false
+      },
+      {
+        "name": "PasswordPolicy",
+        "jsonName": "passwordPolicy",
+        "protoField": "password_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCognitoUserPoolPasswordPolicy"
+        },
+        "description": "Password policy configuration. Controls password strength requirements for\n user self-registration and admin-created passwords.",
+        "required": false
+      },
+      {
+        "name": "MfaConfiguration",
+        "jsonName": "mfaConfiguration",
+        "protoField": "mfa_configuration",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Multi-factor authentication enforcement level.\n - \"OFF\": MFA is not used (default).\n - \"OPTIONAL\": Users can opt in to MFA.\n - \"ON\": MFA is required for all users.",
+        "required": false
+      },
+      {
+        "name": "SoftwareTokenMfaEnabled",
+        "jsonName": "softwareTokenMfaEnabled",
+        "protoField": "software_token_mfa_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable TOTP-based (time-based one-time password) software token MFA. When\n true, users can configure authenticator apps like Google Authenticator or\n Authy. Requires `mfa_configuration` to be \"OPTIONAL\" or \"ON\".",
+        "required": false
+      },
+      {
+        "name": "AutoVerifiedAttributes",
+        "jsonName": "autoVerifiedAttributes",
+        "protoField": "auto_verified_attributes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Attributes to auto-verify when users sign up. Cognito sends a verification\n code to these attributes. Common values: [\"email\"].\n Valid values: \"email\", \"phone_number\".",
+        "required": false
+      },
+      {
+        "name": "AccountRecoveryMechanisms",
+        "jsonName": "accountRecoveryMechanisms",
+        "protoField": "account_recovery_mechanisms",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsCognitoUserPoolRecoveryMechanism"
+          }
+        },
+        "description": "Account recovery mechanisms in priority order. Each mechanism defines a\n fallback method for users who forget their password.",
+        "required": false
+      },
+      {
+        "name": "EmailConfiguration",
+        "jsonName": "emailConfiguration",
+        "protoField": "email_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCognitoUserPoolEmailConfig"
+        },
+        "description": "Email sending configuration. Controls whether Cognito sends emails using\n its built-in service (limited to 50/day in sandbox) or your verified SES\n identity (production sending).",
+        "required": false
+      },
+      {
+        "name": "AllowAdminCreateUserOnly",
+        "jsonName": "allowAdminCreateUserOnly",
+        "protoField": "allow_admin_create_user_only",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, only administrators can create users — self-registration is\n disabled. Users must be created via the admin API or AWS console.",
+        "required": false
+      },
+      {
+        "name": "DeletionProtection",
+        "jsonName": "deletionProtection",
+        "protoField": "deletion_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable deletion protection. When \"ACTIVE\", the user pool cannot be deleted\n without first disabling this setting. Recommended for production pools.",
+        "required": false
+      },
+      {
+        "name": "CustomAttributes",
+        "jsonName": "customAttributes",
+        "protoField": "custom_attributes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsCognitoUserPoolSchemaAttribute"
+          }
+        },
+        "description": "Custom user attributes beyond the standard set (email, phone, name, etc.).\n Each attribute is added to the pool's schema. Note: the `mutable` and\n `required` flags are ForceNew — they cannot be changed after creation.\n Maximum 50 custom attributes per pool.",
+        "required": false
+      },
+      {
+        "name": "LambdaConfig",
+        "jsonName": "lambdaConfig",
+        "protoField": "lambda_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCognitoUserPoolLambdaConfig"
+        },
+        "description": "Lambda trigger configuration for custom authentication and user lifecycle\n hooks. Each trigger is an optional Lambda function ARN that Cognito invokes\n at the corresponding lifecycle point.",
+        "required": false
+      },
+      {
+        "name": "Clients",
+        "jsonName": "clients",
+        "protoField": "clients",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsCognitoUserPoolClient"
+          }
+        },
+        "description": "Application clients that authenticate against this user pool. Each client\n defines an OAuth/OIDC configuration for a specific application (e.g., a\n web frontend, a mobile app, a server-side backend).\n\n At least one client is required — a pool without clients cannot authenticate\n any application. The client `name` field serves as a key in the `client_ids`\n and `client_secrets` output maps.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Domain",
+        "jsonName": "domain",
+        "protoField": "domain",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCognitoUserPoolDomainConfig"
+        },
+        "description": "Domain configuration for the hosted sign-in UI and OAuth2 endpoints. When\n set, Cognito provides a hosted login page at:\n   https://{domain}.auth.{region}.amazoncognito.com\n (for Cognito prefix domains) or at the custom domain you specify.\n\n Required for OAuth flows that use the Authorization Code grant with a\n hosted UI redirect.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsCognitoUserPoolClient",
+      "description": "AwsCognitoUserPoolClient defines an application client that authenticates\n against the user pool. Each client controls how a specific application\n (web, mobile, server) interacts with the pool via OAuth 2.0 / OIDC.\n\n The client `name` field is used as a key in the `client_ids` and\n `client_secrets` output maps.",
+      "protoType": "org.openmcf.provider.aws.awscognitouserpool.v1.AwsCognitoUserPoolClient",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this client. Used as the key in output maps and as the\n Cognito app client name. Must be unique across all clients in this spec.",
+          "required": false,
+          "validation": {
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        {
+          "name": "GenerateSecret",
+          "jsonName": "generateSecret",
+          "protoField": "generate_secret",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to generate a client secret. ForceNew — cannot be changed after\n creation. Set to true for server-side applications that can securely store\n the secret. Set to false for SPAs and mobile apps.",
+          "required": false
+        },
+        {
+          "name": "AllowedOauthFlowsUserPoolClient",
+          "jsonName": "allowedOauthFlowsUserPoolClient",
+          "protoField": "allowed_oauth_flows_user_pool_client",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable OAuth 2.0 flows for this client. Must be true for `allowed_oauth_flows`\n and `allowed_oauth_scopes` to take effect.",
+          "required": false
+        },
+        {
+          "name": "AllowedOauthFlows",
+          "jsonName": "allowedOauthFlows",
+          "protoField": "allowed_oauth_flows",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OAuth 2.0 grant types this client can use. Valid values:\n - \"code\": Authorization Code grant (recommended for most apps)\n - \"implicit\": Implicit grant (legacy, not recommended)\n - \"client_credentials\": Client Credentials grant (machine-to-machine)",
+          "required": false
+        },
+        {
+          "name": "AllowedOauthScopes",
+          "jsonName": "allowedOauthScopes",
+          "protoField": "allowed_oauth_scopes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OAuth 2.0 scopes this client can request. Common values:\n \"openid\", \"email\", \"profile\", \"phone\", \"aws.cognito.signin.user.admin\".\n Custom scopes from resource servers use format: \"{identifier}/{scope_name}\".",
+          "required": false
+        },
+        {
+          "name": "CallbackUrls",
+          "jsonName": "callbackUrls",
+          "protoField": "callback_urls",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Callback URLs for OAuth redirects after authentication. Required for\n Authorization Code and Implicit grants. At least one URL must be provided\n when OAuth flows are enabled.",
+          "required": false
+        },
+        {
+          "name": "LogoutUrls",
+          "jsonName": "logoutUrls",
+          "protoField": "logout_urls",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "URLs where Cognito redirects after sign-out.",
+          "required": false
+        },
+        {
+          "name": "DefaultRedirectUri",
+          "jsonName": "defaultRedirectUri",
+          "protoField": "default_redirect_uri",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Default redirect URI. Must be one of the `callback_urls`. Used when no\n redirect_uri is specified in the authorization request.",
+          "required": false
+        },
+        {
+          "name": "SupportedIdentityProviders",
+          "jsonName": "supportedIdentityProviders",
+          "protoField": "supported_identity_providers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Identity providers supported by this client. Defaults to [\"COGNITO\"] for\n user pool authentication. Add social/OIDC/SAML provider names to enable\n federated sign-in (e.g., \"Google\", \"Facebook\", \"SignInWithApple\").",
+          "required": false
+        },
+        {
+          "name": "ExplicitAuthFlows",
+          "jsonName": "explicitAuthFlows",
+          "protoField": "explicit_auth_flows",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Explicit authentication flows enabled for this client. Controls which\n authentication APIs the client can use. Common values:\n - \"ALLOW_USER_SRP_AUTH\": Secure Remote Password (recommended)\n - \"ALLOW_REFRESH_TOKEN_AUTH\": Enable token refresh (always recommended)\n - \"ALLOW_USER_PASSWORD_AUTH\": Direct username/password (less secure)\n - \"ALLOW_ADMIN_USER_PASSWORD_AUTH\": Admin-initiated auth\n - \"ALLOW_CUSTOM_AUTH\": Custom auth flow via Lambda triggers",
+          "required": false
+        },
+        {
+          "name": "AccessTokenValidityMinutes",
+          "jsonName": "accessTokenValidityMinutes",
+          "protoField": "access_token_validity_minutes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Access token validity in minutes. Range: 5-1440 (5 min to 24 hours).\n AWS default: 60 minutes.",
+          "required": false,
+          "validation": {
+            "max": 1440
+          }
+        },
+        {
+          "name": "IdTokenValidityMinutes",
+          "jsonName": "idTokenValidityMinutes",
+          "protoField": "id_token_validity_minutes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "ID token validity in minutes. Range: 5-1440 (5 min to 24 hours).\n AWS default: 60 minutes.",
+          "required": false,
+          "validation": {
+            "max": 1440
+          }
+        },
+        {
+          "name": "RefreshTokenValidityDays",
+          "jsonName": "refreshTokenValidityDays",
+          "protoField": "refresh_token_validity_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Refresh token validity in days. Range: 1-3650 (1 day to 10 years).\n AWS default: 30 days.",
+          "required": false,
+          "validation": {
+            "max": 3650
+          }
+        },
+        {
+          "name": "EnableTokenRevocation",
+          "jsonName": "enableTokenRevocation",
+          "protoField": "enable_token_revocation",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable token revocation. When true, Cognito revokes all of a user's tokens\n when they sign out. Recommended for security.",
+          "required": false
+        },
+        {
+          "name": "PreventUserExistenceErrors",
+          "jsonName": "preventUserExistenceErrors",
+          "protoField": "prevent_user_existence_errors",
+          "type": {
+            "kind": "string"
+          },
+          "description": "How to handle requests for non-existent users. Valid values:\n - \"ENABLED\": Return the same error for non-existent and incorrect-password\n   users to prevent user enumeration attacks.\n - \"LEGACY\": Return different errors (reveals whether user exists).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCognitoUserPoolDomainConfig",
+      "description": "AwsCognitoUserPoolDomainConfig configures the hosted UI domain for the user pool.\n This enables the Cognito-hosted sign-in/sign-up pages and OAuth2 endpoints.",
+      "protoType": "org.openmcf.provider.aws.awscognitouserpool.v1.AwsCognitoUserPoolDomainConfig",
+      "fields": [
+        {
+          "name": "Domain",
+          "jsonName": "domain",
+          "protoField": "domain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Domain prefix (for Cognito-hosted domains) or fully-qualified domain name\n (for custom domains). For Cognito-hosted: provide a unique prefix like\n \"myapp-auth\" which creates \"myapp-auth.auth.{region}.amazoncognito.com\".\n For custom domains: provide the FQDN like \"auth.example.com\".\n ForceNew — the domain cannot be changed after creation.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "CertificateArn",
+          "jsonName": "certificateArn",
+          "protoField": "certificate_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ACM certificate ARN for custom domains. Required when `domain` contains\n a dot (custom domain). The certificate must be in us-east-1 regardless\n of the user pool's region (Cognito uses CloudFront for custom domains).\n Not applicable for Cognito-hosted prefix domains.",
+          "required": false,
+          "referenceKind": "AwsCertManagerCert",
+          "referenceFieldPath": "status.outputs.certificate_arn"
+        }
+      ]
+    },
+    {
+      "name": "AwsCognitoUserPoolEmailConfig",
+      "description": "AwsCognitoUserPoolEmailConfig controls how Cognito sends verification and\n invitation emails.",
+      "protoType": "org.openmcf.provider.aws.awscognitouserpool.v1.AwsCognitoUserPoolEmailConfig",
+      "fields": [
+        {
+          "name": "EmailSendingAccount",
+          "jsonName": "emailSendingAccount",
+          "protoField": "email_sending_account",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Email sending mode. Valid values:\n - \"COGNITO_DEFAULT\": Cognito sends emails using its built-in service.\n   Limited to 50 emails/day in sandbox mode. No SES setup required.\n - \"DEVELOPER\": Cognito sends emails through your verified SES identity.\n   Requires `source_arn`. Supports production-level sending volumes.",
+          "required": false
+        },
+        {
+          "name": "SourceArn",
+          "jsonName": "sourceArn",
+          "protoField": "source_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "SES verified identity ARN for sending emails. Required when\n `email_sending_account` is \"DEVELOPER\". Example:\n \"arn:aws:ses:us-east-1:123456789012:identity/noreply@example.com\"",
+          "required": false
+        },
+        {
+          "name": "FromEmailAddress",
+          "jsonName": "fromEmailAddress",
+          "protoField": "from_email_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "\"From\" email address shown to recipients. Only applicable when using\n DEVELOPER mode with SES. Example: \"No Reply \u003cnoreply@example.com\u003e\"",
+          "required": false
+        },
+        {
+          "name": "ReplyToEmailAddress",
+          "jsonName": "replyToEmailAddress",
+          "protoField": "reply_to_email_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Reply-to email address. When set, user replies go to this address\n instead of the \"from\" address.",
+          "required": false
+        },
+        {
+          "name": "ConfigurationSet",
+          "jsonName": "configurationSet",
+          "protoField": "configuration_set",
+          "type": {
+            "kind": "string"
+          },
+          "description": "SES configuration set name for tracking email delivery metrics.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCognitoUserPoolLambdaConfig",
+      "description": "AwsCognitoUserPoolLambdaConfig defines Lambda function triggers for custom\n authentication and user lifecycle hooks. Each field is an optional Lambda\n function ARN that Cognito invokes at the corresponding lifecycle point.\n\n All fields accept a direct ARN or a reference to an AwsLambda resource.\n Note: Lambda functions must grant Cognito permission to invoke them\n (aws_lambda_permission with principal \"cognito-idp.amazonaws.com\").",
+      "protoType": "org.openmcf.provider.aws.awscognitouserpool.v1.AwsCognitoUserPoolLambdaConfig",
+      "fields": [
+        {
+          "name": "PreSignUp",
+          "jsonName": "preSignUp",
+          "protoField": "pre_sign_up",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Invoked before user sign-up to perform custom validation or auto-confirm.",
+          "required": false,
+          "referenceKind": "AwsLambda",
+          "referenceFieldPath": "status.outputs.function_arn"
+        },
+        {
+          "name": "PreAuthentication",
+          "jsonName": "preAuthentication",
+          "protoField": "pre_authentication",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Invoked before authentication to perform custom validation.",
+          "required": false,
+          "referenceKind": "AwsLambda",
+          "referenceFieldPath": "status.outputs.function_arn"
+        },
+        {
+          "name": "PostAuthentication",
+          "jsonName": "postAuthentication",
+          "protoField": "post_authentication",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Invoked after successful authentication for logging or custom logic.",
+          "required": false,
+          "referenceKind": "AwsLambda",
+          "referenceFieldPath": "status.outputs.function_arn"
+        },
+        {
+          "name": "PostConfirmation",
+          "jsonName": "postConfirmation",
+          "protoField": "post_confirmation",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Invoked after user confirmation to trigger welcome emails or provisioning.",
+          "required": false,
+          "referenceKind": "AwsLambda",
+          "referenceFieldPath": "status.outputs.function_arn"
+        },
+        {
+          "name": "PreTokenGeneration",
+          "jsonName": "preTokenGeneration",
+          "protoField": "pre_token_generation",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Invoked before token generation to add, remove, or modify claims.",
+          "required": false,
+          "referenceKind": "AwsLambda",
+          "referenceFieldPath": "status.outputs.function_arn"
+        },
+        {
+          "name": "CustomMessage",
+          "jsonName": "customMessage",
+          "protoField": "custom_message",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Invoked to customize verification and invitation messages.",
+          "required": false,
+          "referenceKind": "AwsLambda",
+          "referenceFieldPath": "status.outputs.function_arn"
+        },
+        {
+          "name": "UserMigration",
+          "jsonName": "userMigration",
+          "protoField": "user_migration",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Invoked during user migration from an external identity provider.",
+          "required": false,
+          "referenceKind": "AwsLambda",
+          "referenceFieldPath": "status.outputs.function_arn"
+        },
+        {
+          "name": "DefineAuthChallenge",
+          "jsonName": "defineAuthChallenge",
+          "protoField": "define_auth_challenge",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Invoked to define a custom authentication challenge (custom auth flow).",
+          "required": false,
+          "referenceKind": "AwsLambda",
+          "referenceFieldPath": "status.outputs.function_arn"
+        },
+        {
+          "name": "CreateAuthChallenge",
+          "jsonName": "createAuthChallenge",
+          "protoField": "create_auth_challenge",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Invoked to create a custom authentication challenge (custom auth flow).",
+          "required": false,
+          "referenceKind": "AwsLambda",
+          "referenceFieldPath": "status.outputs.function_arn"
+        },
+        {
+          "name": "VerifyAuthChallengeResponse",
+          "jsonName": "verifyAuthChallengeResponse",
+          "protoField": "verify_auth_challenge_response",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Invoked to verify the response to a custom authentication challenge.",
+          "required": false,
+          "referenceKind": "AwsLambda",
+          "referenceFieldPath": "status.outputs.function_arn"
+        }
+      ]
+    },
+    {
+      "name": "AwsCognitoUserPoolPasswordPolicy",
+      "description": "AwsCognitoUserPoolPasswordPolicy controls password strength requirements.",
+      "protoType": "org.openmcf.provider.aws.awscognitouserpool.v1.AwsCognitoUserPoolPasswordPolicy",
+      "fields": [
+        {
+          "name": "MinimumLength",
+          "jsonName": "minimumLength",
+          "protoField": "minimum_length",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum password length. Range: 6-99. AWS default: 8.",
+          "required": false,
+          "validation": {
+            "min": 6,
+            "max": 99
+          }
+        },
+        {
+          "name": "RequireLowercase",
+          "jsonName": "requireLowercase",
+          "protoField": "require_lowercase",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Require at least one lowercase letter.",
+          "required": false
+        },
+        {
+          "name": "RequireUppercase",
+          "jsonName": "requireUppercase",
+          "protoField": "require_uppercase",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Require at least one uppercase letter.",
+          "required": false
+        },
+        {
+          "name": "RequireNumbers",
+          "jsonName": "requireNumbers",
+          "protoField": "require_numbers",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Require at least one digit.",
+          "required": false
+        },
+        {
+          "name": "RequireSymbols",
+          "jsonName": "requireSymbols",
+          "protoField": "require_symbols",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Require at least one special character.",
+          "required": false
+        },
+        {
+          "name": "TemporaryPasswordValidityDays",
+          "jsonName": "temporaryPasswordValidityDays",
+          "protoField": "temporary_password_validity_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of days temporary passwords (admin-created) are valid.\n Range: 0-365 (0 means no expiration). AWS default: 7.",
+          "required": false,
+          "validation": {
+            "max": 365
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsCognitoUserPoolRecoveryMechanism",
+      "description": "AwsCognitoUserPoolRecoveryMechanism defines a single account recovery option.\n Up to 2 mechanisms can be configured in priority order.",
+      "protoType": "org.openmcf.provider.aws.awscognitouserpool.v1.AwsCognitoUserPoolRecoveryMechanism",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Recovery method name. Valid values:\n - \"verified_email\": send a recovery code to the verified email\n - \"verified_phone_number\": send a recovery code via SMS\n - \"admin_only\": only administrators can reset passwords",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Priority of this recovery method. 1 = primary, 2 = fallback.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsCognitoUserPoolSchemaAttribute",
+      "description": "AwsCognitoUserPoolSchemaAttribute defines a custom user attribute added to the\n pool's schema. Custom attributes are prefixed with \"custom:\" in Cognito (e.g.,\n a name of \"tenant_id\" becomes \"custom:tenant_id\").",
+      "protoType": "org.openmcf.provider.aws.awscognitouserpool.v1.AwsCognitoUserPoolSchemaAttribute",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Attribute name (1-20 characters). Cognito auto-prefixes with \"custom:\".",
+          "required": false,
+          "validation": {
+            "minLength": 1,
+            "maxLength": 20
+          }
+        },
+        {
+          "name": "AttributeDataType",
+          "jsonName": "attributeDataType",
+          "protoField": "attribute_data_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Data type. Valid values: \"String\", \"Number\", \"DateTime\", \"Boolean\".",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Mutable",
+          "jsonName": "mutable",
+          "protoField": "mutable",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the attribute value can be changed after creation. ForceNew — this\n flag itself cannot be changed after the attribute is added to the pool.",
+          "required": false
+        },
+        {
+          "name": "Required",
+          "jsonName": "required",
+          "protoField": "required",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the attribute is required during user registration. ForceNew.",
+          "required": false
+        },
+        {
+          "name": "StringMinLength",
+          "jsonName": "stringMinLength",
+          "protoField": "string_min_length",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Minimum string length (for String attributes). Leave at 0 for no minimum.",
+          "required": false
+        },
+        {
+          "name": "StringMaxLength",
+          "jsonName": "stringMaxLength",
+          "protoField": "string_max_length",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Maximum string length (for String attributes). Leave empty for no maximum.",
+          "required": false
+        },
+        {
+          "name": "NumberMinValue",
+          "jsonName": "numberMinValue",
+          "protoField": "number_min_value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Minimum numeric value (for Number attributes). Leave empty for no minimum.",
+          "required": false
+        },
+        {
+          "name": "NumberMaxValue",
+          "jsonName": "numberMaxValue",
+          "protoField": "number_max_value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Maximum numeric value (for Number attributes). Leave empty for no maximum.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

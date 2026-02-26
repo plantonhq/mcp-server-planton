@@ -1,0 +1,508 @@
+{
+  "name": "GcpCloudSchedulerJob",
+  "kind": "GcpCloudSchedulerJob",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-cloud-scheduler-job",
+  "protoPackage": "org.openmcf.provider.gcp.gcpcloudschedulerjob.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpcloudschedulerjob/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpcloudschedulerjob/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpCloudSchedulerJobSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the scheduler job will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "JobName",
+        "jsonName": "jobName",
+        "protoField": "job_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Cloud Scheduler job.\n If not specified, defaults to metadata.name.\n Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP region where the scheduler job will be created (e.g., \"us-central1\").\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Schedule",
+        "jsonName": "schedule",
+        "protoField": "schedule",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cron schedule on which the job will be executed.\n Uses unix-cron format (e.g., \"*/5 * * * *\" for every 5 minutes,\n \"0 9 * * 1\" for every Monday at 9:00 AM).\n The schedule is interpreted in the time zone specified by time_zone.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "TimeZone",
+        "jsonName": "timeZone",
+        "protoField": "time_zone",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Time zone name from the tz database (e.g., \"America/New_York\", \"Europe/London\").\n If not specified, defaults to \"Etc/UTC\".\n See: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the job.\n Maximum 500 characters.",
+        "required": false,
+        "validation": {
+          "maxLength": 500
+        }
+      },
+      {
+        "name": "AttemptDeadline",
+        "jsonName": "attemptDeadline",
+        "protoField": "attempt_deadline",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The deadline for job attempts. If the request handler does not respond\n by this deadline, the request is cancelled and the attempt is marked\n as a DEADLINE_EXCEEDED failure.\n\n For HTTP targets: between 15 seconds and 30 minutes.\n For App Engine targets: between 15 seconds and 24 hours 15 seconds.\n For Pub/Sub targets: this field is ignored.\n\n Format: duration string (e.g., \"180s\", \"30m\").\n If not specified, defaults to \"180s\" (3 minutes).",
+        "required": false
+      },
+      {
+        "name": "Paused",
+        "jsonName": "paused",
+        "protoField": "paused",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "If true, the job will be created in a paused state (will not execute\n on schedule until resumed). Defaults to false (job starts enabled).",
+        "required": false
+      },
+      {
+        "name": "HttpTarget",
+        "jsonName": "httpTarget",
+        "protoField": "http_target",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudSchedulerJobHttpTarget"
+        },
+        "description": "HTTP target configuration. Dispatches the job to an HTTP endpoint.\n This is the most common target type, used for triggering Cloud Run\n services, Cloud Functions, webhooks, or any HTTP-accessible endpoint.\n Exactly one target must be specified.",
+        "required": false
+      },
+      {
+        "name": "PubsubTarget",
+        "jsonName": "pubsubTarget",
+        "protoField": "pubsub_target",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudSchedulerJobPubsubTarget"
+        },
+        "description": "Pub/Sub target configuration. Publishes a message to a Pub/Sub topic\n when the job executes. Use this for event-driven architectures where\n downstream consumers process messages asynchronously.\n Exactly one target must be specified.",
+        "required": false
+      },
+      {
+        "name": "AppEngineHttpTarget",
+        "jsonName": "appEngineHttpTarget",
+        "protoField": "app_engine_http_target",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudSchedulerJobAppEngineHttpTarget"
+        },
+        "description": "App Engine HTTP target configuration. Dispatches the job to an\n App Engine handler within the same project. Use this when the\n target handler runs on App Engine.\n Exactly one target must be specified.",
+        "required": false
+      },
+      {
+        "name": "RetryConfig",
+        "jsonName": "retryConfig",
+        "protoField": "retry_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudSchedulerJobRetryConfig"
+        },
+        "description": "Retry configuration for failed job attempts.\n Controls exponential backoff behavior, maximum attempts, and\n retry duration limits.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpCloudSchedulerJobAppEngineHttpTarget",
+      "description": "GcpCloudSchedulerJobAppEngineHttpTarget defines an App Engine endpoint as\n the target for scheduled job execution. Use this when the target handler\n runs on App Engine within the same project.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudschedulerjob.v1.GcpCloudSchedulerJobAppEngineHttpTarget",
+      "fields": [
+        {
+          "name": "RelativeUri",
+          "jsonName": "relativeUri",
+          "protoField": "relative_uri",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The relative URI of the App Engine handler.\n Must begin with \"/\" and have a maximum length of 2083 characters.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "HttpMethod",
+          "jsonName": "httpMethod",
+          "protoField": "http_method",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP request method.\n If not specified, defaults to POST.\n Valid values: \"POST\", \"GET\", \"HEAD\", \"PUT\", \"DELETE\", \"PATCH\", \"OPTIONS\".",
+          "required": false
+        },
+        {
+          "name": "Body",
+          "jsonName": "body",
+          "protoField": "body",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP request body.\n A request body is allowed only if the HTTP method is POST or PUT.\n Must be base64-encoded.",
+          "required": false
+        },
+        {
+          "name": "Headers",
+          "jsonName": "headers",
+          "protoField": "headers",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "HTTP request headers.\n The following headers cannot be set: Content-Length, Host, User-Agent,\n and headers matching X-Google-* or X-AppEngine-*.",
+          "required": false
+        },
+        {
+          "name": "AppEngineRouting",
+          "jsonName": "appEngineRouting",
+          "protoField": "app_engine_routing",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudSchedulerJobAppEngineRouting"
+          },
+          "description": "App Engine routing configuration.\n Controls which App Engine service, version, and instance handles\n the request. If not set, the default service and version are used.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudSchedulerJobAppEngineRouting",
+      "description": "GcpCloudSchedulerJobAppEngineRouting defines routing configuration for\n App Engine HTTP target requests. Specifies which App Engine service,\n version, and instance handles the request.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudschedulerjob.v1.GcpCloudSchedulerJobAppEngineRouting",
+      "fields": [
+        {
+          "name": "Service",
+          "jsonName": "service",
+          "protoField": "service",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The App Engine service to route the request to.\n If not specified, the default service is used.",
+          "required": false
+        },
+        {
+          "name": "Version",
+          "jsonName": "version",
+          "protoField": "version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The App Engine version to route the request to.\n If not specified, the default version is used.",
+          "required": false
+        },
+        {
+          "name": "Instance",
+          "jsonName": "instance",
+          "protoField": "instance",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The App Engine instance to route the request to.\n If not specified, the request is routed according to the service/version\n traffic splitting configuration.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudSchedulerJobHttpTarget",
+      "description": "GcpCloudSchedulerJobHttpTarget defines an HTTP endpoint as the target\n for scheduled job execution. This is the most common target type,\n used for triggering Cloud Run services, Cloud Functions, or any HTTP endpoint.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudschedulerjob.v1.GcpCloudSchedulerJobHttpTarget",
+      "fields": [
+        {
+          "name": "Uri",
+          "jsonName": "uri",
+          "protoField": "uri",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The full URI of the HTTP target.\n Required. Must be a valid HTTP or HTTPS URL.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "HttpMethod",
+          "jsonName": "httpMethod",
+          "protoField": "http_method",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP request method.\n If not specified, defaults to POST.\n Valid values: \"POST\", \"GET\", \"HEAD\", \"PUT\", \"DELETE\", \"PATCH\", \"OPTIONS\".",
+          "required": false
+        },
+        {
+          "name": "Body",
+          "jsonName": "body",
+          "protoField": "body",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP request body.\n A request body is allowed only if the HTTP method is POST, PUT, or PATCH.\n Must be base64-encoded.",
+          "required": false
+        },
+        {
+          "name": "Headers",
+          "jsonName": "headers",
+          "protoField": "headers",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "HTTP request headers.\n The following headers cannot be set: Content-Length, User-Agent,\n and headers matching X-Google-* or X-AppEngine-*.",
+          "required": false
+        },
+        {
+          "name": "OauthToken",
+          "jsonName": "oauthToken",
+          "protoField": "oauth_token",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudSchedulerJobOAuthToken"
+          },
+          "description": "OAuth2 access token configuration for authenticating requests.\n Use for calling Google APIs on *.googleapis.com.\n Mutually exclusive with oidc_token.",
+          "required": false
+        },
+        {
+          "name": "OidcToken",
+          "jsonName": "oidcToken",
+          "protoField": "oidc_token",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudSchedulerJobOidcToken"
+          },
+          "description": "OIDC token configuration for authenticating requests.\n Use for calling Cloud Run, Cloud Functions, or custom endpoints.\n Mutually exclusive with oauth_token.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudSchedulerJobOAuthToken",
+      "description": "GcpCloudSchedulerJobOAuthToken configures OAuth2 access token generation for\n authenticating HTTP target requests. Use this when calling Google APIs\n hosted on *.googleapis.com.\n\n Mutually exclusive with GcpCloudSchedulerJobOidcToken.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudschedulerjob.v1.GcpCloudSchedulerJobOAuthToken",
+      "fields": [
+        {
+          "name": "ServiceAccountEmail",
+          "jsonName": "serviceAccountEmail",
+          "protoField": "service_account_email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account email to generate the OAuth token.\n The service account must be within the same project as the job.\n The caller must have iam.serviceAccounts.actAs on this service account.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "GcpServiceAccount",
+          "referenceFieldPath": "status.outputs.email"
+        },
+        {
+          "name": "Scope",
+          "jsonName": "scope",
+          "protoField": "scope",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OAuth scope for the generated access token.\n If not specified, defaults to \"https://www.googleapis.com/auth/cloud-platform\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudSchedulerJobOidcToken",
+      "description": "GcpCloudSchedulerJobOidcToken configures OIDC token generation for\n authenticating HTTP target requests. Use this for calling Cloud Run,\n Cloud Functions, or any endpoint where you validate the token yourself.\n\n Mutually exclusive with GcpCloudSchedulerJobOAuthToken.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudschedulerjob.v1.GcpCloudSchedulerJobOidcToken",
+      "fields": [
+        {
+          "name": "ServiceAccountEmail",
+          "jsonName": "serviceAccountEmail",
+          "protoField": "service_account_email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account email to generate the OIDC token.\n The service account must be within the same project as the job.\n The caller must have iam.serviceAccounts.actAs on this service account.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "GcpServiceAccount",
+          "referenceFieldPath": "status.outputs.email"
+        },
+        {
+          "name": "Audience",
+          "jsonName": "audience",
+          "protoField": "audience",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Audience for the generated OIDC token.\n If not specified, the URI of the HTTP target will be used.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudSchedulerJobPubsubTarget",
+      "description": "GcpCloudSchedulerJobPubsubTarget defines a Pub/Sub topic as the target\n for scheduled job execution. When the job runs, a message is published\n to the specified topic.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudschedulerjob.v1.GcpCloudSchedulerJobPubsubTarget",
+      "fields": [
+        {
+          "name": "TopicName",
+          "jsonName": "topicName",
+          "protoField": "topic_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The fully qualified Pub/Sub topic name to publish to.\n Format: projects/{project}/topics/{topic}",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "GcpPubSubTopic",
+          "referenceFieldPath": "status.outputs.topic_id"
+        },
+        {
+          "name": "Data",
+          "jsonName": "data",
+          "protoField": "data",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The message payload for the Pub/Sub message.\n Must be base64-encoded.\n The message must contain either non-empty data OR at least one attribute.",
+          "required": false
+        },
+        {
+          "name": "Attributes",
+          "jsonName": "attributes",
+          "protoField": "attributes",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Attributes for the Pub/Sub message.\n Key-value pairs attached to the message as metadata.\n The message must contain either non-empty data OR at least one attribute.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudSchedulerJobRetryConfig",
+      "description": "GcpCloudSchedulerJobRetryConfig controls retry behavior for failed job\n execution attempts. A job attempt is retried between min_backoff_duration\n and max_backoff_duration after it fails, with exponential backoff that\n doubles max_doublings times before becoming linear.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudschedulerjob.v1.GcpCloudSchedulerJobRetryConfig",
+      "fields": [
+        {
+          "name": "RetryCount",
+          "jsonName": "retryCount",
+          "protoField": "retry_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of attempts that the system will make to run a job using\n the exponential backoff procedure. Values greater than 5 and negative\n values are not allowed.",
+          "required": false
+        },
+        {
+          "name": "MaxRetryDuration",
+          "jsonName": "maxRetryDuration",
+          "protoField": "max_retry_duration",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The time limit for retrying a failed job, measured from when the job\n was first attempted. Once elapsed, no further attempts are made.\n Format: duration string (e.g., \"3600s\" for 1 hour).\n Set to \"0s\" for unlimited retry duration.",
+          "required": false
+        },
+        {
+          "name": "MinBackoffDuration",
+          "jsonName": "minBackoffDuration",
+          "protoField": "min_backoff_duration",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The minimum amount of time to wait before retrying a job after it fails.\n Format: duration string (e.g., \"5s\" for 5 seconds).",
+          "required": false
+        },
+        {
+          "name": "MaxBackoffDuration",
+          "jsonName": "maxBackoffDuration",
+          "protoField": "max_backoff_duration",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The maximum amount of time to wait before retrying a job after it fails.\n Format: duration string (e.g., \"3600s\" for 1 hour).",
+          "required": false
+        },
+        {
+          "name": "MaxDoublings",
+          "jsonName": "maxDoublings",
+          "protoField": "max_doublings",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of times that the retry interval doubles before becoming\n constant. The retry interval starts at min_backoff_duration, then\n doubles max_doublings times, and increases linearly thereafter.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

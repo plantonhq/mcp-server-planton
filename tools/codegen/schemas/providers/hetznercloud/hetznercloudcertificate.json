@@ -1,0 +1,99 @@
+{
+  "name": "HetznerCloudCertificate",
+  "kind": "HetznerCloudCertificate",
+  "cloudProvider": "hetznercloud",
+  "apiVersion": "hetzner-cloud.openmcf.org/v1",
+  "description": "hetznercloud-certificate",
+  "protoPackage": "org.openmcf.provider.hetznercloud.hetznercloudcertificate.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/hetznercloud/hetznercloudcertificate/v1/api.proto",
+    "spec": "org/openmcf/provider/hetznercloud/hetznercloudcertificate/v1/spec.proto"
+  },
+  "spec": {
+    "name": "HetznerCloudCertificateSpec",
+    "fields": [
+      {
+        "name": "Uploaded",
+        "jsonName": "uploaded",
+        "protoField": "uploaded",
+        "type": {
+          "kind": "message",
+          "messageType": "UploadedCertificateConfig"
+        },
+        "description": "Upload your own TLS certificate and private key.",
+        "required": false,
+        "oneofGroup": "certificate"
+      },
+      {
+        "name": "Managed",
+        "jsonName": "managed",
+        "protoField": "managed",
+        "type": {
+          "kind": "message",
+          "messageType": "ManagedCertificateConfig"
+        },
+        "description": "Let Hetzner Cloud obtain and manage a Let's Encrypt certificate.",
+        "required": false,
+        "oneofGroup": "certificate"
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ManagedCertificateConfig",
+      "description": "ManagedCertificateConfig specifies domain names for which Hetzner Cloud\n automatically obtains and renews a Let's Encrypt TLS certificate.\n\n Prerequisites for successful provisioning:\n   - Each domain must have a DNS A/AAAA record pointing to a Hetzner Cloud\n     load balancer so the ACME HTTP-01 challenge can be completed.\n   - The load balancer must have an HTTPS service configured that references\n     this certificate.\n\n Changing the domain list forces replacement of the certificate resource\n (ForceNew).",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudcertificate.v1.ManagedCertificateConfig",
+      "fields": [
+        {
+          "name": "DomainNames",
+          "jsonName": "domainNames",
+          "protoField": "domain_names",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Domain names for which a certificate should be obtained.\n\n At least one domain is required. Hetzner Cloud issues a single certificate\n covering all listed domains (SAN certificate). Changing this list forces\n replacement of the certificate resource.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "UploadedCertificateConfig",
+      "description": "UploadedCertificateConfig holds the PEM-encoded certificate chain and\n private key for a user-provided TLS certificate.\n\n Both fields are required and immutable — changing either forces replacement\n of the certificate resource in Hetzner Cloud (ForceNew).\n\n The private_key field contains sensitive cryptographic material. IaC modules\n treat it as a secret (Pulumi marks it with pulumi.ToSecret; Terraform marks\n the corresponding variable as sensitive).",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudcertificate.v1.UploadedCertificateConfig",
+      "fields": [
+        {
+          "name": "Certificate",
+          "jsonName": "certificate",
+          "protoField": "certificate",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PEM-encoded TLS certificate chain.\n\n Must include the server certificate and, if applicable, intermediate CA\n certificates in order (server cert first, root last). Changing this value\n forces replacement of the certificate resource.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "PrivateKey",
+          "jsonName": "privateKey",
+          "protoField": "private_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PEM-encoded private key belonging to the certificate.\n\n SENSITIVE — this field contains secret cryptographic material.\n Changing this value forces replacement of the certificate resource.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

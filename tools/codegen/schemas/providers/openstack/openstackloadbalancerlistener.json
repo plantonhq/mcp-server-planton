@@ -1,0 +1,163 @@
+{
+  "name": "OpenStackLoadBalancerListener",
+  "kind": "OpenStackLoadBalancerListener",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackLoadBalancerListener is a Kubernetes Resource Model (KRM) style resource\n for managing Octavia listeners in OpenStack.\n\n A listener defines a protocol and port combination on a load balancer that accepts\n incoming traffic. Each listener is associated with exactly one load balancer and\n forwards traffic to a backend pool. For TLS termination, the listener references\n a Barbican secret container holding the certificate.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackloadbalancerlistener.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackloadbalancerlistener/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackloadbalancerlistener/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackLoadBalancerListenerSpec",
+    "fields": [
+      {
+        "name": "LoadbalancerId",
+        "jsonName": "loadbalancerId",
+        "protoField": "loadbalancer_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The load balancer to attach this listener to.\n ForceNew: changing this requires recreating the listener.\n\n FK: OpenStackLoadBalancer.status.outputs.loadbalancer_id",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackLoadBalancer",
+        "referenceFieldPath": "status.outputs.loadbalancer_id"
+      },
+      {
+        "name": "Protocol",
+        "jsonName": "protocol",
+        "protoField": "protocol",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The protocol the listener accepts.\n ForceNew: changing this requires recreating the listener.\n\n - HTTP: Unencrypted HTTP traffic (Layer 7)\n - HTTPS: Pass-through encrypted traffic (Layer 4, no TLS termination)\n - TCP: Raw TCP traffic (Layer 4)\n - UDP: Raw UDP traffic (Layer 4)\n - TERMINATED_HTTPS: TLS termination at the load balancer (requires default_tls_container_ref)",
+        "required": true,
+        "validation": {
+          "required": true,
+          "enum": [
+            "HTTP",
+            "HTTPS",
+            "TCP",
+            "UDP",
+            "TERMINATED_HTTPS"
+          ]
+        }
+      },
+      {
+        "name": "ProtocolPort",
+        "jsonName": "protocolPort",
+        "protoField": "protocol_port",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Required) The port on which the listener accepts traffic.\n ForceNew: changing this requires recreating the listener.\n Must be between 1 and 65535.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Human-readable description of the listener.",
+        "required": false
+      },
+      {
+        "name": "ConnectionLimit",
+        "jsonName": "connectionLimit",
+        "protoField": "connection_limit",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Optional) Maximum number of connections the listener allows.\n -1 means unlimited (Octavia default). Leave unset to use the Octavia default.",
+        "required": false,
+        "oneofGroup": "_connection_limit"
+      },
+      {
+        "name": "DefaultTlsContainerRef",
+        "jsonName": "defaultTlsContainerRef",
+        "protoField": "default_tls_container_ref",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) URI of the Barbican TLS secret container for TLS termination.\n Required when protocol is TERMINATED_HTTPS. The container must hold the\n certificate, private key, and optional intermediates.",
+        "required": false
+      },
+      {
+        "name": "InsertHeaders",
+        "jsonName": "insertHeaders",
+        "protoField": "insert_headers",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "(Optional) Headers to insert into HTTP requests before forwarding to backends.\n Common use: {\"X-Forwarded-For\": \"true\", \"X-Forwarded-Proto\": \"true\"}\n Only applicable to HTTP and TERMINATED_HTTPS protocols.",
+        "required": false
+      },
+      {
+        "name": "AllowedCidrs",
+        "jsonName": "allowedCidrs",
+        "protoField": "allowed_cidrs",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "(Optional) List of CIDRs allowed to access this listener.\n When set, only traffic from these CIDRs reaches the listener; all other\n traffic is dropped. When empty, all traffic is allowed.",
+        "required": false
+      },
+      {
+        "name": "AdminStateUp",
+        "jsonName": "adminStateUp",
+        "protoField": "admin_state_up",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "(Optional) Administrative state of the listener.\n When false, the listener stops accepting traffic. Default: true.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_admin_state_up"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "(Optional) Tags applied to the listener in OpenStack.\n Must be unique within this resource.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Override the region from the provider configuration.",
+        "required": false
+      }
+    ]
+  }
+}

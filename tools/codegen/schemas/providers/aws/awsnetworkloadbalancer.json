@@ -1,0 +1,552 @@
+{
+  "name": "AwsNetworkLoadBalancer",
+  "kind": "AwsNetworkLoadBalancer",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsNetworkLoadBalancer represents a managed AWS Network Load Balancer\n deployed via OpenMCF. This resource provisions a Layer 4 load balancer\n with listeners, target groups, and optional Route53 DNS records.",
+  "protoPackage": "org.openmcf.provider.aws.awsnetworkloadbalancer.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsnetworkloadbalancer/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsnetworkloadbalancer/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsNetworkLoadBalancerSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "SubnetMappings",
+        "jsonName": "subnetMappings",
+        "protoField": "subnet_mappings",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsNetworkLoadBalancerSubnetMapping"
+          }
+        },
+        "description": "Subnet mappings define where NLB nodes are placed and optionally assign\n static IP addresses. Each mapping corresponds to one Availability Zone.\n\n For internet-facing NLBs, provide an allocation_id (Elastic IP) per subnet\n to get static public IPs -- a primary reason to choose NLB over ALB.\n\n For internal NLBs, optionally specify a private_ipv4_address per subnet\n to pin the NLB to specific private IPs.\n\n At least one subnet mapping is required. AWS recommends at least two for\n high availability across Availability Zones.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 1
+        }
+      },
+      {
+        "name": "SecurityGroups",
+        "jsonName": "securityGroups",
+        "protoField": "security_groups",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Security group IDs to attach to the NLB. Unlike ALB, security groups are\n optional for NLB. When omitted, the NLB accepts all traffic on configured\n listener ports. When provided, security group rules filter inbound traffic.\n\n Important: once security groups are attached to an NLB, they cannot be\n fully removed -- at least one must remain. Plan accordingly.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "Internal",
+        "jsonName": "internal",
+        "protoField": "internal",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, creates an internal NLB accessible only within the VPC.\n When false (default), creates an internet-facing NLB with public DNS.",
+        "required": false
+      },
+      {
+        "name": "DeleteProtectionEnabled",
+        "jsonName": "deleteProtectionEnabled",
+        "protoField": "delete_protection_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Prevents accidental deletion of the NLB when enabled. Recommended for\n production workloads.",
+        "required": false
+      },
+      {
+        "name": "CrossZoneLoadBalancingEnabled",
+        "jsonName": "crossZoneLoadBalancingEnabled",
+        "protoField": "cross_zone_load_balancing_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Distribute traffic evenly across all registered targets in all enabled\n Availability Zones. Default is false for NLB (unlike ALB where cross-zone\n is always enabled). Enable this when target distribution across AZs is\n uneven or when you need consistent per-target traffic distribution.",
+        "required": false
+      },
+      {
+        "name": "IpAddressType",
+        "jsonName": "ipAddressType",
+        "protoField": "ip_address_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IP address type for the NLB. Controls whether the NLB uses IPv4 only or\n dual-stack (IPv4 + IPv6).\n Valid values: \"ipv4\" (default), \"dualstack\".",
+        "required": false,
+        "recommendedDefault": "ipv4"
+      },
+      {
+        "name": "DnsRecordClientRoutingPolicy",
+        "jsonName": "dnsRecordClientRoutingPolicy",
+        "protoField": "dns_record_client_routing_policy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Controls how DNS queries from clients are routed to NLB nodes across\n Availability Zones. Affects latency and cross-zone traffic costs.\n\n Valid values:\n - \"any_availability_zone\" (default): Clients may be routed to any AZ.\n - \"availability_zone_affinity\": Clients are routed to the AZ of the\n   resolver, reducing cross-zone traffic. Best when targets are evenly\n   distributed.\n - \"partial_availability_zone_affinity\": 85% of requests stay in the\n   resolver's AZ, 15% spill to other AZs. Balances affinity with\n   availability.",
+        "required": false
+      },
+      {
+        "name": "Listeners",
+        "jsonName": "listeners",
+        "protoField": "listeners",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsNetworkLoadBalancerListener"
+          }
+        },
+        "description": "Listeners define the ports and protocols the NLB accepts traffic on.\n Each listener includes an inline target group that receives forwarded\n connections.\n\n At least one listener is required. A common pattern is a single TLS\n listener on port 443 forwarding to TCP targets on an application port.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Dns",
+        "jsonName": "dns",
+        "protoField": "dns",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsNetworkLoadBalancerDns"
+        },
+        "description": "Optional Route53 DNS configuration. When enabled, creates alias A records\n pointing the specified hostnames to the NLB's DNS name.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsNetworkLoadBalancerDns",
+      "description": "AwsNetworkLoadBalancerDns defines optional Route53 DNS configuration for\n the NLB. When enabled, creates alias A records that point the specified\n hostnames to the NLB's DNS name.\n\n This is the same pattern used by AwsAlb. Alias records are preferred over\n CNAME records because they work at the zone apex, have no charge for\n alias queries, and inherit the NLB's health check status.",
+      "protoType": "org.openmcf.provider.aws.awsnetworkloadbalancer.v1.AwsNetworkLoadBalancerDns",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, creates Route53 alias records for the NLB.",
+          "required": false
+        },
+        {
+          "name": "Route53ZoneId",
+          "jsonName": "route53ZoneId",
+          "protoField": "route53_zone_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Route53 hosted zone ID where alias records are created.\n Required when enabled is true.",
+          "required": false,
+          "referenceKind": "AwsRoute53Zone",
+          "referenceFieldPath": "status.outputs.zone_id"
+        },
+        {
+          "name": "Hostnames",
+          "jsonName": "hostnames",
+          "protoField": "hostnames",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Domain names that will point to the NLB via Route53 alias records.\n Each hostname gets its own A record aliased to the NLB's DNS name.",
+          "required": false,
+          "validation": {
+            "unique": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsNetworkLoadBalancerHealthCheck",
+      "description": "AwsNetworkLoadBalancerHealthCheck defines how the NLB determines whether\n targets in a target group are healthy enough to receive traffic.\n\n NLB health checks differ from ALB in important ways:\n - TCP health checks (default) only verify port reachability, not content\n - HTTP/HTTPS health checks can verify application readiness via a path\n - Health check intervals, thresholds, and timeouts have different defaults\n   and ranges than ALB",
+      "protoType": "org.openmcf.provider.aws.awsnetworkloadbalancer.v1.AwsNetworkLoadBalancerHealthCheck",
+      "fields": [
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol used for health checks.\n Valid values: \"TCP\" (default), \"HTTP\", \"HTTPS\".\n\n TCP health checks verify that the target port is reachable. HTTP/HTTPS\n health checks send a GET request to the specified path and verify the\n response status code.",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Port used for health checks. Specify \"traffic-port\" to use the target\n group's traffic port, or a specific port number (1-65535).\n Default: \"traffic-port\".",
+          "required": false
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path for HTTP/HTTPS health checks. The NLB sends a GET request to this\n path and checks the response status code against the matcher.\n Required when health check protocol is HTTP or HTTPS.\n Default: \"/\" when protocol is HTTP or HTTPS.",
+          "required": false
+        },
+        {
+          "name": "HealthyThreshold",
+          "jsonName": "healthyThreshold",
+          "protoField": "healthy_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive successful health checks required to consider an\n unhealthy target healthy. Range: 2-10. Default: 3.",
+          "required": false
+        },
+        {
+          "name": "UnhealthyThreshold",
+          "jsonName": "unhealthyThreshold",
+          "protoField": "unhealthy_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive failed health checks required to consider a healthy\n target unhealthy. Range: 2-10. Default: 3.\n\n For NLB, this must equal healthy_threshold (unlike ALB where they can\n differ). The IaC modules enforce this by setting both to healthy_threshold.",
+          "required": false
+        },
+        {
+          "name": "IntervalSeconds",
+          "jsonName": "intervalSeconds",
+          "protoField": "interval_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Time in seconds between health checks for an individual target.\n Range: 5-300. Default: 30 seconds.",
+          "required": false
+        },
+        {
+          "name": "TimeoutSeconds",
+          "jsonName": "timeoutSeconds",
+          "protoField": "timeout_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Time in seconds to wait for a health check response before considering\n it failed. Must be less than interval_seconds.\n Range: 2-120. Default: 10 seconds for TCP, 6 seconds for HTTP/HTTPS.",
+          "required": false
+        },
+        {
+          "name": "Matcher",
+          "jsonName": "matcher",
+          "protoField": "matcher",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP response codes that indicate a healthy target. Only valid when\n health check protocol is HTTP or HTTPS.\n Format: single code (\"200\"), range (\"200-399\"), or comma-separated\n (\"200,202\"). Default: \"200-399\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsNetworkLoadBalancerListener",
+      "description": "AwsNetworkLoadBalancerListener defines a port/protocol combination that the\n NLB accepts connections on, along with the target group that receives the\n forwarded traffic.\n\n NLB listeners only support forward actions (no redirect, fixed-response, or\n authentication actions like ALB). Therefore, every listener must have an\n associated target group.",
+      "protoType": "org.openmcf.provider.aws.awsnetworkloadbalancer.v1.AwsNetworkLoadBalancerListener",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "User-assigned name for this listener. Used as a key in the output maps\n (listener_arns, target_group_arns) so downstream resources can reference\n specific listener or target group ARNs via valueFrom.\n\n Must be unique within the NLB's listeners. Lowercase alphanumeric and\n hyphens only, starting with a letter.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port number the listener accepts traffic on. Range: 1-65535.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol for this listener.\n Valid values: \"TCP\", \"UDP\", \"TLS\", \"TCP_UDP\".\n\n Choose TLS for TLS termination at the NLB (requires tls configuration).\n Choose TCP for pass-through to targets that handle their own TLS.\n Choose UDP for UDP workloads (DNS, gaming, IoT).\n Choose TCP_UDP for dual-protocol listeners on the same port.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Tls",
+          "jsonName": "tls",
+          "protoField": "tls",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsNetworkLoadBalancerTlsConfig"
+          },
+          "description": "TLS configuration for TLS protocol listeners. Required when protocol is\n \"TLS\". Specifies the ACM certificate for TLS termination and optionally\n the security policy.",
+          "required": false
+        },
+        {
+          "name": "TcpIdleTimeoutSeconds",
+          "jsonName": "tcpIdleTimeoutSeconds",
+          "protoField": "tcp_idle_timeout_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "TCP idle timeout in seconds. Controls how long the NLB keeps an idle TCP\n connection open before closing it. Only valid for TCP protocol listeners.\n Range: 60-6000 seconds. Default: 350 seconds (AWS default).",
+          "required": false
+        },
+        {
+          "name": "AlpnPolicy",
+          "jsonName": "alpnPolicy",
+          "protoField": "alpn_policy",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ALPN policy for TLS listeners. Controls which Application-Layer Protocol\n Negotiation protocols are advertised during the TLS handshake.\n\n Only valid when protocol is \"TLS\".\n Valid values: \"HTTP1Only\", \"HTTP2Only\", \"HTTP2Optional\", \"HTTP2Preferred\", \"None\".",
+          "required": false
+        },
+        {
+          "name": "TargetGroup",
+          "jsonName": "targetGroup",
+          "protoField": "target_group",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsNetworkLoadBalancerTargetGroup"
+          },
+          "description": "Target group configuration for this listener. Defines how the listener\n forwards connections to backend targets.\n\n Every listener must have a target group because NLB only supports forward\n actions.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsNetworkLoadBalancerSubnetMapping",
+      "description": "AwsNetworkLoadBalancerSubnetMapping maps an NLB node to a specific subnet\n and optionally assigns a static IP address.\n\n For internet-facing NLBs, assign an Elastic IP via allocation_id to get a\n static public IP that does not change across NLB scaling events. This is\n critical for allowlisting, DNS pinning, and firewall rules.\n\n For internal NLBs, use private_ipv4_address to pin the NLB node to a\n specific private IP within the subnet.",
+      "protoType": "org.openmcf.provider.aws.awsnetworkloadbalancer.v1.AwsNetworkLoadBalancerSubnetMapping",
+      "fields": [
+        {
+          "name": "SubnetId",
+          "jsonName": "subnetId",
+          "protoField": "subnet_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Subnet ID where the NLB node is placed. Must be in a VPC that supports\n the NLB's scheme (public subnet for internet-facing, private for internal).",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsVpc"
+        },
+        {
+          "name": "AllocationId",
+          "jsonName": "allocationId",
+          "protoField": "allocation_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Elastic IP allocation ID for a static public IP address on this NLB node.\n Only valid for internet-facing NLBs. Each subnet mapping can have at most\n one Elastic IP.",
+          "required": false,
+          "referenceKind": "AwsElasticIp",
+          "referenceFieldPath": "status.outputs.allocation_id"
+        },
+        {
+          "name": "PrivateIpv4Address",
+          "jsonName": "privateIpv4Address",
+          "protoField": "private_ipv4_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specific private IPv4 address for the NLB node in this subnet. Only valid\n for internal NLBs. The address must belong to the subnet's CIDR range.\n When omitted, AWS assigns a private IP automatically.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsNetworkLoadBalancerTargetGroup",
+      "description": "AwsNetworkLoadBalancerTargetGroup defines how a listener forwards connections\n to backend targets.\n\n The target group itself is created by OpenMCF. Actual targets (EC2 instances,\n IP addresses, or ALBs) are registered separately -- typically by ECS services,\n EKS ingress controllers, or auto-scaling group attachments. This separation\n allows the NLB infrastructure to be provisioned independently from the\n application workloads it fronts.",
+      "protoType": "org.openmcf.provider.aws.awsnetworkloadbalancer.v1.AwsNetworkLoadBalancerTargetGroup",
+      "fields": [
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port to route traffic to on registered targets. Range: 1-65535.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol for communication with targets.\n Valid values: \"TCP\", \"UDP\", \"TLS\", \"TCP_UDP\".\n\n This is the protocol used between the NLB and targets, which may differ\n from the listener protocol. For example, a TLS listener can forward to\n TCP targets (NLB terminates TLS).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "TargetType",
+          "jsonName": "targetType",
+          "protoField": "target_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Target type determines how targets are specified when registered.\n - \"instance\": Targets are EC2 instance IDs. Health checks use the\n   instance's primary private IP.\n - \"ip\": Targets are IP addresses. Supports IPs within the VPC CIDR\n   or peered VPC CIDRs.\n - \"alb\": Target is an Application Load Balancer. Enables NLB-in-front-\n   of-ALB pattern for combining Layer 4 static IPs with Layer 7 routing.\n\n Default: \"instance\" when omitted.",
+          "required": false
+        },
+        {
+          "name": "HealthCheck",
+          "jsonName": "healthCheck",
+          "protoField": "health_check",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsNetworkLoadBalancerHealthCheck"
+          },
+          "description": "Health check configuration for targets in this group. When omitted,\n AWS applies default health check settings (TCP on the traffic port,\n 30-second interval, 3 healthy/unhealthy thresholds).",
+          "required": false
+        },
+        {
+          "name": "DeregistrationDelaySeconds",
+          "jsonName": "deregistrationDelaySeconds",
+          "protoField": "deregistration_delay_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Time in seconds the NLB waits before deregistering a draining target.\n During this period, in-flight connections are allowed to complete.\n Range: 0-3600. Default: 300 seconds.",
+          "required": false,
+          "recommendedDefault": "300"
+        },
+        {
+          "name": "PreserveClientIp",
+          "jsonName": "preserveClientIp",
+          "protoField": "preserve_client_ip",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When enabled, targets see the original client IP address in the IP\n header. When disabled, targets see the NLB's private IP.\n\n Enabled by default for instance targets, disabled for IP targets.\n Use with proxy_protocol_v2 for full client metadata (port, VPC endpoint).",
+          "required": false
+        },
+        {
+          "name": "ProxyProtocolV2",
+          "jsonName": "proxyProtocolV2",
+          "protoField": "proxy_protocol_v2",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Proxy Protocol v2 header on connections forwarded to targets.\n The header carries client connection metadata (source IP/port, destination\n IP/port, VPC endpoint ID). Targets must be configured to parse the\n Proxy Protocol v2 header.",
+          "required": false
+        },
+        {
+          "name": "ConnectionTermination",
+          "jsonName": "connectionTermination",
+          "protoField": "connection_termination",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When enabled, the NLB terminates connections to deregistered targets\n immediately when the deregistration delay expires, instead of waiting\n for the client to close them. Recommended for long-lived connections\n (WebSocket, gRPC streams, database connections).",
+          "required": false
+        },
+        {
+          "name": "StickinessEnabled",
+          "jsonName": "stickinessEnabled",
+          "protoField": "stickiness_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable source-IP-based sticky sessions. When enabled, the NLB routes\n requests from the same client IP to the same target for the duration\n of the connection. This is the only stickiness type supported by NLB\n (cookie-based stickiness is ALB-only).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsNetworkLoadBalancerTlsConfig",
+      "description": "AwsNetworkLoadBalancerTlsConfig defines TLS termination settings for a\n TLS protocol listener.\n\n When TLS termination is configured on the NLB, the NLB decrypts incoming\n TLS connections and forwards plaintext TCP to targets. This offloads\n certificate management and TLS processing from application servers.",
+      "protoType": "org.openmcf.provider.aws.awsnetworkloadbalancer.v1.AwsNetworkLoadBalancerTlsConfig",
+      "fields": [
+        {
+          "name": "CertificateArn",
+          "jsonName": "certificateArn",
+          "protoField": "certificate_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ACM certificate ARN for TLS termination. The certificate must cover the\n domain names that clients use to connect to the NLB.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsCertManagerCert",
+          "referenceFieldPath": "status.outputs.cert_arn"
+        },
+        {
+          "name": "SslPolicy",
+          "jsonName": "sslPolicy",
+          "protoField": "ssl_policy",
+          "type": {
+            "kind": "string"
+          },
+          "description": "TLS security policy that defines the supported ciphers and protocols.\n When omitted, AWS uses the default policy.\n Recommended: \"ELBSecurityPolicy-TLS13-1-2-2021-06\" for modern TLS 1.3+1.2.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

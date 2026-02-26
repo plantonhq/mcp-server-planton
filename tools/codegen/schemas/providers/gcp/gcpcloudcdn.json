@@ -1,0 +1,882 @@
+{
+  "name": "GcpCloudCdn",
+  "kind": "GcpCloudCdn",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-cloud-cdn",
+  "protoPackage": "org.openmcf.provider.gcp.gcpcloudcdn.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpcloudcdn/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpcloudcdn/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpCloudCdnSpec",
+    "fields": [
+      {
+        "name": "GcpProjectId",
+        "jsonName": "gcpProjectId",
+        "protoField": "gcp_project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The ID of the GCP project where the Cloud CDN resources will be created.\n This field supports cross-resource references using ValueFrom to dynamically\n retrieve the project ID from a GcpProject resource.\n Required field.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "Backend",
+        "jsonName": "backend",
+        "protoField": "backend",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudCdnBackend"
+        },
+        "description": "Backend configuration defines the origin server that Cloud CDN will cache content from.\n This can be a GCS bucket, Compute Engine service, Cloud Run, or external origin.\n Required field.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "CacheMode",
+        "jsonName": "cacheMode",
+        "protoField": "cache_mode",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.CacheMode",
+          "enumValues": [
+            "CACHE_ALL_STATIC",
+            "USE_ORIGIN_HEADERS",
+            "FORCE_CACHE_ALL"
+          ]
+        },
+        "description": "Cache mode determines what content gets cached and when to trust origin headers.\n CACHE_ALL_STATIC (default): Automatically caches common static file types and respects Cache-Control headers.\n USE_ORIGIN_HEADERS: Only caches content with valid Cache-Control or Expires headers from origin.\n FORCE_CACHE_ALL: Aggressively caches all 200 OK responses (use only for public static content).\n Default: CACHE_ALL_STATIC (recommended for 90% of deployments).",
+        "required": false,
+        "oneofGroup": "_cache_mode"
+      },
+      {
+        "name": "DefaultTtlSeconds",
+        "jsonName": "defaultTtlSeconds",
+        "protoField": "default_ttl_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Default Time-To-Live (TTL) in seconds for cached content when origin doesn't specify Cache-Control.\n Recommended: 3600 (1 hour) for most use cases.\n Optional field. If not set, GCP uses default of 3600 seconds.",
+        "required": false,
+        "validation": {
+          "max": 31536000
+        },
+        "oneofGroup": "_default_ttl_seconds"
+      },
+      {
+        "name": "MaxTtlSeconds",
+        "jsonName": "maxTtlSeconds",
+        "protoField": "max_ttl_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum TTL in seconds. This is a hard ceiling that overrides origin Cache-Control headers.\n Recommended: 86400 (1 day) to balance freshness and cache hit ratio.\n Optional field. If not set, GCP uses default of 86400 seconds.",
+        "required": false,
+        "validation": {
+          "max": 31536000
+        },
+        "oneofGroup": "_max_ttl_seconds"
+      },
+      {
+        "name": "ClientTtlSeconds",
+        "jsonName": "clientTtlSeconds",
+        "protoField": "client_ttl_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Client TTL in seconds. Overrides max-age directive for browser caches.\n Use this to set different cache duration for browsers vs edge caches.\n Optional field. If not set, uses max_ttl_seconds.",
+        "required": false,
+        "validation": {
+          "max": 31536000
+        },
+        "oneofGroup": "_client_ttl_seconds"
+      },
+      {
+        "name": "EnableNegativeCaching",
+        "jsonName": "enableNegativeCaching",
+        "protoField": "enable_negative_caching",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable caching of HTTP 4xx/5xx error responses to prevent origin overload during failures.\n Recommended: true (best practice to cache 404s and 5xx errors).\n Default: false.",
+        "required": false,
+        "oneofGroup": "_enable_negative_caching"
+      },
+      {
+        "name": "AdvancedConfig",
+        "jsonName": "advancedConfig",
+        "protoField": "advanced_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudCdnAdvancedConfig"
+        },
+        "description": "Advanced cache configuration (20% of use cases).\n Configure cache keys, signed URLs, and granular caching policies.",
+        "required": false,
+        "oneofGroup": "_advanced_config"
+      },
+      {
+        "name": "FrontendConfig",
+        "jsonName": "frontendConfig",
+        "protoField": "frontend_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudCdnFrontendConfig"
+        },
+        "description": "Load balancer frontend configuration (SSL certificates, domains, Cloud Armor).\n If not specified, creates a basic load balancer with auto-generated HTTPS setup.",
+        "required": false,
+        "oneofGroup": "_frontend_config"
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "CacheKeyPolicy",
+      "description": "**CacheKeyPolicy** controls what attributes are included in the cache key.\n The cache key determines whether two requests share the same cached response.\n Default: Protocol + Host + Path + Query String.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.CacheKeyPolicy",
+      "fields": [
+        {
+          "name": "IncludeQueryString",
+          "jsonName": "includeQueryString",
+          "protoField": "include_query_string",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Include URL query string in cache key.\n Set to false if query parameters don't affect response content (e.g., analytics parameters).\n Default: true.",
+          "required": false,
+          "oneofGroup": "_include_query_string"
+        },
+        {
+          "name": "QueryStringWhitelist",
+          "jsonName": "queryStringWhitelist",
+          "protoField": "query_string_whitelist",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Whitelist of query parameters to include in cache key.\n All other query parameters are ignored, preventing cache shattering.\n Example: [\"version\", \"lang\", \"page\"] - only these params affect caching.\n If empty, includes all query parameters (when include_query_string = true).",
+          "required": false
+        },
+        {
+          "name": "IncludeProtocol",
+          "jsonName": "includeProtocol",
+          "protoField": "include_protocol",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Include request protocol (HTTP vs HTTPS) in cache key.\n Default: true (recommended to keep separate caches for HTTP and HTTPS).",
+          "required": false,
+          "oneofGroup": "_include_protocol"
+        },
+        {
+          "name": "IncludeHost",
+          "jsonName": "includeHost",
+          "protoField": "include_host",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Include Host header in cache key.\n Set to false if serving the same content for multiple hostnames.\n Default: true.",
+          "required": false,
+          "oneofGroup": "_include_host"
+        },
+        {
+          "name": "IncludedHeaders",
+          "jsonName": "includedHeaders",
+          "protoField": "included_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Include specific request headers in the cache key.\n Use sparingly - too many headers in cache key leads to cache shattering.\n Cloud CDN only supports: Accept, Accept-Encoding, Origin.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CloudArmorConfig",
+      "description": "**CloudArmorConfig** enables Google Cloud Armor (WAF and DDoS protection).",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.CloudArmorConfig",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Cloud Armor protection.",
+          "required": false
+        },
+        {
+          "name": "SecurityPolicyName",
+          "jsonName": "securityPolicyName",
+          "protoField": "security_policy_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of existing Cloud Armor security policy to attach.\n The policy must exist in the same GCP project.\n Required when enabled = true.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CloudRunBackendConfig",
+      "description": "**CloudRunBackendConfig** configures Cloud Run as the CDN origin.\n Automatically creates a Serverless Network Endpoint Group for the Cloud Run service.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.CloudRunBackendConfig",
+      "fields": [
+        {
+          "name": "ServiceName",
+          "jsonName": "serviceName",
+          "protoField": "service_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the Cloud Run service to use as backend.\n The service must be deployed in the same GCP project.\n Required field.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Region",
+          "jsonName": "region",
+          "protoField": "region",
+          "type": {
+            "kind": "string"
+          },
+          "description": "GCP region where the Cloud Run service is deployed.\n Required field.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "ComputeBackendConfig",
+      "description": "**ComputeBackendConfig** configures Compute Engine as the CDN origin.\n Use this for VM-based web applications and APIs.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.ComputeBackendConfig",
+      "fields": [
+        {
+          "name": "InstanceGroupName",
+          "jsonName": "instanceGroupName",
+          "protoField": "instance_group_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the Managed Instance Group to use as backend.\n Required field.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "HealthCheck",
+          "jsonName": "healthCheck",
+          "protoField": "health_check",
+          "type": {
+            "kind": "message",
+            "messageType": "HealthCheckConfig"
+          },
+          "description": "Health check configuration for the backend instances.\n If not specified, creates a default HTTP health check.",
+          "required": false,
+          "oneofGroup": "_health_check"
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.BackendProtocol",
+            "enumValues": [
+              "HTTP",
+              "HTTPS"
+            ]
+          },
+          "description": "Backend protocol (HTTP or HTTPS).\n Default: HTTP.",
+          "required": false,
+          "oneofGroup": "_protocol"
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port number where backend instances serve traffic.\n Default: 80 for HTTP, 443 for HTTPS.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          },
+          "oneofGroup": "_port"
+        }
+      ]
+    },
+    {
+      "name": "ExternalBackendConfig",
+      "description": "**ExternalBackendConfig** configures an external origin (outside GCP).\n Use this for hybrid/multi-cloud deployments or gradual migration to GCP.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.ExternalBackendConfig",
+      "fields": [
+        {
+          "name": "Hostname",
+          "jsonName": "hostname",
+          "protoField": "hostname",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Fully qualified domain name (FQDN) or IP address of the external origin.\n Required field.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port number where the external origin serves traffic.\n Default: 443 for HTTPS, 80 for HTTP.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          },
+          "oneofGroup": "_port"
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.BackendProtocol",
+            "enumValues": [
+              "HTTP",
+              "HTTPS"
+            ]
+          },
+          "description": "Protocol for connecting to external origin.\n Default: HTTPS (recommended for security).",
+          "required": false,
+          "oneofGroup": "_protocol"
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudCdnAdvancedConfig",
+      "description": "**GcpCloudCdnAdvancedConfig** contains advanced CDN configuration options (20% use cases).\n These settings provide fine-grained control over caching behavior, security, and optimization.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.GcpCloudCdnAdvancedConfig",
+      "fields": [
+        {
+          "name": "CacheKeyPolicy",
+          "jsonName": "cacheKeyPolicy",
+          "protoField": "cache_key_policy",
+          "type": {
+            "kind": "message",
+            "messageType": "CacheKeyPolicy"
+          },
+          "description": "Cache key policy controls what request attributes are included in the cache key.\n Tune this to avoid \"cache shattering\" (too many unique cache keys with low hit ratio).",
+          "required": false,
+          "oneofGroup": "_cache_key_policy"
+        },
+        {
+          "name": "SignedUrlConfig",
+          "jsonName": "signedUrlConfig",
+          "protoField": "signed_url_config",
+          "type": {
+            "kind": "message",
+            "messageType": "SignedUrlConfig"
+          },
+          "description": "Signed URL configuration for serving private/paid content via Cloud CDN.\n Enables time-limited, cryptographically signed URLs for access control.",
+          "required": false,
+          "oneofGroup": "_signed_url_config"
+        },
+        {
+          "name": "NegativeCachingPolicies",
+          "jsonName": "negativeCachingPolicies",
+          "protoField": "negative_caching_policies",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "NegativeCachingPolicy"
+            }
+          },
+          "description": "Negative caching policies per HTTP status code.\n Allows granular control over error response caching (e.g., cache 404 for 10 minutes, 503 for 1 minute).",
+          "required": false
+        },
+        {
+          "name": "ServeWhileStaleSeconds",
+          "jsonName": "serveWhileStaleSeconds",
+          "protoField": "serve_while_stale_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Serve stale content while revalidating with origin (RFC 5861 stale-while-revalidate).\n Improves performance by serving cached content immediately while fetching fresh content in background.\n Value in seconds. Default: 0 (disabled).",
+          "required": false,
+          "validation": {
+            "max": 604800
+          },
+          "oneofGroup": "_serve_while_stale_seconds"
+        },
+        {
+          "name": "EnableRequestCoalescing",
+          "jsonName": "enableRequestCoalescing",
+          "protoField": "enable_request_coalescing",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Request coalescing combines multiple identical requests into one origin fetch.\n Reduces origin load during cache misses. Recommended: true.\n Default: true.",
+          "required": false,
+          "oneofGroup": "_enable_request_coalescing"
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudCdnBackend",
+      "description": "**GcpCloudCdnBackend** defines the origin server configuration for Cloud CDN.\n Cloud CDN supports multiple backend types: GCS buckets (static content),\n Compute Engine (VMs), Cloud Run (serverless), and external origins.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.GcpCloudCdnBackend",
+      "fields": [
+        {
+          "name": "GcsBucket",
+          "jsonName": "gcsBucket",
+          "protoField": "gcs_bucket",
+          "type": {
+            "kind": "message",
+            "messageType": "GcsBackendConfig"
+          },
+          "description": "Google Cloud Storage bucket backend for static website hosting and file downloads.\n Most common use case (~80% of deployments).",
+          "required": false,
+          "oneofGroup": "backend_type"
+        },
+        {
+          "name": "ComputeService",
+          "jsonName": "computeService",
+          "protoField": "compute_service",
+          "type": {
+            "kind": "message",
+            "messageType": "ComputeBackendConfig"
+          },
+          "description": "Compute Engine backend service for VMs (Managed Instance Groups).\n Use for traditional web applications and APIs.",
+          "required": false,
+          "oneofGroup": "backend_type"
+        },
+        {
+          "name": "CloudRunService",
+          "jsonName": "cloudRunService",
+          "protoField": "cloud_run_service",
+          "type": {
+            "kind": "message",
+            "messageType": "CloudRunBackendConfig"
+          },
+          "description": "Cloud Run backend for serverless container workloads.\n Automatically creates Serverless Network Endpoint Group (NEG).",
+          "required": false,
+          "oneofGroup": "backend_type"
+        },
+        {
+          "name": "ExternalOrigin",
+          "jsonName": "externalOrigin",
+          "protoField": "external_origin",
+          "type": {
+            "kind": "message",
+            "messageType": "ExternalBackendConfig"
+          },
+          "description": "External/hybrid backend for origins outside GCP (AWS S3, on-prem servers).\n Uses Internet Network Endpoint Group.",
+          "required": false,
+          "oneofGroup": "backend_type"
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudCdnFrontendConfig",
+      "description": "**GcpCloudCdnFrontendConfig** configures the load balancer frontend (SSL, domains, security).\n If not specified, creates a basic HTTPS load balancer with auto-managed certificate.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.GcpCloudCdnFrontendConfig",
+      "fields": [
+        {
+          "name": "CustomDomains",
+          "jsonName": "customDomains",
+          "protoField": "custom_domains",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Custom domains for the CDN endpoint.\n If not specified, uses the default GCP load balancer domain (*.globalgcp.net).",
+          "required": false
+        },
+        {
+          "name": "SslCertificate",
+          "jsonName": "sslCertificate",
+          "protoField": "ssl_certificate",
+          "type": {
+            "kind": "message",
+            "messageType": "SslCertificateConfig"
+          },
+          "description": "SSL certificate configuration.\n If not specified, uses Google-managed certificate for custom_domains.",
+          "required": false,
+          "oneofGroup": "_ssl_certificate"
+        },
+        {
+          "name": "CloudArmor",
+          "jsonName": "cloudArmor",
+          "protoField": "cloud_armor",
+          "type": {
+            "kind": "message",
+            "messageType": "CloudArmorConfig"
+          },
+          "description": "Enable Cloud Armor (WAF/DDoS protection).\n Requires specifying a Cloud Armor security policy.",
+          "required": false,
+          "oneofGroup": "_cloud_armor"
+        },
+        {
+          "name": "EnableHttpsRedirect",
+          "jsonName": "enableHttpsRedirect",
+          "protoField": "enable_https_redirect",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable HTTP to HTTPS redirect.\n Recommended: true for production deployments.\n Default: true.",
+          "required": false,
+          "oneofGroup": "_enable_https_redirect"
+        }
+      ]
+    },
+    {
+      "name": "GcsBackendConfig",
+      "description": "**GcsBackendConfig** configures a Google Cloud Storage bucket as the CDN origin.\n Use this for static websites, media files, and downloadable content.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.GcsBackendConfig",
+      "fields": [
+        {
+          "name": "BucketName",
+          "jsonName": "bucketName",
+          "protoField": "bucket_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the GCS bucket to use as origin.\n The bucket must already exist in the same GCP project.\n Required field.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "pattern": "^[a-z0-9][a-z0-9-_.]{1,61}[a-z0-9]$"
+          }
+        },
+        {
+          "name": "EnableUniformAccess",
+          "jsonName": "enableUniformAccess",
+          "protoField": "enable_uniform_access",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable uniform bucket-level access (recommended for security).\n When true, uses IAM for all access control (no legacy ACLs).\n Default: true.",
+          "required": false,
+          "oneofGroup": "_enable_uniform_access"
+        }
+      ]
+    },
+    {
+      "name": "GoogleManagedCertificateConfig",
+      "description": "**GoogleManagedCertificateConfig** uses Google-managed SSL certificates.\n Google automatically provisions and renews certificates via Let's Encrypt.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.GoogleManagedCertificateConfig",
+      "fields": [
+        {
+          "name": "Domains",
+          "jsonName": "domains",
+          "protoField": "domains",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Domains to include in the certificate.\n Must match or be subset of frontend_config.custom_domains.\n Required field.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "HealthCheckConfig",
+      "description": "**HealthCheckConfig** defines health check configuration for backend instances.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.HealthCheckConfig",
+      "fields": [
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path to use for health check requests.\n Default: / (root path).",
+          "required": false,
+          "oneofGroup": "_path"
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port to use for health checks.\n If not specified, uses the backend port.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          },
+          "oneofGroup": "_port"
+        },
+        {
+          "name": "CheckIntervalSeconds",
+          "jsonName": "checkIntervalSeconds",
+          "protoField": "check_interval_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Interval between health checks in seconds.\n Default: 5 seconds.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 300
+          },
+          "oneofGroup": "_check_interval_seconds"
+        },
+        {
+          "name": "TimeoutSeconds",
+          "jsonName": "timeoutSeconds",
+          "protoField": "timeout_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Timeout for each health check in seconds.\n Default: 5 seconds.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 300
+          },
+          "oneofGroup": "_timeout_seconds"
+        },
+        {
+          "name": "HealthyThreshold",
+          "jsonName": "healthyThreshold",
+          "protoField": "healthy_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive successes required to mark backend healthy.\n Default: 2.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 10
+          },
+          "oneofGroup": "_healthy_threshold"
+        },
+        {
+          "name": "UnhealthyThreshold",
+          "jsonName": "unhealthyThreshold",
+          "protoField": "unhealthy_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive failures required to mark backend unhealthy.\n Default: 2.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 10
+          },
+          "oneofGroup": "_unhealthy_threshold"
+        }
+      ]
+    },
+    {
+      "name": "NegativeCachingPolicy",
+      "description": "**NegativeCachingPolicy** defines caching behavior for specific HTTP error codes.\n Prevents origin overload by caching error responses at the edge.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.NegativeCachingPolicy",
+      "fields": [
+        {
+          "name": "Code",
+          "jsonName": "code",
+          "protoField": "code",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "HTTP status code to cache (e.g., 404, 503).\n Required field.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 400,
+            "max": 599
+          }
+        },
+        {
+          "name": "TtlSeconds",
+          "jsonName": "ttlSeconds",
+          "protoField": "ttl_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "TTL in seconds for caching this error response.\n Recommended: 600 (10 minutes) for 404, 60 (1 minute) for 5xx errors.\n Required field.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "max": 86400
+          }
+        }
+      ]
+    },
+    {
+      "name": "SelfManagedCertificateConfig",
+      "description": "**SelfManagedCertificateConfig** uses user-provided SSL certificates.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.SelfManagedCertificateConfig",
+      "fields": [
+        {
+          "name": "CertificatePem",
+          "jsonName": "certificatePem",
+          "protoField": "certificate_pem",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PEM-encoded SSL certificate chain.\n Required field.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "PrivateKeyPem",
+          "jsonName": "privateKeyPem",
+          "protoField": "private_key_pem",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PEM-encoded private key.\n Required field.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "SignedUrlConfig",
+      "description": "**SignedUrlConfig** enables signed URLs for private content delivery via Cloud CDN.\n Generate time-limited URLs with cryptographic signatures to control access to cached content.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.SignedUrlConfig",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable signed URL validation.\n Required: true to activate signed URL feature.",
+          "required": false
+        },
+        {
+          "name": "Keys",
+          "jsonName": "keys",
+          "protoField": "keys",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "SignedUrlKey"
+            }
+          },
+          "description": "List of signing keys for URL validation.\n Multiple keys enable key rotation without downtime.\n Required when enabled = true.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "SignedUrlKey",
+      "description": "**SignedUrlKey** defines a cryptographic key for signing and validating URLs.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.SignedUrlKey",
+      "fields": [
+        {
+          "name": "KeyName",
+          "jsonName": "keyName",
+          "protoField": "key_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this signing key.\n Used to identify which key signed a URL.\n Required field.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "pattern": "^[a-zA-Z0-9_-]{1,63}$"
+          }
+        },
+        {
+          "name": "KeyValue",
+          "jsonName": "keyValue",
+          "protoField": "key_value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Base64-encoded key value (128-bit recommended).\n Generate with: openssl rand -base64 16\n Required field.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 16
+          }
+        }
+      ]
+    },
+    {
+      "name": "SslCertificateConfig",
+      "description": "**SslCertificateConfig** defines SSL/TLS certificate configuration for HTTPS.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcdn.v1.SslCertificateConfig",
+      "fields": [
+        {
+          "name": "GoogleManaged",
+          "jsonName": "googleManaged",
+          "protoField": "google_managed",
+          "type": {
+            "kind": "message",
+            "messageType": "GoogleManagedCertificateConfig"
+          },
+          "description": "Use Google-managed certificate (automatic issuance and renewal).\n Recommended for most use cases.",
+          "required": false,
+          "oneofGroup": "certificate_type"
+        },
+        {
+          "name": "SelfManaged",
+          "jsonName": "selfManaged",
+          "protoField": "self_managed",
+          "type": {
+            "kind": "message",
+            "messageType": "SelfManagedCertificateConfig"
+          },
+          "description": "Use self-managed certificate (bring your own certificate).\n Use when you have specific certificate requirements or existing certificates.",
+          "required": false,
+          "oneofGroup": "certificate_type"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "name": "DigitalOceanDatabaseCluster",
+  "kind": "DigitalOceanDatabaseCluster",
+  "cloudProvider": "digitalocean",
+  "apiVersion": "digital-ocean.openmcf.org/v1",
+  "description": "digital-ocean-database-cluster",
+  "protoPackage": "org.openmcf.provider.digitalocean.digitaloceandatabasecluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/digitalocean/digitaloceandatabasecluster/v1/api.proto",
+    "spec": "org/openmcf/provider/digitalocean/digitaloceandatabasecluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "DigitalOceanDatabaseClusterSpec",
+    "fields": [
+      {
+        "name": "ClusterName",
+        "jsonName": "clusterName",
+        "protoField": "cluster_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "A human-readable name for the database cluster.\n This name will be used as the cluster's identifier in DigitalOcean.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "maxLength": 64
+        }
+      },
+      {
+        "name": "Engine",
+        "jsonName": "engine",
+        "protoField": "engine",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.digitaloceandatabasecluster.v1.DigitalOceanDatabaseEngine",
+          "enumValues": [
+            "pg",
+            "mysql",
+            "redis",
+            "mongodb"
+          ]
+        },
+        "description": "The database engine for the cluster.\n Allowed values include: POSTGRES, MYSQL, REDIS, MONGODB.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "EngineVersion",
+        "jsonName": "engineVersion",
+        "protoField": "engine_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The engine version for the cluster.\n For example, \"14\" for PostgreSQL 14, \"8\" for MySQL 8, etc.\n Only major (and optionally minor) version numbers are expected.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[0-9]+(\\.[0-9]+)?$"
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.DigitalOceanRegion",
+          "enumValues": [
+            "nyc3",
+            "sfo3",
+            "fra1",
+            "sgp1",
+            "lon1",
+            "tor1",
+            "blr1",
+            "ams3"
+          ]
+        },
+        "description": "The DigitalOcean region where the cluster will be created.\n Determines the data center location for the cluster.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "SizeSlug",
+        "jsonName": "sizeSlug",
+        "protoField": "size_slug",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The slug identifier for the cluster's node size (e.g., \"db-s-2vcpu-4gb\").\n This defines the CPU/memory resources for each node in the cluster.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "NodeCount",
+        "jsonName": "nodeCount",
+        "protoField": "node_count",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "The number of nodes in the cluster. Allowed values are 1 to 3 for primary nodes.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Vpc",
+        "jsonName": "vpc",
+        "protoField": "vpc",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Reference to a DigitalOcean VPC for the database cluster.\n If provided, the cluster will be created within the specified private network.\n Use a literal VPC UUID or a reference to a DigitalOceanVpc resource.",
+        "required": false,
+        "referenceKind": "DigitalOceanVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "StorageGib",
+        "jsonName": "storageGib",
+        "protoField": "storage_gib",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "(Optional) Custom storage size in GiB for the cluster.\n If not set, the default storage for the chosen size_slug will be used.",
+        "required": false
+      },
+      {
+        "name": "EnablePublicConnectivity",
+        "jsonName": "enablePublicConnectivity",
+        "protoField": "enable_public_connectivity",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "(Optional) Whether to enable cluster access to public networking.\n When false (default), no public connection is available; the cluster is accessible only via the VPC or DigitalOcean internal network.",
+        "required": false
+      }
+    ]
+  }
+}

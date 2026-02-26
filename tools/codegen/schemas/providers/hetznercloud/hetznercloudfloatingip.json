@@ -1,0 +1,88 @@
+{
+  "name": "HetznerCloudFloatingIp",
+  "kind": "HetznerCloudFloatingIp",
+  "cloudProvider": "hetznercloud",
+  "apiVersion": "hetzner-cloud.openmcf.org/v1",
+  "description": "hetznercloud-floating-ip",
+  "protoPackage": "org.openmcf.provider.hetznercloud.hetznercloudfloatingip.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/hetznercloud/hetznercloudfloatingip/v1/api.proto",
+    "spec": "org/openmcf/provider/hetznercloud/hetznercloudfloatingip/v1/spec.proto"
+  },
+  "spec": {
+    "name": "HetznerCloudFloatingIpSpec",
+    "fields": [
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.hetznercloud.hetznercloudfloatingip.v1.IpType",
+          "enumValues": [
+            "ipv4",
+            "ipv6"
+          ]
+        },
+        "description": "IP address type. Determines whether an IPv4 address or an IPv6 /64\n network block is allocated.\n\n Changing this value forces replacement of the Floating IP resource.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "HomeLocation",
+        "jsonName": "homeLocation",
+        "protoField": "home_location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Hetzner Cloud location where the Floating IP is homed (e.g., \"fsn1\",\n \"nbg1\", \"hel1\", \"ash\", \"hil\", \"sin\"). The Floating IP can only be\n assigned to servers in the same location.\n\n Changing this value forces replacement of the Floating IP resource.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description for the Floating IP. Visible in the\n Hetzner Cloud console and API. Useful for documenting the IP's\n purpose (e.g., \"Production web frontend failover IP\").",
+        "required": false
+      },
+      {
+        "name": "ServerId",
+        "jsonName": "serverId",
+        "protoField": "server_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Server to assign this Floating IP to. Optional.\n\n Accepts a literal Hetzner Cloud server ID (as a string) or a reference\n to a HetznerCloudServer resource's output via valueFrom. The referenced\n server must be in the same location as home_location.\n\n If omitted, the Floating IP is created unassigned (reserved). Assignment\n can be added later by updating the spec.\n\n Example (literal):\n   serverId:\n     value: \"12345678\"\n\n Example (reference, once HetznerCloudServer is available):\n   serverId:\n     valueFrom:\n       kind: HetznerCloudServer\n       name: my-server\n       fieldPath: status.outputs.server_id",
+        "required": false
+      },
+      {
+        "name": "DnsPtr",
+        "jsonName": "dnsPtr",
+        "protoField": "dns_ptr",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reverse DNS pointer record for the allocated IP address. If set, an\n hcloud_rdns resource is created that maps the IP to this hostname.\n\n Commonly used for mail servers (SPF/DKIM verification relies on matching\n forward and reverse DNS) and any service where clients verify the server's\n identity via reverse lookup.\n\n Example: \"mail.example.com\"",
+        "required": false
+      },
+      {
+        "name": "DeleteProtection",
+        "jsonName": "deleteProtection",
+        "protoField": "delete_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Prevent accidental deletion of the Floating IP via the Hetzner Cloud API.\n When enabled, the IP cannot be deleted until protection is removed.",
+        "required": false
+      }
+    ]
+  }
+}

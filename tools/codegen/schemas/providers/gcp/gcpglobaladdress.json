@@ -1,0 +1,127 @@
+{
+  "name": "GcpGlobalAddress",
+  "kind": "GcpGlobalAddress",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-global-address",
+  "protoPackage": "org.openmcf.provider.gcp.gcpglobaladdress.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpglobaladdress/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpglobaladdress/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpGlobalAddressSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The GCP project in which to create this global address reservation.\n Example: \"my-prod-project-123\"",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "AddressName",
+        "jsonName": "addressName",
+        "protoField": "address_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the global address resource in GCP.\n Must be 1-63 characters, lowercase letters, numbers, or hyphens.\n Must start with a lowercase letter and end with a letter or number.\n Example: \"lb-external-ip\", \"vpc-peering-range\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "Address",
+        "jsonName": "address",
+        "protoField": "address",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The static IP address to reserve. If omitted, GCP assigns an address automatically.\n For EXTERNAL addresses this is a single IP. For INTERNAL VPC_PEERING addresses\n this is the start of the reserved CIDR range.",
+        "required": false
+      },
+      {
+        "name": "AddressType",
+        "jsonName": "addressType",
+        "protoField": "address_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The type of address to reserve.\n EXTERNAL reserves a public IP address (default). INTERNAL reserves a private IP range\n within a VPC network for purposes like VPC peering or Private Service Connect.",
+        "required": false,
+        "default": "EXTERNAL",
+        "oneofGroup": "_address_type"
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of this address reservation.\n Example: \"Static IP for production HTTPS load balancer\"",
+        "required": false
+      },
+      {
+        "name": "IpVersion",
+        "jsonName": "ipVersion",
+        "protoField": "ip_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The IP version for this address. Defaults to IPV4.",
+        "required": false,
+        "default": "IPV4",
+        "oneofGroup": "_ip_version"
+      },
+      {
+        "name": "Network",
+        "jsonName": "network",
+        "protoField": "network",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The VPC network for internal address reservations.\n Required when address_type is INTERNAL. Accepts a network name or full self-link URL.\n The reserved IP range must be in RFC1918 space and the network cannot be deleted\n while reserved IP ranges refer to it.",
+        "required": false,
+        "referenceKind": "GcpVpc",
+        "referenceFieldPath": "status.outputs.network_self_link"
+      },
+      {
+        "name": "PrefixLength",
+        "jsonName": "prefixLength",
+        "protoField": "prefix_length",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "The prefix length of the IP range to reserve.\n Required for VPC_PEERING purpose (e.g., 20 reserves a /20 range).\n Not applicable for single IP reservations or PRIVATE_SERVICE_CONNECT addresses.\n Valid range: 8 to 29.",
+        "required": false,
+        "validation": {
+          "min": 8,
+          "max": 29
+        },
+        "oneofGroup": "_prefix_length"
+      },
+      {
+        "name": "Purpose",
+        "jsonName": "purpose",
+        "protoField": "purpose",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The purpose of this address reservation. Only applicable for INTERNAL addresses.\n VPC_PEERING — reserves a CIDR range for VPC network peering. Used by managed services\n like Cloud SQL, Redis, AlloyDB, and Filestore for private networking.\n PRIVATE_SERVICE_CONNECT — reserves an address for a Private Service Connect endpoint.\n Leave empty for standard external address reservations.",
+        "required": false
+      }
+    ]
+  }
+}

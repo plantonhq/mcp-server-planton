@@ -1,0 +1,511 @@
+{
+  "name": "AwsRedshiftCluster",
+  "kind": "AwsRedshiftCluster",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-redshift-cluster",
+  "protoPackage": "org.openmcf.provider.aws.awsredshiftcluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsredshiftcluster/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsredshiftcluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsRedshiftClusterSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "NodeType",
+        "jsonName": "nodeType",
+        "protoField": "node_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "node_type determines the compute and storage capacity of each node.\n Common types: dc2.large (dense compute SSD), ra3.xlplus / ra3.4xlarge / ra3.16xlarge\n (managed storage with automatic data tiering between SSD and S3).\n RA3 nodes are recommended for most workloads due to decoupled compute and storage.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "NumberOfNodes",
+        "jsonName": "numberOfNodes",
+        "protoField": "number_of_nodes",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "number_of_nodes determines the cluster topology.\n 1 = single-node (leader and compute combined); \u003e1 = multi-node (separate leader + compute nodes).\n Multi-node clusters are required for production workloads.",
+        "required": false,
+        "validation": {
+          "min": 1
+        },
+        "default": "1",
+        "oneofGroup": "_number_of_nodes"
+      },
+      {
+        "name": "DatabaseName",
+        "jsonName": "databaseName",
+        "protoField": "database_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "database_name is the name of the first database created in the cluster.\n 1-64 characters, lowercase alphanumeric and underscores only, must start with a letter or underscore.",
+        "required": false,
+        "default": "dev",
+        "oneofGroup": "_database_name"
+      },
+      {
+        "name": "MasterUsername",
+        "jsonName": "masterUsername",
+        "protoField": "master_username",
+        "type": {
+          "kind": "string"
+        },
+        "description": "master_username is the admin user for the cluster. Required for new clusters.\n 1-128 characters, must start with a letter.",
+        "required": false,
+        "default": "admin",
+        "oneofGroup": "_master_username"
+      },
+      {
+        "name": "MasterPassword",
+        "jsonName": "masterPassword",
+        "protoField": "master_password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "master_password is the admin password (8-64 chars, at least one uppercase, one lowercase, one digit).\n Mutually exclusive with manage_master_password.",
+        "required": false
+      },
+      {
+        "name": "ManageMasterPassword",
+        "jsonName": "manageMasterPassword",
+        "protoField": "manage_master_password",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "manage_master_password delegates password lifecycle to AWS Secrets Manager.\n When true, AWS generates, rotates, and stores the password automatically.\n Recommended for production. Mutually exclusive with master_password.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "MasterPasswordSecretKmsKeyId",
+        "jsonName": "masterPasswordSecretKmsKeyId",
+        "protoField": "master_password_secret_kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "master_password_secret_kms_key_id encrypts the Secrets Manager secret holding the managed password.\n Only applicable when manage_master_password is true.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "Port",
+        "jsonName": "port",
+        "protoField": "port",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "port for client connections. Redshift default is 5439. Range: 1115-65535.",
+        "required": false,
+        "validation": {
+          "min": 1115,
+          "max": 65535
+        },
+        "default": "5439",
+        "oneofGroup": "_port"
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "subnet_ids for automatic Redshift subnet group creation.\n Provide at least two subnets in distinct Availability Zones for high availability.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "ClusterSubnetGroupName",
+        "jsonName": "clusterSubnetGroupName",
+        "protoField": "cluster_subnet_group_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cluster_subnet_group_name uses an existing Redshift subnet group instead of creating one from subnet_ids.",
+        "required": false
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "security_group_ids triggers creation of a managed security group with ingress rules\n allowing traffic from these source security groups on the cluster port.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "AllowedCidrBlocks",
+        "jsonName": "allowedCidrBlocks",
+        "protoField": "allowed_cidr_blocks",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "allowed_cidr_blocks triggers creation of a managed security group with ingress rules\n allowing traffic from these IPv4 CIDR ranges on the cluster port.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "AssociateSecurityGroupIds",
+        "jsonName": "associateSecurityGroupIds",
+        "protoField": "associate_security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "associate_security_group_ids are existing security groups attached directly to the cluster\n (alongside the managed security group, if one is created from security_group_ids/allowed_cidr_blocks).",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "vpc_id is required when security_group_ids or allowed_cidr_blocks are provided,\n as the managed security group must be created within a specific VPC.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "PubliclyAccessible",
+        "jsonName": "publiclyAccessible",
+        "protoField": "publicly_accessible",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "publicly_accessible controls whether the cluster has a public IP and can be accessed from outside the VPC.",
+        "required": false
+      },
+      {
+        "name": "EnhancedVpcRouting",
+        "jsonName": "enhancedVpcRouting",
+        "protoField": "enhanced_vpc_routing",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "enhanced_vpc_routing forces all COPY and UNLOAD traffic between the cluster and data repositories\n through the VPC, enabling VPC flow logs and other network security controls.",
+        "required": false
+      },
+      {
+        "name": "MultiAz",
+        "jsonName": "multiAz",
+        "protoField": "multi_az",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "multi_az enables Multi-AZ deployment for automatic failover to a standby in a different AZ.\n Requires RA3 node types (ra3.xlplus, ra3.4xlarge, ra3.16xlarge).",
+        "required": false
+      },
+      {
+        "name": "Encrypted",
+        "jsonName": "encrypted",
+        "protoField": "encrypted",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "encrypted enables at-rest encryption for the cluster data.\n AWS defaults to true. Uses the AWS-managed Redshift service key unless kms_key_id is specified.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_encrypted"
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "kms_key_id is the ARN of a customer-managed KMS key for cluster encryption.\n Requires encrypted to be true. If omitted, AWS uses the default Redshift service key.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "IamRoles",
+        "jsonName": "iamRoles",
+        "protoField": "iam_roles",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "iam_roles attaches IAM roles to the cluster for accessing other AWS services\n (S3, DynamoDB, Glue Data Catalog, etc.) during COPY, UNLOAD, and Spectrum queries.\n Maximum 10 roles per cluster.",
+        "required": false,
+        "referenceKind": "AwsIamRole",
+        "referenceFieldPath": "status.outputs.role_arn"
+      },
+      {
+        "name": "DefaultIamRoleArn",
+        "jsonName": "defaultIamRoleArn",
+        "protoField": "default_iam_role_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "default_iam_role_arn is the IAM role used by default when SQL commands access AWS services\n without explicitly specifying a role (e.g., unqualified COPY/UNLOAD).",
+        "required": false,
+        "referenceKind": "AwsIamRole",
+        "referenceFieldPath": "status.outputs.role_arn"
+      },
+      {
+        "name": "AutomatedSnapshotRetentionPeriod",
+        "jsonName": "automatedSnapshotRetentionPeriod",
+        "protoField": "automated_snapshot_retention_period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "automated_snapshot_retention_period is the number of days to retain automated cluster snapshots.\n 0 disables automated snapshots. Maximum: 35.",
+        "required": false,
+        "validation": {
+          "max": 35
+        },
+        "default": "1",
+        "oneofGroup": "_automated_snapshot_retention_period"
+      },
+      {
+        "name": "SkipFinalSnapshot",
+        "jsonName": "skipFinalSnapshot",
+        "protoField": "skip_final_snapshot",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "skip_final_snapshot controls whether a final manual snapshot is created before cluster deletion.\n Set to true only for ephemeral development/test clusters.",
+        "required": false
+      },
+      {
+        "name": "FinalSnapshotIdentifier",
+        "jsonName": "finalSnapshotIdentifier",
+        "protoField": "final_snapshot_identifier",
+        "type": {
+          "kind": "string"
+        },
+        "description": "final_snapshot_identifier is the name for the final snapshot created on deletion.\n Required when skip_final_snapshot is false.",
+        "required": false
+      },
+      {
+        "name": "PreferredMaintenanceWindow",
+        "jsonName": "preferredMaintenanceWindow",
+        "protoField": "preferred_maintenance_window",
+        "type": {
+          "kind": "string"
+        },
+        "description": "preferred_maintenance_window is the weekly UTC time range for system maintenance.\n Format: ddd:hh:mi-ddd:hh:mi (e.g., \"sat:03:00-sat:04:00\").",
+        "required": false,
+        "validation": {
+          "pattern": "^(mon|tue|wed|thu|fri|sat|sun):([01][0-9]|2[0-3]):[0-5][0-9]-(mon|tue|wed|thu|fri|sat|sun):([01][0-9]|2[0-3]):[0-5][0-9]$"
+        }
+      },
+      {
+        "name": "AllowVersionUpgrade",
+        "jsonName": "allowVersionUpgrade",
+        "protoField": "allow_version_upgrade",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "allow_version_upgrade permits AWS to automatically apply major engine version upgrades\n during the maintenance window.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_allow_version_upgrade"
+      },
+      {
+        "name": "MaintenanceTrackName",
+        "jsonName": "maintenanceTrackName",
+        "protoField": "maintenance_track_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "maintenance_track_name determines the cluster maintenance version track.\n \"current\" applies the latest approved version; \"trailing\" uses the previous major version.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "current",
+            "trailing"
+          ]
+        }
+      },
+      {
+        "name": "ApplyImmediately",
+        "jsonName": "applyImmediately",
+        "protoField": "apply_immediately",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "apply_immediately controls whether modifications are applied immediately or deferred\n to the next maintenance window.",
+        "required": false
+      },
+      {
+        "name": "Logging",
+        "jsonName": "logging",
+        "protoField": "logging",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsRedshiftClusterLogging"
+        },
+        "description": "logging configures audit logging for the cluster.\n Redshift can send connection, user activity, and user logs to S3 or CloudWatch Logs.",
+        "required": false
+      },
+      {
+        "name": "ClusterParameterGroupName",
+        "jsonName": "clusterParameterGroupName",
+        "protoField": "cluster_parameter_group_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cluster_parameter_group_name associates an existing Redshift parameter group with the cluster.\n Ignored when inline parameters are provided (a new group is created instead).",
+        "required": false
+      },
+      {
+        "name": "Parameters",
+        "jsonName": "parameters",
+        "protoField": "parameters",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsRedshiftClusterParameter"
+          }
+        },
+        "description": "parameters creates an inline parameter group (family: redshift-1.0) with these parameters.\n Common parameters: require_ssl, enable_user_activity_logging, max_concurrency_scaling_clusters.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsRedshiftClusterLogging",
+      "description": "AwsRedshiftClusterLogging configures audit logging for the Redshift cluster.\n Redshift supports two log destinations: S3 buckets (traditional) and CloudWatch Logs (modern).",
+      "protoType": "org.openmcf.provider.aws.awsredshiftcluster.v1.AwsRedshiftClusterLogging",
+      "fields": [
+        {
+          "name": "LogDestinationType",
+          "jsonName": "logDestinationType",
+          "protoField": "log_destination_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "log_destination_type specifies where audit logs are delivered.\n \"s3\" writes logs to an S3 bucket; \"cloudwatch\" streams logs to CloudWatch Logs.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "s3",
+              "cloudwatch"
+            ]
+          }
+        },
+        {
+          "name": "S3BucketName",
+          "jsonName": "s3BucketName",
+          "protoField": "s3_bucket_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "s3_bucket_name is the S3 bucket for audit log delivery. Required when log_destination_type is \"s3\".",
+          "required": false
+        },
+        {
+          "name": "S3KeyPrefix",
+          "jsonName": "s3KeyPrefix",
+          "protoField": "s3_key_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "s3_key_prefix is an optional prefix for log objects within the S3 bucket.",
+          "required": false
+        },
+        {
+          "name": "LogExports",
+          "jsonName": "logExports",
+          "protoField": "log_exports",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "log_exports specifies which audit log types to export.\n Valid values: \"connectionlog\" (connection attempts), \"useractivitylog\" (SQL queries),\n \"userlog\" (user DDL changes). Required when log_destination_type is \"cloudwatch\".",
+          "required": false,
+          "validation": {
+            "unique": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsRedshiftClusterParameter",
+      "description": "AwsRedshiftClusterParameter represents a key-value pair for a Redshift parameter group.\n The parameter group family is always \"redshift-1.0\".",
+      "protoType": "org.openmcf.provider.aws.awsredshiftcluster.v1.AwsRedshiftClusterParameter",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the parameter (e.g., \"require_ssl\", \"enable_user_activity_logging\",\n \"max_concurrency_scaling_clusters\", \"wlm_json_configuration\").",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "value of the parameter.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    }
+  ]
+}

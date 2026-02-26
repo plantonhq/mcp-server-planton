@@ -1,0 +1,2030 @@
+{
+  "name": "KubernetesDaemonSet",
+  "kind": "KubernetesDaemonSet",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "KubernetesDaemonSet is a Kubernetes resource that ensures all (or some) nodes run a copy of a pod.\n Common use cases include cluster storage daemons, log collection daemons, and node monitoring daemons.",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetesdaemonset.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetesdaemonset/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetesdaemonset/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesDaemonSetSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "Target Kubernetes Cluster",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes Namespace",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "CreateNamespace",
+        "jsonName": "createNamespace",
+        "protoField": "create_namespace",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Flag to indicate if the namespace should be created",
+        "required": false
+      },
+      {
+        "name": "Container",
+        "jsonName": "container",
+        "protoField": "container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesDaemonSetContainer"
+        },
+        "description": "The container specifications for the DaemonSet.\n This includes configurations for the main application container and any sidecar containers.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "NodeSelector",
+        "jsonName": "nodeSelector",
+        "protoField": "node_selector",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Node selector for constraining the DaemonSet pods to run on specific nodes.\n Key-value pairs that must match labels on nodes for the pod to be scheduled.",
+        "required": false
+      },
+      {
+        "name": "Tolerations",
+        "jsonName": "tolerations",
+        "protoField": "tolerations",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "KubernetesDaemonSetToleration"
+          }
+        },
+        "description": "Tolerations allow the DaemonSet pods to be scheduled on nodes with matching taints.\n This is essential for running pods on master nodes or nodes with specific taints.",
+        "required": false
+      },
+      {
+        "name": "UpdateStrategy",
+        "jsonName": "updateStrategy",
+        "protoField": "update_strategy",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesDaemonSetUpdateStrategy"
+        },
+        "description": "The update strategy for the DaemonSet.\n Controls how pods are updated when the DaemonSet specification changes.",
+        "required": false
+      },
+      {
+        "name": "MinReadySeconds",
+        "jsonName": "minReadySeconds",
+        "protoField": "min_ready_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Minimum number of seconds for which a newly created DaemonSet pod should be ready\n without any of its container crashing, for it to be considered available.\n Defaults to 0 (pod will be considered available as soon as it is ready).",
+        "required": false
+      },
+      {
+        "name": "CreateServiceAccount",
+        "jsonName": "createServiceAccount",
+        "protoField": "create_service_account",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "*\n Flag to indicate if a ServiceAccount should be created for this DaemonSet.\n If true, a ServiceAccount with the name specified in service_account_name\n (or the DaemonSet name if not specified) will be created.\n The DaemonSet pods will use this ServiceAccount.",
+        "required": false
+      },
+      {
+        "name": "ServiceAccountName",
+        "jsonName": "serviceAccountName",
+        "protoField": "service_account_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "*\n Name of the ServiceAccount to use for the DaemonSet pods.\n If create_service_account is true, a ServiceAccount with this name will be created.\n If create_service_account is false, this references an existing ServiceAccount.\n If not specified and create_service_account is true, uses the DaemonSet name.",
+        "required": false
+      },
+      {
+        "name": "ConfigMaps",
+        "jsonName": "configMaps",
+        "protoField": "config_maps",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "*\n ConfigMaps to create alongside the DaemonSet.\n Key is the ConfigMap name, value is the content.\n These ConfigMaps can be referenced in volume mounts.\n\n Example:\n   config_maps:\n     vector-config: |\n       data_dir: /var/lib/vector\n       sources:\n         kubernetes_logs:\n           type: kubernetes_logs",
+        "required": false
+      },
+      {
+        "name": "Rbac",
+        "jsonName": "rbac",
+        "protoField": "rbac",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesDaemonSetRbac"
+        },
+        "description": "*\n RBAC configuration for the DaemonSet ServiceAccount.\n Allows defining ClusterRole and Role permissions.\n Only used if create_service_account is true.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ConfigMapVolumeSource",
+      "description": "*\n ConfigMapVolumeSource mounts a ConfigMap as a volume.\n The ConfigMap can be one defined in spec.config_maps or an existing ConfigMap in the namespace.\n\n When 'key' is specified, only that key is mounted as a single file.\n When 'key' is not specified, all keys are mounted as files in the directory.\n\n Example - Mount entire ConfigMap as directory:\n   configMap:\n     name: app-config\n\n Example - Mount single key as file:\n   configMap:\n     name: app-config\n     key: database.yaml\n     path: db-config.yaml",
+      "protoType": "org.openmcf.provider.kubernetes.ConfigMapVolumeSource",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the ConfigMap to mount.\n Can reference a ConfigMap defined in spec.config_maps or an existing one in the namespace.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specific key from the ConfigMap to mount as a single file.\n If not specified, all keys are mounted as files in the directory.",
+          "required": false
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "If key is specified, this is the filename to use for the mounted file.\n Defaults to the key name if not specified.\n Example: key=\"config\" path=\"app.yaml\" mounts the \"config\" key as \"app.yaml\"",
+          "required": false
+        },
+        {
+          "name": "DefaultMode",
+          "jsonName": "defaultMode",
+          "protoField": "default_mode",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Mode bits to use on created files. Must be a value between 0 and 0777.\n Defaults to 0644.\n Use 0755 (493 in decimal) for executable scripts.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Container",
+      "description": "**Container** defines the specifications for a container within a microservice deployment configuration.\n This message mirrors the Kubernetes container spec (https://pkg.go.dev/k8s.io/api/core/v1#Container),\n allowing you to specify container attributes such as the image, ports, resources, and environment variables.\n **Warning:** The sidecar feature currently does not support all features of a Kubernetes container spec.",
+      "protoType": "org.openmcf.provider.kubernetes.Container",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the container.",
+          "required": false
+        },
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The container image to be used.",
+          "required": false
+        },
+        {
+          "name": "Ports",
+          "jsonName": "ports",
+          "protoField": "ports",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "ContainerPort"
+            }
+          },
+          "description": "A list of ports exposed by the container.",
+          "required": false
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "Resource specifications for the container, including CPU and memory limits and requests.",
+          "required": false
+        },
+        {
+          "name": "Env",
+          "jsonName": "env",
+          "protoField": "env",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "ContainerEnvVar"
+            }
+          },
+          "description": "A list of environment variables to be set in the container.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ContainerEnvVar",
+      "description": "**ContainerEnvVar** represents an environment variable to be set in the container.\n It allows you to pass configuration or sensitive information to the container at runtime.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerEnvVar",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the environment variable.",
+          "required": false
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The value of the environment variable.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ContainerImage",
+      "description": "**ContainerImage** represents the container image information.\n It includes the repository, tag, and optional image pull secret for private registries.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerImage",
+      "fields": [
+        {
+          "name": "Repo",
+          "jsonName": "repo",
+          "protoField": "repo",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The repository of the image (e.g., \"gcr.io/project/image\").",
+          "required": false
+        },
+        {
+          "name": "Tag",
+          "jsonName": "tag",
+          "protoField": "tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The tag of the image (e.g., \"latest\" or \"1.0.0\").",
+          "required": false
+        },
+        {
+          "name": "PullSecretName",
+          "jsonName": "pullSecretName",
+          "protoField": "pull_secret_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the image pull secret for private image repositories.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ContainerPort",
+      "description": "**ContainerPort** specifies a network port in a single container.\n It allows you to expose ports for communication with other services or the external network.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerPort",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the port.",
+          "required": false
+        },
+        {
+          "name": "ContainerPort",
+          "jsonName": "containerPort",
+          "protoField": "container_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The port number on the container.",
+          "required": false
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The protocol used by the port (e.g., \"TCP\" or \"UDP\").",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ContainerResources",
+      "description": "**ContainerResources** specifies the CPU and memory resources for a container.\n It allows you to define resource limits and requests to manage resource allocation and ensure optimal performance.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerResources",
+      "fields": [
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource limits for the container.\n Specify the maximum amount of CPU and memory that the container can use.",
+          "required": false
+        },
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource requests for the container.\n Specify the minimum amount of CPU and memory that the container is guaranteed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CpuMemory",
+      "description": "**CpuMemory** defines CPU and memory resource quantities for a container.\n It is used to specify the limits and requests for CPU and memory resources.",
+      "protoType": "org.openmcf.provider.kubernetes.CpuMemory",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "EmptyDirVolumeSource",
+      "description": "*\n EmptyDirVolumeSource creates an empty directory for temporary storage.\n The directory is created when a pod is assigned to a node and exists as long as the pod runs.\n Data is deleted when the pod is removed.\n\n Use cases:\n - Scratch space for computations\n - Checkpoint storage for crash recovery\n - Shared space between containers in a pod\n\n Example - Default (disk-backed):\n   emptyDir: {}\n\n Example - Memory-backed (faster, but uses RAM):\n   emptyDir:\n     medium: Memory\n     sizeLimit: 256Mi",
+      "protoType": "org.openmcf.provider.kubernetes.EmptyDirVolumeSource",
+      "fields": [
+        {
+          "name": "Medium",
+          "jsonName": "medium",
+          "protoField": "medium",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Medium for the empty directory.\n \"\" (default) uses the node's default medium (typically disk).\n \"Memory\" uses a tmpfs (RAM-backed filesystem).\n\n Memory-backed volumes are faster but:\n - Count against container memory limits\n - Are lost on node restart\n - Should have sizeLimit set to prevent OOM",
+          "required": false
+        },
+        {
+          "name": "SizeLimit",
+          "jsonName": "sizeLimit",
+          "protoField": "size_limit",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Size limit for the empty directory.\n Format: Kubernetes quantity (e.g., \"1Gi\", \"500Mi\").\n Only strictly enforced when medium is \"Memory\".\n For disk-backed volumes, this is a best-effort limit.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ExecAction",
+      "description": "**ExecAction** describes a command-based health check.",
+      "protoType": "org.openmcf.provider.kubernetes.ExecAction",
+      "fields": [
+        {
+          "name": "Command",
+          "jsonName": "command",
+          "protoField": "command",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Command is the command line to execute inside the container.\n The command is run in the container's root filesystem.\n The command's exit status is used to determine the health:\n - 0: Success\n - Non-zero: Failure",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GRPCAction",
+      "description": "**GRPCAction** describes an action based on gRPC health checking protocol.\n Reference: https://github.com/grpc/grpc/blob/master/doc/health-checking.md",
+      "protoType": "org.openmcf.provider.kubernetes.GRPCAction",
+      "fields": [
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port number of the gRPC service.\n Number must be in the range 1 to 65535.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "Service",
+          "jsonName": "service",
+          "protoField": "service",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service is the name of the service to check.\n If not specified, the default behavior defined by gRPC is used.\n For standard gRPC health checks, leave empty to check overall server health.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "HTTPGetAction",
+      "description": "**HTTPGetAction** describes an action based on HTTP Get requests.",
+      "protoType": "org.openmcf.provider.kubernetes.HTTPGetAction",
+      "fields": [
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path to access on the HTTP server.\n Defaults to '/'.",
+          "required": false
+        },
+        {
+          "name": "PortNumber",
+          "jsonName": "portNumber",
+          "protoField": "port_number",
+          "type": {
+            "kind": "int32"
+          },
+          "required": false,
+          "oneofGroup": "port"
+        },
+        {
+          "name": "PortName",
+          "jsonName": "portName",
+          "protoField": "port_name",
+          "type": {
+            "kind": "string"
+          },
+          "required": false,
+          "oneofGroup": "port"
+        },
+        {
+          "name": "Host",
+          "jsonName": "host",
+          "protoField": "host",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Host name to connect to, defaults to the pod IP.\n You probably want to set \"Host\" in http_headers instead.",
+          "required": false
+        },
+        {
+          "name": "Scheme",
+          "jsonName": "scheme",
+          "protoField": "scheme",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Scheme to use for connecting to the host (HTTP or HTTPS).\n Defaults to HTTP.",
+          "required": false
+        },
+        {
+          "name": "HttpHeaders",
+          "jsonName": "httpHeaders",
+          "protoField": "http_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "HTTPHeader"
+            }
+          },
+          "description": "Custom headers to set in the request.\n HTTP allows repeated headers.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "HTTPHeader",
+      "description": "**HTTPHeader** describes a custom header to be used in HTTP probes.",
+      "protoType": "org.openmcf.provider.kubernetes.HTTPHeader",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The header field name.",
+          "required": false
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The header field value.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "HostPathVolumeSource",
+      "description": "*\n HostPathVolumeSource mounts a file or directory from the host node's filesystem.\n Use with caution as it ties pods to specific nodes.\n\n Common use cases:\n - Log collection DaemonSets mounting /var/log\n - Node monitoring agents mounting /sys or /proc\n - Container runtime sockets (e.g., /var/run/docker.sock)\n\n Example:\n   hostPath:\n     path: /var/log\n     type: Directory",
+      "protoType": "org.openmcf.provider.kubernetes.HostPathVolumeSource",
+      "fields": [
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path on the host to mount.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Type of the host path.\n Valid values:\n   \"\" - Empty string (default) means no check is performed before mounting\n   \"DirectoryOrCreate\" - Create directory if it doesn't exist\n   \"Directory\" - Directory must exist\n   \"FileOrCreate\" - Create file if it doesn't exist\n   \"File\" - File must exist\n   \"Socket\" - UNIX socket must exist\n   \"CharDevice\" - Character device must exist\n   \"BlockDevice\" - Block device must exist",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesDaemonSetCapabilities",
+      "description": "*\n **KubernetesDaemonSetCapabilities** defines Linux capabilities to add or drop.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesdaemonset.v1.KubernetesDaemonSetCapabilities",
+      "fields": [
+        {
+          "name": "Add",
+          "jsonName": "add",
+          "protoField": "add",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "List of capabilities to add.",
+          "required": false
+        },
+        {
+          "name": "Drop",
+          "jsonName": "drop",
+          "protoField": "drop",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "List of capabilities to drop.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesDaemonSetContainer",
+      "description": "*\n **KubernetesDaemonSetContainer** specifies the container configuration for the DaemonSet.\n It includes the main application container and any sidecar containers that need to run alongside it.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesdaemonset.v1.KubernetesDaemonSetContainer",
+      "fields": [
+        {
+          "name": "App",
+          "jsonName": "app",
+          "protoField": "app",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesDaemonSetContainerApp"
+          },
+          "description": "The main application container specifications.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Sidecars",
+          "jsonName": "sidecars",
+          "protoField": "sidecars",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "Container"
+            }
+          },
+          "description": "A list of sidecar containers to be deployed alongside the main application container.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesDaemonSetContainerApp",
+      "description": "*\n **KubernetesDaemonSetContainerApp** specifies the configuration for the main application container.\n It includes the container image, resource allocations, environment variables, and health probes.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesdaemonset.v1.KubernetesDaemonSetContainerApp",
+      "fields": [
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerImage"
+          },
+          "description": "*\n The container image to be used for the application.\n The `pull_secret_name` is the name of the image pull secret to be configured in the Kubernetes DaemonSet resource.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "The CPU and memory resources allocated to the application container.",
+          "required": false
+        },
+        {
+          "name": "Env",
+          "jsonName": "env",
+          "protoField": "env",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesDaemonSetContainerAppEnv"
+          },
+          "description": "*\n The environment variables and secrets for the application container.",
+          "required": false
+        },
+        {
+          "name": "Ports",
+          "jsonName": "ports",
+          "protoField": "ports",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "KubernetesDaemonSetContainerAppPort"
+            }
+          },
+          "description": "*\n A list of ports to be configured for the application container.",
+          "required": false
+        },
+        {
+          "name": "VolumeMounts",
+          "jsonName": "volumeMounts",
+          "protoField": "volume_mounts",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "VolumeMount"
+            }
+          },
+          "description": "*\n Volume mounts for the container.\n Supports ConfigMap, Secret, HostPath, EmptyDir, and PVC volumes.\n DaemonSets commonly need HostPath mounts for log collection, node monitoring, etc.",
+          "required": false
+        },
+        {
+          "name": "LivenessProbe",
+          "jsonName": "livenessProbe",
+          "protoField": "liveness_probe",
+          "type": {
+            "kind": "message",
+            "messageType": "Probe"
+          },
+          "description": "*\n Liveness probe configuration.\n Periodic probe of container liveness. Container will be restarted if the probe fails.",
+          "required": false
+        },
+        {
+          "name": "ReadinessProbe",
+          "jsonName": "readinessProbe",
+          "protoField": "readiness_probe",
+          "type": {
+            "kind": "message",
+            "messageType": "Probe"
+          },
+          "description": "*\n Readiness probe configuration.\n Periodic probe of container service readiness.",
+          "required": false
+        },
+        {
+          "name": "StartupProbe",
+          "jsonName": "startupProbe",
+          "protoField": "startup_probe",
+          "type": {
+            "kind": "message",
+            "messageType": "Probe"
+          },
+          "description": "*\n Startup probe configuration.\n Indicates whether the application within the container is started.",
+          "required": false
+        },
+        {
+          "name": "Command",
+          "jsonName": "command",
+          "protoField": "command",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "*\n Command to run in the container (overrides the container image's ENTRYPOINT).",
+          "required": false
+        },
+        {
+          "name": "Args",
+          "jsonName": "args",
+          "protoField": "args",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "*\n Arguments to pass to the command (overrides the container image's CMD).",
+          "required": false
+        },
+        {
+          "name": "SecurityContext",
+          "jsonName": "securityContext",
+          "protoField": "security_context",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesDaemonSetSecurityContext"
+          },
+          "description": "*\n Security context for the container.\n DaemonSets often need privileged access for node-level operations.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesDaemonSetContainerAppEnv",
+      "description": "*\n **KubernetesDaemonSetContainerAppEnv** defines the environment variables and secrets for the application container.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesdaemonset.v1.KubernetesDaemonSetContainerAppEnv",
+      "fields": [
+        {
+          "name": "Variables",
+          "jsonName": "variables",
+          "protoField": "variables",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "*\n A map of environment variable names to their values.\n Each variable can be provided either as a literal string value or as a reference\n to another OpenMCF resource's field.\n\n **Option 1: Direct string value**\n ```yaml\n variables:\n   LOG_LEVEL:\n     value: \"info\"\n ```\n\n **Option 2: Reference to another resource's field**\n ```yaml\n variables:\n   CLUSTER_NAME:\n     valueFrom:\n       kind: GcpGkeCluster\n       name: my-cluster\n       fieldPath: \"status.outputs.name\"\n ```\n\n When using valueFrom references, the orchestrator resolves the reference\n and populates the value field before invoking the IaC modules.",
+          "required": false
+        },
+        {
+          "name": "Secrets",
+          "jsonName": "secrets",
+          "protoField": "secrets",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "message",
+              "messageType": "KubernetesSensitiveValue"
+            }
+          },
+          "description": "*\n A map of secret environment variable names to their values.\n Each secret can be provided either as a literal string value or as a reference\n to an existing Kubernetes Secret.\n\n Using secret references is recommended for production deployments.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesDaemonSetContainerAppPort",
+      "description": "*\n **KubernetesDaemonSetContainerAppPort** specifies the port configuration for the application container.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesdaemonset.v1.KubernetesDaemonSetContainerAppPort",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the port (e.g., \"metrics\", \"health\").\n The name must only contain lowercase alphanumeric characters and hyphens.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ContainerPort",
+          "jsonName": "containerPort",
+          "protoField": "container_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The port number on the container.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "NetworkProtocol",
+          "jsonName": "networkProtocol",
+          "protoField": "network_protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The network protocol used by the port (e.g., \"TCP\", \"UDP\", \"SCTP\").",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "HostPort",
+          "jsonName": "hostPort",
+          "protoField": "host_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Host port to expose the container port on.\n Use with caution as it limits where pods can be scheduled.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesDaemonSetRbac",
+      "description": "*\n KubernetesDaemonSetRbac defines RBAC permissions for the DaemonSet ServiceAccount.\n Creates ClusterRole/ClusterRoleBinding for cluster-wide permissions\n and Role/RoleBinding for namespace-scoped permissions.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesdaemonset.v1.KubernetesDaemonSetRbac",
+      "fields": [
+        {
+          "name": "ClusterRules",
+          "jsonName": "clusterRules",
+          "protoField": "cluster_rules",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "KubernetesDaemonSetRbacRule"
+            }
+          },
+          "description": "*\n Cluster-wide RBAC rules.\n Creates a ClusterRole and ClusterRoleBinding.\n Use for permissions that span across namespaces (e.g., reading all pods).",
+          "required": false
+        },
+        {
+          "name": "NamespaceRules",
+          "jsonName": "namespaceRules",
+          "protoField": "namespace_rules",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "KubernetesDaemonSetRbacRule"
+            }
+          },
+          "description": "*\n Namespace-scoped RBAC rules.\n Creates a Role and RoleBinding in the DaemonSet's namespace.\n Use for permissions limited to the deployment namespace.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesDaemonSetRbacRule",
+      "description": "*\n KubernetesDaemonSetRbacRule defines a single RBAC policy rule.\n Maps directly to Kubernetes RBAC PolicyRule.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesdaemonset.v1.KubernetesDaemonSetRbacRule",
+      "fields": [
+        {
+          "name": "ApiGroups",
+          "jsonName": "apiGroups",
+          "protoField": "api_groups",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "*\n API groups containing the resources.\n Use \"\" for core API group.\n Example: [\"\"], [\"apps\"], [\"batch\"]",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "*\n Resources this rule applies to.\n Example: [\"pods\", \"services\"], [\"deployments\"], [\"configmaps\", \"secrets\"]",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "Verbs",
+          "jsonName": "verbs",
+          "protoField": "verbs",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "*\n Verbs specifying the actions allowed.\n Example: [\"get\", \"list\", \"watch\"], [\"create\", \"update\", \"delete\"]",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "ResourceNames",
+          "jsonName": "resourceNames",
+          "protoField": "resource_names",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "*\n Resource names to limit the rule to specific resources.\n If empty, the rule applies to all resources of the specified type.\n Example: [\"my-configmap\", \"my-secret\"]",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesDaemonSetRollingUpdate",
+      "description": "*\n **KubernetesDaemonSetRollingUpdate** defines the parameters for rolling update strategy.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesdaemonset.v1.KubernetesDaemonSetRollingUpdate",
+      "fields": [
+        {
+          "name": "MaxUnavailable",
+          "jsonName": "maxUnavailable",
+          "protoField": "max_unavailable",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The maximum number of DaemonSet pods that can be unavailable during the update.\n Can be an absolute number or a percentage (e.g., \"1\" or \"10%\").\n This cannot be 0 if maxSurge is 0.\n Defaults to 1.",
+          "required": false
+        },
+        {
+          "name": "MaxSurge",
+          "jsonName": "maxSurge",
+          "protoField": "max_surge",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The maximum number of nodes with an existing available DaemonSet pod that can have\n an updated DaemonSet pod during an update.\n Can be an absolute number or a percentage (e.g., \"1\" or \"10%\").\n Defaults to 0.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesDaemonSetSecurityContext",
+      "description": "*\n **KubernetesDaemonSetSecurityContext** defines the security context for the container.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesdaemonset.v1.KubernetesDaemonSetSecurityContext",
+      "fields": [
+        {
+          "name": "Privileged",
+          "jsonName": "privileged",
+          "protoField": "privileged",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Run as privileged container.\n DaemonSets often need privileged access for node-level operations.",
+          "required": false
+        },
+        {
+          "name": "RunAsUser",
+          "jsonName": "runAsUser",
+          "protoField": "run_as_user",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Run as a specific user ID.",
+          "required": false
+        },
+        {
+          "name": "RunAsGroup",
+          "jsonName": "runAsGroup",
+          "protoField": "run_as_group",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Run as a specific group ID.",
+          "required": false
+        },
+        {
+          "name": "RunAsNonRoot",
+          "jsonName": "runAsNonRoot",
+          "protoField": "run_as_non_root",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Run as non-root user.",
+          "required": false
+        },
+        {
+          "name": "ReadOnlyRootFilesystem",
+          "jsonName": "readOnlyRootFilesystem",
+          "protoField": "read_only_root_filesystem",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Make the root filesystem read-only.",
+          "required": false
+        },
+        {
+          "name": "Capabilities",
+          "jsonName": "capabilities",
+          "protoField": "capabilities",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesDaemonSetCapabilities"
+          },
+          "description": "Capabilities to add or drop.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesDaemonSetToleration",
+      "description": "*\n **KubernetesDaemonSetToleration** defines a toleration for the DaemonSet pods.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesdaemonset.v1.KubernetesDaemonSetToleration",
+      "fields": [
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Key is the taint key that the toleration applies to.",
+          "required": false
+        },
+        {
+          "name": "Operator",
+          "jsonName": "operator",
+          "protoField": "operator",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Operator represents a key's relationship to the value.\n Valid operators are Exists and Equal. Defaults to Equal.",
+          "required": false
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Value is the taint value the toleration matches to.",
+          "required": false
+        },
+        {
+          "name": "Effect",
+          "jsonName": "effect",
+          "protoField": "effect",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Effect indicates the taint effect to match.\n Valid effects are NoSchedule, PreferNoSchedule and NoExecute.",
+          "required": false
+        },
+        {
+          "name": "TolerationSeconds",
+          "jsonName": "tolerationSeconds",
+          "protoField": "toleration_seconds",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "TolerationSeconds represents the period of time the toleration tolerates the taint.\n Only applicable when effect is NoExecute.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesDaemonSetUpdateStrategy",
+      "description": "*\n **KubernetesDaemonSetUpdateStrategy** defines the update strategy for the DaemonSet.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesdaemonset.v1.KubernetesDaemonSetUpdateStrategy",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Type of update strategy.\n Can be \"RollingUpdate\" or \"OnDelete\".\n RollingUpdate: The DaemonSet controller creates new pods and deletes old ones progressively.\n OnDelete: Pods are only updated when they are manually deleted.",
+          "required": false
+        },
+        {
+          "name": "RollingUpdate",
+          "jsonName": "rollingUpdate",
+          "protoField": "rolling_update",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesDaemonSetRollingUpdate"
+          },
+          "description": "Rolling update config params. Present only if type = \"RollingUpdate\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSecretKeyRef",
+      "description": "*\n **KubernetesSecretKeyRef** is a reference to a specific key within a Kubernetes Secret.\n This allows components to retrieve sensitive values from existing secrets rather than\n storing them as plain text in the configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesSecretKeyRef",
+      "fields": [
+        {
+          "name": "Namespace",
+          "jsonName": "namespace",
+          "protoField": "namespace",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The namespace of the Kubernetes Secret.\n If not specified, defaults to the namespace where the component is deployed.\n Note: Cross-namespace secret references may not be supported by all Helm charts.",
+          "required": false
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The name of the Kubernetes Secret.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The key within the Kubernetes Secret that contains the value.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSensitiveValue",
+      "description": "*\n **KubernetesSensitiveValue** represents a sensitive value that can be provided either\n as a literal string or as a reference to a Kubernetes Secret.\n\n Using secret references is recommended for production deployments to avoid storing\n sensitive values in plain text within configuration files or version control.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesSensitiveValue",
+      "fields": [
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n A literal string value.\n Warning: Using plain text for sensitive values is not recommended for production.\n Consider using secret_ref instead.",
+          "required": false,
+          "oneofGroup": "sensitive_value"
+        },
+        {
+          "name": "SecretRef",
+          "jsonName": "secretRef",
+          "protoField": "secret_ref",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSecretKeyRef"
+          },
+          "description": "*\n A reference to a key within a Kubernetes Secret.\n The secret must exist in the cluster before the component is deployed.",
+          "required": false,
+          "oneofGroup": "sensitive_value"
+        }
+      ]
+    },
+    {
+      "name": "Probe",
+      "description": "**Probe** defines a health check to be performed against a container to determine whether it is\n alive, ready, or has started successfully. Probes are essential for zero-downtime deployments.\n Reference: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+      "protoType": "org.openmcf.provider.kubernetes.Probe",
+      "fields": [
+        {
+          "name": "InitialDelaySeconds",
+          "jsonName": "initialDelaySeconds",
+          "protoField": "initial_delay_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of seconds after the container has started before liveness or readiness probes are initiated.\n Defaults to 0 seconds. Minimum value is 0.",
+          "required": false
+        },
+        {
+          "name": "PeriodSeconds",
+          "jsonName": "periodSeconds",
+          "protoField": "period_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "How often (in seconds) to perform the probe.\n Default to 10 seconds. Minimum value is 1.",
+          "required": false
+        },
+        {
+          "name": "TimeoutSeconds",
+          "jsonName": "timeoutSeconds",
+          "protoField": "timeout_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of seconds after which the probe times out.\n Defaults to 1 second. Minimum value is 1.",
+          "required": false
+        },
+        {
+          "name": "SuccessThreshold",
+          "jsonName": "successThreshold",
+          "protoField": "success_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum consecutive successes for the probe to be considered successful after having failed.\n Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.",
+          "required": false
+        },
+        {
+          "name": "FailureThreshold",
+          "jsonName": "failureThreshold",
+          "protoField": "failure_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum consecutive failures for the probe to be considered failed after having succeeded.\n Defaults to 3. Minimum value is 1.",
+          "required": false
+        },
+        {
+          "name": "HttpGet",
+          "jsonName": "httpGet",
+          "protoField": "http_get",
+          "type": {
+            "kind": "message",
+            "messageType": "HTTPGetAction"
+          },
+          "description": "HTTPGet specifies the http request to perform.",
+          "required": false,
+          "oneofGroup": "handler"
+        },
+        {
+          "name": "Grpc",
+          "jsonName": "grpc",
+          "protoField": "grpc",
+          "type": {
+            "kind": "message",
+            "messageType": "GRPCAction"
+          },
+          "description": "GRPC specifies an action involving a GRPC port.",
+          "required": false,
+          "oneofGroup": "handler"
+        },
+        {
+          "name": "TcpSocket",
+          "jsonName": "tcpSocket",
+          "protoField": "tcp_socket",
+          "type": {
+            "kind": "message",
+            "messageType": "TCPSocketAction"
+          },
+          "description": "TCPSocket specifies an action involving a TCP port.",
+          "required": false,
+          "oneofGroup": "handler"
+        },
+        {
+          "name": "Exec",
+          "jsonName": "exec",
+          "protoField": "exec",
+          "type": {
+            "kind": "message",
+            "messageType": "ExecAction"
+          },
+          "description": "Exec specifies a command to execute inside the container.",
+          "required": false,
+          "oneofGroup": "handler"
+        }
+      ]
+    },
+    {
+      "name": "PvcVolumeSource",
+      "description": "*\n PvcVolumeSource mounts an existing PersistentVolumeClaim.\n\n For StatefulSets: The claimName can reference a volumeClaimTemplate name,\n and the StatefulSet controller will automatically handle per-pod PVC binding.\n\n Example:\n   pvc:\n     claimName: data-volume\n     readOnly: false",
+      "protoType": "org.openmcf.provider.kubernetes.PvcVolumeSource",
+      "fields": [
+        {
+          "name": "ClaimName",
+          "jsonName": "claimName",
+          "protoField": "claim_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the PersistentVolumeClaim to mount.\n For StatefulSets, this can be the name of a volumeClaimTemplate.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ReadOnly",
+          "jsonName": "readOnly",
+          "protoField": "read_only",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the PVC should be mounted read-only.\n Default is false.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "SecretVolumeSource",
+      "description": "*\n SecretVolumeSource mounts a Secret as a volume.\n Works similarly to ConfigMapVolumeSource but for sensitive data.\n\n Example:\n   secret:\n     name: tls-certs\n     key: tls.crt\n     path: server.crt",
+      "protoType": "org.openmcf.provider.kubernetes.SecretVolumeSource",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the Secret to mount.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specific key from the Secret to mount as a single file.\n If not specified, all keys are mounted as files in the directory.",
+          "required": false
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "If key is specified, this is the filename to use for the mounted file.\n Defaults to the key name if not specified.",
+          "required": false
+        },
+        {
+          "name": "DefaultMode",
+          "jsonName": "defaultMode",
+          "protoField": "default_mode",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Mode bits to use on created files. Must be a value between 0 and 0777.\n Defaults to 0644.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "TCPSocketAction",
+      "description": "**TCPSocketAction** describes an action based on opening a socket.",
+      "protoType": "org.openmcf.provider.kubernetes.TCPSocketAction",
+      "fields": [
+        {
+          "name": "PortNumber",
+          "jsonName": "portNumber",
+          "protoField": "port_number",
+          "type": {
+            "kind": "int32"
+          },
+          "required": false,
+          "oneofGroup": "port"
+        },
+        {
+          "name": "PortName",
+          "jsonName": "portName",
+          "protoField": "port_name",
+          "type": {
+            "kind": "string"
+          },
+          "required": false,
+          "oneofGroup": "port"
+        },
+        {
+          "name": "Host",
+          "jsonName": "host",
+          "protoField": "host",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Host name to connect to, defaults to the pod IP.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "VolumeMount",
+      "description": "*\n VolumeMount defines how to mount a volume into a container.\n Supports multiple volume types: ConfigMap, Secret, HostPath, EmptyDir, and PVC.\n Only one volume source should be specified per mount.\n\n Example usage:\n   volumeMounts:\n     - name: config\n       mountPath: /etc/app/config.yaml\n       configMap:\n         name: app-config\n         key: config.yaml\n     - name: logs\n       mountPath: /var/log\n       hostPath:\n         path: /var/log\n         type: Directory",
+      "protoType": "org.openmcf.provider.kubernetes.VolumeMount",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the volume mount. Must be unique within the container.\n Used to correlate with the volume definition.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "MountPath",
+          "jsonName": "mountPath",
+          "protoField": "mount_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path within the container at which the volume should be mounted.\n Must be an absolute path.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ReadOnly",
+          "jsonName": "readOnly",
+          "protoField": "read_only",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the volume should be mounted read-only.\n Default is false.",
+          "required": false
+        },
+        {
+          "name": "SubPath",
+          "jsonName": "subPath",
+          "protoField": "sub_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path within the volume from which the container's volume should be mounted.\n Defaults to \"\" (volume's root).\n Useful for mounting a subdirectory of a volume.",
+          "required": false
+        },
+        {
+          "name": "ConfigMap",
+          "jsonName": "configMap",
+          "protoField": "config_map",
+          "type": {
+            "kind": "message",
+            "messageType": "ConfigMapVolumeSource"
+          },
+          "description": "ConfigMap volume source.\n Use this to mount a ConfigMap as a file or directory.",
+          "required": false
+        },
+        {
+          "name": "Secret",
+          "jsonName": "secret",
+          "protoField": "secret",
+          "type": {
+            "kind": "message",
+            "messageType": "SecretVolumeSource"
+          },
+          "description": "Secret volume source.\n Use this to mount a Secret as a file or directory.",
+          "required": false
+        },
+        {
+          "name": "HostPath",
+          "jsonName": "hostPath",
+          "protoField": "host_path",
+          "type": {
+            "kind": "message",
+            "messageType": "HostPathVolumeSource"
+          },
+          "description": "HostPath volume source.\n Use this to mount a file or directory from the host node's filesystem.\n Common for DaemonSets that need access to node-level resources.",
+          "required": false
+        },
+        {
+          "name": "EmptyDir",
+          "jsonName": "emptyDir",
+          "protoField": "empty_dir",
+          "type": {
+            "kind": "message",
+            "messageType": "EmptyDirVolumeSource"
+          },
+          "description": "EmptyDir volume source.\n Use this for temporary storage that is erased when the pod is removed.\n Useful for scratch space, caching, or sharing data between containers.",
+          "required": false
+        },
+        {
+          "name": "Pvc",
+          "jsonName": "pvc",
+          "protoField": "pvc",
+          "type": {
+            "kind": "message",
+            "messageType": "PvcVolumeSource"
+          },
+          "description": "PersistentVolumeClaim volume source.\n Use this to mount an existing PVC.\n For StatefulSets, this can reference a volumeClaimTemplate.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

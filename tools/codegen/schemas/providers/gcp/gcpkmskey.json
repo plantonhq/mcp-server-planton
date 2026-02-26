@@ -1,0 +1,129 @@
+{
+  "name": "GcpKmsKey",
+  "kind": "GcpKmsKey",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-kms-key",
+  "protoPackage": "org.openmcf.provider.gcp.gcpkmskey.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpkmskey/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpkmskey/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpKmsKeySpec",
+    "fields": [
+      {
+        "name": "KeyRingId",
+        "jsonName": "keyRingId",
+        "protoField": "key_ring_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The key ring that this key belongs to.\n Accepts the fully qualified key ring path:\n   projects/{project}/locations/{location}/keyRings/{name}\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpKmsKeyRing",
+        "referenceFieldPath": "status.outputs.key_ring_id"
+      },
+      {
+        "name": "KeyName",
+        "jsonName": "keyName",
+        "protoField": "key_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the key in GCP. Immutable after creation.\n Must be 1-63 characters: letters (upper or lower), digits, hyphens,\n or underscores. This is the GCP resource name, distinct from the\n OpenMCF metadata.name.\n Example: \"cmek-encrypt-key\", \"artifact-signing-key\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-zA-Z0-9_-]{1,63}$"
+        }
+      },
+      {
+        "name": "Purpose",
+        "jsonName": "purpose",
+        "protoField": "purpose",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The immutable purpose of this key. Determines what cryptographic\n operations the key supports. Cannot be changed after creation.\n If not set, GCP defaults to ENCRYPT_DECRYPT.\n\n Valid values:\n   \"ENCRYPT_DECRYPT\"      -- symmetric encryption for CMEK (default)\n   \"ASYMMETRIC_SIGN\"      -- digital signatures\n   \"ASYMMETRIC_DECRYPT\"   -- asymmetric decryption\n   \"MAC\"                  -- message authentication codes\n   \"RAW_ENCRYPT_DECRYPT\"  -- authenticated encryption for small payloads",
+        "required": false
+      },
+      {
+        "name": "RotationPeriod",
+        "jsonName": "rotationPeriod",
+        "protoField": "rotation_period",
+        "type": {
+          "kind": "string"
+        },
+        "description": "How often to auto-generate a new CryptoKeyVersion and set it as primary.\n Format: decimal seconds with suffix \"s\" (e.g., \"7776000s\" for 90 days).\n Must be greater than 86400s (24 hours). Only meaningful for\n ENCRYPT_DECRYPT keys; other purposes require manual key version management.",
+        "required": false
+      },
+      {
+        "name": "DestroyScheduledDuration",
+        "jsonName": "destroyScheduledDuration",
+        "protoField": "destroy_scheduled_duration",
+        "type": {
+          "kind": "string"
+        },
+        "description": "How long CryptoKeyVersions spend in DESTROY_SCHEDULED state before\n being permanently destroyed. Immutable after creation.\n Format: decimal seconds with suffix \"s\" (e.g., \"2592000s\" for 30 days).\n Minimum: 86400s (24 hours). Default: 2592000s (30 days) if not specified.",
+        "required": false
+      },
+      {
+        "name": "VersionTemplate",
+        "jsonName": "versionTemplate",
+        "protoField": "version_template",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpKmsKeyVersionTemplate"
+        },
+        "description": "Template describing settings for new CryptoKeyVersions.\n Use this to specify the encryption algorithm and protection level.\n If omitted, GCP defaults to GOOGLE_SYMMETRIC_ENCRYPTION with SOFTWARE\n protection -- which is correct for standard CMEK use cases.",
+        "required": false
+      },
+      {
+        "name": "SkipInitialVersionCreation",
+        "jsonName": "skipInitialVersionCreation",
+        "protoField": "skip_initial_version_creation",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "If true, the key is created without an initial CryptoKeyVersion.\n You must create versions manually afterward using google_kms_crypto_key_version\n or a key ring import job. Only applicable during initial creation.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpKmsKeyVersionTemplate",
+      "description": "GcpKmsKeyVersionTemplate describes settings for new CryptoKeyVersions.\n\n Use this to control the encryption algorithm and protection level of\n key versions created under a GcpKmsKey. If version_template is omitted\n from the key spec, GCP defaults to GOOGLE_SYMMETRIC_ENCRYPTION with\n SOFTWARE protection.",
+      "protoType": "org.openmcf.provider.gcp.gcpkmskey.v1.GcpKmsKeyVersionTemplate",
+      "fields": [
+        {
+          "name": "Algorithm",
+          "jsonName": "algorithm",
+          "protoField": "algorithm",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The algorithm to use when creating a CryptoKeyVersion based on this\n template. Required when version_template is specified.\n\n Common values by purpose:\n   ENCRYPT_DECRYPT:    \"GOOGLE_SYMMETRIC_ENCRYPTION\" (default if omitted)\n   ASYMMETRIC_SIGN:    \"EC_SIGN_P256_SHA256\", \"RSA_SIGN_PSS_2048_SHA256\", etc.\n   ASYMMETRIC_DECRYPT: \"RSA_DECRYPT_OAEP_2048_SHA256\", etc.\n   MAC:                \"HMAC_SHA256\"\n\n See: https://cloud.google.com/kms/docs/reference/rest/v1/CryptoKeyVersionAlgorithm",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ProtectionLevel",
+          "jsonName": "protectionLevel",
+          "protoField": "protection_level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The protection level for CryptoKeyVersions created with this template.\n Immutable after creation.\n\n Valid values:\n   \"SOFTWARE\" (default) -- keys protected in software\n   \"HSM\"               -- keys protected by Cloud HSM (FIPS 140-2 Level 3)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

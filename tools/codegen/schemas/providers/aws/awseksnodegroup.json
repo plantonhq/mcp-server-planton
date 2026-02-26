@@ -1,0 +1,209 @@
+{
+  "name": "AwsEksNodeGroup",
+  "kind": "AwsEksNodeGroup",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsEksNodeGroup represents a containerized application deployed on AWS ECS.\n This resource manages ECS services that can run on either Fargate or EC2.",
+  "protoPackage": "org.openmcf.provider.aws.awseksnodegroup.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awseksnodegroup/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awseksnodegroup/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsEksNodeGroupSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ClusterName",
+        "jsonName": "clusterName",
+        "protoField": "cluster_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cluster_name is the name of the EKS cluster to attach this node group to.\n The cluster must already exist (e.g., created by an AwsEksCluster resource).\n If referencing an AwsEksCluster resource, this pulls its metadata.name.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsEksCluster",
+        "referenceFieldPath": "metadata.name"
+      },
+      {
+        "name": "NodeRoleArn",
+        "jsonName": "nodeRoleArn",
+        "protoField": "node_role_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "node_role_arn is the ARN of the IAM role to associate with the EC2 nodes.\n This role must have the necessary EKS worker node policies. If referencing\n an AwsIamRole resource, this uses its status.outputs.role_arn.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsIamRole",
+        "referenceFieldPath": "status.outputs.role_arn"
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "subnet_ids are the IDs of at least two subnets where the worker nodes will be launched.\n Typically these are private subnets in the cluster's VPC to ensure high availability.\n If referencing an AwsVpc resource, this defaults to its status.outputs.private_subnets[*].id.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 2
+        },
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "InstanceType",
+        "jsonName": "instanceType",
+        "protoField": "instance_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "instance_type is the EC2 instance type for the worker nodes.\n Example values: \"t3.small\", \"m5.xlarge\". Must match the pattern \"\u003cfamily\u003e.\u003csize\u003e\",\n e.g., a letter family and size like nano, micro, small, medium, large, xlarge or Nxlarge.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Scaling",
+        "jsonName": "scaling",
+        "protoField": "scaling",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsEksNodeGroupScalingConfig"
+        },
+        "description": "scaling defines the auto-scaling configuration (min, max, desired node counts) for the node group.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "CapacityType",
+        "jsonName": "capacityType",
+        "protoField": "capacity_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.aws.awseksnodegroup.v1.AwsEksNodeGroupCapacityType",
+          "enumValues": [
+            "spot"
+          ]
+        },
+        "description": "capacity_type specifies whether to use on-demand or Spot instances for this node group.\n If not set, it defaults to on_demand.",
+        "required": false,
+        "recommendedDefault": "on_demand"
+      },
+      {
+        "name": "DiskSizeGb",
+        "jsonName": "diskSizeGb",
+        "protoField": "disk_size_gb",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "disk_size_gb is the EBS volume size (in GiB) for each node's root disk.\n If omitted, it is recommended to use 100 GiB by default.",
+        "required": false,
+        "recommendedDefault": "100"
+      },
+      {
+        "name": "SshKeyName",
+        "jsonName": "sshKeyName",
+        "protoField": "ssh_key_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ssh_key_name is the name of an existing EC2 Key Pair to enable SSH access to nodes.\n If provided, nodes will allow SSH using this key. Max length is 255 characters.",
+        "required": false,
+        "validation": {
+          "maxLength": 255
+        }
+      },
+      {
+        "name": "Labels",
+        "jsonName": "labels",
+        "protoField": "labels",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "labels is a set of Kubernetes labels to apply to the node group (and its nodes).\n Keys and values can be at most 63 characters each.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsEksNodeGroupScalingConfig",
+      "description": "ScalingConfig defines the node group scaling constraints.",
+      "protoType": "org.openmcf.provider.aws.awseksnodegroup.v1.AwsEksNodeGroupScalingConfig",
+      "fields": [
+        {
+          "name": "MinSize",
+          "jsonName": "minSize",
+          "protoField": "min_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "min_size is the minimum number of nodes to keep in the group (must be at least 1).",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "MaxSize",
+          "jsonName": "maxSize",
+          "protoField": "max_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "max_size is the maximum number of nodes allowed in the group.\n Must be \u003e= min_size.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "DesiredSize",
+          "jsonName": "desiredSize",
+          "protoField": "desired_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "desired_size is the initial or target number of nodes for the group.\n It should be between min_size and max_size (inclusive).",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        }
+      ]
+    }
+  ]
+}

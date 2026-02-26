@@ -1,0 +1,160 @@
+{
+  "name": "DigitalOceanDnsRecord",
+  "kind": "DigitalOceanDnsRecord",
+  "cloudProvider": "digitalocean",
+  "apiVersion": "digital-ocean.openmcf.org/v1",
+  "description": "DigitalOceanDnsRecord is a Kubernetes Resource Model (KRM) style resource for managing\n individual DNS records within a DigitalOcean DNS zone (domain).",
+  "protoPackage": "org.openmcf.provider.digitalocean.digitaloceandnsrecord.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/digitalocean/digitaloceandnsrecord/v1/api.proto",
+    "spec": "org/openmcf/provider/digitalocean/digitaloceandnsrecord/v1/spec.proto"
+  },
+  "spec": {
+    "name": "DigitalOceanDnsRecordSpec",
+    "fields": [
+      {
+        "name": "Domain",
+        "jsonName": "domain",
+        "protoField": "domain",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The DigitalOcean domain name (DNS zone) where this DNS record will be created.\n This can be a direct value or a reference to a DigitalOceanDnsZone resource's output.\n Example: \"example.com\"",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "DigitalOceanDnsZone",
+        "referenceFieldPath": "status.outputs.zone_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the DNS record (hostname/subdomain).\n Use \"@\" for root domain records, or specify the subdomain name.\n Examples:\n   - \"@\" for root domain (example.com)\n   - \"www\" for subdomain (www.example.com)\n   - \"api.v1\" for nested subdomain (api.v1.example.com)",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.digitaloceandnsrecord.v1.RecordType",
+          "enumValues": [
+            "A",
+            "AAAA",
+            "CNAME",
+            "MX",
+            "TXT",
+            "SRV",
+            "NS",
+            "CAA"
+          ]
+        },
+        "description": "The type of DNS record to create.\n Supported types: A, AAAA, CNAME, MX, TXT, SRV, NS, CAA.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Value",
+        "jsonName": "value",
+        "protoField": "value",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The value/target of the DNS record.\n This can be a direct value or a reference to another resource's output.\n Format depends on record type:\n   - A record: IPv4 address (e.g., \"192.0.2.1\")\n   - AAAA record: IPv6 address (e.g., \"2001:db8::1\")\n   - CNAME record: Target hostname (e.g., \"target.example.com\")\n   - MX record: Mail server hostname (e.g., \"mail.example.com\")\n   - TXT record: Text value (e.g., \"v=spf1 include:_spf.google.com ~all\")\n   - NS record: Nameserver hostname\n   - SRV record: Target hostname\n   - CAA record: CA domain (e.g., \"letsencrypt.org\")",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "TtlSeconds",
+        "jsonName": "ttlSeconds",
+        "protoField": "ttl_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Time to live (TTL) for the DNS record in seconds.\n Determines how long DNS resolvers should cache this record.\n Common values: 60 (1 min), 300 (5 min), 1800 (30 min), 3600 (1 hour), 86400 (1 day).\n Default: 1800 seconds (30 minutes).\n Valid range: 30-86400 seconds.",
+        "required": false,
+        "validation": {
+          "min": 30,
+          "max": 86400
+        },
+        "default": "1800",
+        "oneofGroup": "_ttl_seconds"
+      },
+      {
+        "name": "Priority",
+        "jsonName": "priority",
+        "protoField": "priority",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Priority for MX and SRV records.\n Lower values indicate higher priority.\n For MX records: Typically 10, 20, 30 for primary, secondary, tertiary mail servers.\n For SRV records: Used with weight for load distribution.\n Range: 0-65535. Defaults to 0 if not specified.",
+        "required": false,
+        "validation": {
+          "max": 65535
+        }
+      },
+      {
+        "name": "Weight",
+        "jsonName": "weight",
+        "protoField": "weight",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Weight for SRV records.\n Specifies the relative weight for records with the same priority.\n Higher weights receive proportionally more traffic.\n Range: 0-65535. Defaults to 0 if not specified.\n Ignored for non-SRV record types.",
+        "required": false,
+        "validation": {
+          "max": 65535
+        }
+      },
+      {
+        "name": "Port",
+        "jsonName": "port",
+        "protoField": "port",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Port for SRV records.\n Specifies the TCP or UDP port on which the service is available.\n Range: 0-65535.\n Required for SRV records, ignored for other types.",
+        "required": false,
+        "validation": {
+          "max": 65535
+        }
+      },
+      {
+        "name": "Flags",
+        "jsonName": "flags",
+        "protoField": "flags",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Flags for CAA records.\n Values:\n   - 0: Non-critical (default) - CA may ignore unknown tags\n   - 128: Critical - CA must refuse if tag is not understood\n Ignored for non-CAA record types.",
+        "required": false,
+        "validation": {
+          "max": 255
+        }
+      },
+      {
+        "name": "Tag",
+        "jsonName": "tag",
+        "protoField": "tag",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Tag for CAA records.\n Specifies the property being authorized:\n   - \"issue\": Authorizes a CA to issue certificates for the domain\n   - \"issuewild\": Authorizes a CA to issue wildcard certificates\n   - \"iodef\": URL to report policy violations\n Required for CAA records, ignored for other types.",
+        "required": false
+      }
+    ]
+  }
+}

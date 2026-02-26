@@ -1,0 +1,52 @@
+{
+  "name": "OpenFgaAuthorizationModel",
+  "kind": "OpenFgaAuthorizationModel",
+  "cloudProvider": "openfga",
+  "apiVersion": "openfga.openmcf.org/v1",
+  "description": "OpenFgaAuthorizationModel is a deployment component that creates an authorization model in OpenFGA.\n\n An authorization model defines the types, relations, and access rules for fine-grained\n authorization. It is the schema that determines what relationship tuples mean and how\n access decisions are computed.\n\n Key concepts:\n - Types: Define object types (user, document, folder, etc.)\n - Relations: Define relationships between types (viewer, editor, owner, parent, etc.)\n - Rewrites: Define how relations are computed (direct, computed, union, intersection, etc.)\n - Conditions: Define dynamic rules for access decisions\n\n IMPORTANT: Authorization models are immutable. Each model_json change creates a new model ID.\n\n IMPORTANT: OpenFGA only has a Terraform provider - there is no Pulumi provider available.\n This component must be deployed using Terraform/Tofu as the provisioner.\n The Pulumi module is a pass-through placeholder that does not create resources.\n\n Use cases:\n - Define access control rules for applications\n - Version authorization schemas over time\n - Test new authorization models before production deployment\n - Manage authorization infrastructure as code\n\n Example manifest:\n ```yaml\n apiVersion: openfga.openmcf.org/v1\n kind: OpenFgaAuthorizationModel\n metadata:\n   name: production-model-v1\n   org: my-organization\n   env: production\n spec:\n   storeId: \"01HXYZ...\"\n   modelJson: |\n     {\n       \"schema_version\": \"1.1\",\n       \"type_definitions\": [\n         {\"type\": \"user\", \"relations\": {}},\n         {\"type\": \"document\", \"relations\": {\"viewer\": {\"this\": {}}}}\n       ]\n     }\n ```",
+  "protoPackage": "org.openmcf.provider.openfga.openfgaauthorizationmodel.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openfga/openfgaauthorizationmodel/v1/api.proto",
+    "spec": "org/openmcf/provider/openfga/openfgaauthorizationmodel/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenFgaAuthorizationModelSpec",
+    "fields": [
+      {
+        "name": "StoreId",
+        "jsonName": "storeId",
+        "protoField": "store_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "store_id is the unique identifier of the OpenFGA store where this model will be created.\n\n This can be either:\n - A direct value: {value: \"01HXYZ...\"}\n - A reference to an OpenFgaStore: {value_from: {name: \"my-store\"}}\n\n When using references, the store ID is automatically resolved from the\n OpenFgaStore's status.outputs.id field.\n\n Note: The store_id is immutable - changing it requires replacing the model.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenFgaStore",
+        "referenceFieldPath": "status.outputs.id"
+      },
+      {
+        "name": "ModelDsl",
+        "jsonName": "modelDsl",
+        "protoField": "model_dsl",
+        "type": {
+          "kind": "string"
+        },
+        "description": "model_dsl is the authorization model definition in DSL format (recommended).\n\n The DSL format is more human-readable than JSON and is the preferred format\n in OpenFGA documentation. The Terraform module automatically converts DSL to JSON\n using the openfga_authorization_model_document data source.\n\n Exactly one of model_dsl or model_json must be specified.\n\n Example:\n model\n   schema 1.1\n\n type user\n\n type document\n   relations\n     define viewer: [user]\n     define editor: [user]\n     define owner: [user]\n\n Reference: https://openfga.dev/docs/configuration-language",
+        "required": false
+      },
+      {
+        "name": "ModelJson",
+        "jsonName": "modelJson",
+        "protoField": "model_json",
+        "type": {
+          "kind": "string"
+        },
+        "description": "model_json is the authorization model definition in JSON format.\n\n Use this if you prefer JSON over DSL, or if you're migrating from existing JSON models.\n The JSON must conform to the OpenFGA authorization model schema and include:\n - schema_version: The schema version (e.g., \"1.1\")\n - type_definitions: Array of type definitions with name, relations, and metadata\n - conditions (optional): Map of conditions for dynamic access decisions\n\n Exactly one of model_dsl or model_json must be specified.\n\n Note: The model is immutable - changing it requires replacing the model (new ID).\n\n Example:\n {\n   \"schema_version\": \"1.1\",\n   \"type_definitions\": [\n     {\n       \"type\": \"user\",\n       \"relations\": {}\n     },\n     {\n       \"type\": \"document\",\n       \"relations\": {\n         \"viewer\": {\"this\": {}},\n         \"editor\": {\"this\": {}},\n         \"owner\": {\"this\": {}}\n       },\n       \"metadata\": {\n         \"relations\": {\n           \"viewer\": {\"directly_related_user_types\": [{\"type\": \"user\"}]},\n           \"editor\": {\"directly_related_user_types\": [{\"type\": \"user\"}]},\n           \"owner\": {\"directly_related_user_types\": [{\"type\": \"user\"}]}\n         }\n       }\n     }\n   ]\n }",
+        "required": false
+      }
+    ]
+  }
+}

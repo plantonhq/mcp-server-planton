@@ -1,0 +1,169 @@
+{
+  "name": "OpenStackLoadBalancerMonitor",
+  "kind": "OpenStackLoadBalancerMonitor",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackLoadBalancerMonitor is a Kubernetes Resource Model (KRM) style resource\n for managing Octavia health monitors in OpenStack.\n\n A health monitor periodically probes pool members to determine their health status.\n Unhealthy members are automatically removed from the pool's traffic rotation until\n they recover. Monitors support HTTP, HTTPS, PING, TCP, TLS-HELLO, and UDP-CONNECT\n check types.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackloadbalancermonitor.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackloadbalancermonitor/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackloadbalancermonitor/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackLoadBalancerMonitorSpec",
+    "fields": [
+      {
+        "name": "PoolId",
+        "jsonName": "poolId",
+        "protoField": "pool_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The pool to monitor.\n ForceNew: changing this requires recreating the monitor.\n\n FK: OpenStackLoadBalancerPool.status.outputs.pool_id",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackLoadBalancerPool",
+        "referenceFieldPath": "status.outputs.pool_id"
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The type of health check to perform.\n ForceNew: changing this requires recreating the monitor.\n\n - HTTP: Send HTTP requests and check response codes\n - HTTPS: Send HTTPS requests and check response codes\n - PING: ICMP ping the member\n - TCP: Attempt a TCP connection\n - TLS-HELLO: Perform a TLS handshake\n - UDP-CONNECT: Send a UDP datagram and check for ICMP errors",
+        "required": true,
+        "validation": {
+          "required": true,
+          "enum": [
+            "HTTP",
+            "HTTPS",
+            "PING",
+            "TCP",
+            "TLS-HELLO",
+            "UDP-CONNECT"
+          ]
+        }
+      },
+      {
+        "name": "Delay",
+        "jsonName": "delay",
+        "protoField": "delay",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Required) The interval in seconds between health checks.\n A check is sent every `delay` seconds to each member.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Timeout",
+        "jsonName": "timeout",
+        "protoField": "timeout",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Required) The maximum time in seconds to wait for a health check response.\n If a member does not respond within this time, the check is considered failed.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "MaxRetries",
+        "jsonName": "maxRetries",
+        "protoField": "max_retries",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Required) The number of consecutive successful health checks required before\n a member is considered healthy (brought back into rotation).\n Must be between 1 and 10.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "MaxRetriesDown",
+        "jsonName": "maxRetriesDown",
+        "protoField": "max_retries_down",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Optional) The number of consecutive failed health checks required before\n a member is considered unhealthy (removed from rotation).\n Must be between 1 and 10. Default: Octavia uses the same value as max_retries.",
+        "required": false,
+        "oneofGroup": "_max_retries_down"
+      },
+      {
+        "name": "UrlPath",
+        "jsonName": "urlPath",
+        "protoField": "url_path",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The URL path to request for HTTP/HTTPS health checks.\n Typically \"/\" or \"/healthz\". Only applicable when type is HTTP or HTTPS.",
+        "required": false
+      },
+      {
+        "name": "HttpMethod",
+        "jsonName": "httpMethod",
+        "protoField": "http_method",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The HTTP method to use for HTTP/HTTPS health checks.\n Only applicable when type is HTTP or HTTPS.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "",
+            "GET",
+            "HEAD",
+            "POST",
+            "PUT",
+            "DELETE",
+            "PATCH",
+            "OPTIONS",
+            "CONNECT",
+            "TRACE"
+          ]
+        }
+      },
+      {
+        "name": "ExpectedCodes",
+        "jsonName": "expectedCodes",
+        "protoField": "expected_codes",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Expected HTTP response codes for a healthy member.\n Supports single codes (\"200\"), ranges (\"200-299\"), and comma-separated lists (\"200,202\").\n Only applicable when type is HTTP or HTTPS.",
+        "required": false
+      },
+      {
+        "name": "AdminStateUp",
+        "jsonName": "adminStateUp",
+        "protoField": "admin_state_up",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "(Optional) Administrative state of the monitor.\n When false, the monitor stops checking members. Default: true.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_admin_state_up"
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Override the region from the provider configuration.",
+        "required": false
+      }
+    ]
+  }
+}

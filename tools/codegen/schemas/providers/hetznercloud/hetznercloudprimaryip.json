@@ -1,0 +1,68 @@
+{
+  "name": "HetznerCloudPrimaryIp",
+  "kind": "HetznerCloudPrimaryIp",
+  "cloudProvider": "hetznercloud",
+  "apiVersion": "hetzner-cloud.openmcf.org/v1",
+  "description": "hetznercloud-primary-ip",
+  "protoPackage": "org.openmcf.provider.hetznercloud.hetznercloudprimaryip.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/hetznercloud/hetznercloudprimaryip/v1/api.proto",
+    "spec": "org/openmcf/provider/hetznercloud/hetznercloudprimaryip/v1/spec.proto"
+  },
+  "spec": {
+    "name": "HetznerCloudPrimaryIpSpec",
+    "fields": [
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.hetznercloud.hetznercloudprimaryip.v1.IpType",
+          "enumValues": [
+            "ipv4",
+            "ipv6"
+          ]
+        },
+        "description": "IP address type. Determines whether an IPv4 address or an IPv6 /64\n network block is allocated.\n\n Changing this value forces replacement of the Primary IP resource.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Hetzner Cloud location where the IP is allocated (e.g., \"fsn1\", \"nbg1\",\n \"hel1\", \"ash\", \"hil\", \"sin\"). The Primary IP can only be assigned to\n servers in the same location.\n\n Changing this value forces replacement of the Primary IP resource.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DnsPtr",
+        "jsonName": "dnsPtr",
+        "protoField": "dns_ptr",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reverse DNS pointer record for the allocated IP address. If set, an\n hcloud_rdns resource is created that maps the IP back to this hostname.\n\n Commonly used for mail servers (SPF/DKIM verification relies on matching\n forward and reverse DNS) and any service where clients verify the server's\n identity via reverse lookup.\n\n Example: \"mail.example.com\"",
+        "required": false
+      },
+      {
+        "name": "DeleteProtection",
+        "jsonName": "deleteProtection",
+        "protoField": "delete_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Prevent accidental deletion of the Primary IP via the Hetzner Cloud API.\n When enabled, the IP cannot be deleted until protection is removed.",
+        "required": false
+      }
+    ]
+  }
+}

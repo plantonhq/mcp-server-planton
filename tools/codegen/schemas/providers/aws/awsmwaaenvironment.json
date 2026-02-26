@@ -1,0 +1,506 @@
+{
+  "name": "AwsMwaaEnvironment",
+  "kind": "AwsMwaaEnvironment",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-mwaa-environment",
+  "protoPackage": "org.openmcf.provider.aws.awsmwaaenvironment.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsmwaaenvironment/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsmwaaenvironment/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsMwaaEnvironmentSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "AirflowVersion",
+        "jsonName": "airflowVersion",
+        "protoField": "airflow_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "airflow_version is the Apache Airflow version for the environment.\n Examples: \"2.10.1\", \"2.9.2\", \"2.8.1\". If omitted, AWS uses the latest supported version.\n Minor version upgrades are applied in-place; major version changes force environment replacement.",
+        "required": false
+      },
+      {
+        "name": "AirflowConfigurationOptions",
+        "jsonName": "airflowConfigurationOptions",
+        "protoField": "airflow_configuration_options",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "airflow_configuration_options overrides specific Apache Airflow configuration properties.\n Keys use the Airflow \"section.property\" format, e.g., \"core.default_timezone\",\n \"webserver.dag_default_view\", \"celery.worker_autoscale\".\n Values may contain sensitive information (database URIs, API keys) -- treat as confidential.\n See https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-env-variables.html for allowed keys.",
+        "required": false
+      },
+      {
+        "name": "SourceBucketArn",
+        "jsonName": "sourceBucketArn",
+        "protoField": "source_bucket_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "source_bucket_arn is the ARN of the S3 bucket containing DAGs, plugins, and requirements.\n The bucket must have versioning enabled and a bucket policy granting MWAA access.\n The execution role must have permissions to read from this bucket.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsS3Bucket",
+        "referenceFieldPath": "status.outputs.bucket_arn"
+      },
+      {
+        "name": "DagS3Path",
+        "jsonName": "dagS3Path",
+        "protoField": "dag_s3_path",
+        "type": {
+          "kind": "string"
+        },
+        "description": "dag_s3_path is the relative path within the S3 bucket to the folder containing DAG files.\n Example: \"dags/\" or \"airflow/dags/\". Must not start with \"/\".",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "PluginsS3Path",
+        "jsonName": "pluginsS3Path",
+        "protoField": "plugins_s3_path",
+        "type": {
+          "kind": "string"
+        },
+        "description": "plugins_s3_path is the relative path within the S3 bucket to a plugins.zip file.\n The zip contains custom Airflow plugins (operators, hooks, sensors, macros).\n Example: \"plugins/plugins.zip\".",
+        "required": false
+      },
+      {
+        "name": "PluginsS3ObjectVersion",
+        "jsonName": "pluginsS3ObjectVersion",
+        "protoField": "plugins_s3_object_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "plugins_s3_object_version pins the plugins.zip to a specific S3 object version.\n Ensures deterministic deployments. If omitted, the latest version is used.",
+        "required": false
+      },
+      {
+        "name": "RequirementsS3Path",
+        "jsonName": "requirementsS3Path",
+        "protoField": "requirements_s3_path",
+        "type": {
+          "kind": "string"
+        },
+        "description": "requirements_s3_path is the relative path within the S3 bucket to a requirements.txt file.\n Lists additional Python packages to install in the Airflow environment.\n Example: \"requirements/requirements.txt\".",
+        "required": false
+      },
+      {
+        "name": "RequirementsS3ObjectVersion",
+        "jsonName": "requirementsS3ObjectVersion",
+        "protoField": "requirements_s3_object_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "requirements_s3_object_version pins the requirements.txt to a specific S3 object version.\n Ensures deterministic deployments. If omitted, the latest version is used.",
+        "required": false
+      },
+      {
+        "name": "StartupScriptS3Path",
+        "jsonName": "startupScriptS3Path",
+        "protoField": "startup_script_s3_path",
+        "type": {
+          "kind": "string"
+        },
+        "description": "startup_script_s3_path is the relative path within the S3 bucket to a startup shell script.\n Runs at environment startup for OS-level setup (install system packages, set environment\n variables, configure authentication) that requirements.txt cannot handle.\n Available for Airflow 2.x+. Example: \"scripts/startup.sh\".",
+        "required": false
+      },
+      {
+        "name": "StartupScriptS3ObjectVersion",
+        "jsonName": "startupScriptS3ObjectVersion",
+        "protoField": "startup_script_s3_object_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "startup_script_s3_object_version pins the startup script to a specific S3 object version.\n Ensures deterministic deployments. If omitted, the latest version is used.",
+        "required": false
+      },
+      {
+        "name": "ExecutionRoleArn",
+        "jsonName": "executionRoleArn",
+        "protoField": "execution_role_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "execution_role_arn is the ARN of the IAM role that MWAA assumes to access AWS resources.\n This role needs permissions for S3 (DAGs bucket), CloudWatch Logs, SQS (Celery backend),\n and any AWS services your DAGs interact with (e.g., Glue, EMR, Redshift, Lambda).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsIamRole",
+        "referenceFieldPath": "status.outputs.role_arn"
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "subnet_ids are the private VPC subnets where MWAA creates network interfaces.\n Requires exactly 2 subnets in different Availability Zones. Must be private subnets\n (no direct route to an internet gateway). ForceNew: changing subnets forces replacement.",
+        "required": false,
+        "validation": {
+          "minItems": 2
+        },
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "security_group_ids are source security groups allowed to reach the MWAA VPC endpoints.\n When provided (along with vpc_id), a managed security group is created with:\n   - Self-referencing inbound rule (all traffic) for MWAA component intercommunication\n   - Ingress on port 443 (HTTPS) from these source security groups for Airflow UI access\n   - Full egress to allow outbound connectivity",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "AllowedCidrBlocks",
+        "jsonName": "allowedCidrBlocks",
+        "protoField": "allowed_cidr_blocks",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "allowed_cidr_blocks are IPv4 CIDR ranges allowed to reach the MWAA VPC endpoints on port 443.\n When provided (along with vpc_id), a managed security group is created with ingress rules\n permitting HTTPS traffic from these CIDRs.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "AssociateSecurityGroupIds",
+        "jsonName": "associateSecurityGroupIds",
+        "protoField": "associate_security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "associate_security_group_ids are existing security groups attached directly to the\n MWAA environment alongside the managed security group (if created).\n Use this when you already have a security group configured for MWAA's self-referencing\n pattern and want to attach it directly without managed SG creation.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "vpc_id is the VPC in which to create the managed security group.\n Required when security_group_ids or allowed_cidr_blocks are provided.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "KmsKeyArn",
+        "jsonName": "kmsKeyArn",
+        "protoField": "kms_key_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "kms_key_arn is the KMS key ARN for encrypting environment data at rest\n (metadata database, DAG logs, SQS queue, web server logs).\n If omitted, AWS uses the default aws/airflow service key.\n ForceNew: changing the KMS key forces environment replacement.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "EnvironmentClass",
+        "jsonName": "environmentClass",
+        "protoField": "environment_class",
+        "type": {
+          "kind": "string"
+        },
+        "description": "environment_class determines the compute and memory capacity of the Airflow components.\n \"mw1.micro\": 0.5 vCPU, 1 GB (dev/test, limited to 1 webserver).\n \"mw1.small\" (default): 1 vCPU, 2 GB (small-medium workloads).\n \"mw1.medium\": 2 vCPU, 4 GB (medium-large workloads).\n \"mw1.large\": 4 vCPU, 8 GB (large workloads).\n \"mw1.xlarge\": 8 vCPU, 16 GB (very large workloads).\n \"mw1.2xlarge\": 16 vCPU, 32 GB (maximum capacity).",
+        "required": false,
+        "validation": {
+          "enum": [
+            "mw1.micro",
+            "mw1.small",
+            "mw1.medium",
+            "mw1.large",
+            "mw1.xlarge",
+            "mw1.2xlarge"
+          ]
+        }
+      },
+      {
+        "name": "MinWorkers",
+        "jsonName": "minWorkers",
+        "protoField": "min_workers",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "min_workers is the minimum number of Celery workers for auto-scaling.\n Range: \u003e= 1. Workers process DAG tasks. MWAA scales between min_workers and max_workers\n based on task queue depth. Default: 1.",
+        "required": false,
+        "validation": {
+          "min": 1
+        }
+      },
+      {
+        "name": "MaxWorkers",
+        "jsonName": "maxWorkers",
+        "protoField": "max_workers",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "max_workers is the maximum number of Celery workers for auto-scaling.\n Range: \u003e= 1. Must be \u003e= min_workers. Default: 10.",
+        "required": false,
+        "validation": {
+          "min": 1
+        }
+      },
+      {
+        "name": "MinWebservers",
+        "jsonName": "minWebservers",
+        "protoField": "min_webservers",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "min_webservers is the minimum number of Airflow webservers.\n Range: 2-5 (1 for mw1.micro). Default: 2.",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 5
+        }
+      },
+      {
+        "name": "MaxWebservers",
+        "jsonName": "maxWebservers",
+        "protoField": "max_webservers",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "max_webservers is the maximum number of Airflow webservers.\n Range: 2-5 (1 for mw1.micro). Must be \u003e= min_webservers. Default: 2.",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 5
+        }
+      },
+      {
+        "name": "Schedulers",
+        "jsonName": "schedulers",
+        "protoField": "schedulers",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "schedulers is the number of Airflow schedulers.\n Range: 2-5. Default: 2. More schedulers improve DAG parsing and scheduling throughput.",
+        "required": false,
+        "validation": {
+          "min": 2,
+          "max": 5
+        }
+      },
+      {
+        "name": "WebserverAccessMode",
+        "jsonName": "webserverAccessMode",
+        "protoField": "webserver_access_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "webserver_access_mode controls how the Airflow web UI is accessed.\n \"PRIVATE_ONLY\" (default): accessible only within the VPC via VPC endpoint.\n \"PUBLIC_ONLY\": accessible over the internet with IAM-based login.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "PRIVATE_ONLY",
+            "PUBLIC_ONLY"
+          ]
+        },
+        "default": "PRIVATE_ONLY",
+        "oneofGroup": "_webserver_access_mode"
+      },
+      {
+        "name": "EndpointManagement",
+        "jsonName": "endpointManagement",
+        "protoField": "endpoint_management",
+        "type": {
+          "kind": "string"
+        },
+        "description": "endpoint_management controls who manages the VPC endpoints for the environment.\n \"SERVICE\" (default): AWS creates and manages VPC endpoints automatically.\n \"CUSTOMER\": you create and manage VPC endpoints yourself (advanced, \u003c5% adoption).\n ForceNew: changing this forces environment replacement.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "SERVICE",
+            "CUSTOMER"
+          ]
+        }
+      },
+      {
+        "name": "LoggingConfiguration",
+        "jsonName": "loggingConfiguration",
+        "protoField": "logging_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsMwaaEnvironmentLoggingConfiguration"
+        },
+        "description": "logging_configuration controls per-module Airflow log delivery to CloudWatch Logs.\n MWAA supports 5 log modules: DAG processing, scheduler, task, webserver, and worker.\n Each module can be independently enabled with its own log level.\n CloudWatch Logs groups are auto-created by MWAA in the format:\n /aws/mwaa/{environment-name}/{module-name}",
+        "required": false
+      },
+      {
+        "name": "WeeklyMaintenanceWindowStart",
+        "jsonName": "weeklyMaintenanceWindowStart",
+        "protoField": "weekly_maintenance_window_start",
+        "type": {
+          "kind": "string"
+        },
+        "description": "weekly_maintenance_window_start is the preferred start time for weekly maintenance.\n Format: \"DAY:HH:MM\" in UTC (e.g., \"TUE:03:30\", \"SUN:00:00\").\n During maintenance, MWAA may apply patches or updates. If omitted, AWS selects a window.",
+        "required": false
+      },
+      {
+        "name": "WorkerReplacementStrategy",
+        "jsonName": "workerReplacementStrategy",
+        "protoField": "worker_replacement_strategy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "worker_replacement_strategy controls how workers are replaced during environment updates.\n \"FORCED\": replaces workers immediately (faster updates, may interrupt running tasks).\n \"GRACEFUL\": waits for running tasks to complete before replacing workers (slower, no data loss).",
+        "required": false,
+        "validation": {
+          "enum": [
+            "FORCED",
+            "GRACEFUL"
+          ]
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsMwaaEnvironmentLoggingConfiguration",
+      "description": "AwsMwaaEnvironmentLoggingConfiguration configures per-module log delivery to CloudWatch Logs.\n Each of the 5 Airflow components (DAG processor, scheduler, task runner, webserver, worker)\n can be independently configured with its own enabled flag and log level.",
+      "protoType": "org.openmcf.provider.aws.awsmwaaenvironment.v1.AwsMwaaEnvironmentLoggingConfiguration",
+      "fields": [
+        {
+          "name": "DagProcessingLogs",
+          "jsonName": "dagProcessingLogs",
+          "protoField": "dag_processing_logs",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsMwaaEnvironmentLoggingModuleConfig"
+          },
+          "description": "dag_processing_logs controls logging for the DAG processing component.\n The DAG processor parses DAG files to determine scheduling requirements.",
+          "required": false
+        },
+        {
+          "name": "SchedulerLogs",
+          "jsonName": "schedulerLogs",
+          "protoField": "scheduler_logs",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsMwaaEnvironmentLoggingModuleConfig"
+          },
+          "description": "scheduler_logs controls logging for the Airflow scheduler.\n The scheduler triggers task instances based on DAG definitions and timing.",
+          "required": false
+        },
+        {
+          "name": "TaskLogs",
+          "jsonName": "taskLogs",
+          "protoField": "task_logs",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsMwaaEnvironmentLoggingModuleConfig"
+          },
+          "description": "task_logs controls logging for task execution.\n Task logs capture stdout/stderr from individual DAG task runs.",
+          "required": false
+        },
+        {
+          "name": "WebserverLogs",
+          "jsonName": "webserverLogs",
+          "protoField": "webserver_logs",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsMwaaEnvironmentLoggingModuleConfig"
+          },
+          "description": "webserver_logs controls logging for the Airflow webserver (UI).\n The webserver serves the Airflow web interface and REST API.",
+          "required": false
+        },
+        {
+          "name": "WorkerLogs",
+          "jsonName": "workerLogs",
+          "protoField": "worker_logs",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsMwaaEnvironmentLoggingModuleConfig"
+          },
+          "description": "worker_logs controls logging for Celery workers.\n Workers execute the actual task code defined in DAGs.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsMwaaEnvironmentLoggingModuleConfig",
+      "description": "AwsMwaaEnvironmentLoggingModuleConfig configures logging for a single Airflow component.",
+      "protoType": "org.openmcf.provider.aws.awsmwaaenvironment.v1.AwsMwaaEnvironmentLoggingModuleConfig",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "enabled controls whether logs for this module are delivered to CloudWatch Logs.",
+          "required": false
+        },
+        {
+          "name": "LogLevel",
+          "jsonName": "logLevel",
+          "protoField": "log_level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "log_level sets the minimum severity of log messages delivered.\n \"CRITICAL\": only critical errors. \"ERROR\": errors and above.\n \"WARNING\": warnings and above. \"INFO\" (default): informational and above.\n \"DEBUG\": all messages including debug output (verbose, higher CloudWatch costs).",
+          "required": false,
+          "validation": {
+            "enum": [
+              "CRITICAL",
+              "ERROR",
+              "WARNING",
+              "INFO",
+              "DEBUG"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

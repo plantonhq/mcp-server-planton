@@ -1,0 +1,1108 @@
+{
+  "name": "KubernetesNats",
+  "kind": "KubernetesNats",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "nats-kubernetes",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetesnats.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetesnats/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetesnats/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesNatsSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "Target Kubernetes Cluster",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes Namespace",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "CreateNamespace",
+        "jsonName": "createNamespace",
+        "protoField": "create_namespace",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "flag to indicate if the namespace should be created",
+        "required": false
+      },
+      {
+        "name": "ServerContainer",
+        "jsonName": "serverContainer",
+        "protoField": "server_container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesNatsServerContainer"
+        },
+        "description": "server container settings (replicas, resources, disk).",
+        "required": false
+      },
+      {
+        "name": "DisableJetStream",
+        "jsonName": "disableJetStream",
+        "protoField": "disable_jet_stream",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "disable jet-stream persistence",
+        "required": false
+      },
+      {
+        "name": "Auth",
+        "jsonName": "auth",
+        "protoField": "auth",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesNatsAuth"
+        },
+        "description": "authentication settings for the nats cluster.",
+        "required": false
+      },
+      {
+        "name": "TlsEnabled",
+        "jsonName": "tlsEnabled",
+        "protoField": "tls_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "tls settings for the nats cluster.",
+        "required": false
+      },
+      {
+        "name": "Ingress",
+        "jsonName": "ingress",
+        "protoField": "ingress",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesNatsIngress"
+        },
+        "description": "optional ingress configuration for external access.",
+        "required": false
+      },
+      {
+        "name": "DisableNatsBox",
+        "jsonName": "disableNatsBox",
+        "protoField": "disable_nats_box",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "toggle to deploy the nats-box utility pod.",
+        "required": false
+      },
+      {
+        "name": "NackController",
+        "jsonName": "nackController",
+        "protoField": "nack_controller",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesNatsNackController"
+        },
+        "description": "NACK JetStream controller configuration (opt-in).\n When enabled, deploys the NACK controller alongside NATS for managing\n streams and consumers via Kubernetes CRDs.",
+        "required": false
+      },
+      {
+        "name": "Streams",
+        "jsonName": "streams",
+        "protoField": "streams",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "KubernetesNatsStream"
+          }
+        },
+        "description": "JetStream streams to create.\n Requires nack_controller.enabled = true.\n Streams are created as Kubernetes custom resources managed by NACK.",
+        "required": false
+      },
+      {
+        "name": "NatsHelmChartVersion",
+        "jsonName": "natsHelmChartVersion",
+        "protoField": "nats_helm_chart_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "NATS Helm chart version.\n To check available versions: helm search repo nats/nats --versions\n Chart repository: https://nats-io.github.io/k8s/",
+        "required": false,
+        "default": "2.12.3",
+        "oneofGroup": "_nats_helm_chart_version"
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ContainerResources",
+      "description": "**ContainerResources** specifies the CPU and memory resources for a container.\n It allows you to define resource limits and requests to manage resource allocation and ensure optimal performance.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerResources",
+      "fields": [
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource limits for the container.\n Specify the maximum amount of CPU and memory that the container can use.",
+          "required": false
+        },
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource requests for the container.\n Specify the minimum amount of CPU and memory that the container is guaranteed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CpuMemory",
+      "description": "**CpuMemory** defines CPU and memory resource quantities for a container.\n It is used to specify the limits and requests for CPU and memory resources.",
+      "protoType": "org.openmcf.provider.kubernetes.CpuMemory",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNatsAuth",
+      "description": "KubernetesNatsAuth holds the authentication configuration for the nats cluster.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.KubernetesNatsAuth",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "toggle to enable authentication for the nats cluster.",
+          "required": false
+        },
+        {
+          "name": "Scheme",
+          "jsonName": "scheme",
+          "protoField": "scheme",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.KubernetesNatsAuthScheme",
+            "enumValues": [
+              "bearer_token",
+              "basic_auth"
+            ]
+          },
+          "description": "authentication scheme for the nats cluster.",
+          "required": false
+        },
+        {
+          "name": "NoAuthUser",
+          "jsonName": "noAuthUser",
+          "protoField": "no_auth_user",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesNatsNoAuthUser"
+          },
+          "description": "optional no-auth user configuration.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNatsConsumer",
+      "description": "KubernetesNatsConsumer configures a JetStream consumer.\n Consumers define how messages are delivered and acknowledged from a stream.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.KubernetesNatsConsumer",
+      "fields": [
+        {
+          "name": "DurableName",
+          "jsonName": "durableName",
+          "protoField": "durable_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The durable name of the consumer.\n Must be unique within the stream.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        {
+          "name": "DeliverPolicy",
+          "jsonName": "deliverPolicy",
+          "protoField": "deliver_policy",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.Value",
+            "enumValues": [
+              "all",
+              "last",
+              "new_msgs"
+            ]
+          },
+          "description": "Delivery policy for the consumer (all, last, or new).",
+          "required": false
+        },
+        {
+          "name": "AckPolicy",
+          "jsonName": "ackPolicy",
+          "protoField": "ack_policy",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.Value",
+            "enumValues": [
+              "none",
+              "all",
+              "explicit"
+            ]
+          },
+          "description": "Acknowledgment policy for the consumer (none, all, or explicit).",
+          "required": false
+        },
+        {
+          "name": "FilterSubject",
+          "jsonName": "filterSubject",
+          "protoField": "filter_subject",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Filter subject for the consumer (supports wildcards).\n Only messages matching this subject will be delivered.",
+          "required": false
+        },
+        {
+          "name": "DeliverSubject",
+          "jsonName": "deliverSubject",
+          "protoField": "deliver_subject",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Deliver subject for push-based consumers.\n If empty, creates a pull-based consumer.",
+          "required": false
+        },
+        {
+          "name": "DeliverGroup",
+          "jsonName": "deliverGroup",
+          "protoField": "deliver_group",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Queue group name for load balancing across multiple consumers.",
+          "required": false
+        },
+        {
+          "name": "MaxAckPending",
+          "jsonName": "maxAckPending",
+          "protoField": "max_ack_pending",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of unacknowledged messages.",
+          "required": false
+        },
+        {
+          "name": "MaxDeliver",
+          "jsonName": "maxDeliver",
+          "protoField": "max_deliver",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of delivery attempts. -1 for unlimited.",
+          "required": false
+        },
+        {
+          "name": "AckWait",
+          "jsonName": "ackWait",
+          "protoField": "ack_wait",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Time to wait for acknowledgment (e.g., \"30s\", \"1m\").",
+          "required": false
+        },
+        {
+          "name": "ReplayPolicy",
+          "jsonName": "replayPolicy",
+          "protoField": "replay_policy",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.Value",
+            "enumValues": [
+              "original",
+              "instant"
+            ]
+          },
+          "description": "Replay policy for the consumer (original or instant).",
+          "required": false
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Description of the consumer.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNatsIngress",
+      "description": "KubernetesNatsIngress defines ingress configuration for NATS external access.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.KubernetesNatsIngress",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Flag to enable or disable ingress.\n When enabled, creates a LoadBalancer service for external access.",
+          "required": false
+        },
+        {
+          "name": "Hostname",
+          "jsonName": "hostname",
+          "protoField": "hostname",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The full hostname for external access (e.g., \"nats.example.com\").\n This hostname will be configured via external-dns annotations.\n Required when enabled is true.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNatsNackController",
+      "description": "KubernetesNatsNackController configures the NACK JetStream controller.\n NACK (NATS Controllers for Kubernetes) is the official operator for managing\n JetStream resources (Streams, Consumers, KeyValue, ObjectStore) via CRDs.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.KubernetesNatsNackController",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable the NACK JetStream controller.\n When enabled, NACK will be deployed alongside NATS and can manage\n Stream/Consumer resources declaratively via Kubernetes CRDs.",
+          "required": false
+        },
+        {
+          "name": "EnableControlLoop",
+          "jsonName": "enableControlLoop",
+          "protoField": "enable_control_loop",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable control-loop mode for the NACK controller.\n Required for KeyValue and ObjectStore support.\n Also provides more reliable state enforcement.",
+          "required": false
+        },
+        {
+          "name": "HelmChartVersion",
+          "jsonName": "helmChartVersion",
+          "protoField": "helm_chart_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "NACK Helm chart version.\n To check available versions: helm search repo nats/nack --versions\n Chart repository: https://nats-io.github.io/k8s/",
+          "required": false,
+          "default": "0.31.1",
+          "oneofGroup": "_helm_chart_version"
+        },
+        {
+          "name": "AppVersion",
+          "jsonName": "appVersion",
+          "protoField": "app_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "NACK app version (GitHub release tag).\n Used for fetching CRDs from: https://github.com/nats-io/nack/releases\n Note: App version differs from chart version. Check \"APP VERSION\" column in:\n helm search repo nats/nack --versions",
+          "required": false,
+          "default": "0.21.1",
+          "oneofGroup": "_app_version"
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNatsNoAuthUser",
+      "description": "configuration for an unauthenticated (\"no-auth\") user.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.KubernetesNatsNoAuthUser",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "enables the unauthenticated user when true.",
+          "required": false
+        },
+        {
+          "name": "PublishSubjects",
+          "jsonName": "publishSubjects",
+          "protoField": "publish_subjects",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "subjects on which the unauthenticated user may publish.\n at least one subject must be specified when enabled is true.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNatsServerContainer",
+      "description": "server container settings for the nats stateful-set.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.KubernetesNatsServerContainer",
+      "fields": [
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "number of nats replicas; use an odd value for quorum.",
+          "required": false
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "cpu and memory resources for each pod.",
+          "required": false
+        },
+        {
+          "name": "DiskSize",
+          "jsonName": "diskSize",
+          "protoField": "disk_size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "pvc size for jet-stream file store (e.g. \"10Gi\").",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "recommendedDefault": "1Gi"
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNatsStream",
+      "description": "KubernetesNatsStream configures a JetStream stream.\n Streams are the core storage layer in JetStream, capturing and storing messages\n published to specific subjects.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.KubernetesNatsStream",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "A unique name for the stream.\n Must be between 1-255 characters, alphanumeric with allowed: - _ .",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        {
+          "name": "Subjects",
+          "jsonName": "subjects",
+          "protoField": "subjects",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "List of subjects to consume, supports wildcards (e.g., \"orders.*\", \"events.\u003e\").",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "Storage",
+          "jsonName": "storage",
+          "protoField": "storage",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.Value",
+            "enumValues": [
+              "file",
+              "memory"
+            ]
+          },
+          "description": "Storage backend for the stream (file or memory).",
+          "required": false
+        },
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of replicas for the stream (odd number recommended for quorum).",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 5
+          }
+        },
+        {
+          "name": "Retention",
+          "jsonName": "retention",
+          "protoField": "retention",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.Value",
+            "enumValues": [
+              "limits",
+              "interest",
+              "workqueue"
+            ]
+          },
+          "description": "Retention policy for the stream (limits, interest, or workqueue).",
+          "required": false
+        },
+        {
+          "name": "MaxAge",
+          "jsonName": "maxAge",
+          "protoField": "max_age",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Maximum age of messages in the stream (e.g., \"24h\", \"7d\").\n Empty string means unlimited.",
+          "required": false
+        },
+        {
+          "name": "MaxBytes",
+          "jsonName": "maxBytes",
+          "protoField": "max_bytes",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Maximum size of the stream in bytes. -1 for unlimited.",
+          "required": false
+        },
+        {
+          "name": "MaxMsgs",
+          "jsonName": "maxMsgs",
+          "protoField": "max_msgs",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Maximum number of messages in the stream. -1 for unlimited.",
+          "required": false
+        },
+        {
+          "name": "MaxMsgSize",
+          "jsonName": "maxMsgSize",
+          "protoField": "max_msg_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum message size in bytes. -1 for unlimited.",
+          "required": false
+        },
+        {
+          "name": "MaxConsumers",
+          "jsonName": "maxConsumers",
+          "protoField": "max_consumers",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of consumers allowed. -1 for unlimited.",
+          "required": false
+        },
+        {
+          "name": "Discard",
+          "jsonName": "discard",
+          "protoField": "discard",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesnats.v1.Value",
+            "enumValues": [
+              "old",
+              "new_msgs"
+            ]
+          },
+          "description": "Discard policy when limits are reached (old or new).",
+          "required": false
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Description of the stream.",
+          "required": false
+        },
+        {
+          "name": "Consumers",
+          "jsonName": "consumers",
+          "protoField": "consumers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "KubernetesNatsConsumer"
+            }
+          },
+          "description": "Consumers for this stream.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

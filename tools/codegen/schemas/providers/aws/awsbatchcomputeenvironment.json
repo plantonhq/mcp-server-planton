@@ -1,0 +1,623 @@
+{
+  "name": "AwsBatchComputeEnvironment",
+  "kind": "AwsBatchComputeEnvironment",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsBatchComputeEnvironment is a deployment component for creating and managing\n AWS Batch compute environments with bundled job queues and an optional\n fair-share scheduling policy. This component covers MANAGED compute\n environments with EC2, SPOT, FARGATE, and FARGATE_SPOT resource types.",
+  "protoPackage": "org.openmcf.provider.aws.awsbatchcomputeenvironment.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsbatchcomputeenvironment/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsbatchcomputeenvironment/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsBatchComputeEnvironmentSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the Batch compute environment will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "State",
+        "jsonName": "state",
+        "protoField": "state",
+        "type": {
+          "kind": "string"
+        },
+        "description": "state controls whether the compute environment accepts jobs.\n When DISABLED, the compute environment does not accept new jobs but\n existing running jobs continue to completion.",
+        "required": false,
+        "default": "ENABLED",
+        "oneofGroup": "_state"
+      },
+      {
+        "name": "ServiceRole",
+        "jsonName": "serviceRole",
+        "protoField": "service_role",
+        "type": {
+          "kind": "string"
+        },
+        "description": "service_role is the IAM role ARN that allows AWS Batch to make API calls\n to other AWS services on your behalf. If omitted, AWS Batch uses the\n AWSServiceRoleForBatch service-linked role (recommended for most use cases).",
+        "required": false,
+        "referenceKind": "AwsIamRole",
+        "referenceFieldPath": "status.outputs.role_arn"
+      },
+      {
+        "name": "ComputeResources",
+        "jsonName": "computeResources",
+        "protoField": "compute_resources",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsBatchComputeResources"
+        },
+        "description": "compute_resources defines the infrastructure backing this compute\n environment: instance types, vCPU limits, VPC networking, and scaling.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "UpdatePolicy",
+        "jsonName": "updatePolicy",
+        "protoField": "update_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsBatchUpdatePolicy"
+        },
+        "description": "update_policy controls the behavior of infrastructure updates when the\n compute environment is modified. Relevant for EC2/SPOT types where\n running instances may need replacement.",
+        "required": false
+      },
+      {
+        "name": "JobQueues",
+        "jsonName": "jobQueues",
+        "protoField": "job_queues",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsBatchJobQueue"
+          }
+        },
+        "description": "job_queues defines one or more job queues that route submitted jobs to this\n compute environment. At least one queue is required. Each queue has its own\n priority, state, and optional time-limit actions.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "SchedulingPolicy",
+        "jsonName": "schedulingPolicy",
+        "protoField": "scheduling_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsBatchSchedulingPolicy"
+        },
+        "description": "scheduling_policy defines an optional fair-share scheduling policy. When\n provided, a scheduling policy resource is created and attached to all\n bundled job queues. Fair-share scheduling divides compute capacity across\n share identifiers, preventing any single workload from monopolizing the\n compute environment.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsBatchComputeResources",
+      "description": "AwsBatchComputeResources defines the compute infrastructure for a MANAGED\n compute environment. The resource type determines which fields are applicable:\n\n   - EC2 / SPOT: Full control over instance types, vCPU scaling, launch\n     templates, and EC2 configuration. SPOT adds bid_percentage and\n     spot_iam_fleet_role.\n\n   - FARGATE / FARGATE_SPOT: Serverless containers — only max_vcpus, subnets,\n     and security groups are relevant. No instance types or vCPU min/desired.",
+      "protoType": "org.openmcf.provider.aws.awsbatchcomputeenvironment.v1.AwsBatchComputeResources",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "type is the compute resource type.\n   EC2:          On-demand EC2 instances.\n   SPOT:         EC2 Spot instances (cheaper, can be interrupted).\n   FARGATE:      Serverless containers (AWS manages infrastructure).\n   FARGATE_SPOT: Serverless containers at Spot pricing.",
+          "required": false,
+          "validation": {
+            "enum": [
+              "EC2",
+              "SPOT",
+              "FARGATE",
+              "FARGATE_SPOT"
+            ]
+          }
+        },
+        {
+          "name": "MaxVcpus",
+          "jsonName": "maxVcpus",
+          "protoField": "max_vcpus",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "max_vcpus is the maximum number of vCPUs that the compute environment\n can scale to. For Fargate, this limits total concurrent vCPU capacity.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1
+          }
+        },
+        {
+          "name": "MinVcpus",
+          "jsonName": "minVcpus",
+          "protoField": "min_vcpus",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "min_vcpus is the minimum number of vCPUs to maintain, even when there are\n no running jobs. Only applicable for EC2 and SPOT types. Set to 0 (default)\n to scale to zero when idle.",
+          "required": false,
+          "default": "0",
+          "oneofGroup": "_min_vcpus"
+        },
+        {
+          "name": "DesiredVcpus",
+          "jsonName": "desiredVcpus",
+          "protoField": "desired_vcpus",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "desired_vcpus is the initial desired number of vCPUs. AWS Batch adjusts\n this value between min_vcpus and max_vcpus based on job queue demand.\n Only applicable for EC2 and SPOT types.",
+          "required": false
+        },
+        {
+          "name": "SubnetIds",
+          "jsonName": "subnetIds",
+          "protoField": "subnet_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "subnet_ids are the VPC subnets where compute resources are launched.\n Provide subnets in multiple Availability Zones for high availability.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minItems": 1
+          },
+          "referenceKind": "AwsVpc",
+          "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+        },
+        {
+          "name": "SecurityGroupIds",
+          "jsonName": "securityGroupIds",
+          "protoField": "security_group_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "security_group_ids are the VPC security groups to associate with the\n compute resources. Required for Fargate types; recommended for EC2/SPOT.",
+          "required": false,
+          "referenceKind": "AwsSecurityGroup",
+          "referenceFieldPath": "status.outputs.security_group_id"
+        },
+        {
+          "name": "InstanceTypes",
+          "jsonName": "instanceTypes",
+          "protoField": "instance_types",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "instance_types specifies the EC2 instance types that may be launched.\n Only applicable for EC2 and SPOT types. Use \"optimal\" to let AWS Batch\n select instance types matching job requirements.\n Examples: [\"m5.xlarge\", \"c5.xlarge\"], [\"optimal\"]",
+          "required": false
+        },
+        {
+          "name": "AllocationStrategy",
+          "jsonName": "allocationStrategy",
+          "protoField": "allocation_strategy",
+          "type": {
+            "kind": "string"
+          },
+          "description": "allocation_strategy controls how AWS Batch selects instance types.\n   BEST_FIT_PROGRESSIVE:           Best fit from cheapest to most expensive.\n   SPOT_CAPACITY_OPTIMIZED:        Lowest chance of Spot interruption.\n   SPOT_PRICE_CAPACITY_OPTIMIZED:  Balance of price and interruption risk.\n Only applicable for EC2 and SPOT types. If omitted, AWS defaults to\n BEST_FIT_PROGRESSIVE.",
+          "required": false,
+          "validation": {
+            "enum": [
+              "BEST_FIT_PROGRESSIVE",
+              "SPOT_CAPACITY_OPTIMIZED",
+              "SPOT_PRICE_CAPACITY_OPTIMIZED"
+            ]
+          }
+        },
+        {
+          "name": "InstanceRole",
+          "jsonName": "instanceRole",
+          "protoField": "instance_role",
+          "type": {
+            "kind": "string"
+          },
+          "description": "instance_role is the ARN of the IAM instance profile for EC2 instances.\n Required for EC2 and SPOT types. The instance profile grants the ECS agent\n on each instance permission to communicate with AWS Batch and ECS.",
+          "required": false,
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.instance_profile_arn"
+        },
+        {
+          "name": "Ec2KeyPair",
+          "jsonName": "ec2KeyPair",
+          "protoField": "ec2_key_pair",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ec2_key_pair is the name of an EC2 key pair for SSH access to instances.\n Only applicable for EC2 and SPOT types. Optional — omit if SSH access\n is not needed.",
+          "required": false
+        },
+        {
+          "name": "BidPercentage",
+          "jsonName": "bidPercentage",
+          "protoField": "bid_percentage",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "bid_percentage is the maximum percentage of the On-Demand price you are\n willing to pay for Spot instances. Only applicable for SPOT type.\n Range: 0-100. For example, 60 means you will pay up to 60% of On-Demand.",
+          "required": false,
+          "validation": {
+            "max": 100
+          },
+          "oneofGroup": "_bid_percentage"
+        },
+        {
+          "name": "SpotIamFleetRole",
+          "jsonName": "spotIamFleetRole",
+          "protoField": "spot_iam_fleet_role",
+          "type": {
+            "kind": "string"
+          },
+          "description": "spot_iam_fleet_role is the ARN of the IAM role for Amazon EC2 Spot Fleet\n to make requests on your behalf. Required for SPOT type.",
+          "required": false,
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        },
+        {
+          "name": "LaunchTemplate",
+          "jsonName": "launchTemplate",
+          "protoField": "launch_template",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsBatchLaunchTemplate"
+          },
+          "description": "launch_template specifies a custom EC2 launch template for instances.\n Only applicable for EC2 and SPOT types. Use this for custom AMIs,\n user data scripts, or advanced instance configuration.",
+          "required": false
+        },
+        {
+          "name": "Ec2Configurations",
+          "jsonName": "ec2Configurations",
+          "protoField": "ec2_configurations",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsBatchEc2Configuration"
+            }
+          },
+          "description": "ec2_configurations customizes the AMI used by compute resources.\n Only applicable for EC2 and SPOT types. Maximum 2 entries.",
+          "required": false,
+          "validation": {
+            "maxItems": 2
+          }
+        },
+        {
+          "name": "ResourceTags",
+          "jsonName": "resourceTags",
+          "protoField": "resource_tags",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "resource_tags are tags applied to the underlying compute resources\n (EC2 instances, Spot requests) — separate from the compute environment\n resource tags managed by OpenMCF.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsBatchEc2Configuration",
+      "description": "AwsBatchEc2Configuration customizes the AMI used by compute resources.",
+      "protoType": "org.openmcf.provider.aws.awsbatchcomputeenvironment.v1.AwsBatchEc2Configuration",
+      "fields": [
+        {
+          "name": "ImageType",
+          "jsonName": "imageType",
+          "protoField": "image_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "image_type specifies the image type to match. Examples: \"ECS_AL2\",\n \"ECS_AL2023\", \"EKS_AL2\". Defaults to \"ECS_AL2\" if omitted.",
+          "required": false
+        },
+        {
+          "name": "ImageIdOverride",
+          "jsonName": "imageIdOverride",
+          "protoField": "image_id_override",
+          "type": {
+            "kind": "string"
+          },
+          "description": "image_id_override is the AMI ID to use instead of the default for\n the specified image_type.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsBatchJobQueue",
+      "description": "AwsBatchJobQueue defines a job queue that routes submitted jobs to the\n parent compute environment. Jobs are submitted to a queue, and the queue\n dispatches them to the compute environment based on priority ordering.",
+      "protoType": "org.openmcf.provider.aws.awsbatchcomputeenvironment.v1.AwsBatchJobQueue",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is the queue name. Must be 1-128 characters: alphanumeric, hyphen,\n or underscore, starting with an alphanumeric character.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "pattern": "^[0-9A-Za-z][0-9A-Za-z_-]{0,127}$"
+          }
+        },
+        {
+          "name": "State",
+          "jsonName": "state",
+          "protoField": "state",
+          "type": {
+            "kind": "string"
+          },
+          "description": "state controls whether the job queue accepts new jobs.",
+          "required": false,
+          "default": "ENABLED",
+          "oneofGroup": "_state"
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "priority determines the order in which jobs are dispatched when multiple\n queues share a compute environment. Higher values have higher priority.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "JobStateTimeLimitActions",
+          "jsonName": "jobStateTimeLimitActions",
+          "protoField": "job_state_time_limit_actions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsBatchJobStateTimeLimitAction"
+            }
+          },
+          "description": "job_state_time_limit_actions define automatic actions taken when a job\n remains in a particular state beyond a time threshold. Useful for\n cancelling jobs stuck in RUNNABLE state.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsBatchJobStateTimeLimitAction",
+      "description": "AwsBatchJobStateTimeLimitAction defines an automatic action to take when\n a job in a specific state exceeds a time limit.",
+      "protoType": "org.openmcf.provider.aws.awsbatchcomputeenvironment.v1.AwsBatchJobStateTimeLimitAction",
+      "fields": [
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "action is the action to take. Currently only \"CANCEL\" is supported.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "const": "CANCEL"
+          }
+        },
+        {
+          "name": "MaxTimeSeconds",
+          "jsonName": "maxTimeSeconds",
+          "protoField": "max_time_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "max_time_seconds is the maximum time (in seconds) a job can remain in\n the specified state before the action is triggered. Range: 600-86400\n (10 minutes to 24 hours).",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 600,
+            "max": 86400
+          }
+        },
+        {
+          "name": "Reason",
+          "jsonName": "reason",
+          "protoField": "reason",
+          "type": {
+            "kind": "string"
+          },
+          "description": "reason is the human-readable reason string included when the action is\n taken. Appears in the job status and can be used for operational debugging.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "State",
+          "jsonName": "state",
+          "protoField": "state",
+          "type": {
+            "kind": "string"
+          },
+          "description": "state is the job state to monitor. For example, \"RUNNABLE\" to catch jobs\n that cannot be scheduled due to resource constraints.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsBatchLaunchTemplate",
+      "description": "AwsBatchLaunchTemplate references an EC2 launch template by ID or name.\n Exactly one of launch_template_id or launch_template_name must be provided.",
+      "protoType": "org.openmcf.provider.aws.awsbatchcomputeenvironment.v1.AwsBatchLaunchTemplate",
+      "fields": [
+        {
+          "name": "LaunchTemplateId",
+          "jsonName": "launchTemplateId",
+          "protoField": "launch_template_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "launch_template_id is the ID of the launch template.",
+          "required": false
+        },
+        {
+          "name": "LaunchTemplateName",
+          "jsonName": "launchTemplateName",
+          "protoField": "launch_template_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "launch_template_name is the name of the launch template.",
+          "required": false
+        },
+        {
+          "name": "Version",
+          "jsonName": "version",
+          "protoField": "version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "version is the launch template version. If omitted, the default version\n of the launch template is used.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsBatchSchedulingPolicy",
+      "description": "AwsBatchSchedulingPolicy defines a fair-share scheduling policy that\n distributes compute capacity across share identifiers. When attached to a\n job queue, it prevents any single workload from monopolizing the compute\n environment.",
+      "protoType": "org.openmcf.provider.aws.awsbatchcomputeenvironment.v1.AwsBatchSchedulingPolicy",
+      "fields": [
+        {
+          "name": "ComputeReservation",
+          "jsonName": "computeReservation",
+          "protoField": "compute_reservation",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "compute_reservation is the percentage of vCPUs reserved for share\n identifiers not yet represented in the queue. Range: 0-99.\n Higher values reserve more capacity for new or underrepresented shares.",
+          "required": false,
+          "validation": {
+            "max": 99
+          },
+          "oneofGroup": "_compute_reservation"
+        },
+        {
+          "name": "ShareDecaySeconds",
+          "jsonName": "shareDecaySeconds",
+          "protoField": "share_decay_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "share_decay_seconds is the time period (in seconds) over which usage\n history decays, making recent usage weigh more heavily. Range: 0-604800\n (0 to 7 days). Set to 0 to weight all historical usage equally.",
+          "required": false,
+          "validation": {
+            "max": 604800
+          },
+          "oneofGroup": "_share_decay_seconds"
+        },
+        {
+          "name": "ShareDistributions",
+          "jsonName": "shareDistributions",
+          "protoField": "share_distributions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsBatchShareDistribution"
+            }
+          },
+          "description": "share_distributions define the weight factor for each share identifier,\n controlling how compute capacity is divided among different workload\n categories.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsBatchShareDistribution",
+      "description": "AwsBatchShareDistribution defines the weight of a share identifier in the\n fair-share scheduling policy.",
+      "protoType": "org.openmcf.provider.aws.awsbatchcomputeenvironment.v1.AwsBatchShareDistribution",
+      "fields": [
+        {
+          "name": "ShareIdentifier",
+          "jsonName": "shareIdentifier",
+          "protoField": "share_identifier",
+          "type": {
+            "kind": "string"
+          },
+          "description": "share_identifier is a unique identifier for this share. Jobs are assigned\n to a share via the schedulingPriorityOverride in their job definition.\n Use \"*\" as the last character for a wildcard prefix match.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "WeightFactor",
+          "jsonName": "weightFactor",
+          "protoField": "weight_factor",
+          "type": {
+            "kind": "double"
+          },
+          "description": "weight_factor controls the relative share of compute capacity. Higher\n weights receive proportionally more capacity. Range: 0.0001-999.9999.\n Default is 1.0 if not specified.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsBatchUpdatePolicy",
+      "description": "AwsBatchUpdatePolicy controls how infrastructure updates are applied to\n the compute environment.",
+      "protoType": "org.openmcf.provider.aws.awsbatchcomputeenvironment.v1.AwsBatchUpdatePolicy",
+      "fields": [
+        {
+          "name": "TerminateJobsOnUpdate",
+          "jsonName": "terminateJobsOnUpdate",
+          "protoField": "terminate_jobs_on_update",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "terminate_jobs_on_update controls whether running jobs are terminated\n when the compute environment infrastructure is updated.",
+          "required": false
+        },
+        {
+          "name": "JobExecutionTimeoutMinutes",
+          "jsonName": "jobExecutionTimeoutMinutes",
+          "protoField": "job_execution_timeout_minutes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "job_execution_timeout_minutes is the maximum time (in minutes) to wait\n for running jobs to complete before the update proceeds. Only meaningful\n when terminate_jobs_on_update is true. Range: 1-360.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 360
+          },
+          "oneofGroup": "_job_execution_timeout_minutes"
+        }
+      ]
+    }
+  ]
+}

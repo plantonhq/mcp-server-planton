@@ -1,0 +1,526 @@
+{
+  "name": "AliCloudKubernetesCluster",
+  "kind": "AliCloudKubernetesCluster",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-kubernetes-cluster",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudkubernetescluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudkubernetescluster/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudkubernetescluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudKubernetesClusterSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region for the cluster.\n Must match the region of the VSwitches in vswitch_ids.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cluster name. 1-63 characters; must start with a letter or digit.\n If omitted, defaults to metadata.name in the IaC modules.",
+        "required": false
+      },
+      {
+        "name": "Version",
+        "jsonName": "version",
+        "protoField": "version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes version (e.g., \"1.28\", \"1.30\").\n If omitted, the provider uses the latest stable version.",
+        "required": false
+      },
+      {
+        "name": "ClusterSpec",
+        "jsonName": "clusterSpec",
+        "protoField": "cluster_spec",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cluster specification that determines the control plane SLA and features.\n \"ack.standard\" -- free managed control plane with basic SLA.\n \"ack.pro.small\" -- professional managed cluster with enhanced SLA,\n   managed node pools, topology-aware scheduling, and more.\n Supports in-place upgrade from ack.standard to ack.pro.small.\n Default: \"ack.standard\"",
+        "required": false,
+        "default": "ack.standard",
+        "oneofGroup": "_cluster_spec"
+      },
+      {
+        "name": "ClusterDomain",
+        "jsonName": "clusterDomain",
+        "protoField": "cluster_domain",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cluster-internal domain name used for Kubernetes service discovery.\n Default: \"cluster.local\"\n Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "VswitchIds",
+        "jsonName": "vswitchIds",
+        "protoField": "vswitch_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "VSwitch IDs for control plane placement. 1-5 VSwitches in distinct\n availability zones for high availability.\n These VSwitches also serve as the default worker node VSwitches.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 1,
+          "maxItems": 5
+        },
+        "referenceKind": "AliCloudVswitch",
+        "referenceFieldPath": "status.outputs.vswitch_id"
+      },
+      {
+        "name": "PodCidr",
+        "jsonName": "podCidr",
+        "protoField": "pod_cidr",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Pod network CIDR block for Flannel CNI.\n Required when using the \"flannel\" network addon; ignored for Terway.\n Must not overlap the VPC CIDR, service_cidr, or node CIDR.\n Immutable after creation.\n Example: \"172.20.0.0/16\"",
+        "required": false
+      },
+      {
+        "name": "PodVswitchIds",
+        "jsonName": "podVswitchIds",
+        "protoField": "pod_vswitch_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "VSwitch IDs for pod ENI allocation when using Terway CNI.\n Required when using the \"terway-eniip\" network addon; ignored for Flannel.\n Should be in the same AZs as vswitch_ids but use dedicated CIDR ranges\n to avoid IP exhaustion on the node VSwitches.",
+        "required": false,
+        "referenceKind": "AliCloudVswitch",
+        "referenceFieldPath": "status.outputs.vswitch_id"
+      },
+      {
+        "name": "ServiceCidr",
+        "jsonName": "serviceCidr",
+        "protoField": "service_cidr",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Service network CIDR block for Kubernetes ClusterIP services.\n Must not overlap the VPC CIDR, pod CIDR, or node CIDR.\n Immutable after creation.\n Example: \"172.21.0.0/20\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ProxyMode",
+        "jsonName": "proxyMode",
+        "protoField": "proxy_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "kube-proxy mode for service routing.\n \"ipvs\" (default) -- IPVS-based load balancing with O(1) connection processing.\n \"iptables\" -- legacy iptables-based routing.\n Immutable after creation.\n Default: \"ipvs\"",
+        "required": false,
+        "default": "ipvs",
+        "oneofGroup": "_proxy_mode"
+      },
+      {
+        "name": "NodeCidrMask",
+        "jsonName": "nodeCidrMask",
+        "protoField": "node_cidr_mask",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Node CIDR mask that controls how many pods can run on each node.\n A /24 mask gives 256 addresses per node (~253 pods); /26 gives 64.\n Range: 24-28. Default: 24.\n Immutable after creation.",
+        "required": false,
+        "validation": {
+          "min": 24,
+          "max": 28
+        },
+        "default": "24",
+        "oneofGroup": "_node_cidr_mask"
+      },
+      {
+        "name": "NewNatGateway",
+        "jsonName": "newNatGateway",
+        "protoField": "new_nat_gateway",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether ACK should automatically create a NAT gateway for the cluster\n VPC. Set to false when you manage your own AliCloudNatGateway component\n to avoid creating a duplicate NAT gateway.\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_new_nat_gateway"
+      },
+      {
+        "name": "SlbInternetEnabled",
+        "jsonName": "slbInternetEnabled",
+        "protoField": "slb_internet_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to create an internet-facing SLB for the Kubernetes API server.\n When true, the API server is accessible from the public internet.\n When false, only the VPC-internal endpoint is available.\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_slb_internet_enabled"
+      },
+      {
+        "name": "SecurityGroupId",
+        "jsonName": "securityGroupId",
+        "protoField": "security_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Security group ID for the cluster nodes. If omitted, ACK auto-creates\n a security group. Conflicts with is_enterprise_security_group.",
+        "required": false,
+        "referenceKind": "AliCloudSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "IsEnterpriseSecurityGroup",
+        "jsonName": "isEnterpriseSecurityGroup",
+        "protoField": "is_enterprise_security_group",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether ACK should auto-create an advanced (enterprise) security group.\n Advanced security groups support up to 65,536 rules and 100,000 ENIs.\n Conflicts with security_group_id.\n Default: false",
+        "required": false,
+        "oneofGroup": "_is_enterprise_security_group"
+      },
+      {
+        "name": "EnableRrsa",
+        "jsonName": "enableRrsa",
+        "protoField": "enable_rrsa",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable RRSA (RAM Roles for Service Accounts) for pod-level IAM.\n When enabled, Kubernetes service accounts can assume RAM roles via OIDC\n federation, eliminating the need for static access keys in pods.\n Requires Kubernetes 1.22.3+.\n WARNING: Once enabled, RRSA cannot be disabled.\n Default: false",
+        "required": false,
+        "oneofGroup": "_enable_rrsa"
+      },
+      {
+        "name": "DeletionProtection",
+        "jsonName": "deletionProtection",
+        "protoField": "deletion_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable cluster deletion protection. When true, the cluster cannot be\n deleted through the API until deletion_protection is explicitly disabled.",
+        "required": false,
+        "oneofGroup": "_deletion_protection"
+      },
+      {
+        "name": "EncryptionProviderKey",
+        "jsonName": "encryptionProviderKey",
+        "protoField": "encryption_provider_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "KMS key ID for encrypting Kubernetes Secrets at rest.\n When set, all Secrets stored in etcd are encrypted with this key.\n Immutable after creation.",
+        "required": false,
+        "referenceKind": "AliCloudKmsKey",
+        "referenceFieldPath": "status.outputs.key_id"
+      },
+      {
+        "name": "CustomSan",
+        "jsonName": "customSan",
+        "protoField": "custom_san",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Custom Subject Alternative Names for the API server TLS certificate.\n Comma-separated list of IP addresses or domain names that the API server\n certificate should be valid for, in addition to the default endpoints.\n Example: \"10.0.0.1,api.example.com\"",
+        "required": false
+      },
+      {
+        "name": "Addons",
+        "jsonName": "addons",
+        "protoField": "addons",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudKubernetesAddon"
+          }
+        },
+        "description": "Cluster addons to install during creation.\n\n Common addons:\n   Network: \"flannel\", \"terway-eniip\" (choose one)\n   Storage: \"csi-plugin\", \"csi-provisioner\"\n   Logging: \"logtail-ds\" (config: {\"IngressDashboardEnabled\":\"true\",\"sls_project_name\":\"...\"})\n   Ingress: \"nginx-ingress-controller\", \"alb-ingress-controller\"\n   Monitoring: \"arms-prometheus\", \"ack-node-problem-detector\"\n   DNS: \"managed-coredns\"\n   Autoscaling: \"metrics-server\"\n\n Addons are only configurable at creation time. Post-creation management\n requires the alicloud_cs_kubernetes_addon resource.",
+        "required": false
+      },
+      {
+        "name": "Logging",
+        "jsonName": "logging",
+        "protoField": "logging",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudKubernetesClusterLogging"
+        },
+        "description": "Control plane and audit logging configuration.\n When omitted, no control plane logs or audit logs are collected.",
+        "required": false
+      },
+      {
+        "name": "MaintenanceWindow",
+        "jsonName": "maintenanceWindow",
+        "protoField": "maintenance_window",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudKubernetesClusterMaintenanceWindow"
+        },
+        "description": "Maintenance window for the cluster. When configured, ACK applies\n updates and patches only during the specified window.",
+        "required": false
+      },
+      {
+        "name": "AutoUpgrade",
+        "jsonName": "autoUpgrade",
+        "protoField": "auto_upgrade",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudKubernetesClusterAutoUpgrade"
+        },
+        "description": "Automatic cluster version upgrade policy.\n Only takes effect when a maintenance_window is configured.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags applied to the cluster and its auto-created resources.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the cluster is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Timezone",
+        "jsonName": "timezone",
+        "protoField": "timezone",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IANA timezone for the cluster nodes (e.g., \"Asia/Shanghai\", \"UTC\").",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudKubernetesAddon",
+      "description": "AliCloudKubernetesAddon defines a cluster addon to install during creation.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudkubernetescluster.v1.AliCloudKubernetesAddon",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Addon name. Must match an ACK addon identifier.\n Examples: \"flannel\", \"terway-eniip\", \"csi-plugin\", \"logtail-ds\",\n   \"nginx-ingress-controller\", \"arms-prometheus\", \"metrics-server\".",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Config",
+          "jsonName": "config",
+          "protoField": "config",
+          "type": {
+            "kind": "string"
+          },
+          "description": "JSON-encoded addon configuration.\n Structure is addon-specific. Example for logtail-ds:\n   {\"IngressDashboardEnabled\":\"true\",\"sls_project_name\":\"my-log-project\"}",
+          "required": false
+        },
+        {
+          "name": "Version",
+          "jsonName": "version",
+          "protoField": "version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Addon version. If omitted, ACK installs the default version for the\n cluster's Kubernetes version.",
+          "required": false
+        },
+        {
+          "name": "Disabled",
+          "jsonName": "disabled",
+          "protoField": "disabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Disable automatic installation of this addon.\n When true, the addon is registered but not installed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudKubernetesClusterAutoUpgrade",
+      "description": "AliCloudKubernetesClusterAutoUpgrade defines the automatic cluster version\n upgrade policy. Only takes effect when a maintenance window is configured.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudkubernetescluster.v1.AliCloudKubernetesClusterAutoUpgrade",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether automatic cluster version upgrades are enabled.",
+          "required": false
+        },
+        {
+          "name": "Channel",
+          "jsonName": "channel",
+          "protoField": "channel",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Upgrade channel that controls how aggressively versions are adopted.\n \"patch\" -- only patch version upgrades (e.g., 1.28.3 -\u003e 1.28.5).\n \"stable\" -- minor version upgrades after stabilization period.\n \"rapid\" -- minor version upgrades as soon as available.",
+          "required": false,
+          "oneofGroup": "_channel"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudKubernetesClusterLogging",
+      "description": "AliCloudKubernetesClusterLogging groups control plane logging and\n Kubernetes audit logging configuration.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudkubernetescluster.v1.AliCloudKubernetesClusterLogging",
+      "fields": [
+        {
+          "name": "ControlPlaneLogProject",
+          "jsonName": "controlPlaneLogProject",
+          "protoField": "control_plane_log_project",
+          "type": {
+            "kind": "string"
+          },
+          "description": "SLS (Log Service) project for control plane component logs.\n If omitted, ACK auto-creates a project named \"k8s-log-{cluster-id}\".",
+          "required": false,
+          "referenceKind": "AliCloudLogProject",
+          "referenceFieldPath": "status.outputs.project_name"
+        },
+        {
+          "name": "ControlPlaneLogTtl",
+          "jsonName": "controlPlaneLogTtl",
+          "protoField": "control_plane_log_ttl",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Retention period for control plane logs in days.\n Default: \"30\"",
+          "required": false,
+          "default": "30",
+          "oneofGroup": "_control_plane_log_ttl"
+        },
+        {
+          "name": "ControlPlaneLogComponents",
+          "jsonName": "controlPlaneLogComponents",
+          "protoField": "control_plane_log_components",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Control plane components to enable logging for.\n Valid values: \"apiserver\", \"kcm\", \"scheduler\", \"ccm\",\n   \"controlplane-events\", \"alb\", \"coredns\".",
+          "required": false
+        },
+        {
+          "name": "AuditLogEnabled",
+          "jsonName": "auditLogEnabled",
+          "protoField": "audit_log_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether Kubernetes audit logging is enabled.\n Audit logs record all API requests for security and compliance.",
+          "required": false
+        },
+        {
+          "name": "AuditLogSlsProject",
+          "jsonName": "auditLogSlsProject",
+          "protoField": "audit_log_sls_project",
+          "type": {
+            "kind": "string"
+          },
+          "description": "SLS project for audit logs. If omitted and audit logging is enabled,\n audit logs are sent to the control plane log project.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudKubernetesClusterMaintenanceWindow",
+      "description": "AliCloudKubernetesClusterMaintenanceWindow defines a recurring time window\n during which ACK may apply cluster updates and patches.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudkubernetescluster.v1.AliCloudKubernetesClusterMaintenanceWindow",
+      "fields": [
+        {
+          "name": "Enable",
+          "jsonName": "enable",
+          "protoField": "enable",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the maintenance window is enabled.",
+          "required": false
+        },
+        {
+          "name": "MaintenanceTime",
+          "jsonName": "maintenanceTime",
+          "protoField": "maintenance_time",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Start time of the maintenance window in RFC 3339 format.\n Example: \"2026-03-01T03:00:00+08:00\"",
+          "required": false
+        },
+        {
+          "name": "Duration",
+          "jsonName": "duration",
+          "protoField": "duration",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Duration of the maintenance window (1-24 hours).\n Example: \"3h\"",
+          "required": false
+        },
+        {
+          "name": "WeeklyPeriod",
+          "jsonName": "weeklyPeriod",
+          "protoField": "weekly_period",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Days of the week when maintenance is allowed.\n Comma-separated, e.g., \"Monday,Thursday\".\n Default: \"Thursday\"",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

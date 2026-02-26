@@ -1,0 +1,97 @@
+{
+  "name": "AwsKmsKey",
+  "kind": "AwsKmsKey",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsKmsKey represents a customer-managed AWS KMS encryption key.\n KMS keys provide cryptographic operations for data encryption, signing, and verification\n with fine-grained access control and automatic key rotation capabilities.",
+  "protoPackage": "org.openmcf.provider.aws.awskmskey.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awskmskey/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awskmskey/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsKmsKeySpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "KeySpec",
+        "jsonName": "keySpec",
+        "protoField": "key_spec",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.aws.awskmskey.v1.AwsKmsKeyType",
+          "enumValues": [
+            "rsa_2048",
+            "rsa_4096",
+            "ecc_nist_p256"
+          ]
+        },
+        "description": "key_spec specifies the type of KMS key to create.\n If not provided, defaults to symmetric_default.",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description is an optional description for the KMS key.\n Maximum length is 250 characters.",
+        "required": false,
+        "validation": {
+          "maxLength": 250
+        }
+      },
+      {
+        "name": "DisableKeyRotation",
+        "jsonName": "disableKeyRotation",
+        "protoField": "disable_key_rotation",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "disable_key_rotation, if true, will disable the key's automatic annual rotation.\n If false (default), rotation is enabled.",
+        "required": false
+      },
+      {
+        "name": "DeletionWindowDays",
+        "jsonName": "deletionWindowDays",
+        "protoField": "deletion_window_days",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "deletion_window_days is the waiting period (in days) before deletion of the KMS key.\n Allowed range is 7–30 days (inclusive). Default is 30 days.",
+        "required": false,
+        "validation": {
+          "min": 7,
+          "max": 30
+        },
+        "recommendedDefault": "30"
+      },
+      {
+        "name": "AliasName",
+        "jsonName": "aliasName",
+        "protoField": "alias_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "alias_name is an optional alias to assign to the KMS key.\n It must begin with \"alias/\" and contain 1–250 allowed characters (letters, numbers, underscore, or hyphen).",
+        "required": false,
+        "validation": {
+          "pattern": "^alias/[A-Za-z0-9/_-]{1,250}$"
+        }
+      }
+    ]
+  }
+}

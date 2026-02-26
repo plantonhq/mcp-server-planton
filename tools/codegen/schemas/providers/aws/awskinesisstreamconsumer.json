@@ -1,0 +1,45 @@
+{
+  "name": "AwsKinesisStreamConsumer",
+  "kind": "AwsKinesisStreamConsumer",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsKinesisStreamConsumer is the Kubernetes-style resource envelope for an\n Amazon Kinesis enhanced fan-out consumer.",
+  "protoPackage": "org.openmcf.provider.aws.awskinesisstreamconsumer.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awskinesisstreamconsumer/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awskinesisstreamconsumer/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsKinesisStreamConsumerSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "StreamArn",
+        "jsonName": "streamArn",
+        "protoField": "stream_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ARN of the Kinesis Data Stream to register this consumer with. The consumer\n receives a dedicated 2 MB/s read throughput pipe for every shard in the\n stream, independent of other consumers.\n\n ForceNew: changing the stream ARN forces consumer replacement (deregister\n + re-register). A consumer can only be registered with one stream at a time.\n\n Accepts a direct ARN string or a reference to an AwsKinesisStream resource\n via valueFrom.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsKinesisStream",
+        "referenceFieldPath": "status.outputs.stream_arn"
+      }
+    ]
+  }
+}

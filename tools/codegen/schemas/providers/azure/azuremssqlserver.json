@@ -1,0 +1,312 @@
+{
+  "name": "AzureMssqlServer",
+  "kind": "AzureMssqlServer",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureMssqlServer is the top-level API resource for an Azure SQL Database\n logical server.\n Azure SQL Database is a fully managed PaaS database engine that runs on the\n latest stable SQL Server engine. The logical server is an administrative\n container for databases, firewall rules, and connection policies.",
+  "protoPackage": "org.openmcf.provider.azure.azuremssqlserver.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azuremssqlserver/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azuremssqlserver/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureMssqlServerSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the SQL Server will be created.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the SQL Server will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the SQL Server.\n Must be globally unique across Azure. Used as the server hostname:\n `{name}.database.windows.net`\n Allowed characters: lowercase letters, numbers, and hyphens.\n Must start with a letter. Cannot start or end with a hyphen.\n Length: 3 to 63 characters.\n\n **ForceNew**: Changing this destroys and recreates the server.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 3,
+          "maxLength": 63
+        }
+      },
+      {
+        "name": "AdministratorLogin",
+        "jsonName": "administratorLogin",
+        "protoField": "administrator_login",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The administrator login name for the server.\n Cannot be \"admin\", \"administrator\", \"sa\", \"root\", \"dbmanager\",\n \"loginmanager\", \"dbo\", \"guest\", or \"public\".\n Must start with a letter.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "AdministratorPassword",
+        "jsonName": "administratorPassword",
+        "protoField": "administrator_password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The administrator password for the server.\n Can be a literal value or a reference to another resource's output\n (e.g., a generated random password or a Key Vault secret value).\n\n Password requirements: 8-128 characters, must contain characters from\n at least three of: uppercase, lowercase, digits, special characters.\n\n This is a polymorphic StringValueOrRef with no default_kind because\n the password source varies (literal, chart variable, external secret).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Version",
+        "jsonName": "version",
+        "protoField": "version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The version of SQL Server.\n Azure SQL Database supports two version identifiers:\n - \"12.0\": Current version (SQL Server 2022 / Azure SQL Database)\n - \"2.0\": Legacy (SQL Server 2005 era, virtually unused)\n\n Default: \"12.0\" (the only version used in practice)",
+        "required": false,
+        "default": "12.0",
+        "oneofGroup": "_version"
+      },
+      {
+        "name": "MinimumTlsVersion",
+        "jsonName": "minimumTlsVersion",
+        "protoField": "minimum_tls_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The minimum TLS version for all client connections.\n Azure SQL Database enforces TLS encryption for all connections.\n\n Valid values:\n - \"1.2\": TLS 1.2 (recommended, industry standard since 2018)\n - \"1.0\": TLS 1.0 (legacy, only for applications that cannot use TLS 1.2)\n\n Default: \"1.2\"",
+        "required": false,
+        "default": "1.2",
+        "oneofGroup": "_minimum_tls_version"
+      },
+      {
+        "name": "PublicNetworkAccessEnabled",
+        "jsonName": "publicNetworkAccessEnabled",
+        "protoField": "public_network_access_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the server is accessible over the public internet.\n When true: the server has a public endpoint and firewall rules control access.\n When false: the server is only reachable via AzurePrivateEndpoint.\n\n Unlike PostgreSQL/MySQL Flexible Servers (which derive this from\n delegated_subnet_id), Azure SQL requires an explicit boolean because\n it does not support VNet delegation.\n\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_public_network_access_enabled"
+      },
+      {
+        "name": "ConnectionPolicy",
+        "jsonName": "connectionPolicy",
+        "protoField": "connection_policy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The connection policy for the server.\n Controls how clients establish connections to the Azure SQL server.\n\n Valid values:\n - \"Default\": Uses Redirect for connections from within Azure, Proxy for external\n - \"Proxy\": All connections are proxied through the Azure SQL gateway (higher latency)\n - \"Redirect\": Connections are redirected to the database node (lower latency, requires\n   ports 11000-11999 open in addition to 1433)\n\n \"Redirect\" is recommended for Azure-to-Azure workloads for best performance.\n \"Proxy\" is simpler for external clients that cannot open the port range.\n\n Default: \"Default\"",
+        "required": false,
+        "default": "Default",
+        "oneofGroup": "_connection_policy"
+      },
+      {
+        "name": "Databases",
+        "jsonName": "databases",
+        "protoField": "databases",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureMssqlDatabase"
+          }
+        },
+        "description": "Databases to create on the server.\n Each database is a separate `azurerm_mssql_database` resource with its own\n compute SKU, storage, and lifecycle.\n\n **Important**: Unlike PostgreSQL/MySQL where the server defines compute,\n in Azure SQL each database carries its own compute tier (sku_name) and\n maximum storage size (max_size_gb). The server is only a logical container.\n\n If omitted, only the system databases exist (master, tempdb, etc.).\n Most applications create at least one application database.",
+        "required": false
+      },
+      {
+        "name": "FirewallRules",
+        "jsonName": "firewallRules",
+        "protoField": "firewall_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureMssqlFirewallRule"
+          }
+        },
+        "description": "Firewall rules for public access mode.\n Only effective when `public_network_access_enabled` is true.\n Each rule allows connections from a range of IP addresses.\n\n To allow all Azure services: start_ip_address = \"0.0.0.0\", end_ip_address = \"0.0.0.0\"\n To allow a single IP: set both start and end to the same address.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureMssqlDatabase",
+      "description": "AzureMssqlDatabase defines a database to create on the Azure SQL logical server.\n\n Each database is a separate Azure resource with its own compute tier (SKU),\n maximum storage, zone redundancy, and license type. This is fundamentally\n different from PostgreSQL/MySQL Flexible Server databases, which are lightweight\n objects (just name + charset + collation) because the server carries the compute.\n\n **SKU naming convention**:\n - DTU-based: \"Basic\", \"S0\"-\"S12\" (Standard), \"P1\"-\"P15\" (Premium)\n - vCore-based: \"{SERVICE_TIER}_Gen5_{VCORES}\" where SERVICE_TIER is:\n   - \"GP\" (General Purpose): e.g., \"GP_Gen5_2\", \"GP_Gen5_4\", \"GP_Gen5_8\"\n   - \"BC\" (Business Critical): e.g., \"BC_Gen5_2\", \"BC_Gen5_4\"\n   - \"HS\" (Hyperscale): e.g., \"HS_Gen5_2\", \"HS_Gen5_4\"\n - Serverless: \"GP_S_Gen5_1\", \"GP_S_Gen5_2\" (auto-pause capable)\n - Free: \"Free\" (one free database per subscription)",
+      "protoType": "org.openmcf.provider.azure.azuremssqlserver.v1.AzureMssqlDatabase",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the database.\n Must be unique within the server. Cannot contain special characters\n `\u003c\u003e*%\u0026:\\/?` and cannot end with a period or space.\n Maximum length: 128 characters.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        {
+          "name": "SkuName",
+          "jsonName": "skuName",
+          "protoField": "sku_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The SKU name defining the compute tier and performance level.\n This is the most important field -- it determines compute capacity and cost.\n\n DTU-based tiers (simpler, bundled compute/IO/storage):\n   \"Basic\" (~5 DTU), \"S0\" (10 DTU), \"S1\" (20 DTU), \"S2\" (50 DTU),\n   \"S3\" (100 DTU), \"P1\" (125 DTU), \"P2\" (250 DTU), \"P4\" (500 DTU)\n\n vCore-based tiers (flexible, independent compute/storage):\n   \"GP_Gen5_2\" (2 vCores), \"GP_Gen5_4\", \"GP_Gen5_8\", \"GP_Gen5_16\"\n   \"BC_Gen5_2\", \"BC_Gen5_4\" (Business Critical with local SSD)\n   \"HS_Gen5_2\", \"HS_Gen5_4\" (Hyperscale, up to 100 TB)\n\n Serverless (auto-pause, pay-per-second):\n   \"GP_S_Gen5_1\", \"GP_S_Gen5_2\", \"GP_S_Gen5_4\"",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "MaxSizeGb",
+          "jsonName": "maxSizeGb",
+          "protoField": "max_size_gb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The maximum size of the database in gigabytes.\n If omitted, Azure uses the default for the chosen SKU.\n\n For DTU-based: varies by tier (Basic: 2 GB, S0-S2: 250 GB, P1: 500 GB)\n For vCore-based: up to 4096 GB (GP), 4096 GB (BC), 100 TB (HS)\n\n Fractional values (0.5 GB) are supported by Azure but this field uses\n int32 for simplicity. Use the Azure portal for sub-GB sizing.",
+          "required": false,
+          "validation": {
+            "min": 1
+          },
+          "oneofGroup": "_max_size_gb"
+        },
+        {
+          "name": "Collation",
+          "jsonName": "collation",
+          "protoField": "collation",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The collation of the database.\n Determines sort order and string comparison behavior.\n\n Default: \"SQL_Latin1_General_CP1_CI_AS\" (case-insensitive, accent-sensitive;\n the default for Azure SQL Database and most SQL Server deployments).\n\n Common alternatives:\n - \"SQL_Latin1_General_CP1_CS_AS\" (case-sensitive)\n - \"Latin1_General_100_CI_AS_SC_UTF8\" (UTF-8 with supplementary characters)\n\n **ForceNew**: Changing collation after creation destroys and recreates the database.",
+          "required": false,
+          "default": "SQL_Latin1_General_CP1_CI_AS",
+          "oneofGroup": "_collation"
+        },
+        {
+          "name": "ZoneRedundant",
+          "jsonName": "zoneRedundant",
+          "protoField": "zone_redundant",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable zone redundancy for the database.\n When true, database replicas are spread across availability zones for\n higher availability. Supported on Premium (DTU) and Business Critical (vCore).\n Not supported on Basic, Standard, or General Purpose tiers.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_zone_redundant"
+        },
+        {
+          "name": "LicenseType",
+          "jsonName": "licenseType",
+          "protoField": "license_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The license type for Azure Hybrid Benefit.\n Allows customers with existing SQL Server licenses (with Software Assurance)\n to save up to 55% on Azure SQL Database costs.\n\n Valid values:\n - \"BasePrice\": Azure Hybrid Benefit applied (bring your own license, lower cost)\n - \"LicenseIncluded\": Full Azure SQL license cost included (pay-as-you-go)\n\n If omitted, Azure defaults to \"LicenseIncluded\".\n Not applicable to serverless (GP_S_*) or Free SKUs.",
+          "required": false,
+          "oneofGroup": "_license_type"
+        },
+        {
+          "name": "StorageAccountType",
+          "jsonName": "storageAccountType",
+          "protoField": "storage_account_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The storage account type for backup redundancy.\n Controls where database backups are replicated for disaster recovery.\n\n Valid values:\n - \"Geo\": Geo-redundant (default, backups replicated to paired region)\n - \"GeoZone\": Geo-zone-redundant (backups across zones and regions)\n - \"Local\": Locally-redundant (backups stay in the same region)\n - \"Zone\": Zone-redundant (backups across availability zones, same region)\n\n Default: \"Geo\"",
+          "required": false,
+          "default": "Geo",
+          "oneofGroup": "_storage_account_type"
+        }
+      ]
+    },
+    {
+      "name": "AzureMssqlFirewallRule",
+      "description": "AzureMssqlFirewallRule defines a firewall rule for public access mode.\n Each rule allows connections from a contiguous range of IPv4 addresses.",
+      "protoType": "org.openmcf.provider.azure.azuremssqlserver.v1.AzureMssqlFirewallRule",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the firewall rule.\n Must be unique within the server.\n Examples: \"allow-office\", \"allow-azure-services\", \"allow-dev-machine\".",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "StartIpAddress",
+          "jsonName": "startIpAddress",
+          "protoField": "start_ip_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The start of the IP address range (inclusive).\n Must be a valid IPv4 address.\n Use \"0.0.0.0\" with end \"0.0.0.0\" to allow all Azure services.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 7
+          }
+        },
+        {
+          "name": "EndIpAddress",
+          "jsonName": "endIpAddress",
+          "protoField": "end_ip_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The end of the IP address range (inclusive).\n Must be a valid IPv4 address and \u003e= start_ip_address.\n Set equal to start_ip_address for a single IP rule.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 7
+          }
+        }
+      ]
+    }
+  ]
+}

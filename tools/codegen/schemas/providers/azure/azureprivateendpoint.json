@@ -1,0 +1,114 @@
+{
+  "name": "AzurePrivateEndpoint",
+  "kind": "AzurePrivateEndpoint",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzurePrivateEndpoint is the top-level API resource for an Azure Private Endpoint.\n Private endpoints provide secure, private connectivity to Azure PaaS services\n over the Microsoft backbone network, using a private IP from your VNet.",
+  "protoPackage": "org.openmcf.provider.azure.azureprivateendpoint.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azureprivateendpoint/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azureprivateendpoint/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzurePrivateEndpointSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Private Endpoint will be created.\n Must be in the same region as the subnet it connects to.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Private Endpoint will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Private Endpoint.\n Must be unique within the resource group.\n Azure allows 1-80 characters: must start/end with alphanumeric, allows\n letters, numbers, underscores, periods, and hyphens.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Manager ID of the Subnet from which a private IP address\n will be allocated for this Private Endpoint.\n The subnet must have private endpoint network policies configured appropriately.\n Format: /subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Network/virtualNetworks/{vnet}/subnets/{subnet}",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureSubnet",
+        "referenceFieldPath": "status.outputs.subnet_id"
+      },
+      {
+        "name": "PrivateConnectionResourceId",
+        "jsonName": "privateConnectionResourceId",
+        "protoField": "private_connection_resource_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Manager ID of the Private Link-enabled resource to connect\n to privately. This is the target service that the private endpoint will create\n a secure tunnel to.\n\n Can be a literal Azure resource ID or a reference to another OpenMCF resource's\n output. In infra charts, this enables dynamic wiring:\n\n   privateConnectionResourceId:\n     valueFrom:\n       kind: AzurePostgresqlFlexibleServer\n       name: prod-postgresql\n       fieldPath: status.outputs.server_id\n\n **Note:** No default_kind annotation because this field is polymorphic -- it\n can reference any Azure resource type that supports Private Link (PostgreSQL,\n MySQL, Key Vault, Storage Account, Cosmos DB, Redis, SQL Server, etc.).\n\n Examples of literal resource IDs:\n - PostgreSQL: \"/subscriptions/.../Microsoft.DBforPostgreSQL/flexibleServers/myserver\"\n - Key Vault: \"/subscriptions/.../Microsoft.KeyVault/vaults/myvault\"\n - Storage: \"/subscriptions/.../Microsoft.Storage/storageAccounts/mystorage\"",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "SubresourceNames",
+        "jsonName": "subresourceNames",
+        "protoField": "subresource_names",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "The list of sub-resource names (group IDs) that the Private Endpoint can\n connect to. Each Azure service defines its own sub-resource names.\n\n In practice, most private endpoints connect to exactly one sub-resource.\n Azure validates that the sub-resource name is valid for the target service.\n\n Common sub-resource names by service:\n - PostgreSQL Flexible Server: \"postgresqlServer\"\n - MySQL Flexible Server: \"mysqlServer\"\n - Azure SQL Database: \"sqlServer\"\n - Azure Key Vault: \"vault\"\n - Azure Blob Storage: \"blob\"\n - Azure Table Storage: \"table\"\n - Azure Queue Storage: \"queue\"\n - Azure File Storage: \"file\"\n - Azure Cosmos DB: \"Sql\" (SQL API), \"MongoDB\" (Mongo API)\n - Azure Cache for Redis: \"redisCache\"\n - Azure Container Registry: \"registry\"\n\n Note: Some services (like Storage Account) only support one sub-resource\n per private endpoint.",
+        "required": false
+      },
+      {
+        "name": "PrivateDnsZoneId",
+        "jsonName": "privateDnsZoneId",
+        "protoField": "private_dns_zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Manager ID of an AzurePrivateDnsZone to associate with\n this Private Endpoint via a DNS Zone Group.\n\n When provided, the IaC module creates a `private_dns_zone_group` that\n automatically registers the private endpoint's IP address as an A-record in\n the specified zone. This is critical for DNS resolution: without it, the\n service FQDN resolves to the public IP instead of the private one.\n\n For the database-stack infra chart, this wires each private endpoint to its\n corresponding privatelink zone (e.g., `privatelink.postgres.database.azure.com`).\n\n When omitted, no DNS zone group is created. Use this when DNS is managed\n externally or when custom DNS configuration is needed.",
+        "required": false,
+        "referenceKind": "AzurePrivateDnsZone",
+        "referenceFieldPath": "status.outputs.zone_id"
+      }
+    ]
+  }
+}

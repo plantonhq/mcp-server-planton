@@ -1,0 +1,571 @@
+{
+  "name": "AliCloudPolardbCluster",
+  "kind": "AliCloudPolardbCluster",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-polardb-cluster",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudpolardbcluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudpolardbcluster/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudpolardbcluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudPolardbClusterSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the PolarDB cluster will be created.\n Must match the region of the VSwitch.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DbType",
+        "jsonName": "dbType",
+        "protoField": "db_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Database engine type. PolarDB supports three compatibility modes, each\n with its own set of valid versions and node classes.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "DbVersion",
+        "jsonName": "dbVersion",
+        "protoField": "db_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Database engine version. Must be a version supported by the selected\n db_type. Examples: \"8.0\", \"5.7\", \"5.6\" (MySQL), \"14\", \"11\" (PostgreSQL),\n \"11\" (Oracle).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DbNodeClass",
+        "jsonName": "dbNodeClass",
+        "protoField": "db_node_class",
+        "type": {
+          "kind": "string"
+        },
+        "description": "PolarDB node instance class that determines CPU and memory per node.\n Examples: \"polar.mysql.x4.large\", \"polar.mysql.x4.xlarge\",\n \"polar.pg.x4.large\", \"polar.o.x4.large\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VswitchId",
+        "jsonName": "vswitchId",
+        "protoField": "vswitch_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VSwitch ID where the PolarDB cluster is placed. The cluster inherits\n the VPC and availability zone from the VSwitch.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVswitch",
+        "referenceFieldPath": "status.outputs.vswitch_id"
+      },
+      {
+        "name": "DbNodeCount",
+        "jsonName": "dbNodeCount",
+        "protoField": "db_node_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of nodes in the cluster. Includes 1 primary node and (N-1) read\n replicas. Minimum 1, maximum 16. Default: 2 (1 primary + 1 read replica).",
+        "required": false,
+        "default": "2",
+        "oneofGroup": "_db_node_count"
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cluster description. 2-256 characters.",
+        "required": false
+      },
+      {
+        "name": "PayType",
+        "jsonName": "payType",
+        "protoField": "pay_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Billing method. \"PostPaid\" for pay-as-you-go, \"PrePaid\" for subscription.\n Default: \"PostPaid\"",
+        "required": false,
+        "default": "PostPaid",
+        "oneofGroup": "_pay_type"
+      },
+      {
+        "name": "Period",
+        "jsonName": "period",
+        "protoField": "period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Subscription period in months. Only applicable when pay_type is \"PrePaid\".\n Valid values: 1-9, 12, 24, 36.",
+        "required": false,
+        "oneofGroup": "_period"
+      },
+      {
+        "name": "RenewalStatus",
+        "jsonName": "renewalStatus",
+        "protoField": "renewal_status",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Auto-renewal behavior for PrePaid clusters. Ignored for PostPaid clusters.\n \"AutoRenewal\" -- automatically renew before expiration.\n \"Normal\" -- send expiration notification but do not auto-renew.\n \"NotRenewal\" -- no notification, no auto-renew (default).",
+        "required": false,
+        "oneofGroup": "_renewal_status"
+      },
+      {
+        "name": "AutoRenewPeriod",
+        "jsonName": "autoRenewPeriod",
+        "protoField": "auto_renew_period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Auto-renewal period in months. Only applicable when renewal_status is\n \"AutoRenewal\". Valid values: 1, 2, 3, 6, 12, 24, 36. Default: 1.",
+        "required": false,
+        "oneofGroup": "_auto_renew_period"
+      },
+      {
+        "name": "ZoneId",
+        "jsonName": "zoneId",
+        "protoField": "zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Availability zone ID for the primary node.\n If omitted, Alibaba Cloud selects a zone from the VSwitch's region.\n Examples: \"cn-hangzhou-a\", \"cn-shanghai-b\".",
+        "required": false
+      },
+      {
+        "name": "SecurityIps",
+        "jsonName": "securityIps",
+        "protoField": "security_ips",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "IP addresses or CIDR blocks allowed to access the PolarDB cluster.\n Default: [\"127.0.0.1\"] (no access). Set to [\"0.0.0.0/0\"] to allow all\n (not recommended for production).",
+        "required": false
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "VPC security group IDs to associate with the PolarDB cluster.\n You can add a maximum of three security groups.",
+        "required": false
+      },
+      {
+        "name": "MaintainTime",
+        "jsonName": "maintainTime",
+        "protoField": "maintain_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Maintenance window in UTC. PolarDB may perform minor version upgrades\n or patches during this window.\n Format: \"HH:00Z-HH:00Z\" (must be a 1-hour interval on the hour,\n e.g., \"02:00Z-03:00Z\").",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the cluster is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the PolarDB cluster resource.",
+        "required": false
+      },
+      {
+        "name": "CreationCategory",
+        "jsonName": "creationCategory",
+        "protoField": "creation_category",
+        "type": {
+          "kind": "string"
+        },
+        "description": "PolarDB edition that determines the storage architecture.\n \"Normal\" -- Enterprise Edition with shared distributed storage.\n \"Basic\" -- single-node edition for dev/test.\n \"ArchiveNormal\" -- archival storage edition.\n \"NormalMultimaster\" -- multi-master edition (MySQL only).\n \"SENormal\" -- Standard Edition with local ESSD storage.",
+        "required": false,
+        "oneofGroup": "_creation_category"
+      },
+      {
+        "name": "SubCategory",
+        "jsonName": "subCategory",
+        "protoField": "sub_category",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Sub-category for the cluster. Determines the resource allocation model.\n \"Exclusive\" -- dedicated resources (higher performance).\n \"General\" -- shared resources (lower cost).\n Only applicable to MySQL clusters.",
+        "required": false,
+        "oneofGroup": "_sub_category"
+      },
+      {
+        "name": "StorageType",
+        "jsonName": "storageType",
+        "protoField": "storage_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Storage type. Determines the underlying storage medium.\n Enterprise Edition: \"PSL5\" (performance level 5), \"PSL4\" (performance level 4).\n Standard Edition: \"ESSDPL0\", \"ESSDPL1\", \"ESSDPL2\", \"ESSDPL3\" (ESSD performance levels),\n \"ESSDAUTOPL\" (auto performance level).",
+        "required": false,
+        "oneofGroup": "_storage_type"
+      },
+      {
+        "name": "StorageSpace",
+        "jsonName": "storageSpace",
+        "protoField": "storage_space",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Storage space in GB. Only applicable for Standard Edition clusters\n (creation_category = \"SENormal\") where storage is pre-allocated.\n Enterprise Edition clusters use auto-scaling shared storage and do not\n need this field. Valid range: 20-100000 GB.",
+        "required": false,
+        "oneofGroup": "_storage_space"
+      },
+      {
+        "name": "TdeStatus",
+        "jsonName": "tdeStatus",
+        "protoField": "tde_status",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Transparent Data Encryption (TDE) status. TDE encrypts data at rest\n at the storage level. Once enabled, TDE cannot be disabled.\n \"Enabled\" turns on TDE. \"Disabled\" is the default.",
+        "required": false,
+        "oneofGroup": "_tde_status"
+      },
+      {
+        "name": "EncryptionKey",
+        "jsonName": "encryptionKey",
+        "protoField": "encryption_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "KMS encryption key ID for TDE. Required when tde_status is \"Enabled\".\n Cannot be changed after TDE is enabled.",
+        "required": false
+      },
+      {
+        "name": "DeletionLock",
+        "jsonName": "deletionLock",
+        "protoField": "deletion_lock",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Deletion protection lock. Prevents accidental cluster deletion via\n console or API. Set to 1 to enable, 0 to disable.",
+        "required": false,
+        "oneofGroup": "_deletion_lock"
+      },
+      {
+        "name": "CollectorStatus",
+        "jsonName": "collectorStatus",
+        "protoField": "collector_status",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SQL audit log collector status.\n \"Enable\" turns on audit logging for compliance and troubleshooting.\n \"Disabled\" turns it off.",
+        "required": false,
+        "oneofGroup": "_collector_status"
+      },
+      {
+        "name": "BackupRetentionPolicyOnClusterDeletion",
+        "jsonName": "backupRetentionPolicyOnClusterDeletion",
+        "protoField": "backup_retention_policy_on_cluster_deletion",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Backup retention policy when the cluster is deleted.\n \"ALL\" -- retain all backups.\n \"LATEST\" -- retain only the most recent backup.\n \"NONE\" -- delete all backups immediately.",
+        "required": false,
+        "oneofGroup": "_backup_retention_policy_on_cluster_deletion"
+      },
+      {
+        "name": "Parameters",
+        "jsonName": "parameters",
+        "protoField": "parameters",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudPolardbParameter"
+          }
+        },
+        "description": "Cluster parameter overrides. Each parameter sets a specific database\n engine configuration value. Refer to Alibaba Cloud documentation for\n valid parameter names and value ranges per engine.",
+        "required": false
+      },
+      {
+        "name": "Databases",
+        "jsonName": "databases",
+        "protoField": "databases",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudPolardbDatabase"
+          }
+        },
+        "description": "Databases to create within the PolarDB cluster.",
+        "required": false
+      },
+      {
+        "name": "Accounts",
+        "jsonName": "accounts",
+        "protoField": "accounts",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudPolardbAccount"
+          }
+        },
+        "description": "Database accounts to create within the PolarDB cluster.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudPolardbAccount",
+      "description": "AliCloudPolardbAccount defines a database account to create within the\n PolarDB cluster.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudpolardbcluster.v1.AliCloudPolardbAccount",
+      "fields": [
+        {
+          "name": "AccountName",
+          "jsonName": "accountName",
+          "protoField": "account_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Account login name. Must start with a lowercase letter, end with a\n letter or number, consist of lowercase letters, numbers, or underscores,\n and be 2-16 characters long.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 2
+          }
+        },
+        {
+          "name": "AccountPassword",
+          "jsonName": "accountPassword",
+          "protoField": "account_password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Account password. Must be 8-32 characters and contain at least three of:\n uppercase letters, lowercase letters, digits, and special characters\n (!@#$%^\u0026*()_+-=).",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 8
+          }
+        },
+        {
+          "name": "AccountType",
+          "jsonName": "accountType",
+          "protoField": "account_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Account type.\n \"Normal\" -- standard account with explicit database privileges.\n \"Super\" -- superuser with full privileges on all databases.\n Default: \"Normal\"",
+          "required": false,
+          "default": "Normal",
+          "oneofGroup": "_account_type"
+        },
+        {
+          "name": "AccountDescription",
+          "jsonName": "accountDescription",
+          "protoField": "account_description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description of the account's purpose.",
+          "required": false
+        },
+        {
+          "name": "Privileges",
+          "jsonName": "privileges",
+          "protoField": "privileges",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AliCloudPolardbAccountPrivilege"
+            }
+          },
+          "description": "Database privileges to grant to this account. Each entry grants a\n privilege level on a set of databases. Only applicable when account_type\n is \"Normal\"; Super accounts have implicit full access.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudPolardbAccountPrivilege",
+      "description": "AliCloudPolardbAccountPrivilege grants a single privilege level on a set of\n databases to the owning account.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudpolardbcluster.v1.AliCloudPolardbAccountPrivilege",
+      "fields": [
+        {
+          "name": "DbNames",
+          "jsonName": "dbNames",
+          "protoField": "db_names",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Database names to grant access to. Each name must match a database\n defined in the spec's databases list.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minItems": 1
+          }
+        },
+        {
+          "name": "AccountPrivilege",
+          "jsonName": "accountPrivilege",
+          "protoField": "account_privilege",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Privilege level to grant on the specified databases.\n \"ReadOnly\" -- SELECT access.\n \"ReadWrite\" -- SELECT, INSERT, UPDATE, DELETE access.\n \"DDLOnly\" -- DDL operations only (CREATE, ALTER, DROP).\n \"DMLOnly\" -- DML operations only (INSERT, UPDATE, DELETE).\n Default: \"ReadOnly\"",
+          "required": false,
+          "default": "ReadOnly",
+          "oneofGroup": "_account_privilege"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudPolardbDatabase",
+      "description": "AliCloudPolardbDatabase defines a database to create within the PolarDB\n cluster.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudpolardbcluster.v1.AliCloudPolardbDatabase",
+      "fields": [
+        {
+          "name": "DbName",
+          "jsonName": "dbName",
+          "protoField": "db_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Database name. Must start with a letter, consist of lowercase letters,\n numbers, and underscores, and be no more than 64 characters.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "CharacterSetName",
+          "jsonName": "characterSetName",
+          "protoField": "character_set_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Character set for the database. Default: \"utf8\" for MySQL, varies for\n PostgreSQL and Oracle. Common values: \"utf8\", \"utf8mb4\", \"gbk\" (MySQL),\n \"UTF8\", \"SQL_ASCII\" (PostgreSQL/Oracle).",
+          "required": false
+        },
+        {
+          "name": "DbDescription",
+          "jsonName": "dbDescription",
+          "protoField": "db_description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description of the database. 2-256 characters.",
+          "required": false
+        },
+        {
+          "name": "Collate",
+          "jsonName": "collate",
+          "protoField": "collate",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Collation rules for the database. Only applicable to PolarDB for\n PostgreSQL and Oracle compatibility modes. Must be compatible with\n the character_set_name. Default: \"C\".",
+          "required": false
+        },
+        {
+          "name": "Ctype",
+          "jsonName": "ctype",
+          "protoField": "ctype",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Character type setting. Only applicable to PolarDB for PostgreSQL and\n Oracle compatibility modes. Must be compatible with the\n character_set_name. Default: \"C\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudPolardbParameter",
+      "description": "AliCloudPolardbParameter represents a single cluster parameter override.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudpolardbcluster.v1.AliCloudPolardbParameter",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Parameter name (e.g., \"loose_innodb_buffer_pool_size\", \"max_connections\").",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Parameter value as a string. The database engine interprets the value\n according to the parameter's type.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

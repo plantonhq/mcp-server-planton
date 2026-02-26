@@ -1,0 +1,696 @@
+{
+  "name": "GcpCloudArmorPolicy",
+  "kind": "GcpCloudArmorPolicy",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-cloud-armor-policy",
+  "protoPackage": "org.openmcf.provider.gcp.gcpcloudarmorpolicy.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpcloudarmorpolicy/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpcloudarmorpolicy/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpCloudArmorPolicySpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the security policy will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "PolicyName",
+        "jsonName": "policyName",
+        "protoField": "policy_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the security policy in GCP.\n Must be 1-63 characters, lowercase letters, numbers, or hyphens.\n Must start with a lowercase letter and end with a letter or number.\n If not specified, defaults to metadata.name.",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Description of the security policy. Max 2048 characters.",
+        "required": false,
+        "validation": {
+          "maxLength": 2048
+        }
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Policy type. Determines which features are available and where\n the policy can be attached.\n\n Immutable after creation (ForceNew).",
+        "required": false
+      },
+      {
+        "name": "AdaptiveProtectionConfig",
+        "jsonName": "adaptiveProtectionConfig",
+        "protoField": "adaptive_protection_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudArmorAdaptiveProtectionConfig"
+        },
+        "description": "Adaptive Protection configuration for automatic Layer 7 DDoS detection.",
+        "required": false
+      },
+      {
+        "name": "AdvancedOptionsConfig",
+        "jsonName": "advancedOptionsConfig",
+        "protoField": "advanced_options_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudArmorAdvancedOptionsConfig"
+        },
+        "description": "Advanced policy-level options: JSON parsing, logging, IP resolution.",
+        "required": false
+      },
+      {
+        "name": "Rules",
+        "jsonName": "rules",
+        "protoField": "rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "GcpCloudArmorRule"
+          }
+        },
+        "description": "Security rules. Rules are evaluated in priority order (lowest number\n first). Each rule matches traffic and applies an action.\n\n If no rule with priority 2147483647 is included, the IaC modules\n auto-add a default \"allow all\" rule.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpCloudArmorAdaptiveProtectionConfig",
+      "description": "GcpCloudArmorAdaptiveProtectionConfig configures Google Cloud Armor\n Adaptive Protection (CAAP) for automatic Layer 7 DDoS detection.\n When enabled, Adaptive Protection analyzes traffic patterns and\n alerts on or auto-mitigates anomalous traffic spikes.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudarmorpolicy.v1.GcpCloudArmorAdaptiveProtectionConfig",
+      "fields": [
+        {
+          "name": "EnableLayer7DdosDefense",
+          "jsonName": "enableLayer7DdosDefense",
+          "protoField": "enable_layer_7_ddos_defense",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Cloud Armor Adaptive Protection for Layer 7 DDoS defense.\n When true, traffic anomalies are detected and alerts are generated.",
+          "required": false
+        },
+        {
+          "name": "RuleVisibility",
+          "jsonName": "ruleVisibility",
+          "protoField": "rule_visibility",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Rule visibility mode for auto-generated adaptive protection rules.\n \"STANDARD\" (default) creates rules visible to all policy viewers.\n \"PREMIUM\" requires Cloud Armor Managed Protection Plus.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudArmorAdvancedOptionsConfig",
+      "description": "GcpCloudArmorAdvancedOptionsConfig configures advanced security\n features at the policy level, including JSON request body parsing,\n logging verbosity, and client IP resolution.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudarmorpolicy.v1.GcpCloudArmorAdvancedOptionsConfig",
+      "fields": [
+        {
+          "name": "JsonParsing",
+          "jsonName": "jsonParsing",
+          "protoField": "json_parsing",
+          "type": {
+            "kind": "string"
+          },
+          "description": "JSON parsing mode for request body inspection.\n \"DISABLED\" (default): No JSON parsing.\n \"STANDARD\": Parse JSON bodies for WAF rule evaluation.\n \"STANDARD_WITH_GRAPHQL\": Parse JSON and GraphQL bodies.",
+          "required": false
+        },
+        {
+          "name": "LogLevel",
+          "jsonName": "logLevel",
+          "protoField": "log_level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Logging verbosity.\n \"NORMAL\" (default): Standard logging.\n \"VERBOSE\": Detailed logging including matched rule and request details.",
+          "required": false
+        },
+        {
+          "name": "UserIpRequestHeaders",
+          "jsonName": "userIpRequestHeaders",
+          "protoField": "user_ip_request_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Custom headers to check for the true client IP address.\n Used when traffic passes through a CDN or reverse proxy that\n sets the client IP in a custom header. If empty, GCP uses the\n connection source IP.",
+          "required": false
+        },
+        {
+          "name": "RequestBodyInspectionSize",
+          "jsonName": "requestBodyInspectionSize",
+          "protoField": "request_body_inspection_size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Maximum size of the request body to inspect for WAF rules.\n Larger values inspect more of the body but increase latency.\n Default: 8KB if not set.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudArmorHeaderAction",
+      "description": "GcpCloudArmorHeaderAction injects custom headers into requests\n that match the rule. Headers are added before the request is\n forwarded to the backend. Useful for passing security context\n or routing hints to backend services.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudarmorpolicy.v1.GcpCloudArmorHeaderAction",
+      "fields": [
+        {
+          "name": "RequestHeadersToAdds",
+          "jsonName": "requestHeadersToAdds",
+          "protoField": "request_headers_to_adds",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpCloudArmorRequestHeader"
+            }
+          },
+          "description": "Headers to add to matching requests.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudArmorPreconfiguredWafConfig",
+      "description": "GcpCloudArmorPreconfiguredWafConfig defines exclusions for preconfigured\n WAF rules attached to this security rule. Without exclusions, legitimate\n traffic that resembles attack patterns (SQL in search queries, HTML in\n rich text fields) is blocked by WAF rules.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudarmorpolicy.v1.GcpCloudArmorPreconfiguredWafConfig",
+      "fields": [
+        {
+          "name": "Exclusions",
+          "jsonName": "exclusions",
+          "protoField": "exclusions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpCloudArmorWafExclusion"
+            }
+          },
+          "description": "Exclusions from preconfigured WAF rules.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudArmorRateLimitOptions",
+      "description": "GcpCloudArmorRateLimitOptions configures rate limiting for throttle\n and rate_based_ban actions.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudarmorpolicy.v1.GcpCloudArmorRateLimitOptions",
+      "fields": [
+        {
+          "name": "ConformAction",
+          "jsonName": "conformAction",
+          "protoField": "conform_action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action to take when traffic is below the threshold. Must be \"allow\".",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ExceedAction",
+          "jsonName": "exceedAction",
+          "protoField": "exceed_action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action to take when traffic exceeds the threshold.\n Valid values: \"redirect\", \"deny(403)\", \"deny(404)\", \"deny(429)\", \"deny(502)\".",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "EnforceOnKey",
+          "jsonName": "enforceOnKey",
+          "protoField": "enforce_on_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Key on which to enforce the rate limit. Determines how requests\n are grouped for counting. If empty, defaults to \"ALL\" (single\n counter for all matched traffic).\n\n Common values:\n   - \"ALL\": Single counter for all traffic\n   - \"IP\": Per source IP\n   - \"HTTP_HEADER\": Per value of a specific header (set enforce_on_key_name)\n   - \"XFF_IP\": Per IP from X-Forwarded-For header\n   - \"HTTP_COOKIE\": Per cookie value (set enforce_on_key_name)\n   - \"HTTP_PATH\": Per URL path\n   - \"SNI\": Per TLS Server Name Indication\n   - \"REGION_CODE\": Per client country/region",
+          "required": false
+        },
+        {
+          "name": "EnforceOnKeyName",
+          "jsonName": "enforceOnKeyName",
+          "protoField": "enforce_on_key_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the HTTP header or cookie when enforce_on_key is\n HTTP_HEADER or HTTP_COOKIE.",
+          "required": false
+        },
+        {
+          "name": "RateLimitThreshold",
+          "jsonName": "rateLimitThreshold",
+          "protoField": "rate_limit_threshold",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudArmorRateThreshold"
+          },
+          "description": "Rate limit threshold: when the request count exceeds this value\n within the interval, the exceed_action is applied.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "BanThreshold",
+          "jsonName": "banThreshold",
+          "protoField": "ban_threshold",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudArmorRateThreshold"
+          },
+          "description": "Ban threshold for rate_based_ban actions. When traffic exceeds\n this threshold after already exceeding the rate_limit_threshold,\n the source is banned entirely.",
+          "required": false
+        },
+        {
+          "name": "BanDurationSec",
+          "jsonName": "banDurationSec",
+          "protoField": "ban_duration_sec",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Duration of the ban in seconds when using rate_based_ban.\n Range: 60 to 86400 (1 minute to 24 hours).",
+          "required": false
+        },
+        {
+          "name": "ExceedRedirectOptions",
+          "jsonName": "exceedRedirectOptions",
+          "protoField": "exceed_redirect_options",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudArmorRedirectConfig"
+          },
+          "description": "Redirect configuration when exceed_action is \"redirect\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudArmorRateThreshold",
+      "description": "GcpCloudArmorRateThreshold defines a request-count threshold over a time\n interval. Used by both rate_limit_threshold (when to start throttling)\n and ban_threshold (when to escalate to a ban).",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudarmorpolicy.v1.GcpCloudArmorRateThreshold",
+      "fields": [
+        {
+          "name": "Count",
+          "jsonName": "count",
+          "protoField": "count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of requests that triggers the threshold.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "IntervalSec",
+          "jsonName": "intervalSec",
+          "protoField": "interval_sec",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Window of time in seconds over which the count is measured.\n Allowed values: 60, 120, 180, 240, 300, 600, 900, 1200.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudArmorRedirectConfig",
+      "description": "GcpCloudArmorRedirectConfig defines a redirect target for rule actions\n or rate-limit exceed actions. Shared between rule-level redirect_options\n and rate_limit_options.exceed_redirect_options.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudarmorpolicy.v1.GcpCloudArmorRedirectConfig",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Redirect type. EXTERNAL_302 sends a 302 redirect to the target URL.\n GOOGLE_RECAPTCHA redirects to a Google reCAPTCHA challenge page.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Target",
+          "jsonName": "target",
+          "protoField": "target",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Target URL for EXTERNAL_302 redirects. Required when type is\n EXTERNAL_302; must not be set when type is GOOGLE_RECAPTCHA.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudArmorRequestHeader",
+      "description": "GcpCloudArmorRequestHeader defines a header to add to requests\n that match the rule.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudarmorpolicy.v1.GcpCloudArmorRequestHeader",
+      "fields": [
+        {
+          "name": "HeaderName",
+          "jsonName": "headerName",
+          "protoField": "header_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP header name.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "HeaderValue",
+          "jsonName": "headerValue",
+          "protoField": "header_value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP header value. If the header already exists, it is overwritten.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudArmorRule",
+      "description": "GcpCloudArmorRule defines a single security rule within the policy.\n Rules are evaluated in priority order (lowest number = highest priority).\n Every policy must have a default rule at priority 2147483647 -- if not\n provided, the IaC modules auto-add a default \"allow all\" rule matching\n the behavior of the GCP Terraform and Pulumi providers.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudarmorpolicy.v1.GcpCloudArmorRule",
+      "fields": [
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action to take when the rule matches.\n - \"allow\": Permit the request\n - \"deny(403)\": Block with 403 Forbidden\n - \"deny(404)\": Block with 404 Not Found\n - \"deny(502)\": Block with 502 Bad Gateway\n - \"redirect\": Redirect to a configured target (requires redirect_options)\n - \"throttle\": Rate-limit the traffic (requires rate_limit_options)\n - \"rate_based_ban\": Rate-limit then ban (requires rate_limit_options)",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Rule priority. Lower values are evaluated first.\n Range: 0 to 2147483647. Each rule must have a unique priority.\n Priority 2147483647 is reserved for the default rule.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Match",
+          "jsonName": "match",
+          "protoField": "match",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudArmorRuleMatch"
+          },
+          "description": "Traffic-matching condition. Defines which requests this rule applies to.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description of the rule (max 64 characters).",
+          "required": false,
+          "validation": {
+            "maxLength": 64
+          }
+        },
+        {
+          "name": "Preview",
+          "jsonName": "preview",
+          "protoField": "preview",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "If true, the rule is in preview mode: matched traffic is logged but\n the action is not enforced. Use preview to test rules before enabling.",
+          "required": false
+        },
+        {
+          "name": "RateLimitOptions",
+          "jsonName": "rateLimitOptions",
+          "protoField": "rate_limit_options",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudArmorRateLimitOptions"
+          },
+          "description": "Rate limit configuration. Required when action is \"throttle\" or\n \"rate_based_ban\".",
+          "required": false
+        },
+        {
+          "name": "RedirectOptions",
+          "jsonName": "redirectOptions",
+          "protoField": "redirect_options",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudArmorRedirectConfig"
+          },
+          "description": "Redirect configuration. Required when action is \"redirect\".",
+          "required": false
+        },
+        {
+          "name": "HeaderAction",
+          "jsonName": "headerAction",
+          "protoField": "header_action",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudArmorHeaderAction"
+          },
+          "description": "Custom headers to inject into matching requests before forwarding\n to the backend. Only supported for CLOUD_ARMOR type policies.",
+          "required": false
+        },
+        {
+          "name": "PreconfiguredWafConfig",
+          "jsonName": "preconfiguredWafConfig",
+          "protoField": "preconfigured_waf_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudArmorPreconfiguredWafConfig"
+          },
+          "description": "Preconfigured WAF rule exclusions. Use this to carve out exceptions\n for specific request fields that trigger false positives in WAF rules.\n Only supported for CLOUD_ARMOR type policies.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudArmorRuleMatch",
+      "description": "GcpCloudArmorRuleMatch defines the traffic-matching condition for a rule.\n\n Two matching modes are available (mutually exclusive):\n\n   - **IP-based**: Set versioned_expr to \"SRC_IPS_V1\" and provide\n     src_ip_ranges. Matches traffic from the listed CIDR ranges.\n\n   - **CEL expression**: Set expression with a Common Expression\n     Language (CEL) rule. Supports request attributes like\n     origin.region_code, request.headers, request.path, etc.\n\n Use \"*\" in src_ip_ranges to match all traffic.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudarmorpolicy.v1.GcpCloudArmorRuleMatch",
+      "fields": [
+        {
+          "name": "VersionedExpr",
+          "jsonName": "versionedExpr",
+          "protoField": "versioned_expr",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Predefined match expression. The only supported value is \"SRC_IPS_V1\",\n which matches traffic based on source IP address ranges.\n When set, src_ip_ranges must also be provided.",
+          "required": false
+        },
+        {
+          "name": "SrcIpRanges",
+          "jsonName": "srcIpRanges",
+          "protoField": "src_ip_ranges",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Source IP CIDR ranges to match against.\n Required when versioned_expr is \"SRC_IPS_V1\". Max 10 ranges per rule.\n Use \"*\" to match all IP addresses.\n Examples: [\"192.168.1.0/24\", \"10.0.0.0/8\"] or [\"*\"]",
+          "required": false,
+          "validation": {
+            "maxItems": 10
+          }
+        },
+        {
+          "name": "Expression",
+          "jsonName": "expression",
+          "protoField": "expression",
+          "type": {
+            "kind": "string"
+          },
+          "description": "CEL expression for advanced matching. Supports request attributes\n such as origin.region_code, request.headers['X-Custom'], request.path,\n inIpRange(origin.ip, '1.2.3.0/24'), and more.\n Mutually exclusive with versioned_expr.\n Example: \"origin.region_code == 'US'\" or \"request.path.matches('/api/.*')\"",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudArmorWafExclusion",
+      "description": "GcpCloudArmorWafExclusion defines an exclusion from a preconfigured\n WAF rule set. WAF exclusions are critical for production deployments\n where false positives from OWASP rules may block legitimate traffic\n (e.g., form submissions with SQL-like content, rich text editors,\n GraphQL queries).",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudarmorpolicy.v1.GcpCloudArmorWafExclusion",
+      "fields": [
+        {
+          "name": "TargetRuleSet",
+          "jsonName": "targetRuleSet",
+          "protoField": "target_rule_set",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Target WAF rule set to exclude from. Uses the ModSecurity rule set\n identifiers such as \"sqli-v33-stable\", \"xss-v33-stable\",\n \"rce-v33-stable\", \"lfi-v33-stable\", etc.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "TargetRuleIds",
+          "jsonName": "targetRuleIds",
+          "protoField": "target_rule_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Specific rule IDs within the rule set to exclude. If empty,\n the exclusion applies to all rules in the set.",
+          "required": false
+        },
+        {
+          "name": "RequestHeaders",
+          "jsonName": "requestHeaders",
+          "protoField": "request_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpCloudArmorWafExclusionFieldParams"
+            }
+          },
+          "description": "Request headers to exclude from WAF evaluation.",
+          "required": false
+        },
+        {
+          "name": "RequestCookies",
+          "jsonName": "requestCookies",
+          "protoField": "request_cookies",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpCloudArmorWafExclusionFieldParams"
+            }
+          },
+          "description": "Request cookies to exclude from WAF evaluation.",
+          "required": false
+        },
+        {
+          "name": "RequestUris",
+          "jsonName": "requestUris",
+          "protoField": "request_uris",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpCloudArmorWafExclusionFieldParams"
+            }
+          },
+          "description": "Request URIs to exclude from WAF evaluation.",
+          "required": false
+        },
+        {
+          "name": "RequestQueryParams",
+          "jsonName": "requestQueryParams",
+          "protoField": "request_query_params",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpCloudArmorWafExclusionFieldParams"
+            }
+          },
+          "description": "Request query parameters to exclude from WAF evaluation.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudArmorWafExclusionFieldParams",
+      "description": "GcpCloudArmorWafExclusionFieldParams identifies a specific request\n component to exclude from WAF rule evaluation.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudarmorpolicy.v1.GcpCloudArmorWafExclusionFieldParams",
+      "fields": [
+        {
+          "name": "Operator",
+          "jsonName": "operator",
+          "protoField": "operator",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Comparison operator for matching the field.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Value to match against. Required unless operator is EQUALS_ANY\n (which matches any value for the given field).",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

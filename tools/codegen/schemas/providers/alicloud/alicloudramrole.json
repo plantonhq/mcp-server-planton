@@ -1,0 +1,169 @@
+{
+  "name": "AliCloudRamRole",
+  "kind": "AliCloudRamRole",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-ram-role",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudramrole.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudramrole/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudramrole/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudRamRoleSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region for provider endpoint configuration.\n RAM is a global service, but the provider requires a region for API routing.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "RoleName",
+        "jsonName": "roleName",
+        "protoField": "role_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "RAM role name. Must be unique within the Alibaba Cloud account.\n 1-64 characters: letters, digits, periods (.), hyphens (-), and underscores (_).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 64
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the role's purpose.",
+        "required": false
+      },
+      {
+        "name": "AssumeRolePolicyDocument",
+        "jsonName": "assumeRolePolicyDocument",
+        "protoField": "assume_role_policy_document",
+        "type": {
+          "kind": "string"
+        },
+        "description": "JSON trust policy document defining which principals can assume this role.\n This controls who can call sts:AssumeRole to obtain temporary credentials.\n\n Example for allowing ECS service to assume the role:\n   {\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\n    \"Principal\":{\"Service\":[\"ecs.aliyuncs.com\"]}}],\"Version\":\"1\"}",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "MaxSessionDuration",
+        "jsonName": "maxSessionDuration",
+        "protoField": "max_session_duration",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum session duration in seconds when assuming this role via STS.\n Longer durations are useful for CI/CD pipelines and batch workloads.\n Range: 3600-43200 (1 hour to 12 hours).\n Default: 3600",
+        "required": false,
+        "validation": {
+          "min": 3600,
+          "max": 43200
+        },
+        "default": "3600",
+        "oneofGroup": "_max_session_duration"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags applied to the RAM role for organizational and cost-tracking purposes.",
+        "required": false
+      },
+      {
+        "name": "Force",
+        "jsonName": "force",
+        "protoField": "force",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Force-detach all attached policies before deleting the role.\n When false (default), deletion fails if policies are still attached.\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_force"
+      },
+      {
+        "name": "PolicyAttachments",
+        "jsonName": "policyAttachments",
+        "protoField": "policy_attachments",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudRamRolePolicyAttachment"
+          }
+        },
+        "description": "Policies to attach to this role. Each attachment grants the role a set\n of permissions defined by either a system-managed or custom policy.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudRamRolePolicyAttachment",
+      "description": "AliCloudRamRolePolicyAttachment defines a policy to attach to the RAM role.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudramrole.v1.AliCloudRamRolePolicyAttachment",
+      "fields": [
+        {
+          "name": "PolicyName",
+          "jsonName": "policyName",
+          "protoField": "policy_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the policy to attach.\n System policies: \"AliyunECSFullAccess\", \"AliyunOSSReadOnlyAccess\", etc.\n Custom policies: the name you gave when creating the policy.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "PolicyType",
+          "jsonName": "policyType",
+          "protoField": "policy_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Policy type: \"System\" for Alibaba Cloud managed policies,\n \"Custom\" for user-created policies.\n Default: \"System\"",
+          "required": false,
+          "validation": {
+            "enum": [
+              "System",
+              "Custom"
+            ]
+          },
+          "default": "System",
+          "oneofGroup": "_policy_type"
+        }
+      ]
+    }
+  ]
+}

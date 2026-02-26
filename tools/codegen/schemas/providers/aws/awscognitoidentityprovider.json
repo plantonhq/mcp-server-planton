@@ -1,0 +1,574 @@
+{
+  "name": "AwsCognitoIdentityProvider",
+  "kind": "AwsCognitoIdentityProvider",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsCognitoIdentityProvider represents an external identity provider (social,\n OIDC, or SAML) federated into an Amazon Cognito User Pool. This is a child\n resource of AwsCognitoUserPool — the pool must exist before creating\n identity providers.\n\n Supported provider types: Google, Facebook, Login with Amazon, Sign in with\n Apple, generic OIDC, and SAML 2.0.",
+  "protoPackage": "org.openmcf.provider.aws.awscognitoidentityprovider.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awscognitoidentityprovider/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awscognitoidentityprovider/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsCognitoIdentityProviderSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "UserPoolId",
+        "jsonName": "userPoolId",
+        "protoField": "user_pool_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The ID of the Cognito User Pool to attach this identity provider to.\n Format: \"{region}_{poolId}\" (e.g., \"us-east-1_Ab1Cd2EfG\").\n\n This field is ForceNew: changing it requires replacing the identity provider.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsCognitoUserPool",
+        "referenceFieldPath": "status.outputs.user_pool_id"
+      },
+      {
+        "name": "ProviderName",
+        "jsonName": "providerName",
+        "protoField": "provider_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Display name for this identity provider within the User Pool. Must be\n unique within the pool. Referenced by User Pool Clients in their\n `supported_identity_providers` list.\n\n Examples: \"Google\", \"CorpOkta\", \"AzureAD-SAML\"\n\n 1-32 UTF-8 characters. This field is ForceNew.",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "maxLength": 32
+        }
+      },
+      {
+        "name": "ProviderType",
+        "jsonName": "providerType",
+        "protoField": "provider_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.aws.awscognitoidentityprovider.v1.AwsCognitoIdentityProviderType",
+          "enumValues": [
+            "Google",
+            "Facebook",
+            "LoginWithAmazon",
+            "SignInWithApple",
+            "OIDC",
+            "SAML"
+          ]
+        },
+        "description": "The type of identity provider. Determines which provider configuration\n field to populate (google, facebook, login_with_amazon, sign_in_with_apple,\n oidc, or saml).\n\n This field is ForceNew: changing it requires replacing the identity provider.",
+        "required": false
+      },
+      {
+        "name": "Google",
+        "jsonName": "google",
+        "protoField": "google",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCognitoIdpGoogleConfig"
+        },
+        "description": "Google OAuth 2.0 configuration. Set when provider_type is Google.",
+        "required": false,
+        "oneofGroup": "provider_config"
+      },
+      {
+        "name": "Facebook",
+        "jsonName": "facebook",
+        "protoField": "facebook",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCognitoIdpFacebookConfig"
+        },
+        "description": "Facebook Login configuration. Set when provider_type is Facebook.",
+        "required": false,
+        "oneofGroup": "provider_config"
+      },
+      {
+        "name": "LoginWithAmazon",
+        "jsonName": "loginWithAmazon",
+        "protoField": "login_with_amazon",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCognitoIdpLoginWithAmazonConfig"
+        },
+        "description": "Login with Amazon configuration. Set when provider_type is LoginWithAmazon.",
+        "required": false,
+        "oneofGroup": "provider_config"
+      },
+      {
+        "name": "SignInWithApple",
+        "jsonName": "signInWithApple",
+        "protoField": "sign_in_with_apple",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCognitoIdpSignInWithAppleConfig"
+        },
+        "description": "Sign in with Apple configuration. Set when provider_type is SignInWithApple.",
+        "required": false,
+        "oneofGroup": "provider_config"
+      },
+      {
+        "name": "Oidc",
+        "jsonName": "oidc",
+        "protoField": "oidc",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCognitoIdpOidcConfig"
+        },
+        "description": "Generic OIDC configuration. Set when provider_type is OIDC.",
+        "required": false,
+        "oneofGroup": "provider_config"
+      },
+      {
+        "name": "Saml",
+        "jsonName": "saml",
+        "protoField": "saml",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsCognitoIdpSamlConfig"
+        },
+        "description": "SAML 2.0 configuration. Set when provider_type is SAML.",
+        "required": false,
+        "oneofGroup": "provider_config"
+      },
+      {
+        "name": "AttributeMapping",
+        "jsonName": "attributeMapping",
+        "protoField": "attribute_mapping",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Maps identity provider attributes to Cognito User Pool attributes.\n Keys are Cognito user pool attribute names (e.g., \"email\", \"username\",\n \"given_name\"). Values are provider-specific attribute names or paths\n (e.g., \"sub\", \"email\").\n\n When omitted, AWS applies default mappings based on the provider type.",
+        "required": false
+      },
+      {
+        "name": "IdpIdentifiers",
+        "jsonName": "idpIdentifiers",
+        "protoField": "idp_identifiers",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Alternative identifiers for this identity provider. These can be used\n in the login endpoint's `idp_identifier` parameter to redirect to this\n provider without exposing the provider_name.\n\n Maximum 50 identifiers, each 1-40 characters.",
+        "required": false,
+        "validation": {
+          "maxItems": 50
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsCognitoIdpFacebookConfig",
+      "description": "AwsCognitoIdpFacebookConfig holds the OAuth 2.0 configuration for a Facebook\n Login identity provider.",
+      "protoType": "org.openmcf.provider.aws.awscognitoidentityprovider.v1.AwsCognitoIdpFacebookConfig",
+      "fields": [
+        {
+          "name": "ClientId",
+          "jsonName": "clientId",
+          "protoField": "client_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Facebook App ID from the Facebook Developer Portal.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ClientSecret",
+          "jsonName": "clientSecret",
+          "protoField": "client_secret",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Facebook App Secret from the Facebook Developer Portal.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "AuthorizeScopes",
+          "jsonName": "authorizeScopes",
+          "protoField": "authorize_scopes",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Comma-separated OAuth scopes (e.g., \"email,public_profile\").\n Note: Facebook uses comma-separated scopes, unlike other providers\n which use space-separated.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ApiVersion",
+          "jsonName": "apiVersion",
+          "protoField": "api_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Facebook Graph API version (e.g., \"v17.0\"). When omitted, Cognito uses\n the latest version it supports.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCognitoIdpGoogleConfig",
+      "description": "AwsCognitoIdpGoogleConfig holds the OAuth 2.0 configuration for a Google\n identity provider. Cognito auto-discovers authorize_url, token_url, and\n oidc_issuer from Google's well-known endpoints.",
+      "protoType": "org.openmcf.provider.aws.awscognitoidentityprovider.v1.AwsCognitoIdpGoogleConfig",
+      "fields": [
+        {
+          "name": "ClientId",
+          "jsonName": "clientId",
+          "protoField": "client_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Google OAuth 2.0 client ID from the Google Cloud Console.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ClientSecret",
+          "jsonName": "clientSecret",
+          "protoField": "client_secret",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Google OAuth 2.0 client secret from the Google Cloud Console.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "AuthorizeScopes",
+          "jsonName": "authorizeScopes",
+          "protoField": "authorize_scopes",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Space-separated OAuth scopes (e.g., \"email profile openid\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsCognitoIdpLoginWithAmazonConfig",
+      "description": "AwsCognitoIdpLoginWithAmazonConfig holds the OAuth 2.0 configuration for a\n Login with Amazon identity provider.",
+      "protoType": "org.openmcf.provider.aws.awscognitoidentityprovider.v1.AwsCognitoIdpLoginWithAmazonConfig",
+      "fields": [
+        {
+          "name": "ClientId",
+          "jsonName": "clientId",
+          "protoField": "client_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Login with Amazon client ID from the Amazon Developer Console.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ClientSecret",
+          "jsonName": "clientSecret",
+          "protoField": "client_secret",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Login with Amazon client secret from the Amazon Developer Console.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "AuthorizeScopes",
+          "jsonName": "authorizeScopes",
+          "protoField": "authorize_scopes",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Space-separated OAuth scopes (e.g., \"profile postal_code\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsCognitoIdpOidcConfig",
+      "description": "AwsCognitoIdpOidcConfig holds the configuration for a generic OpenID Connect\n identity provider. Cognito auto-discovers endpoint URLs from the issuer's\n .well-known/openid-configuration when only oidc_issuer is provided.",
+      "protoType": "org.openmcf.provider.aws.awscognitoidentityprovider.v1.AwsCognitoIdpOidcConfig",
+      "fields": [
+        {
+          "name": "ClientId",
+          "jsonName": "clientId",
+          "protoField": "client_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OIDC client ID registered with the identity provider.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "OidcIssuer",
+          "jsonName": "oidcIssuer",
+          "protoField": "oidc_issuer",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OIDC issuer URL (e.g., \"https://login.microsoftonline.com/{tenant}/v2.0\").\n Cognito auto-discovers authorize, token, userinfo, and JWKS endpoints from\n the issuer's .well-known/openid-configuration document.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "AuthorizeScopes",
+          "jsonName": "authorizeScopes",
+          "protoField": "authorize_scopes",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Space-separated OAuth/OIDC scopes (e.g., \"openid email profile\").",
+          "required": false
+        },
+        {
+          "name": "ClientSecret",
+          "jsonName": "clientSecret",
+          "protoField": "client_secret",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OIDC client secret. Optional for public clients that use PKCE.",
+          "required": false
+        },
+        {
+          "name": "AttributesRequestMethod",
+          "jsonName": "attributesRequestMethod",
+          "protoField": "attributes_request_method",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP method for the userinfo endpoint: \"GET\" or \"POST\".\n When omitted, Cognito defaults to \"GET\".",
+          "required": false
+        },
+        {
+          "name": "AuthorizeUrl",
+          "jsonName": "authorizeUrl",
+          "protoField": "authorize_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Override the auto-discovered authorization endpoint URL.",
+          "required": false
+        },
+        {
+          "name": "TokenUrl",
+          "jsonName": "tokenUrl",
+          "protoField": "token_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Override the auto-discovered token endpoint URL.",
+          "required": false
+        },
+        {
+          "name": "AttributesUrl",
+          "jsonName": "attributesUrl",
+          "protoField": "attributes_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Override the auto-discovered userinfo endpoint URL.",
+          "required": false
+        },
+        {
+          "name": "JwksUri",
+          "jsonName": "jwksUri",
+          "protoField": "jwks_uri",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Override the auto-discovered JWKS endpoint URL.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCognitoIdpSamlConfig",
+      "description": "AwsCognitoIdpSamlConfig holds the configuration for a SAML 2.0 federation\n identity provider. Exactly one of metadata_file or metadata_url must be set\n to provide the IdP's SAML metadata.",
+      "protoType": "org.openmcf.provider.aws.awscognitoidentityprovider.v1.AwsCognitoIdpSamlConfig",
+      "fields": [
+        {
+          "name": "MetadataFile",
+          "jsonName": "metadataFile",
+          "protoField": "metadata_file",
+          "type": {
+            "kind": "string"
+          },
+          "description": "SAML metadata XML content as a string. Use this for inline metadata.\n Mutually exclusive with metadata_url.",
+          "required": false
+        },
+        {
+          "name": "MetadataUrl",
+          "jsonName": "metadataUrl",
+          "protoField": "metadata_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URL pointing to the IdP's SAML metadata document. Cognito fetches the\n metadata from this URL. Mutually exclusive with metadata_file.",
+          "required": false
+        },
+        {
+          "name": "IdpSignOut",
+          "jsonName": "idpSignOut",
+          "protoField": "idp_sign_out",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable single logout (SLO). When true, Cognito signs the user out of\n the SAML IdP when they sign out of the User Pool.",
+          "required": false
+        },
+        {
+          "name": "IdpInit",
+          "jsonName": "idpInit",
+          "protoField": "idp_init",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable IdP-initiated SSO. When true, the IdP can start the sign-in\n flow directly without the user first visiting the Cognito hosted UI.",
+          "required": false
+        },
+        {
+          "name": "EncryptedResponses",
+          "jsonName": "encryptedResponses",
+          "protoField": "encrypted_responses",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Require encrypted SAML assertions from the IdP.",
+          "required": false
+        },
+        {
+          "name": "RequestSigningAlgorithm",
+          "jsonName": "requestSigningAlgorithm",
+          "protoField": "request_signing_algorithm",
+          "type": {
+            "kind": "string"
+          },
+          "description": "SAML request signing algorithm (e.g., \"rsa-sha256\"). When omitted,\n Cognito uses the default algorithm.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCognitoIdpSignInWithAppleConfig",
+      "description": "AwsCognitoIdpSignInWithAppleConfig holds the configuration for a Sign in\n with Apple identity provider. Apple uses a private-key-based authentication\n model rather than a simple client_secret.",
+      "protoType": "org.openmcf.provider.aws.awscognitoidentityprovider.v1.AwsCognitoIdpSignInWithAppleConfig",
+      "fields": [
+        {
+          "name": "ClientId",
+          "jsonName": "clientId",
+          "protoField": "client_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Apple Services ID configured in the Apple Developer Portal.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "TeamId",
+          "jsonName": "teamId",
+          "protoField": "team_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Apple Developer Team ID (10-character alphanumeric string).",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "KeyId",
+          "jsonName": "keyId",
+          "protoField": "key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Key ID for the Apple private key.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "PrivateKey",
+          "jsonName": "privateKey",
+          "protoField": "private_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Apple private key in PEM format. Used to generate the client_secret JWT.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "AuthorizeScopes",
+          "jsonName": "authorizeScopes",
+          "protoField": "authorize_scopes",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Space-separated OAuth scopes (e.g., \"email name\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

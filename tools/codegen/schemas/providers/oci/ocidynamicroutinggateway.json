@@ -1,0 +1,417 @@
+{
+  "name": "OciDynamicRoutingGateway",
+  "kind": "OciDynamicRoutingGateway",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciDynamicRoutingGateway is the top-level resource representing an Oracle\n Cloud Infrastructure Dynamic Routing Gateway with attachments, route tables,\n and route distributions.",
+  "protoPackage": "org.openmcf.provider.oci.ocidynamicroutinggateway.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocidynamicroutinggateway/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocidynamicroutinggateway/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciDynamicRoutingGatewaySpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the DRG will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable name for the DRG shown in the OCI Console.\n Falls back to metadata.name if not provided.",
+        "required": false
+      },
+      {
+        "name": "Attachments",
+        "jsonName": "attachments",
+        "protoField": "attachments",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "DrgAttachment"
+          }
+        },
+        "description": "Network attachments that connect VCNs or other network resources to this\n DRG. Each attachment can optionally reference a custom route table and/or\n a custom export route distribution defined within this component.",
+        "required": false
+      },
+      {
+        "name": "RouteTables",
+        "jsonName": "routeTables",
+        "protoField": "route_tables",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "DrgRouteTable"
+          }
+        },
+        "description": "Custom DRG route tables for controlling traffic routing within the DRG.\n OCI automatically creates default route tables per network type; these\n are additional, user-defined tables. Route tables can import routes\n from a distribution and contain static route rules.",
+        "required": false
+      },
+      {
+        "name": "RouteDistributions",
+        "jsonName": "routeDistributions",
+        "protoField": "route_distributions",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "DrgRouteDistribution"
+          }
+        },
+        "description": "Custom route distributions for controlling which routes are advertised\n to DRG route tables (import) or to DRG attachments (export). OCI\n automatically creates a default export distribution; these are\n additional, user-defined distributions.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "DistributionStatement",
+      "description": "DistributionStatement defines a single rule within a route distribution.\n Each statement has a priority and match criteria. The action is always\n ACCEPT (the only OCI-supported action) and is hardcoded in the IaC\n modules.",
+      "protoType": "org.openmcf.provider.oci.ocidynamicroutinggateway.v1.OciDynamicRoutingGatewaySpec.DistributionStatement",
+      "fields": [
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Priority of this statement (1-65535). Lower numbers are evaluated\n first. Priorities must be unique within a distribution.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "MatchCriteria",
+          "jsonName": "matchCriteria",
+          "protoField": "match_criteria",
+          "type": {
+            "kind": "message",
+            "messageType": "MatchCriteria"
+          },
+          "description": "Criteria for matching routes. Determines which routes this\n statement applies to.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "DrgAttachment",
+      "description": "DrgAttachment connects a network resource (VCN, IPSec tunnel, virtual\n circuit, remote peering connection, or loopback) to the DRG.\n\n A VCN can be attached to only one DRG at a time, but a DRG can have\n multiple VCN attachments.",
+      "protoType": "org.openmcf.provider.oci.ocidynamicroutinggateway.v1.OciDynamicRoutingGatewaySpec.DrgAttachment",
+      "fields": [
+        {
+          "name": "DisplayName",
+          "jsonName": "displayName",
+          "protoField": "display_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this attachment within the DRG component.\n Used by other sub-resources (route rules, distribution statements)\n to reference this attachment by name.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "NetworkDetails",
+          "jsonName": "networkDetails",
+          "protoField": "network_details",
+          "type": {
+            "kind": "message",
+            "messageType": "NetworkDetails"
+          },
+          "description": "Details of the network being attached.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "DrgRouteTableName",
+          "jsonName": "drgRouteTableName",
+          "protoField": "drg_route_table_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of a DRG route table defined in this component's route_tables\n list. When set, the attachment uses this custom route table instead\n of the default route table for its network type.",
+          "required": false
+        },
+        {
+          "name": "ExportDrgRouteDistributionName",
+          "jsonName": "exportDrgRouteDistributionName",
+          "protoField": "export_drg_route_distribution_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of a route distribution defined in this component's\n route_distributions list. When set, the attachment uses this\n distribution for exporting routes instead of the DRG's default\n export distribution.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "DrgRouteDistribution",
+      "description": "DrgRouteDistribution defines a route distribution that controls which\n routes are advertised to route tables (import) or to attachments\n (export). Distributions contain prioritized statements that match\n against attachment criteria.",
+      "protoType": "org.openmcf.provider.oci.ocidynamicroutinggateway.v1.OciDynamicRoutingGatewaySpec.DrgRouteDistribution",
+      "fields": [
+        {
+          "name": "DisplayName",
+          "jsonName": "displayName",
+          "protoField": "display_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this distribution within the DRG component.\n Route tables and attachments reference distributions by this name.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DistributionType",
+          "jsonName": "distributionType",
+          "protoField": "distribution_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocidynamicroutinggateway.v1.DistributionType",
+            "enumValues": [
+              "import_routes",
+              "export_routes"
+            ]
+          },
+          "description": "Whether this distribution controls route import or export.",
+          "required": false
+        },
+        {
+          "name": "Statements",
+          "jsonName": "statements",
+          "protoField": "statements",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "DistributionStatement"
+            }
+          },
+          "description": "Prioritized statements that define which routes are accepted.\n Statements are evaluated in priority order (lowest number first);\n the first matching statement determines the action.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "DrgRouteTable",
+      "description": "DrgRouteTable defines a custom route table within the DRG. Route tables\n determine how traffic is forwarded between DRG attachments.",
+      "protoType": "org.openmcf.provider.oci.ocidynamicroutinggateway.v1.OciDynamicRoutingGatewaySpec.DrgRouteTable",
+      "fields": [
+        {
+          "name": "DisplayName",
+          "jsonName": "displayName",
+          "protoField": "display_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this route table within the DRG component.\n Attachments reference route tables by this name.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ImportDrgRouteDistributionName",
+          "jsonName": "importDrgRouteDistributionName",
+          "protoField": "import_drg_route_distribution_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of a route distribution defined in this component's\n route_distributions list. When set, routes from matching\n attachments are automatically imported into this route table.",
+          "required": false
+        },
+        {
+          "name": "IsEcmpEnabled",
+          "jsonName": "isEcmpEnabled",
+          "protoField": "is_ecmp_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, enables Equal-Cost Multi-Path (ECMP) routing across\n multiple IPSec tunnels or virtual circuits. Traffic is distributed\n across paths with equal-cost routes.",
+          "required": false
+        },
+        {
+          "name": "StaticRouteRules",
+          "jsonName": "staticRouteRules",
+          "protoField": "static_route_rules",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "StaticRouteRule"
+            }
+          },
+          "description": "Static route rules for this route table. Static routes take\n precedence over dynamically imported routes.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "MatchCriteria",
+      "description": "MatchCriteria defines how a distribution statement selects routes.",
+      "protoType": "org.openmcf.provider.oci.ocidynamicroutinggateway.v1.OciDynamicRoutingGatewaySpec.MatchCriteria",
+      "fields": [
+        {
+          "name": "MatchType",
+          "jsonName": "matchType",
+          "protoField": "match_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocidynamicroutinggateway.v1.MatchType",
+            "enumValues": [
+              "match_all",
+              "drg_attachment_type",
+              "drg_attachment_id"
+            ]
+          },
+          "description": "How to match routes for this statement.",
+          "required": false
+        },
+        {
+          "name": "AttachmentType",
+          "jsonName": "attachmentType",
+          "protoField": "attachment_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Network attachment type to match against. Required when match_type\n is drg_attachment_type. Accepted values: \"VCN\", \"IPSEC_TUNNEL\",\n \"VIRTUAL_CIRCUIT\", \"REMOTE_PEERING_CONNECTION\".",
+          "required": false
+        },
+        {
+          "name": "DrgAttachmentName",
+          "jsonName": "drgAttachmentName",
+          "protoField": "drg_attachment_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of a DRG attachment (defined in this component's attachments\n list) to match against. Required when match_type is\n drg_attachment_id.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "NetworkDetails",
+      "description": "NetworkDetails describes the network resource being attached to the DRG.",
+      "protoType": "org.openmcf.provider.oci.ocidynamicroutinggateway.v1.OciDynamicRoutingGatewaySpec.NetworkDetails",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocidynamicroutinggateway.v1.NetworkType",
+            "enumValues": [
+              "vcn",
+              "ipsec_tunnel",
+              "remote_peering_connection",
+              "virtual_circuit",
+              "loopback"
+            ]
+          },
+          "description": "Type of network resource being attached.",
+          "required": false
+        },
+        {
+          "name": "Id",
+          "jsonName": "id",
+          "protoField": "id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the network resource (VCN, IPSec connection, virtual circuit,\n or remote peering connection). For VCN attachments this is the VCN\n OCID; for IPSec it is the IPSec connection OCID, etc.\n\n Uses StringValueOrRef without a default_kind because the referenced\n resource type depends on the attachment type.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "RouteTableId",
+          "jsonName": "routeTableId",
+          "protoField": "route_table_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the VCN route table to use for ingress routing (transit\n routing). Only applicable for VCN attachments. When set, traffic\n entering the VCN through this DRG attachment is routed according\n to this VCN route table rather than the VCN's default route table.",
+          "required": false
+        },
+        {
+          "name": "VcnRouteType",
+          "jsonName": "vcnRouteType",
+          "protoField": "vcn_route_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocidynamicroutinggateway.v1.VcnRouteType",
+            "enumValues": [
+              "vcn_cidrs",
+              "subnet_cidrs"
+            ]
+          },
+          "description": "Controls whether VCN CIDRs or individual subnet CIDRs are imported\n into the DRG route table. Only applicable for VCN attachments.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "StaticRouteRule",
+      "description": "StaticRouteRule defines a static route in a DRG route table, directing\n traffic for a specific CIDR block to a DRG attachment.",
+      "protoType": "org.openmcf.provider.oci.ocidynamicroutinggateway.v1.OciDynamicRoutingGatewaySpec.StaticRouteRule",
+      "fields": [
+        {
+          "name": "Destination",
+          "jsonName": "destination",
+          "protoField": "destination",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Destination CIDR block (IPv4 or IPv6) for this route.\n Example: \"10.0.0.0/8\", \"192.168.1.0/24\".",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "NextHopAttachmentName",
+          "jsonName": "nextHopAttachmentName",
+          "protoField": "next_hop_attachment_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the DRG attachment (defined in this component's attachments\n list) that serves as the next hop for traffic matching this route.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

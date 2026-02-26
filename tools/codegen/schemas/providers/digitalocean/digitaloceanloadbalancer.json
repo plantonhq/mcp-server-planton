@@ -1,0 +1,287 @@
+{
+  "name": "DigitalOceanLoadBalancer",
+  "kind": "DigitalOceanLoadBalancer",
+  "cloudProvider": "digitalocean",
+  "apiVersion": "digital-ocean.openmcf.org/v1",
+  "description": "digital-ocean-load-balancer",
+  "protoPackage": "org.openmcf.provider.digitalocean.digitaloceanloadbalancer.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/digitalocean/digitaloceanloadbalancer/v1/api.proto",
+    "spec": "org/openmcf/provider/digitalocean/digitaloceanloadbalancer/v1/spec.proto"
+  },
+  "spec": {
+    "name": "DigitalOceanLoadBalancerSpec",
+    "fields": [
+      {
+        "name": "LoadBalancerName",
+        "jsonName": "loadBalancerName",
+        "protoField": "load_balancer_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Load Balancer. Must be unique per account.\n Constraints: 1-64 characters, lowercase alphanumeric and hyphens.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9-]+$"
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.DigitalOceanRegion",
+          "enumValues": [
+            "nyc3",
+            "sfo3",
+            "fra1",
+            "sgp1",
+            "lon1",
+            "tor1",
+            "blr1",
+            "ams3"
+          ]
+        },
+        "description": "The DigitalOcean region where the Load Balancer will be created.\n Determines the geographical location of the load balancer.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Vpc",
+        "jsonName": "vpc",
+        "protoField": "vpc",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to the DigitalOcean VPC in which to create the Load Balancer.\n This should be a foreign key reference to an existing DigitalOceanVpc resource.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "DigitalOceanVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "ForwardingRules",
+        "jsonName": "forwardingRules",
+        "protoField": "forwarding_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "DigitalOceanLoadBalancerForwardingRule"
+          }
+        },
+        "description": "A list of forwarding rules that define how traffic is routed from the load balancer to backend Droplets.\n Each forwarding rule specifies an incoming port/protocol and a corresponding target port/protocol.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 1
+        }
+      },
+      {
+        "name": "HealthCheck",
+        "jsonName": "healthCheck",
+        "protoField": "health_check",
+        "type": {
+          "kind": "message",
+          "messageType": "DigitalOceanLoadBalancerHealthCheck"
+        },
+        "description": "Health check configuration for the load balancer’s backend Droplets.\n This defines how the load balancer will probe the Droplets to check their health.",
+        "required": false
+      },
+      {
+        "name": "DropletIds",
+        "jsonName": "dropletIds",
+        "protoField": "droplet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "A list of specific Droplet IDs to attach to the Load Balancer.\n Mutually exclusive with `droplet_tag`. These can be literal IDs or references to Droplet resources.",
+        "required": false,
+        "referenceKind": "DigitalOceanDroplet",
+        "referenceFieldPath": "status.outputs.droplet_id"
+      },
+      {
+        "name": "DropletTag",
+        "jsonName": "dropletTag",
+        "protoField": "droplet_tag",
+        "type": {
+          "kind": "string"
+        },
+        "description": "A Droplet tag name. All Droplets with this tag in the specified VPC will be attached to the Load Balancer.\n Mutually exclusive with `droplet_ids`.",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "maxLength": 255
+        }
+      },
+      {
+        "name": "EnableStickySessions",
+        "jsonName": "enableStickySessions",
+        "protoField": "enable_sticky_sessions",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enables sticky sessions if true (disabled by default).\n When enabled, the load balancer will attempt to direct repeated requests from the same client to the same Droplet.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "DigitalOceanLoadBalancerForwardingRule",
+      "description": "ForwardingRule represents a single rule for routing traffic from the load balancer to the backend.",
+      "protoType": "org.openmcf.provider.digitalocean.digitaloceanloadbalancer.v1.DigitalOceanLoadBalancerForwardingRule",
+      "fields": [
+        {
+          "name": "EntryPort",
+          "jsonName": "entryPort",
+          "protoField": "entry_port",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "Port on the load balancer that will listen for incoming traffic.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "EntryProtocol",
+          "jsonName": "entryProtocol",
+          "protoField": "entry_protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.digitalocean.digitaloceanloadbalancer.v1.DigitalOceanLoadBalancerProtocol",
+            "enumValues": [
+              "http",
+              "https",
+              "tcp"
+            ]
+          },
+          "description": "Protocol for incoming traffic on the load balancer's entry port (e.g., HTTP, HTTPS, TCP).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "TargetPort",
+          "jsonName": "targetPort",
+          "protoField": "target_port",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "Port on the Droplet that will receive forwarded traffic.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "TargetProtocol",
+          "jsonName": "targetProtocol",
+          "protoField": "target_protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.digitalocean.digitaloceanloadbalancer.v1.DigitalOceanLoadBalancerProtocol",
+            "enumValues": [
+              "http",
+              "https",
+              "tcp"
+            ]
+          },
+          "description": "Protocol for traffic between the load balancer and the Droplet (e.g., HTTP, HTTPS, TCP).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "CertificateName",
+          "jsonName": "certificateName",
+          "protoField": "certificate_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of a TLS certificate resource uploaded to DigitalOcean.\n Required when entry_protocol is HTTPS. The certificate is used for SSL termination.\n Use certificate name (not ID) to avoid breaking IaC state when Let's Encrypt auto-renews certificates.",
+          "required": false,
+          "validation": {
+            "minLength": 1,
+            "maxLength": 255
+          }
+        }
+      ]
+    },
+    {
+      "name": "DigitalOceanLoadBalancerHealthCheck",
+      "description": "HealthCheck defines how the load balancer checks the health of attached Droplets.",
+      "protoType": "org.openmcf.provider.digitalocean.digitaloceanloadbalancer.v1.DigitalOceanLoadBalancerHealthCheck",
+      "fields": [
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "The port on the Droplet to which the health check will be performed.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.digitalocean.digitaloceanloadbalancer.v1.DigitalOceanLoadBalancerProtocol",
+            "enumValues": [
+              "http",
+              "https",
+              "tcp"
+            ]
+          },
+          "description": "Protocol to use for health checking (HTTP, HTTPS, or TCP).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "If using HTTP/HTTPS for health checks, the request path to probe (e.g., \"/health\").\n Ignored for TCP health checks.",
+          "required": false
+        },
+        {
+          "name": "CheckIntervalSec",
+          "jsonName": "checkIntervalSec",
+          "protoField": "check_interval_sec",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "Interval (in seconds) between health check probes.",
+          "required": false,
+          "recommendedDefault": "10"
+        }
+      ]
+    }
+  ]
+}

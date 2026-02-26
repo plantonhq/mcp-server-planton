@@ -1,0 +1,284 @@
+{
+  "name": "AwsLambda",
+  "kind": "AwsLambda",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsLambda is the API envelope for an AWS Lambda function resource.",
+  "protoPackage": "org.openmcf.provider.aws.awslambda.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awslambda/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awslambda/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsLambdaSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "FunctionName",
+        "jsonName": "functionName",
+        "protoField": "function_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable function name shown in the AWS Console and APIs.\n Must be unique per account/region. If omitted, the platform may derive a\n stable name from the resource metadata (e.g., org, environment, resource name).\n Allowed characters and length are enforced by AWS; keep it concise and DNS-like.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Free-form description visible in the AWS Console to document the purpose\n and behavior of the function. Useful for operational context and search.",
+        "required": false
+      },
+      {
+        "name": "RoleArn",
+        "jsonName": "roleArn",
+        "protoField": "role_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Execution role for the function. Accepts a direct role ARN (value) or a reference\n to another resource that surfaces a role ARN in its outputs (e.g., AwsIamRole).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsIamRole",
+        "referenceFieldPath": "status.outputs.role_arn"
+      },
+      {
+        "name": "Runtime",
+        "jsonName": "runtime",
+        "protoField": "runtime",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Language/runtime for zip/S3 deployments. Ignored for container image code.\n Examples: \"nodejs18.x\", \"python3.11\", \"java21\", \"go1.x\", \"dotnet8\", \"ruby3.3\", \"provided.al2\".\n Use \"provided.al2\" for custom runtimes or native binaries packaged in the zip.",
+        "required": false
+      },
+      {
+        "name": "Handler",
+        "jsonName": "handler",
+        "protoField": "handler",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Entrypoint for zip/S3 deployments. Format is language-specific, e.g.:\n - Node.js:    \"index.handler\"\n - Python:     \"module.function\"\n - Java:       \"package.Class::method\"\n - .NET:       \"Assembly::Namespace.Class::Method\"\n - Go/custom:  usually \"bootstrap\" when using a custom runtime\n Ignored for container image code where the image CMD/ENTRYPOINT defines it.",
+        "required": false
+      },
+      {
+        "name": "MemoryMb",
+        "jsonName": "memoryMb",
+        "protoField": "memory_mb",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Memory allocation in megabytes. CPU, network, and some I/O scale with this\n value. Choose the smallest value that meets performance goals to control cost.\n Typical AWS-supported range is 128–10240 MB.",
+        "required": false
+      },
+      {
+        "name": "TimeoutSeconds",
+        "jsonName": "timeoutSeconds",
+        "protoField": "timeout_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum execution time per invocation in seconds. Set slightly higher than\n the worst-case expected runtime. Typical AWS-supported range is 1–900 seconds.",
+        "required": false
+      },
+      {
+        "name": "ReservedConcurrency",
+        "jsonName": "reservedConcurrency",
+        "protoField": "reserved_concurrency",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Hard limit on concurrent executions for this function. Behavior:\n - Omit or set to -1 to use the unreserved account pool (no dedicated cap).\n - Set to 0 to effectively disable invocations (useful for maintenance).\n - Set to a positive integer to reserve that many concurrent executions.",
+        "required": false
+      },
+      {
+        "name": "Environment",
+        "jsonName": "environment",
+        "protoField": "environment",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Key/value environment variables available to the function at runtime.\n Avoid embedding sensitive values directly; prefer external secret sources.\n When `kms_key_arn` is set, AWS encrypts these at rest using the specified key.",
+        "required": false
+      },
+      {
+        "name": "Subnets",
+        "jsonName": "subnets",
+        "protoField": "subnets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Subnets in which the Lambda function will create network interfaces.\n Typically private subnets. Provide at least two across different AZs for HA.\n Accepts either literal subnet IDs (value) or references to other resources\n that expose subnet IDs via their status/outputs.",
+        "required": false,
+        "referenceKind": "AwsVpc"
+      },
+      {
+        "name": "SecurityGroups",
+        "jsonName": "securityGroups",
+        "protoField": "security_groups",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Security groups attached to the Lambda ENIs. Ensure outbound rules allow\n access to required services (e.g., databases, AWS endpoints, the Internet\n via NAT if needed). Accepts either literal security group IDs (value) or\n references to a resource that provides a security group ID output.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "Architecture",
+        "jsonName": "architecture",
+        "protoField": "architecture",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.aws.awslambda.v1.Architecture",
+          "enumValues": [
+            "X86_64",
+            "ARM64"
+          ]
+        },
+        "description": "Processor architecture of the execution environment. Use ARM64 for better\n price/performance when your language/runtime supports it; use X86_64 for\n legacy dependencies or runtimes not available on ARM64.",
+        "required": false
+      },
+      {
+        "name": "LayerArns",
+        "jsonName": "layerArns",
+        "protoField": "layer_arns",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Layer ARNs to include. Accepts direct ARNs (value) or references to resources\n that provide layer ARNs as outputs. Up to five layers may be attached; order matters.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyArn",
+        "jsonName": "kmsKeyArn",
+        "protoField": "kms_key_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed KMS key used to encrypt environment variables at rest.\n Accepts a direct key ARN (value) or a reference to a KMS key resource output.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "CodeSourceType",
+        "jsonName": "codeSourceType",
+        "protoField": "code_source_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.aws.awslambda.v1.CodeSourceType",
+          "enumValues": [
+            "CODE_SOURCE_TYPE_S3",
+            "CODE_SOURCE_TYPE_IMAGE"
+          ]
+        },
+        "description": "Source of the function code. Select the type and populate the corresponding\n fields below. Validation is applied downstream to ensure consistency.",
+        "required": false
+      },
+      {
+        "name": "S3",
+        "jsonName": "s3",
+        "protoField": "s3",
+        "type": {
+          "kind": "message",
+          "messageType": "S3Code"
+        },
+        "description": "S3 location of the deployment package (zip archive) for zip-based code.\n The archive should contain your compiled artifacts and the handler.\n Prefer a bucket in the same region as the function to avoid cross-region copies.",
+        "required": false
+      },
+      {
+        "name": "ImageUri",
+        "jsonName": "imageUri",
+        "protoField": "image_uri",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to an image stored in ECR for container-based code. The image\n defines the runtime and handler via its entrypoint/CMD. Example:\n \"123456789012.dkr.ecr.us-east-1.amazonaws.com/repo:tag\".",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "S3Code",
+      "description": "S3Code describes the S3 location for a zip-based deployment package.\n Use this when publishing code as an archive rather than a container image.",
+      "protoType": "org.openmcf.provider.aws.awslambda.v1.S3Code",
+      "fields": [
+        {
+          "name": "Bucket",
+          "jsonName": "bucket",
+          "protoField": "bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 bucket name that contains the deployment package. Prefer a bucket in\n the same AWS region as the Lambda function for faster, cheaper deployments.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 object key (path) to the deployment package zip.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ObjectVersion",
+          "jsonName": "objectVersion",
+          "protoField": "object_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional object version to pin a specific artifact when versioning is enabled.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

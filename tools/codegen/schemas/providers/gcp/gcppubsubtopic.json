@@ -1,0 +1,626 @@
+{
+  "name": "GcpPubSubTopic",
+  "kind": "GcpPubSubTopic",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-pubsub-topic",
+  "protoPackage": "org.openmcf.provider.gcp.gcppubsubtopic.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcppubsubtopic/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcppubsubtopic/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpPubSubTopicSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the topic will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "TopicName",
+        "jsonName": "topicName",
+        "protoField": "topic_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Pub/Sub topic.\n Must be 3-255 characters, start with a letter, and contain only letters,\n numbers, hyphens, underscores, periods, tildes, plus signs, and percent signs.\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 3,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_\\.~+%]*$"
+        }
+      },
+      {
+        "name": "KmsKeyName",
+        "jsonName": "kmsKeyName",
+        "protoField": "kms_key_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cloud KMS key for encrypting messages at rest (CMEK).\n Format: projects/{project}/locations/{location}/keyRings/{keyRing}/cryptoKeys/{key}\n The Pub/Sub service account must have roles/cloudkms.cryptoKeyEncrypterDecrypter\n on this key. If not set, messages are encrypted with Google-managed keys.",
+        "required": false,
+        "referenceKind": "GcpKmsKey",
+        "referenceFieldPath": "status.outputs.key_id"
+      },
+      {
+        "name": "MessageRetentionDuration",
+        "jsonName": "messageRetentionDuration",
+        "protoField": "message_retention_duration",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Minimum duration to retain a message after it is published to the topic.\n When set, messages published in the last message_retention_duration are always\n available to subscribers, and any attached subscription can seek to a timestamp\n within the retention window.\n Format: duration string (e.g., \"604800s\" for 7 days).\n Range: 600s (10 minutes) to 2678400s (31 days).\n If not set, message retention is controlled by individual subscriptions.",
+        "required": false
+      },
+      {
+        "name": "MessageStoragePolicy",
+        "jsonName": "messageStoragePolicy",
+        "protoField": "message_storage_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpPubSubTopicMessageStoragePolicy"
+        },
+        "description": "Policy constraining the set of GCP regions where messages may be stored.\n When not set, no regional constraints are applied.",
+        "required": false
+      },
+      {
+        "name": "SchemaSettings",
+        "jsonName": "schemaSettings",
+        "protoField": "schema_settings",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpPubSubTopicSchemaSettings"
+        },
+        "description": "Schema validation settings for messages published to the topic.\n When set, all published messages are validated against the specified schema.",
+        "required": false
+      },
+      {
+        "name": "IngestionDataSourceSettings",
+        "jsonName": "ingestionDataSourceSettings",
+        "protoField": "ingestion_data_source_settings",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpPubSubTopicIngestionDataSourceSettings"
+        },
+        "description": "Settings for ingesting data from external sources into this topic.\n Supports AWS Kinesis, AWS MSK, Azure Event Hubs, Cloud Storage, and\n Confluent Cloud. Typically one data source is configured per topic.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpPubSubTopicIngestionAwsKinesis",
+      "description": "GcpPubSubTopicIngestionAwsKinesis defines settings for ingesting data from\n Amazon Kinesis Data Streams into this Pub/Sub topic.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubtopic.v1.GcpPubSubTopicIngestionAwsKinesis",
+      "fields": [
+        {
+          "name": "StreamArn",
+          "jsonName": "streamArn",
+          "protoField": "stream_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The ARN of the Kinesis data stream to ingest from.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ConsumerArn",
+          "jsonName": "consumerArn",
+          "protoField": "consumer_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The ARN of the Kinesis consumer to use for Enhanced Fan-Out delivery.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AwsRoleArn",
+          "jsonName": "awsRoleArn",
+          "protoField": "aws_role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The ARN of the AWS IAM role used for cross-account access to the Kinesis stream.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "GcpServiceAccount",
+          "jsonName": "gcpServiceAccount",
+          "protoField": "gcp_service_account",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The GCP service account used for Federated Identity authentication with AWS.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubTopicIngestionAwsMsk",
+      "description": "GcpPubSubTopicIngestionAwsMsk defines settings for ingesting data from\n Amazon Managed Streaming for Apache Kafka (MSK) into this Pub/Sub topic.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubtopic.v1.GcpPubSubTopicIngestionAwsMsk",
+      "fields": [
+        {
+          "name": "ClusterArn",
+          "jsonName": "clusterArn",
+          "protoField": "cluster_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The ARN of the MSK cluster to ingest from.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Topic",
+          "jsonName": "topic",
+          "protoField": "topic",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the Kafka topic in MSK to ingest from.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AwsRoleArn",
+          "jsonName": "awsRoleArn",
+          "protoField": "aws_role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The ARN of the AWS IAM role used for cross-account access to the MSK cluster.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "GcpServiceAccount",
+          "jsonName": "gcpServiceAccount",
+          "protoField": "gcp_service_account",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The GCP service account used for Federated Identity authentication with AWS.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubTopicIngestionAzureEventHubs",
+      "description": "GcpPubSubTopicIngestionAzureEventHubs defines settings for ingesting data from\n Azure Event Hubs into this Pub/Sub topic.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubtopic.v1.GcpPubSubTopicIngestionAzureEventHubs",
+      "fields": [
+        {
+          "name": "ResourceGroup",
+          "jsonName": "resourceGroup",
+          "protoField": "resource_group",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure resource group containing the Event Hubs namespace.",
+          "required": false
+        },
+        {
+          "name": "Namespace",
+          "jsonName": "namespace",
+          "protoField": "namespace",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure Event Hubs namespace.",
+          "required": false
+        },
+        {
+          "name": "EventHub",
+          "jsonName": "eventHub",
+          "protoField": "event_hub",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the Event Hub to ingest from.",
+          "required": false
+        },
+        {
+          "name": "ClientId",
+          "jsonName": "clientId",
+          "protoField": "client_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure AD application client ID for authentication.",
+          "required": false
+        },
+        {
+          "name": "TenantId",
+          "jsonName": "tenantId",
+          "protoField": "tenant_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure AD tenant ID.",
+          "required": false
+        },
+        {
+          "name": "SubscriptionId",
+          "jsonName": "subscriptionId",
+          "protoField": "subscription_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure subscription ID.",
+          "required": false
+        },
+        {
+          "name": "GcpServiceAccount",
+          "jsonName": "gcpServiceAccount",
+          "protoField": "gcp_service_account",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The GCP service account used for Federated Identity authentication with Azure.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubTopicIngestionCloudStorage",
+      "description": "GcpPubSubTopicIngestionCloudStorage defines settings for ingesting data from\n a Google Cloud Storage bucket into this Pub/Sub topic.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubtopic.v1.GcpPubSubTopicIngestionCloudStorage",
+      "fields": [
+        {
+          "name": "Bucket",
+          "jsonName": "bucket",
+          "protoField": "bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the Cloud Storage bucket to ingest from (without \"gs://\" prefix).\n See: https://cloud.google.com/storage/docs/buckets#naming",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "GcpGcsBucket",
+          "referenceFieldPath": "status.outputs.bucket_id"
+        },
+        {
+          "name": "MatchGlob",
+          "jsonName": "matchGlob",
+          "protoField": "match_glob",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Glob pattern used to match objects that will be ingested.\n If unset, all objects in the bucket will be ingested.",
+          "required": false
+        },
+        {
+          "name": "MinimumObjectCreateTime",
+          "jsonName": "minimumObjectCreateTime",
+          "protoField": "minimum_object_create_time",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Only ingest objects with a creation timestamp equal to or later than this value.\n Format: RFC 3339 (e.g., \"2024-01-01T00:00:00Z\").\n If unset, all objects are eligible for ingestion regardless of creation time.",
+          "required": false
+        },
+        {
+          "name": "AvroFormat",
+          "jsonName": "avroFormat",
+          "protoField": "avro_format",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpPubSubTopicIngestionCloudStorageAvroFormat"
+          },
+          "description": "Read Cloud Storage data in Avro binary format. The bytes of each object\n are set to the data field of a Pub/Sub message.\n Set this field (as an empty message) to select Avro format.",
+          "required": false
+        },
+        {
+          "name": "PubsubAvroFormat",
+          "jsonName": "pubsubAvroFormat",
+          "protoField": "pubsub_avro_format",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpPubSubTopicIngestionCloudStoragePubsubAvroFormat"
+          },
+          "description": "Read Cloud Storage data written via Cloud Storage subscriptions.\n Restores the data and attributes of the originally exported Pub/Sub messages.\n Set this field (as an empty message) to select Pub/Sub Avro format.",
+          "required": false
+        },
+        {
+          "name": "TextFormat",
+          "jsonName": "textFormat",
+          "protoField": "text_format",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpPubSubTopicIngestionCloudStorageTextFormat"
+          },
+          "description": "Read Cloud Storage data in text format. Each line of text (as defined by\n the delimiter) becomes the data field of a Pub/Sub message.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubTopicIngestionCloudStorageAvroFormat",
+      "description": "GcpPubSubTopicIngestionCloudStorageAvroFormat selects Avro binary format\n for Cloud Storage ingestion. The bytes of each object are set to the\n data field of a Pub/Sub message. No additional configuration is needed.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubtopic.v1.GcpPubSubTopicIngestionCloudStorageAvroFormat",
+      "fields": null
+    },
+    {
+      "name": "GcpPubSubTopicIngestionCloudStoragePubsubAvroFormat",
+      "description": "GcpPubSubTopicIngestionCloudStoragePubsubAvroFormat selects the Pub/Sub Avro\n format for Cloud Storage ingestion. This format restores the data and attributes\n fields of originally exported Pub/Sub messages.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubtopic.v1.GcpPubSubTopicIngestionCloudStoragePubsubAvroFormat",
+      "fields": null
+    },
+    {
+      "name": "GcpPubSubTopicIngestionCloudStorageTextFormat",
+      "description": "GcpPubSubTopicIngestionCloudStorageTextFormat defines the text format\n configuration for Cloud Storage ingestion. Each line of text (delimited\n by the specified delimiter) becomes the data field of a Pub/Sub message.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubtopic.v1.GcpPubSubTopicIngestionCloudStorageTextFormat",
+      "fields": [
+        {
+          "name": "Delimiter",
+          "jsonName": "delimiter",
+          "protoField": "delimiter",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The line delimiter. Defaults to newline (\"\\n\") when not set.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubTopicIngestionConfluentCloud",
+      "description": "GcpPubSubTopicIngestionConfluentCloud defines settings for ingesting data from\n Confluent Cloud into this Pub/Sub topic.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubtopic.v1.GcpPubSubTopicIngestionConfluentCloud",
+      "fields": [
+        {
+          "name": "BootstrapServer",
+          "jsonName": "bootstrapServer",
+          "protoField": "bootstrap_server",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Confluent Cloud bootstrap server address. Format: host:port.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Topic",
+          "jsonName": "topic",
+          "protoField": "topic",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the Confluent Cloud topic to ingest from.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "IdentityPoolId",
+          "jsonName": "identityPoolId",
+          "protoField": "identity_pool_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Workload Identity Pool ID used for Federated Identity authentication\n with Confluent Cloud.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "GcpServiceAccount",
+          "jsonName": "gcpServiceAccount",
+          "protoField": "gcp_service_account",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The GCP service account used for Federated Identity authentication\n with Confluent Cloud.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ClusterId",
+          "jsonName": "clusterId",
+          "protoField": "cluster_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Confluent Cloud cluster ID. Optional.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubTopicIngestionDataSourceSettings",
+      "description": "GcpPubSubTopicIngestionDataSourceSettings configures data ingestion from\n external sources into this Pub/Sub topic. Typically one data source is\n configured per topic.\n\n Supported sources:\n   - AWS Kinesis Data Streams\n   - AWS Managed Streaming for Apache Kafka (MSK)\n   - Azure Event Hubs\n   - Google Cloud Storage\n   - Confluent Cloud",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubtopic.v1.GcpPubSubTopicIngestionDataSourceSettings",
+      "fields": [
+        {
+          "name": "AwsKinesis",
+          "jsonName": "awsKinesis",
+          "protoField": "aws_kinesis",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpPubSubTopicIngestionAwsKinesis"
+          },
+          "description": "Ingest from Amazon Kinesis Data Streams.",
+          "required": false
+        },
+        {
+          "name": "AwsMsk",
+          "jsonName": "awsMsk",
+          "protoField": "aws_msk",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpPubSubTopicIngestionAwsMsk"
+          },
+          "description": "Ingest from Amazon Managed Streaming for Apache Kafka (MSK).",
+          "required": false
+        },
+        {
+          "name": "AzureEventHubs",
+          "jsonName": "azureEventHubs",
+          "protoField": "azure_event_hubs",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpPubSubTopicIngestionAzureEventHubs"
+          },
+          "description": "Ingest from Azure Event Hubs.",
+          "required": false
+        },
+        {
+          "name": "CloudStorage",
+          "jsonName": "cloudStorage",
+          "protoField": "cloud_storage",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpPubSubTopicIngestionCloudStorage"
+          },
+          "description": "Ingest from Google Cloud Storage.",
+          "required": false
+        },
+        {
+          "name": "ConfluentCloud",
+          "jsonName": "confluentCloud",
+          "protoField": "confluent_cloud",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpPubSubTopicIngestionConfluentCloud"
+          },
+          "description": "Ingest from Confluent Cloud.",
+          "required": false
+        },
+        {
+          "name": "PlatformLogsSettings",
+          "jsonName": "platformLogsSettings",
+          "protoField": "platform_logs_settings",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpPubSubTopicIngestionPlatformLogsSettings"
+          },
+          "description": "Platform logging settings for the ingestion pipeline.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubTopicIngestionPlatformLogsSettings",
+      "description": "GcpPubSubTopicIngestionPlatformLogsSettings configures platform logging for\n the ingestion pipeline. Controls the minimum severity level of logs generated\n during data ingestion.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubtopic.v1.GcpPubSubTopicIngestionPlatformLogsSettings",
+      "fields": [
+        {
+          "name": "Severity",
+          "jsonName": "severity",
+          "protoField": "severity",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The minimum severity level of platform logs that will be written.\n Valid values: \"DISABLED\", \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\".\n If unset, no platform logs will be generated.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubTopicMessageStoragePolicy",
+      "description": "GcpPubSubTopicMessageStoragePolicy constrains the set of Google Cloud Platform\n regions where messages published to the topic may be persisted in storage.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubtopic.v1.GcpPubSubTopicMessageStoragePolicy",
+      "fields": [
+        {
+          "name": "AllowedPersistenceRegions",
+          "jsonName": "allowedPersistenceRegions",
+          "protoField": "allowed_persistence_regions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "A list of GCP region IDs where messages may be persisted in storage.\n Messages published by publishers running in non-allowed regions will be\n routed for storage in one of the allowed regions.\n Must contain at least one region when the policy is specified.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "EnforceInTransit",
+          "jsonName": "enforceInTransit",
+          "protoField": "enforce_in_transit",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, allowed_persistence_regions is also used to enforce in-transit\n guarantees for messages. Pub/Sub will fail publish operations on this topic\n and subscribe operations on any subscription attached to this topic in any\n region not listed in allowed_persistence_regions.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubTopicSchemaSettings",
+      "description": "GcpPubSubTopicSchemaSettings defines schema validation settings for messages\n published to the topic.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubtopic.v1.GcpPubSubTopicSchemaSettings",
+      "fields": [
+        {
+          "name": "Schema",
+          "jsonName": "schema",
+          "protoField": "schema",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The fully qualified name of the Pub/Sub schema that messages must conform to.\n Format: projects/{project}/schemas/{schema}",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Encoding",
+          "jsonName": "encoding",
+          "protoField": "encoding",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The encoding of messages validated against the schema.\n Valid values: \"JSON\" or \"BINARY\".",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

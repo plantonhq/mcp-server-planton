@@ -1,0 +1,243 @@
+{
+  "name": "HetznerCloudDnsZone",
+  "kind": "HetznerCloudDnsZone",
+  "cloudProvider": "hetznercloud",
+  "apiVersion": "hetzner-cloud.openmcf.org/v1",
+  "description": "hetznercloud-dns-zone",
+  "protoPackage": "org.openmcf.provider.hetznercloud.hetznerclouddnszone.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/hetznercloud/hetznerclouddnszone/v1/api.proto",
+    "spec": "org/openmcf/provider/hetznercloud/hetznerclouddnszone/v1/spec.proto"
+  },
+  "spec": {
+    "name": "HetznerCloudDnsZoneSpec",
+    "fields": [
+      {
+        "name": "DomainName",
+        "jsonName": "domainName",
+        "protoField": "domain_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The DNS domain name for the zone (e.g., \"example.com\").\n\n This is the actual domain, not the OpenMCF resource identifier\n (which is metadata.name). The zone's Hetzner Cloud \"name\" field\n is set to this value.\n\n Changing this value forces replacement of the zone.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Mode",
+        "jsonName": "mode",
+        "protoField": "mode",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.hetznercloud.hetznerclouddnszone.v1.Mode",
+          "enumValues": [
+            "primary",
+            "secondary"
+          ]
+        },
+        "description": "Zone mode. Determines whether Hetzner Cloud is the primary authority\n for this domain or synchronizes records from an external primary.\n\n Changing this value forces replacement of the zone.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Ttl",
+        "jsonName": "ttl",
+        "protoField": "ttl",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Default Time To Live (TTL) for records in the zone, in seconds.\n Individual record sets can override this with their own TTL.\n\n Default: 3600 (provider default when not specified).",
+        "required": false,
+        "default": "3600",
+        "oneofGroup": "_ttl"
+      },
+      {
+        "name": "PrimaryNameservers",
+        "jsonName": "primaryNameservers",
+        "protoField": "primary_nameservers",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "PrimaryNameserver"
+          }
+        },
+        "description": "Primary nameservers for zone transfer. Required when mode is\n secondary; forbidden when mode is primary.\n\n In secondary mode, Hetzner Cloud pulls DNS records from these\n nameservers via AXFR/IXFR. At least one primary nameserver must\n be specified.",
+        "required": false
+      },
+      {
+        "name": "RecordSets",
+        "jsonName": "recordSets",
+        "protoField": "record_sets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "RecordSet"
+          }
+        },
+        "description": "DNS record sets. Each entry manages all records for a unique\n (name, type) pair using hcloud_zone_rrset.\n\n Only valid when mode is primary. In secondary mode, records are\n pulled from the primary nameserver and cannot be managed here.",
+        "required": false
+      },
+      {
+        "name": "DeleteProtection",
+        "jsonName": "deleteProtection",
+        "protoField": "delete_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Prevent accidental deletion of the zone via the Hetzner Cloud API.\n When enabled, the zone cannot be deleted until protection is removed.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "PrimaryNameserver",
+      "description": "PrimaryNameserver configures an external primary nameserver for\n secondary zone mode. Hetzner Cloud connects to this server to\n perform zone transfers.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznerclouddnszone.v1.HetznerCloudDnsZoneSpec.PrimaryNameserver",
+      "fields": [
+        {
+          "name": "Address",
+          "jsonName": "address",
+          "protoField": "address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Public IPv4 or IPv6 address of the primary nameserver.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port of the primary nameserver.\n\n Default: 53",
+          "required": false,
+          "default": "53",
+          "oneofGroup": "_port"
+        },
+        {
+          "name": "TsigAlgorithm",
+          "jsonName": "tsigAlgorithm",
+          "protoField": "tsig_algorithm",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Transaction Signature (TSIG) algorithm for authenticating zone\n transfers. Common values: \"hmac-sha256\", \"hmac-sha512\".\n Leave empty if the primary does not require TSIG authentication.",
+          "required": false
+        },
+        {
+          "name": "TsigKey",
+          "jsonName": "tsigKey",
+          "protoField": "tsig_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Transaction Signature (TSIG) key for authenticating zone transfers.\n SENSITIVE: This is a shared secret between the primary and\n secondary nameservers.\n Leave empty if the primary does not require TSIG authentication.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "RecordSet",
+      "description": "RecordSet defines a group of DNS records sharing the same name and\n type. Each RecordSet maps to one hcloud_zone_rrset resource.\n\n The combination of (name, type) must be unique within the zone.\n Changing name or type forces replacement of the record set;\n updating record values or TTL is done in-place.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznerclouddnszone.v1.HetznerCloudDnsZoneSpec.RecordSet",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Record name relative to the zone.\n\n Use \"@\" for the zone apex (e.g., A record for \"example.com\"\n itself), or a subdomain label (e.g., \"www\", \"mail\", \"api\").\n Use \"*\" for wildcard records.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "DNS record type. Standard types: \"A\", \"AAAA\", \"CNAME\", \"MX\",\n \"TXT\", \"NS\", \"SRV\", \"CAA\", \"PTR\", \"TLSA\", \"DS\".",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Ttl",
+          "jsonName": "ttl",
+          "protoField": "ttl",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "TTL override for this record set, in seconds. When unset,\n inherits the zone's default TTL.",
+          "required": false,
+          "oneofGroup": "_ttl"
+        },
+        {
+          "name": "Records",
+          "jsonName": "records",
+          "protoField": "records",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "RecordValue"
+            }
+          },
+          "description": "Record values. At least one value is required per record set.\n\n For most record types a single value suffices (CNAME, PTR).\n Multiple values are used for round-robin A/AAAA records, multiple\n MX servers, multiple TXT entries (e.g., SPF + DKIM), etc.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "RecordValue",
+      "description": "RecordValue holds a single DNS record value within a record set.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznerclouddnszone.v1.HetznerCloudDnsZoneSpec.RecordValue",
+      "fields": [
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The record value. Format depends on the record type:\n   - A:     IPv4 address (e.g., \"93.184.216.34\")\n   - AAAA:  IPv6 address (e.g., \"2606:2800:220:1:248:1893:25c8:1946\")\n   - CNAME: Hostname with trailing dot (e.g., \"example.com.\")\n   - MX:    Priority and hostname (e.g., \"10 mail.example.com.\")\n   - TXT:   Quoted string (e.g., \"\\\"v=spf1 include:_spf.google.com ~all\\\"\")\n\n Accepts a literal value or a reference to another component's\n output via valueFrom for infra-chart composability. For example,\n an A record can reference a HetznerCloudServer's IPv4 address:\n\n   records:\n     - value:\n         valueFrom:\n           kind: HetznerCloudServer\n           name: web-1\n           fieldPath: status.outputs.ipv4_address",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Comment",
+          "jsonName": "comment",
+          "protoField": "comment",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional comment for this record.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

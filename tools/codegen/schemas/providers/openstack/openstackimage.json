@@ -1,0 +1,164 @@
+{
+  "name": "OpenStackImage",
+  "kind": "OpenStackImage",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackImage is a Kubernetes Resource Model (KRM) style resource\n for managing OpenStack Glance images.\n\n A Glance image is a virtual disk template used to boot compute instances\n or initialize bootable Cinder volumes.\n\n Common use cases:\n   - Upload custom VM images from URLs for developer environments\n   - Register organization-standard golden images with visibility controls\n   - Create bootable volume templates from cloud images",
+  "protoPackage": "org.openmcf.provider.openstack.openstackimage.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackimage/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackimage/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackImageSpec",
+    "fields": [
+      {
+        "name": "ContainerFormat",
+        "jsonName": "containerFormat",
+        "protoField": "container_format",
+        "type": {
+          "kind": "string"
+        },
+        "description": "container_format describes the container or envelope format of the image.\n Required. ForceNew: cannot be changed after creation.\n\n Common values:\n   \"bare\"   - no container (most common for cloud images)\n   \"ovf\"    - Open Virtualization Format\n   \"docker\" - Docker container image",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "enum": [
+            "bare",
+            "ovf",
+            "aki",
+            "ari",
+            "ami",
+            "ova",
+            "docker",
+            "compressed"
+          ]
+        }
+      },
+      {
+        "name": "DiskFormat",
+        "jsonName": "diskFormat",
+        "protoField": "disk_format",
+        "type": {
+          "kind": "string"
+        },
+        "description": "disk_format describes the format of the disk image data.\n Required. ForceNew: cannot be changed after creation.\n\n Common values:\n   \"qcow2\" - QEMU Copy On Write 2 (most common for KVM/libvirt)\n   \"raw\"   - unstructured disk image\n   \"vmdk\"  - VMware disk format\n   \"iso\"   - optical disc image",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "enum": [
+            "raw",
+            "vhd",
+            "vhdx",
+            "vmdk",
+            "vdi",
+            "iso",
+            "ploop",
+            "qcow2",
+            "aki",
+            "ari",
+            "ami"
+          ]
+        }
+      },
+      {
+        "name": "ImageSourceUrl",
+        "jsonName": "imageSourceUrl",
+        "protoField": "image_source_url",
+        "type": {
+          "kind": "string"
+        },
+        "description": "image_source_url is the HTTP or HTTPS URL from which Glance downloads the\n image data. This is the primary mechanism for uploading images in\n pipeline-based IaC workflows.\n ForceNew: the source cannot be changed after creation.\n\n Example: \"https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img\"\n\n If omitted, the image is created as a metadata entry only -- the actual\n image data must be uploaded separately (e.g., via glance CLI).",
+        "required": false
+      },
+      {
+        "name": "MinDiskGb",
+        "jsonName": "minDiskGb",
+        "protoField": "min_disk_gb",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "min_disk_gb is the minimum disk size in GB required to boot this image.\n Set this to prevent users from booting the image on a flavor with\n insufficient disk. Zero means no minimum.",
+        "required": false
+      },
+      {
+        "name": "MinRamMb",
+        "jsonName": "minRamMb",
+        "protoField": "min_ram_mb",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "min_ram_mb is the minimum RAM in MB required to boot this image.\n Set this to prevent users from booting the image on a flavor with\n insufficient memory. Zero means no minimum.",
+        "required": false
+      },
+      {
+        "name": "Protected",
+        "jsonName": "protected",
+        "protoField": "protected",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "protected prevents the image from being deleted.\n Set to true for production images that should not be accidentally removed.\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_protected"
+      },
+      {
+        "name": "Hidden",
+        "jsonName": "hidden",
+        "protoField": "hidden",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "hidden hides the image from default listing queries.\n Hidden images are still accessible by UUID but do not appear in\n `openstack image list` output.\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_hidden"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "tags is a set of tags to associate with the image.\n Tags are simple strings used for filtering images in Glance.\n Example: [\"ubuntu\", \"22.04\", \"cloud-init\"]",
+        "required": false
+      },
+      {
+        "name": "Visibility",
+        "jsonName": "visibility",
+        "protoField": "visibility",
+        "type": {
+          "kind": "string"
+        },
+        "description": "visibility controls who can see and use this image.\n Default: \"private\"\n\n Values:\n   \"private\"   - only the image owner (project) can see it\n   \"shared\"    - owner can share with specific projects via member API\n   \"community\" - visible to all projects but not in default listings\n   \"public\"    - visible and usable by all projects (requires admin)",
+        "required": false,
+        "validation": {
+          "enum": [
+            "",
+            "public",
+            "private",
+            "shared",
+            "community"
+          ]
+        },
+        "default": "private",
+        "oneofGroup": "_visibility"
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this image.\n If omitted, the region from the OpenStack provider config is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  }
+}

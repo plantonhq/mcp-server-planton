@@ -1,0 +1,198 @@
+{
+  "name": "GcpGkeCluster",
+  "kind": "GcpGkeCluster",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-gke-cluster",
+  "protoPackage": "org.openmcf.provider.gcp.gcpgkecluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpgkecluster/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpgkecluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpGkeClusterSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project in which to create the cluster (reference to GcpProject resource).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "NetworkSelfLink",
+        "jsonName": "networkSelfLink",
+        "protoField": "network_self_link",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC Network to use for this cluster (must exist).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpVpc",
+        "referenceFieldPath": "status.outputs.self_link"
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Location for the cluster: region (for regional) or zone (for zonal).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z]+-[a-z]+[0-9](-[a-z])?$"
+        }
+      },
+      {
+        "name": "SubnetworkSelfLink",
+        "jsonName": "subnetworkSelfLink",
+        "protoField": "subnetwork_self_link",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC Subnetwork to attach this cluster (must exist; carries primary \u0026 secondary IP ranges).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpSubnetwork",
+        "referenceFieldPath": "status.outputs.self_link"
+      },
+      {
+        "name": "ClusterSecondaryRangeName",
+        "jsonName": "clusterSecondaryRangeName",
+        "protoField": "cluster_secondary_range_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the secondary range on the subnetwork for Pod IPs (VPC-native aliasing).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpSubnetwork",
+        "referenceFieldPath": "status.outputs.pods_secondary_range_name"
+      },
+      {
+        "name": "ServicesSecondaryRangeName",
+        "jsonName": "servicesSecondaryRangeName",
+        "protoField": "services_secondary_range_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the secondary range on the subnetwork for Service IPs.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpSubnetwork",
+        "referenceFieldPath": "status.outputs.services_secondary_range_name"
+      },
+      {
+        "name": "MasterIpv4CidrBlock",
+        "jsonName": "masterIpv4CidrBlock",
+        "protoField": "master_ipv4_cidr_block",
+        "type": {
+          "kind": "string"
+        },
+        "description": "RFC1918 /28 CIDR block for the Kubernetes control-plane masters (private endpoint range).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^\\d+\\.\\d+\\.\\d+\\.\\d+\\/28$"
+        }
+      },
+      {
+        "name": "EnablePublicNodes",
+        "jsonName": "enablePublicNodes",
+        "protoField": "enable_public_nodes",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether nodes should be created with public IPs",
+        "required": false
+      },
+      {
+        "name": "ReleaseChannel",
+        "jsonName": "releaseChannel",
+        "protoField": "release_channel",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.gcp.gcpgkecluster.v1.GkeReleaseChannel",
+          "enumValues": [
+            "RAPID",
+            "REGULAR",
+            "STABLE",
+            "NONE"
+          ]
+        },
+        "description": "Kubernetes release channel for auto-upgrades (Rapid, Regular, Stable, or NONE).",
+        "required": false,
+        "default": "REGULAR",
+        "oneofGroup": "_release_channel"
+      },
+      {
+        "name": "DisableNetworkPolicy",
+        "jsonName": "disableNetworkPolicy",
+        "protoField": "disable_network_policy",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Disable network policy enforcement (Calico)",
+        "required": false
+      },
+      {
+        "name": "DisableWorkloadIdentity",
+        "jsonName": "disableWorkloadIdentity",
+        "protoField": "disable_workload_identity",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Disable Workload Identity for pods (mapping KSA to GCP service accounts).",
+        "required": false
+      },
+      {
+        "name": "RouterNatName",
+        "jsonName": "routerNatName",
+        "protoField": "router_nat_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to a Cloud NAT configuration to allow outbound internet for private nodes.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpRouterNat",
+        "referenceFieldPath": "metadata.name"
+      },
+      {
+        "name": "ClusterName",
+        "jsonName": "clusterName",
+        "protoField": "cluster_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the GKE cluster to create in GCP.\n Must be 1-40 characters, lowercase letters, numbers, or hyphens.\n Must start with a lowercase letter and end with a lowercase letter or number.\n Example: \"my-gke-cluster\", \"prod-cluster\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z]([a-z0-9-]{0,38}[a-z0-9])?$"
+        }
+      }
+    ]
+  }
+}

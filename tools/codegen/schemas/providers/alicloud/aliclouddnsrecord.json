@@ -1,0 +1,138 @@
+{
+  "name": "AliCloudDnsRecord",
+  "kind": "AliCloudDnsRecord",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-dns-record",
+  "protoPackage": "org.openmcf.provider.alicloud.aliclouddnsrecord.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/aliclouddnsrecord/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/aliclouddnsrecord/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudDnsRecordSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region for provider initialization.\n Alidns is a global service, but the provider requires a region.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DomainName",
+        "jsonName": "domainName",
+        "protoField": "domain_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The parent domain name that this record belongs to.\n Must already exist in the Alidns service (e.g., \"example.com\").\n Cannot be changed after creation (ForceNew).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 253
+        }
+      },
+      {
+        "name": "Rr",
+        "jsonName": "rr",
+        "protoField": "rr",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The host record (subdomain part) of the DNS record.\n \"rr\" stands for \"Resource Record\" in the Alibaba Cloud API.\n Examples: \"www\", \"@\" (apex), \"*\" (wildcard), \"mail\", \"api.v2\".\n Maximum 253 characters; individual labels up to 63 characters.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 253
+        }
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "DNS record type.\n Must be one of the types supported by the Alibaba Cloud Alidns API.\n Note: \"FORWORD_URL\" is the Alibaba Cloud API's actual spelling.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Value",
+        "jsonName": "value",
+        "protoField": "value",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The record value.\n Interpretation depends on the record type:\n   A       -\u003e IPv4 address (e.g., \"1.2.3.4\")\n   AAAA    -\u003e IPv6 address (e.g., \"2001:db8::1\")\n   CNAME   -\u003e target domain (e.g., \"cdn.example.com\"), no trailing dot\n   MX      -\u003e mail server (e.g., \"mx1.example.com\"), no trailing dot\n   TXT     -\u003e text content (e.g., \"v=spf1 include:example.com ~all\")\n   NS      -\u003e nameserver (e.g., \"ns1.example.com\"), no trailing dot\n   SRV     -\u003e priority weight port target\n   CAA     -\u003e flags tag value (e.g., '0 issue \"letsencrypt.org\"')",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Ttl",
+        "jsonName": "ttl",
+        "protoField": "ttl",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Time-to-live in seconds. Controls how long resolvers cache this record.\n Range depends on the Alidns plan: Free [600-86400], Basic [120-86400],\n Standard [60-86400], Ultimate [10-86400], Exclusive [1-86400].\n Default: 600.",
+        "required": false
+      },
+      {
+        "name": "Priority",
+        "jsonName": "priority",
+        "protoField": "priority",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Priority for MX records. Required when type is \"MX\", ignored otherwise.\n Range: 1 (highest priority) to 10 (lowest priority).",
+        "required": false
+      },
+      {
+        "name": "Line",
+        "jsonName": "line",
+        "protoField": "line",
+        "type": {
+          "kind": "string"
+        },
+        "description": "DNS resolution line. Controls which ISP or geographic line resolves\n this record. Use \"default\" for standard resolution.\n Advanced values include ISP-specific lines (e.g., \"telecom\", \"unicom\",\n \"mobile\") and geographic lines for intelligent DNS routing.\n Must be \"default\" when type is \"FORWORD_URL\".\n Default: \"default\".",
+        "required": false
+      },
+      {
+        "name": "Status",
+        "jsonName": "status",
+        "protoField": "status",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Record status. \"ENABLE\" activates the record; \"DISABLE\" keeps it\n in Alidns but stops it from being served in DNS responses.\n Useful for temporarily disabling a record without deleting it.\n Default: \"ENABLE\".",
+        "required": false
+      },
+      {
+        "name": "Remark",
+        "jsonName": "remark",
+        "protoField": "remark",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Remark or description for the record.\n Visible in the Alidns console; useful for noting the record's purpose.",
+        "required": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,839 @@
+{
+  "name": "KubernetesPostgres",
+  "kind": "KubernetesPostgres",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "postgres-kubernetes",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetespostgres.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetespostgres/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetespostgres/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesPostgresSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "Target Kubernetes Cluster",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes Namespace",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "CreateNamespace",
+        "jsonName": "createNamespace",
+        "protoField": "create_namespace",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "flag to indicate if the namespace should be created",
+        "required": false
+      },
+      {
+        "name": "Container",
+        "jsonName": "container",
+        "protoField": "container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesPostgresContainer"
+        },
+        "description": "The container specifications for the PostgreSQL deployment.",
+        "required": false
+      },
+      {
+        "name": "Ingress",
+        "jsonName": "ingress",
+        "protoField": "ingress",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesPostgresIngress"
+        },
+        "description": "The ingress configuration for the PostgreSQL deployment.",
+        "required": false
+      },
+      {
+        "name": "BackupConfig",
+        "jsonName": "backupConfig",
+        "protoField": "backup_config",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesPostgresBackupConfig"
+        },
+        "description": "Optional: Per-database backup configuration\n When specified, these settings override the operator-level backup configuration\n If not specified, the database inherits operator-level backup settings",
+        "required": false
+      },
+      {
+        "name": "Databases",
+        "jsonName": "databases",
+        "protoField": "databases",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "KubernetesPostgresDatabase"
+          }
+        },
+        "description": "List of databases to create.\n The operator will create these databases during cluster initialization.\n If not specified, only the default \"postgres\" database will be available.\n Note: Owner roles must be declared in the 'users' field before being referenced here.\n Example:\n   databases:\n     - name: app_database\n       owner_role: app_user\n     - name: analytics_db\n       owner_role: analytics_role",
+        "required": false
+      },
+      {
+        "name": "Users",
+        "jsonName": "users",
+        "protoField": "users",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "KubernetesPostgresUser"
+          }
+        },
+        "description": "List of PostgreSQL users/roles to create.\n Users must be declared here before being used as database owners in the 'databases' field.\n The operator creates these users during cluster initialization.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ContainerResources",
+      "description": "**ContainerResources** specifies the CPU and memory resources for a container.\n It allows you to define resource limits and requests to manage resource allocation and ensure optimal performance.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerResources",
+      "fields": [
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource limits for the container.\n Specify the maximum amount of CPU and memory that the container can use.",
+          "required": false
+        },
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource requests for the container.\n Specify the minimum amount of CPU and memory that the container is guaranteed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CpuMemory",
+      "description": "**CpuMemory** defines CPU and memory resource quantities for a container.\n It is used to specify the limits and requests for CPU and memory resources.",
+      "protoType": "org.openmcf.provider.kubernetes.CpuMemory",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesPostgresBackupConfig",
+      "description": "Manager-agnostic backup configuration for a PostgreSQL database.\n This configuration allows per-database backup overrides independent of the operator implementation.\n When specified, these settings override operator-level backup configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetespostgres.v1.KubernetesPostgresBackupConfig",
+      "fields": [
+        {
+          "name": "S3Prefix",
+          "jsonName": "s3Prefix",
+          "protoField": "s3_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional: Custom S3/R2 prefix path for this database's backups\n If not specified, uses operator-level default or standard naming\n Example: \"backups/my-app/production/postgres/$(PGVERSION)\"\n Note: $(PGVERSION) will be replaced by the Postgres version",
+          "required": false
+        },
+        {
+          "name": "BackupSchedule",
+          "jsonName": "backupSchedule",
+          "protoField": "backup_schedule",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional: Custom backup schedule in cron format\n If not specified, uses operator-level schedule\n Example: \"0 3 * * *\" for 3 AM daily backups",
+          "required": false
+        },
+        {
+          "name": "EnableBackup",
+          "jsonName": "enableBackup",
+          "protoField": "enable_backup",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Optional: Enable or disable backups for this specific database\n If true, backups are explicitly enabled (overrides operator setting)\n If false, backups are explicitly disabled for this database\n If not specified, uses operator-level setting",
+          "required": false,
+          "oneofGroup": "_enable_backup"
+        },
+        {
+          "name": "Restore",
+          "jsonName": "restore",
+          "protoField": "restore",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesPostgresRestoreConfig"
+          },
+          "description": "Disaster recovery restore configuration\n When set, enables cross-cluster database restoration from backup files",
+          "required": false,
+          "oneofGroup": "_restore"
+        }
+      ]
+    },
+    {
+      "name": "KubernetesPostgresContainer",
+      "description": "*\n **KubernetesPostgresContainer** specifies the container configuration for the PostgreSQL application.\n It includes resource allocations for CPU and memory, the number of replicas, and disk size for data persistence.\n Proper configuration ensures optimal performance and data reliability for your PostgreSQL deployment.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetespostgres.v1.KubernetesPostgresContainer",
+      "fields": [
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of replicas of PostgreSQL pods.",
+          "required": false
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "The CPU and memory resources allocated to the PostgreSQL container.",
+          "required": false
+        },
+        {
+          "name": "DiskSize",
+          "jsonName": "diskSize",
+          "protoField": "disk_size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The storage size to allocate for each PostgreSQL instance (e.g., \"1Gi\").\n A default value is set if the client does not provide a value.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesPostgresDatabase",
+      "description": "PostgreSQL database definition",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetespostgres.v1.KubernetesPostgresDatabase",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Database name (e.g., \"app_database\", \"analytics_db\")\n The operator will create this database during cluster initialization.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "OwnerRole",
+          "jsonName": "ownerRole",
+          "protoField": "owner_role",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Owner role name (e.g., \"app_user\", \"analytics_role\")\n This role must be declared in the 'users' field before being referenced here.\n If not specified, the database will be owned by the default postgres user.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesPostgresIngress",
+      "description": "*\n **KubernetesPostgresIngress** defines the ingress configuration for PostgreSQL.\n It allows enabling external access via LoadBalancer with hostname-based routing.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetespostgres.v1.KubernetesPostgresIngress",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Flag to enable or disable ingress.\n When enabled, creates a LoadBalancer service with external-dns annotations.",
+          "required": false
+        },
+        {
+          "name": "Hostname",
+          "jsonName": "hostname",
+          "protoField": "hostname",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The full hostname for external access (e.g., \"postgres.example.com\").\n This hostname will be configured automatically via external-dns.\n Required when enabled is true.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesPostgresR2Config",
+      "description": "R2/S3-compatible storage credentials for restore operations",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetespostgres.v1.KubernetesPostgresR2Config",
+      "fields": [
+        {
+          "name": "CloudflareAccountId",
+          "jsonName": "cloudflareAccountId",
+          "protoField": "cloudflare_account_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Cloudflare account ID for R2 endpoint construction\n Used to build: https://\u003caccount_id\u003e.r2.cloudflarestorage.com",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AccessKeyId",
+          "jsonName": "accessKeyId",
+          "protoField": "access_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "R2 Access Key ID",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "SecretAccessKey",
+          "jsonName": "secretAccessKey",
+          "protoField": "secret_access_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "R2 Secret Access Key",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesPostgresRestoreConfig",
+      "description": "Technology-agnostic disaster recovery restore configuration\n Enables database restoration from S3/R2 backup files independent of source cluster\n\n Usage Pattern (Two-Stage Workflow):\n Stage 1 - Bootstrap from Backup:\n   Set enabled=true to restore from backup (read-only validation mode)\n Stage 2 - Promote to Primary:\n   Set enabled=false to promote to read-write primary\n\n Operator Implementation:\n - Zalando: enabled=true → spec:standby, enabled=false → remove spec:standby\n - Percona: enabled=true → spec:dataSource, enabled=false → normal bootstrap\n - CloudNativePG: enabled=true → spec:bootstrap.recovery, enabled=false → normal start",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetespostgres.v1.KubernetesPostgresRestoreConfig",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable or disable restore mode\n When enabled: Database bootstraps from backup (implementation varies by operator)\n When disabled or unset: Database runs as normal primary",
+          "required": false
+        },
+        {
+          "name": "BucketName",
+          "jsonName": "bucketName",
+          "protoField": "bucket_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3/R2 bucket name for backup source\n Optional: If not specified, uses operator-level bucket configuration\n If operator-level bucket also not configured, deployment will fail",
+          "required": false,
+          "oneofGroup": "_bucket_name"
+        },
+        {
+          "name": "S3Path",
+          "jsonName": "s3Path",
+          "protoField": "s3_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 path to backup directory (without s3:// prefix or bucket name)\n Required when enabled=true\n Example: \"backups/db-app-prod-main/14\"\n Path should contain operator-specific backup structure (e.g., basebackups_005/, wal_005/)",
+          "required": false
+        },
+        {
+          "name": "R2Config",
+          "jsonName": "r2Config",
+          "protoField": "r2_config",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesPostgresR2Config"
+          },
+          "description": "R2/S3 credentials for restore access\n Optional: Allows per-database independent credentials for disaster recovery\n If not specified, operators may use shared credentials or fail\n Recommended: Provide credentials for true cross-cluster independence",
+          "required": false,
+          "oneofGroup": "_r2_config"
+        }
+      ]
+    },
+    {
+      "name": "KubernetesPostgresUser",
+      "description": "PostgreSQL user/role definition",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetespostgres.v1.KubernetesPostgresUser",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Username/role name (e.g., \"app_user\", \"openfga\")\n This name can be referenced as a database owner in the databases field",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Flags",
+          "jsonName": "flags",
+          "protoField": "flags",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "User permission flags. Common values:\n - \"createdb\": Can create databases\n - \"superuser\": Superuser privileges (use with caution)\n - \"createrole\": Can create other roles\n - \"inherit\": Inherits privileges of roles it is a member of\n - \"login\": Can log in (default for users)\n - \"replication\": Can initiate streaming replication\n Empty array means standard user with login privileges only.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

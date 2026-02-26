@@ -1,0 +1,295 @@
+{
+  "name": "HetznerCloudServer",
+  "kind": "HetznerCloudServer",
+  "cloudProvider": "hetznercloud",
+  "apiVersion": "hetzner-cloud.openmcf.org/v1",
+  "description": "hetznercloud-server",
+  "protoPackage": "org.openmcf.provider.hetznercloud.hetznercloudserver.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/hetznercloud/hetznercloudserver/v1/api.proto",
+    "spec": "org/openmcf/provider/hetznercloud/hetznercloudserver/v1/spec.proto"
+  },
+  "spec": {
+    "name": "HetznerCloudServerSpec",
+    "fields": [
+      {
+        "name": "ServerType",
+        "jsonName": "serverType",
+        "protoField": "server_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Server type that determines vCPU, RAM, and disk resources.\n\n Examples: \"cx22\" (2 vCPU / 4 GB), \"cpx11\" (2 vCPU / 2 GB, AMD),\n \"cax11\" (2 vCPU / 4 GB, ARM64).\n\n Changing this value triggers a server resize. The server is temporarily\n stopped during the resize. Use keep_disk to prevent irreversible disk\n upgrades.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Image",
+        "jsonName": "image",
+        "protoField": "image",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OS image name or ID to provision the server with.\n\n Examples: \"ubuntu-24.04\", \"debian-12\", \"rocky-9\", \"45346857\".\n\n Changing this value forces replacement of the server.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Hetzner Cloud location for the server (e.g., \"fsn1\", \"nbg1\", \"hel1\",\n \"ash\", \"hil\", \"sin\"). Determines the physical datacenter.\n\n Primary IPs and Floating IPs assigned to the server must be in the\n same location.\n\n Changing this value forces replacement of the server.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "SshKeys",
+        "jsonName": "sshKeys",
+        "protoField": "ssh_keys",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "SSH keys to inject into the server at creation time.\n\n Each entry accepts a literal SSH key name or numeric ID (as a string),\n or a reference to a HetznerCloudSshKey resource's output via valueFrom.\n\n SSH keys are only injected during initial server creation. Changing this\n list after creation forces replacement of the server.\n\n Example (literal name):\n   sshKeys:\n     - value: \"my-ssh-key\"\n\n Example (reference):\n   sshKeys:\n     - valueFrom:\n         kind: HetznerCloudSshKey\n         name: prod-key\n         fieldPath: status.outputs.ssh_key_id",
+        "required": false,
+        "referenceKind": "HetznerCloudSshKey",
+        "referenceFieldPath": "status.outputs.ssh_key_id"
+      },
+      {
+        "name": "UserData",
+        "jsonName": "userData",
+        "protoField": "user_data",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cloud-init user data script or configuration to execute on first boot.\n\n Accepts raw shell scripts (starting with #!/bin/bash) or cloud-config\n YAML (starting with #cloud-config). Maximum size is 32 KB.\n\n Changing this value forces replacement of the server.",
+        "required": false
+      },
+      {
+        "name": "PlacementGroupId",
+        "jsonName": "placementGroupId",
+        "protoField": "placement_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Placement group to assign the server to for anti-affinity scheduling.\n\n Accepts a literal Hetzner Cloud placement group ID (as a string) or a\n reference to a HetznerCloudPlacementGroup resource's output via\n valueFrom. Servers in a \"spread\" placement group are guaranteed to run\n on different physical hosts.\n\n Example (reference):\n   placementGroupId:\n     valueFrom:\n       kind: HetznerCloudPlacementGroup\n       name: ha-group\n       fieldPath: status.outputs.placement_group_id",
+        "required": false,
+        "referenceKind": "HetznerCloudPlacementGroup",
+        "referenceFieldPath": "status.outputs.placement_group_id"
+      },
+      {
+        "name": "FirewallIds",
+        "jsonName": "firewallIds",
+        "protoField": "firewall_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Firewalls to apply to the server at creation time.\n\n Each entry accepts a literal Hetzner Cloud firewall ID (as a string) or\n a reference to a HetznerCloudFirewall resource's output via valueFrom.\n\n Example (reference):\n   firewallIds:\n     - valueFrom:\n         kind: HetznerCloudFirewall\n         name: web-firewall\n         fieldPath: status.outputs.firewall_id",
+        "required": false,
+        "referenceKind": "HetznerCloudFirewall",
+        "referenceFieldPath": "status.outputs.firewall_id"
+      },
+      {
+        "name": "PublicNet",
+        "jsonName": "publicNet",
+        "protoField": "public_net",
+        "type": {
+          "kind": "message",
+          "messageType": "PublicNet"
+        },
+        "description": "Public network configuration for the server.\n\n If omitted, the server receives auto-assigned public IPv4 and IPv6\n addresses (provider default). Set this block to disable public\n networking or to attach existing Primary IPs.",
+        "required": false
+      },
+      {
+        "name": "Networks",
+        "jsonName": "networks",
+        "protoField": "networks",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "NetworkAttachment"
+          }
+        },
+        "description": "Private networks to attach the server to.\n\n Each entry creates an inline network attachment on the server resource.\n The server receives an IP from the network's subnet range (either\n auto-assigned or explicitly specified via the ip field).",
+        "required": false
+      },
+      {
+        "name": "Backups",
+        "jsonName": "backups",
+        "protoField": "backups",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable automatic daily backups for the server.\n\n Backups are stored for 14 days and can be used to restore the server.\n Incurs an additional 20% of the server price.",
+        "required": false
+      },
+      {
+        "name": "KeepDisk",
+        "jsonName": "keepDisk",
+        "protoField": "keep_disk",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Preserve the existing disk size when changing server_type.\n\n When false (default), a server_type upgrade also upgrades the disk,\n which is irreversible -- you cannot later downgrade to a smaller\n server_type. Set to true to only change vCPU and RAM, keeping the\n disk at its current size.",
+        "required": false
+      },
+      {
+        "name": "DeleteProtection",
+        "jsonName": "deleteProtection",
+        "protoField": "delete_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Prevent accidental deletion of the server via the Hetzner Cloud API.\n When enabled, the server cannot be deleted until protection is removed.",
+        "required": false
+      },
+      {
+        "name": "RebuildProtection",
+        "jsonName": "rebuildProtection",
+        "protoField": "rebuild_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Prevent accidental rebuild (re-image) of the server via the Hetzner\n Cloud API. When enabled, the server cannot be rebuilt until protection\n is removed.",
+        "required": false
+      },
+      {
+        "name": "ShutdownBeforeDeletion",
+        "jsonName": "shutdownBeforeDeletion",
+        "protoField": "shutdown_before_deletion",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Attempt a graceful shutdown of the server before Terraform destroys it.\n\n When true, Terraform sends an ACPI shutdown signal and waits for the\n server to power off before deletion. When false (default), the server\n is deleted immediately.",
+        "required": false
+      },
+      {
+        "name": "DnsPtr",
+        "jsonName": "dnsPtr",
+        "protoField": "dns_ptr",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reverse DNS pointer record for the server's auto-assigned public IPv4\n address. If set, an hcloud_rdns resource is created mapping the\n server's IPv4 to this hostname.\n\n Only use this when the server has auto-assigned public IPv4 (default\n behavior or public_net with ipv4_enabled=true and no ipv4 Primary IP\n reference). If you assign Primary IPs via public_net.ipv4, manage\n rDNS on the HetznerCloudPrimaryIp component instead to avoid\n conflicting management of the same IP's rDNS record.\n\n Example: \"web.example.com\"",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "NetworkAttachment",
+      "description": "NetworkAttachment defines a private network connection for the server.\n\n Each entry attaches the server to a Hetzner Cloud network via an\n inline network block on the server resource. The server receives an IP\n within the network's subnet range.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudserver.v1.HetznerCloudServerSpec.NetworkAttachment",
+      "fields": [
+        {
+          "name": "NetworkId",
+          "jsonName": "networkId",
+          "protoField": "network_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Network to attach the server to.\n\n Accepts a literal Hetzner Cloud network ID (as a string) or a\n reference to a HetznerCloudNetwork resource's output via valueFrom.\n\n Example (reference):\n   networkId:\n     valueFrom:\n       kind: HetznerCloudNetwork\n       name: main-vpc\n       fieldPath: status.outputs.network_id",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "HetznerCloudNetwork",
+          "referenceFieldPath": "status.outputs.network_id"
+        },
+        {
+          "name": "Ip",
+          "jsonName": "ip",
+          "protoField": "ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specific IP address to assign to the server within the network's\n subnet range. If omitted, Hetzner Cloud auto-assigns an IP.",
+          "required": false
+        },
+        {
+          "name": "AliasIps",
+          "jsonName": "aliasIps",
+          "protoField": "alias_ips",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Additional IP addresses for the server within this network.\n\n Alias IPs allow a single server to listen on multiple private IPs\n within the same network, useful for hosting multiple services or\n virtual hosts.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "PublicNet",
+      "description": "PublicNet controls the server's public network interfaces.\n\n If this message is omitted entirely, the server gets auto-assigned\n public IPv4 and IPv6 addresses (provider default). When set, each\n field defaults to its documented value, giving fine-grained control\n over public networking.\n\n Note: proto3 bool defaults to false, so an empty PublicNet message\n would disable both IPv4 and IPv6. To avoid this footgun, ipv4_enabled\n and ipv6_enabled use optional bool with a default of true.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudserver.v1.HetznerCloudServerSpec.PublicNet",
+      "fields": [
+        {
+          "name": "Ipv4Enabled",
+          "jsonName": "ipv4Enabled",
+          "protoField": "ipv4_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable public IPv4 for the server.\n\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_ipv4_enabled"
+        },
+        {
+          "name": "Ipv6Enabled",
+          "jsonName": "ipv6Enabled",
+          "protoField": "ipv6_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable public IPv6 for the server.\n\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_ipv6_enabled"
+        },
+        {
+          "name": "Ipv4",
+          "jsonName": "ipv4",
+          "protoField": "ipv4",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Existing Primary IP (IPv4) to attach to the server instead of\n auto-assigning. Accepts a literal Hetzner Cloud Primary IP ID (as a\n string) or a reference to a HetznerCloudPrimaryIp output via\n valueFrom.\n\n The Primary IP must be IPv4 type and in the same location as the\n server.\n\n Example (reference):\n   ipv4:\n     valueFrom:\n       kind: HetznerCloudPrimaryIp\n       name: web-ipv4\n       fieldPath: status.outputs.primary_ip_id",
+          "required": false,
+          "referenceKind": "HetznerCloudPrimaryIp",
+          "referenceFieldPath": "status.outputs.primary_ip_id"
+        },
+        {
+          "name": "Ipv6",
+          "jsonName": "ipv6",
+          "protoField": "ipv6",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Existing Primary IP (IPv6) to attach to the server instead of\n auto-assigning. Same semantics as ipv4 above, but for IPv6.",
+          "required": false,
+          "referenceKind": "HetznerCloudPrimaryIp",
+          "referenceFieldPath": "status.outputs.primary_ip_id"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,492 @@
+{
+  "name": "AwsDynamodb",
+  "kind": "AwsDynamodb",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsDynamodb is the Kubernetes-style resource envelope for a DynamoDB table.",
+  "protoPackage": "org.openmcf.provider.aws.awsdynamodb.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsdynamodb/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsdynamodb/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsDynamodbSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "BillingMode",
+        "jsonName": "billingMode",
+        "protoField": "billing_mode",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.aws.awsdynamodb.v1.BillingMode",
+          "enumValues": [
+            "PROVISIONED",
+            "PAY_PER_REQUEST"
+          ]
+        },
+        "description": "Billing configuration for the table.",
+        "required": false
+      },
+      {
+        "name": "ProvisionedThroughput",
+        "jsonName": "provisionedThroughput",
+        "protoField": "provisioned_throughput",
+        "type": {
+          "kind": "message",
+          "messageType": "ProvisionedThroughput"
+        },
+        "description": "Provisioned throughput for the table (used when billing_mode is PROVISIONED).",
+        "required": false
+      },
+      {
+        "name": "AttributeDefinitions",
+        "jsonName": "attributeDefinitions",
+        "protoField": "attribute_definitions",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AttributeDefinition"
+          }
+        },
+        "description": "Attribute definitions referenced by the primary key and indexes.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "KeySchema",
+        "jsonName": "keySchema",
+        "protoField": "key_schema",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "KeySchemaElement"
+          }
+        },
+        "description": "Primary key schema for the table: includes HASH and optional RANGE.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "GlobalSecondaryIndexes",
+        "jsonName": "globalSecondaryIndexes",
+        "protoField": "global_secondary_indexes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "GlobalSecondaryIndex"
+          }
+        },
+        "description": "Global secondary indexes.",
+        "required": false
+      },
+      {
+        "name": "LocalSecondaryIndexes",
+        "jsonName": "localSecondaryIndexes",
+        "protoField": "local_secondary_indexes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "LocalSecondaryIndex"
+          }
+        },
+        "description": "Local secondary indexes.",
+        "required": false
+      },
+      {
+        "name": "Ttl",
+        "jsonName": "ttl",
+        "protoField": "ttl",
+        "type": {
+          "kind": "message",
+          "messageType": "TimeToLive"
+        },
+        "description": "Time-to-live configuration.",
+        "required": false
+      },
+      {
+        "name": "StreamEnabled",
+        "jsonName": "streamEnabled",
+        "protoField": "stream_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "DynamoDB Streams configuration.",
+        "required": false
+      },
+      {
+        "name": "StreamViewType",
+        "jsonName": "streamViewType",
+        "protoField": "stream_view_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.aws.awsdynamodb.v1.StreamViewType",
+          "enumValues": [
+            "KEYS_ONLY",
+            "NEW_IMAGE",
+            "OLD_IMAGE",
+            "NEW_AND_OLD_IMAGES"
+          ]
+        },
+        "required": false
+      },
+      {
+        "name": "PointInTimeRecoveryEnabled",
+        "jsonName": "pointInTimeRecoveryEnabled",
+        "protoField": "point_in_time_recovery_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Point-in-time recovery (PITR) setting.",
+        "required": false
+      },
+      {
+        "name": "ServerSideEncryption",
+        "jsonName": "serverSideEncryption",
+        "protoField": "server_side_encryption",
+        "type": {
+          "kind": "message",
+          "messageType": "ServerSideEncryption"
+        },
+        "description": "Server-side encryption settings.",
+        "required": false
+      },
+      {
+        "name": "TableClass",
+        "jsonName": "tableClass",
+        "protoField": "table_class",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.aws.awsdynamodb.v1.TableClass",
+          "enumValues": [
+            "STANDARD",
+            "STANDARD_INFREQUENT_ACCESS"
+          ]
+        },
+        "description": "Table storage class.",
+        "required": false
+      },
+      {
+        "name": "DeletionProtectionEnabled",
+        "jsonName": "deletionProtectionEnabled",
+        "protoField": "deletion_protection_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Deletion protection setting.",
+        "required": false
+      },
+      {
+        "name": "ContributorInsightsEnabled",
+        "jsonName": "contributorInsightsEnabled",
+        "protoField": "contributor_insights_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Contributor Insights setting.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AttributeDefinition",
+      "description": "Defines an attribute name and type.",
+      "protoType": "org.openmcf.provider.aws.awsdynamodb.v1.AwsDynamodbSpec.AttributeDefinition",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.aws.awsdynamodb.v1.AttributeType",
+            "enumValues": [
+              "S",
+              "N",
+              "B"
+            ]
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GlobalSecondaryIndex",
+      "description": "Global secondary index definition.",
+      "protoType": "org.openmcf.provider.aws.awsdynamodb.v1.AwsDynamodbSpec.GlobalSecondaryIndex",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "KeySchema",
+          "jsonName": "keySchema",
+          "protoField": "key_schema",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "KeySchemaElement"
+            }
+          },
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "Projection",
+          "jsonName": "projection",
+          "protoField": "projection",
+          "type": {
+            "kind": "message",
+            "messageType": "Projection"
+          },
+          "required": false
+        },
+        {
+          "name": "ProvisionedThroughput",
+          "jsonName": "provisionedThroughput",
+          "protoField": "provisioned_throughput",
+          "type": {
+            "kind": "message",
+            "messageType": "ProvisionedThroughput"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KeySchemaElement",
+      "description": "Element of the key schema.",
+      "protoType": "org.openmcf.provider.aws.awsdynamodb.v1.AwsDynamodbSpec.KeySchemaElement",
+      "fields": [
+        {
+          "name": "AttributeName",
+          "jsonName": "attributeName",
+          "protoField": "attribute_name",
+          "type": {
+            "kind": "string"
+          },
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "KeyType",
+          "jsonName": "keyType",
+          "protoField": "key_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.aws.awsdynamodb.v1.KeyType",
+            "enumValues": [
+              "HASH",
+              "RANGE"
+            ]
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "LocalSecondaryIndex",
+      "description": "Local secondary index definition.",
+      "protoType": "org.openmcf.provider.aws.awsdynamodb.v1.AwsDynamodbSpec.LocalSecondaryIndex",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "KeySchema",
+          "jsonName": "keySchema",
+          "protoField": "key_schema",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "KeySchemaElement"
+            }
+          },
+          "required": false,
+          "validation": {
+            "minItems": 2
+          }
+        },
+        {
+          "name": "Projection",
+          "jsonName": "projection",
+          "protoField": "projection",
+          "type": {
+            "kind": "message",
+            "messageType": "Projection"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Projection",
+      "description": "Index projection configuration.",
+      "protoType": "org.openmcf.provider.aws.awsdynamodb.v1.AwsDynamodbSpec.Projection",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.aws.awsdynamodb.v1.ProjectionType",
+            "enumValues": [
+              "ALL",
+              "KEYS_ONLY_PROJECTION",
+              "INCLUDE"
+            ]
+          },
+          "required": false
+        },
+        {
+          "name": "NonKeyAttributes",
+          "jsonName": "nonKeyAttributes",
+          "protoField": "non_key_attributes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "required": false,
+          "validation": {
+            "unique": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "ProvisionedThroughput",
+      "description": "Provisioned capacity settings.",
+      "protoType": "org.openmcf.provider.aws.awsdynamodb.v1.AwsDynamodbSpec.ProvisionedThroughput",
+      "fields": [
+        {
+          "name": "ReadCapacityUnits",
+          "jsonName": "readCapacityUnits",
+          "protoField": "read_capacity_units",
+          "type": {
+            "kind": "int64"
+          },
+          "required": false
+        },
+        {
+          "name": "WriteCapacityUnits",
+          "jsonName": "writeCapacityUnits",
+          "protoField": "write_capacity_units",
+          "type": {
+            "kind": "int64"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ServerSideEncryption",
+      "description": "Server-side encryption settings.",
+      "protoType": "org.openmcf.provider.aws.awsdynamodb.v1.AwsDynamodbSpec.ServerSideEncryption",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "required": false
+        },
+        {
+          "name": "KmsKeyArn",
+          "jsonName": "kmsKeyArn",
+          "protoField": "kms_key_arn",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "TimeToLive",
+      "description": "Time-to-live (TTL) configuration.",
+      "protoType": "org.openmcf.provider.aws.awsdynamodb.v1.AwsDynamodbSpec.TimeToLive",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "required": false
+        },
+        {
+          "name": "AttributeName",
+          "jsonName": "attributeName",
+          "protoField": "attribute_name",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    }
+  ]
+}

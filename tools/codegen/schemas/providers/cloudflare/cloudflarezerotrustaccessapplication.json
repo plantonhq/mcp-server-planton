@@ -1,0 +1,118 @@
+{
+  "name": "CloudflareZeroTrustAccessApplication",
+  "kind": "CloudflareZeroTrustAccessApplication",
+  "cloudProvider": "cloudflare",
+  "apiVersion": "cloudflare.openmcf.org/v1",
+  "description": "cloudflare-zero-trust-access-application",
+  "protoPackage": "org.openmcf.provider.cloudflare.cloudflarezerotrustaccessapplication.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/cloudflare/cloudflarezerotrustaccessapplication/v1/api.proto",
+    "spec": "org/openmcf/provider/cloudflare/cloudflarezerotrustaccessapplication/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CloudflareZeroTrustAccessApplicationSpec",
+    "fields": [
+      {
+        "name": "ApplicationName",
+        "jsonName": "applicationName",
+        "protoField": "application_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The display name of the Zero Trust Access Application.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ZoneId",
+        "jsonName": "zoneId",
+        "protoField": "zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Cloudflare DNS zone ID (from a CloudflareDnsZone resource) for the domain.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "CloudflareDnsZone",
+        "referenceFieldPath": "status.outputs.zone_id"
+      },
+      {
+        "name": "Hostname",
+        "jsonName": "hostname",
+        "protoField": "hostname",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The fully qualified domain name to protect (e.g., \"app.example.com\").",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "PolicyType",
+        "jsonName": "policyType",
+        "protoField": "policy_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.cloudflare.cloudflarezerotrustaccessapplication.v1.CloudflareZeroTrustPolicyType",
+          "enumValues": [
+            "BLOCK"
+          ]
+        },
+        "description": "The type of access policy for this application (ALLOW or BLOCK). Defaults to ALLOW if unspecified.",
+        "required": false
+      },
+      {
+        "name": "AllowedEmails",
+        "jsonName": "allowedEmails",
+        "protoField": "allowed_emails",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "A list of email addresses that are allowed access (applicable only when policy_type = ALLOW).",
+        "required": false
+      },
+      {
+        "name": "SessionDurationMinutes",
+        "jsonName": "sessionDurationMinutes",
+        "protoField": "session_duration_minutes",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "The duration of each authenticated session, in minutes (default: 1440 minutes, i.e., 24 hours).",
+        "required": false
+      },
+      {
+        "name": "RequireMfa",
+        "jsonName": "requireMfa",
+        "protoField": "require_mfa",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether multi-factor authentication (MFA) is required for access.",
+        "required": false
+      },
+      {
+        "name": "AllowedGoogleGroups",
+        "jsonName": "allowedGoogleGroups",
+        "protoField": "allowed_google_groups",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "A list of allowed Google Workspace group email addresses (optional).",
+        "required": false
+      }
+    ]
+  }
+}

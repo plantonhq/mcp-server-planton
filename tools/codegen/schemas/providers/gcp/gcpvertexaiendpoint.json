@@ -1,0 +1,148 @@
+{
+  "name": "GcpVertexAiEndpoint",
+  "kind": "GcpVertexAiEndpoint",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-vertex-ai-endpoint",
+  "protoPackage": "org.openmcf.provider.gcp.gcpvertexaiendpoint.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpvertexaiendpoint/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpvertexaiendpoint/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpVertexAiEndpointSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the endpoint will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Region where the endpoint will be created (e.g., \"us-central1\").\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Display name of the endpoint (up to 128 UTF-8 characters).\n This is the primary human-readable identifier for the endpoint.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Description of the endpoint.",
+        "required": false
+      },
+      {
+        "name": "Network",
+        "jsonName": "network",
+        "protoField": "network",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC network for private endpoints via VPC peering.\n Format: projects/{project}/global/networks/{network}\n Requires Private Services Access configured on the VPC.\n Mutually exclusive with private_service_connect_config.\n Immutable after creation.",
+        "required": false,
+        "referenceKind": "GcpVpc",
+        "referenceFieldPath": "status.outputs.network_self_link"
+      },
+      {
+        "name": "KmsKeyName",
+        "jsonName": "kmsKeyName",
+        "protoField": "kms_key_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "KMS key for customer-managed encryption (CMEK).\n Format: projects/{project}/locations/{location}/keyRings/{ring}/cryptoKeys/{key}\n If not specified, Google-managed encryption is used.\n Immutable after creation.",
+        "required": false,
+        "referenceKind": "GcpKmsKey",
+        "referenceFieldPath": "status.outputs.key_id"
+      },
+      {
+        "name": "DedicatedEndpointEnabled",
+        "jsonName": "dedicatedEndpointEnabled",
+        "protoField": "dedicated_endpoint_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "If true, the endpoint is exposed through a dedicated DNS name\n (https://{endpointId}.{region}-{projectNumber}.prediction.vertexai.goog)\n rather than the shared regional DNS. Dedicated endpoints provide\n better performance, reliability, and traffic isolation.\n Mutually exclusive with private_service_connect_config.",
+        "required": false
+      },
+      {
+        "name": "PrivateServiceConnectConfig",
+        "jsonName": "privateServiceConnectConfig",
+        "protoField": "private_service_connect_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpVertexAiEndpointPrivateServiceConnectConfig"
+        },
+        "description": "Private Service Connect configuration. When present, the endpoint\n is exposed via a PSC service attachment rather than VPC peering.\n Mutually exclusive with network and dedicated_endpoint_enabled.",
+        "required": false
+      },
+      {
+        "name": "EndpointName",
+        "jsonName": "endpointName",
+        "protoField": "endpoint_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP endpoint name (numeric identifier, max 10 digits).\n GCP requires Vertex AI endpoint names to be numeric only --\n this is the resource ID in the fully qualified path\n projects/{project}/locations/{location}/endpoints/{name}.\n\n If not specified, the IaC module auto-generates a numeric\n identifier. Most users should omit this field and use\n display_name for human identification.\n Immutable after creation.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpVertexAiEndpointPrivateServiceConnectConfig",
+      "description": "GcpVertexAiEndpointPrivateServiceConnectConfig configures Private Service\n Connect (PSC) networking for the endpoint. When this block is present,\n the endpoint is exposed via PSC rather than VPC peering.\n\n PSC provides a private, secure connection to the endpoint without\n requiring VPC peering. It is the modern networking model for Vertex AI\n endpoints and supports fine-grained access control via project allowlists.",
+      "protoType": "org.openmcf.provider.gcp.gcpvertexaiendpoint.v1.GcpVertexAiEndpointPrivateServiceConnectConfig",
+      "fields": [
+        {
+          "name": "ProjectAllowlist",
+          "jsonName": "projectAllowlist",
+          "protoField": "project_allowlist",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Projects allowed to create forwarding rules targeting this endpoint's\n service attachment. Each entry is a GCP project ID or project number.\n If empty, any project in the same organization can connect.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

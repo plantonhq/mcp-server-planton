@@ -1,0 +1,131 @@
+{
+  "name": "GcpRouterNat",
+  "kind": "GcpRouterNat",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-router-nat",
+  "protoPackage": "org.openmcf.provider.gcp.gcprouternat.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcprouternat/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcprouternat/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpRouterNatSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project ID where the Cloud Router and NAT will be created.\n Example: \"my-gcp-project-123\"",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "VpcSelfLink",
+        "jsonName": "vpcSelfLink",
+        "protoField": "vpc_self_link",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to the target VPC network (self-link or name of an existing GCP VPC).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpVpc",
+        "referenceFieldPath": "status.outputs.network_self_link"
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP region for the Cloud Router and NAT.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "SubnetworkSelfLinks",
+        "jsonName": "subnetworkSelfLinks",
+        "protoField": "subnetwork_self_links",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Optional specific subnets to enable NAT on (if empty or not set, NAT covers all subnets in the region).",
+        "required": false
+      },
+      {
+        "name": "NatIpNames",
+        "jsonName": "natIpNames",
+        "protoField": "nat_ip_names",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Optional static external IP addresses to use for NAT (if empty, NAT will auto-allocate IPs).",
+        "required": false
+      },
+      {
+        "name": "LogFilter",
+        "jsonName": "logFilter",
+        "protoField": "log_filter",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.gcp.gcprouternat.v1.GcpRouterNatLogFilter",
+          "enumValues": [
+            "ERRORS_ONLY",
+            "ALL"
+          ]
+        },
+        "description": "Log filter for NAT translation logging.\n **Default:** ERRORS_ONLY (recommended for production to detect port exhaustion and connection failures).\n Use DISABLED for non-production environments to reduce costs.\n Use ALL for security auditing or detailed troubleshooting (generates significant log volume).",
+        "required": false,
+        "default": "ERRORS_ONLY",
+        "oneofGroup": "_log_filter"
+      },
+      {
+        "name": "RouterName",
+        "jsonName": "routerName",
+        "protoField": "router_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Cloud Router to create in GCP.\n Must be 1-63 characters, lowercase letters, numbers, or hyphens.\n Must start with a lowercase letter and end with a lowercase letter or number.\n Example: \"my-router\", \"prod-uswest1-router\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "NatName",
+        "jsonName": "natName",
+        "protoField": "nat_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the NAT configuration on the Cloud Router.\n Must be 1-63 characters, lowercase letters, numbers, or hyphens.\n Must start with a lowercase letter and end with a lowercase letter or number.\n Example: \"my-nat\", \"prod-nat-config\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$"
+        }
+      }
+    ]
+  }
+}

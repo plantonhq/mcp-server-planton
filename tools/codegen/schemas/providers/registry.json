@@ -1,0 +1,1814 @@
+{
+  "providers": {
+    "AliCloudApplicationLoadBalancer": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudapplicationloadbalancer.json"
+    },
+    "AliCloudCdnDomain": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudcdndomain.json"
+    },
+    "AliCloudCenInstance": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudceninstance.json"
+    },
+    "AliCloudContainerRegistry": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudcontainerregistry.json"
+    },
+    "AliCloudDnsRecord": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/aliclouddnsrecord.json"
+    },
+    "AliCloudDnsZone": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/aliclouddnszone.json"
+    },
+    "AliCloudEcsInstance": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudecsinstance.json"
+    },
+    "AliCloudEipAddress": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudeipaddress.json"
+    },
+    "AliCloudFunction": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudfunction.json"
+    },
+    "AliCloudKmsKey": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudkmskey.json"
+    },
+    "AliCloudKubernetesCluster": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudkubernetescluster.json"
+    },
+    "AliCloudKubernetesNodePool": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudkubernetesnodepool.json"
+    },
+    "AliCloudLogProject": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudlogproject.json"
+    },
+    "AliCloudMongodbInstance": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudmongodbinstance.json"
+    },
+    "AliCloudNasFileSystem": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudnasfilesystem.json"
+    },
+    "AliCloudNatGateway": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudnatgateway.json"
+    },
+    "AliCloudNetworkLoadBalancer": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudnetworkloadbalancer.json"
+    },
+    "AliCloudPolardbCluster": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudpolardbcluster.json"
+    },
+    "AliCloudPrivateDnsZone": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudprivatednszone.json"
+    },
+    "AliCloudRamPolicy": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudrampolicy.json"
+    },
+    "AliCloudRamRole": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudramrole.json"
+    },
+    "AliCloudRdsInstance": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudrdsinstance.json"
+    },
+    "AliCloudRedisInstance": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudredisinstance.json"
+    },
+    "AliCloudRocketmqInstance": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudrocketmqinstance.json"
+    },
+    "AliCloudSaeApplication": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudsaeapplication.json"
+    },
+    "AliCloudSecurityGroup": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudsecuritygroup.json"
+    },
+    "AliCloudStorageBucket": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudstoragebucket.json"
+    },
+    "AliCloudVpc": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudvpc.json"
+    },
+    "AliCloudVpnGateway": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudvpngateway.json"
+    },
+    "AliCloudVswitch": {
+      "cloudProvider": "alicloud",
+      "apiVersion": "ali-cloud.openmcf.org/v1",
+      "schemaFile": "alicloud/alicloudvswitch.json"
+    },
+    "Auth0Client": {
+      "cloudProvider": "auth0",
+      "apiVersion": "auth0.openmcf.org/v1",
+      "schemaFile": "auth0/auth0client.json"
+    },
+    "Auth0Connection": {
+      "cloudProvider": "auth0",
+      "apiVersion": "auth0.openmcf.org/v1",
+      "schemaFile": "auth0/auth0connection.json"
+    },
+    "Auth0EventStream": {
+      "cloudProvider": "auth0",
+      "apiVersion": "auth0.openmcf.org/v1",
+      "schemaFile": "auth0/auth0eventstream.json"
+    },
+    "Auth0ResourceServer": {
+      "cloudProvider": "auth0",
+      "apiVersion": "auth0.openmcf.org/v1",
+      "schemaFile": "auth0/auth0resourceserver.json"
+    },
+    "AwsAlb": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsalb.json"
+    },
+    "AwsAppRunnerService": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsapprunnerservice.json"
+    },
+    "AwsAthenaWorkgroup": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsathenaworkgroup.json"
+    },
+    "AwsBatchComputeEnvironment": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsbatchcomputeenvironment.json"
+    },
+    "AwsCertManagerCert": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awscertmanagercert.json"
+    },
+    "AwsClientVpn": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsclientvpn.json"
+    },
+    "AwsCloudFront": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awscloudfront.json"
+    },
+    "AwsCloudwatchAlarm": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awscloudwatchalarm.json"
+    },
+    "AwsCloudwatchLogGroup": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awscloudwatchloggroup.json"
+    },
+    "AwsCodeBuildProject": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awscodebuildproject.json"
+    },
+    "AwsCodePipeline": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awscodepipeline.json"
+    },
+    "AwsCognitoIdentityProvider": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awscognitoidentityprovider.json"
+    },
+    "AwsCognitoUserPool": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awscognitouserpool.json"
+    },
+    "AwsDocumentDb": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsdocumentdb.json"
+    },
+    "AwsDynamodb": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsdynamodb.json"
+    },
+    "AwsEc2Instance": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsec2instance.json"
+    },
+    "AwsEcrRepo": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsecrrepo.json"
+    },
+    "AwsEcsCluster": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsecscluster.json"
+    },
+    "AwsEcsService": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsecsservice.json"
+    },
+    "AwsEksCluster": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsekscluster.json"
+    },
+    "AwsEksNodeGroup": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awseksnodegroup.json"
+    },
+    "AwsElasticFileSystem": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awselasticfilesystem.json"
+    },
+    "AwsElasticIp": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awselasticip.json"
+    },
+    "AwsEventBridgeBus": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awseventbridgebus.json"
+    },
+    "AwsEventBridgeRule": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awseventbridgerule.json"
+    },
+    "AwsFsxLustreFileSystem": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsfsxlustrefilesystem.json"
+    },
+    "AwsFsxOntapFileSystem": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsfsxontapfilesystem.json"
+    },
+    "AwsFsxOntapStorageVirtualMachine": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsfsxontapstoragevirtualmachine.json"
+    },
+    "AwsFsxOntapVolume": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsfsxontapvolume.json"
+    },
+    "AwsFsxOpenzfsFileSystem": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsfsxopenzfsfilesystem.json"
+    },
+    "AwsFsxWindowsFileSystem": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsfsxwindowsfilesystem.json"
+    },
+    "AwsGlobalAccelerator": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsglobalaccelerator.json"
+    },
+    "AwsGlueCatalogDatabase": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsgluecatalogdatabase.json"
+    },
+    "AwsHttpApiGateway": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awshttpapigateway.json"
+    },
+    "AwsIamRole": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsiamrole.json"
+    },
+    "AwsIamUser": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsiamuser.json"
+    },
+    "AwsKinesisFirehose": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awskinesisfirehose.json"
+    },
+    "AwsKinesisStream": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awskinesisstream.json"
+    },
+    "AwsKinesisStreamConsumer": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awskinesisstreamconsumer.json"
+    },
+    "AwsKmsKey": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awskmskey.json"
+    },
+    "AwsLambda": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awslambda.json"
+    },
+    "AwsMemcachedElasticache": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsmemcachedelasticache.json"
+    },
+    "AwsMemorydbCluster": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsmemorydbcluster.json"
+    },
+    "AwsMskCluster": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsmskcluster.json"
+    },
+    "AwsMwaaEnvironment": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsmwaaenvironment.json"
+    },
+    "AwsNeptuneCluster": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsneptunecluster.json"
+    },
+    "AwsNetworkLoadBalancer": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsnetworkloadbalancer.json"
+    },
+    "AwsOpenSearchDomain": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsopensearchdomain.json"
+    },
+    "AwsRdsCluster": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsrdscluster.json"
+    },
+    "AwsRdsInstance": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsrdsinstance.json"
+    },
+    "AwsRedisElasticache": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsrediselasticache.json"
+    },
+    "AwsRedshiftCluster": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsredshiftcluster.json"
+    },
+    "AwsRoute53DnsRecord": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsroute53dnsrecord.json"
+    },
+    "AwsRoute53Zone": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsroute53zone.json"
+    },
+    "AwsS3Bucket": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awss3bucket.json"
+    },
+    "AwsS3ObjectSet": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awss3objectset.json"
+    },
+    "AwsSagemakerDomain": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awssagemakerdomain.json"
+    },
+    "AwsSecretsManager": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awssecretsmanager.json"
+    },
+    "AwsSecurityGroup": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awssecuritygroup.json"
+    },
+    "AwsServerlessElasticache": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsserverlesselasticache.json"
+    },
+    "AwsSnsTopic": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awssnstopic.json"
+    },
+    "AwsSqsQueue": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awssqsqueue.json"
+    },
+    "AwsStepFunction": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsstepfunction.json"
+    },
+    "AwsTransitGateway": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awstransitgateway.json"
+    },
+    "AwsVpc": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awsvpc.json"
+    },
+    "AwsWafWebAcl": {
+      "cloudProvider": "aws",
+      "apiVersion": "aws.openmcf.org/v1",
+      "schemaFile": "aws/awswafwebacl.json"
+    },
+    "AzureAksCluster": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azureakscluster.json"
+    },
+    "AzureAksNodePool": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azureaksnodepool.json"
+    },
+    "AzureApplicationGateway": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azureapplicationgateway.json"
+    },
+    "AzureApplicationInsights": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azureapplicationinsights.json"
+    },
+    "AzureContainerApp": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurecontainerapp.json"
+    },
+    "AzureContainerAppEnvironment": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurecontainerappenvironment.json"
+    },
+    "AzureContainerRegistry": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurecontainerregistry.json"
+    },
+    "AzureCosmosdbAccount": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurecosmosdbaccount.json"
+    },
+    "AzureDnsRecord": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurednsrecord.json"
+    },
+    "AzureDnsZone": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurednszone.json"
+    },
+    "AzureEventHubNamespace": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azureeventhubnamespace.json"
+    },
+    "AzureFrontDoorProfile": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurefrontdoorprofile.json"
+    },
+    "AzureFunctionApp": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurefunctionapp.json"
+    },
+    "AzureKeyVault": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurekeyvault.json"
+    },
+    "AzureLinuxWebApp": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurelinuxwebapp.json"
+    },
+    "AzureLoadBalancer": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azureloadbalancer.json"
+    },
+    "AzureLogAnalyticsWorkspace": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azureloganalyticsworkspace.json"
+    },
+    "AzureMssqlServer": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azuremssqlserver.json"
+    },
+    "AzureMysqlFlexibleServer": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azuremysqlflexibleserver.json"
+    },
+    "AzureNatGateway": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurenatgateway.json"
+    },
+    "AzureNetworkSecurityGroup": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurenetworksecuritygroup.json"
+    },
+    "AzurePostgresqlFlexibleServer": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurepostgresqlflexibleserver.json"
+    },
+    "AzurePrivateDnsZone": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azureprivatednszone.json"
+    },
+    "AzurePrivateEndpoint": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azureprivateendpoint.json"
+    },
+    "AzurePublicIp": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurepublicip.json"
+    },
+    "AzureRedisCache": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurerediscache.json"
+    },
+    "AzureResourceGroup": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azureresourcegroup.json"
+    },
+    "AzureServiceBusNamespace": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azureservicebusnamespace.json"
+    },
+    "AzureServicePlan": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azureserviceplan.json"
+    },
+    "AzureStorageAccount": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurestorageaccount.json"
+    },
+    "AzureSubnet": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azuresubnet.json"
+    },
+    "AzureUserAssignedIdentity": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azureuserassignedidentity.json"
+    },
+    "AzureVirtualMachine": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurevirtualmachine.json"
+    },
+    "AzureVpc": {
+      "cloudProvider": "azure",
+      "apiVersion": "azure.openmcf.org/v1",
+      "schemaFile": "azure/azurevpc.json"
+    },
+    "CivoBucket": {
+      "cloudProvider": "civo",
+      "apiVersion": "civo.openmcf.org/v1",
+      "schemaFile": "civo/civobucket.json"
+    },
+    "CivoCertificate": {
+      "cloudProvider": "civo",
+      "apiVersion": "civo.openmcf.org/v1",
+      "schemaFile": "civo/civocertificate.json"
+    },
+    "CivoComputeInstance": {
+      "cloudProvider": "civo",
+      "apiVersion": "civo.openmcf.org/v1",
+      "schemaFile": "civo/civocomputeinstance.json"
+    },
+    "CivoDatabase": {
+      "cloudProvider": "civo",
+      "apiVersion": "civo.openmcf.org/v1",
+      "schemaFile": "civo/civodatabase.json"
+    },
+    "CivoDnsRecord": {
+      "cloudProvider": "civo",
+      "apiVersion": "civo.openmcf.org/v1",
+      "schemaFile": "civo/civodnsrecord.json"
+    },
+    "CivoDnsZone": {
+      "cloudProvider": "civo",
+      "apiVersion": "civo.openmcf.org/v1",
+      "schemaFile": "civo/civodnszone.json"
+    },
+    "CivoFirewall": {
+      "cloudProvider": "civo",
+      "apiVersion": "civo.openmcf.org/v1",
+      "schemaFile": "civo/civofirewall.json"
+    },
+    "CivoIpAddress": {
+      "cloudProvider": "civo",
+      "apiVersion": "civo.openmcf.org/v1",
+      "schemaFile": "civo/civoipaddress.json"
+    },
+    "CivoKubernetesCluster": {
+      "cloudProvider": "civo",
+      "apiVersion": "civo.openmcf.org/v1",
+      "schemaFile": "civo/civokubernetescluster.json"
+    },
+    "CivoKubernetesNodePool": {
+      "cloudProvider": "civo",
+      "apiVersion": "civo.openmcf.org/v1",
+      "schemaFile": "civo/civokubernetesnodepool.json"
+    },
+    "CivoVolume": {
+      "cloudProvider": "civo",
+      "apiVersion": "civo.openmcf.org/v1",
+      "schemaFile": "civo/civovolume.json"
+    },
+    "CivoVpc": {
+      "cloudProvider": "civo",
+      "apiVersion": "civo.openmcf.org/v1",
+      "schemaFile": "civo/civovpc.json"
+    },
+    "CloudflareD1Database": {
+      "cloudProvider": "cloudflare",
+      "apiVersion": "cloudflare.openmcf.org/v1",
+      "schemaFile": "cloudflare/cloudflared1database.json"
+    },
+    "CloudflareDnsRecord": {
+      "cloudProvider": "cloudflare",
+      "apiVersion": "cloudflare.openmcf.org/v1",
+      "schemaFile": "cloudflare/cloudflarednsrecord.json"
+    },
+    "CloudflareDnsZone": {
+      "cloudProvider": "cloudflare",
+      "apiVersion": "cloudflare.openmcf.org/v1",
+      "schemaFile": "cloudflare/cloudflarednszone.json"
+    },
+    "CloudflareKvNamespace": {
+      "cloudProvider": "cloudflare",
+      "apiVersion": "cloudflare.openmcf.org/v1",
+      "schemaFile": "cloudflare/cloudflarekvnamespace.json"
+    },
+    "CloudflareLoadBalancer": {
+      "cloudProvider": "cloudflare",
+      "apiVersion": "cloudflare.openmcf.org/v1",
+      "schemaFile": "cloudflare/cloudflareloadbalancer.json"
+    },
+    "CloudflareR2Bucket": {
+      "cloudProvider": "cloudflare",
+      "apiVersion": "cloudflare.openmcf.org/v1",
+      "schemaFile": "cloudflare/cloudflarer2bucket.json"
+    },
+    "CloudflareWorker": {
+      "cloudProvider": "cloudflare",
+      "apiVersion": "cloudflare.openmcf.org/v1",
+      "schemaFile": "cloudflare/cloudflareworker.json"
+    },
+    "CloudflareZeroTrustAccessApplication": {
+      "cloudProvider": "cloudflare",
+      "apiVersion": "cloudflare.openmcf.org/v1",
+      "schemaFile": "cloudflare/cloudflarezerotrustaccessapplication.json"
+    },
+    "ConfluentKafka": {
+      "cloudProvider": "confluent",
+      "apiVersion": "confluent.openmcf.org/v1",
+      "schemaFile": "confluent/confluentkafka.json"
+    },
+    "DigitalOceanAppPlatformService": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceanappplatformservice.json"
+    },
+    "DigitalOceanBucket": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceanbucket.json"
+    },
+    "DigitalOceanCertificate": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceancertificate.json"
+    },
+    "DigitalOceanContainerRegistry": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceancontainerregistry.json"
+    },
+    "DigitalOceanDatabaseCluster": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceandatabasecluster.json"
+    },
+    "DigitalOceanDnsRecord": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceandnsrecord.json"
+    },
+    "DigitalOceanDnsZone": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceandnszone.json"
+    },
+    "DigitalOceanDroplet": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceandroplet.json"
+    },
+    "DigitalOceanFirewall": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceanfirewall.json"
+    },
+    "DigitalOceanFunction": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceanfunction.json"
+    },
+    "DigitalOceanKubernetesCluster": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceankubernetescluster.json"
+    },
+    "DigitalOceanKubernetesNodePool": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceankubernetesnodepool.json"
+    },
+    "DigitalOceanLoadBalancer": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceanloadbalancer.json"
+    },
+    "DigitalOceanVolume": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceanvolume.json"
+    },
+    "DigitalOceanVpc": {
+      "cloudProvider": "digitalocean",
+      "apiVersion": "digital-ocean.openmcf.org/v1",
+      "schemaFile": "digitalocean/digitaloceanvpc.json"
+    },
+    "GcpAlloydbCluster": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpalloydbcluster.json"
+    },
+    "GcpArtifactRegistryRepo": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpartifactregistryrepo.json"
+    },
+    "GcpBigQueryDataset": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpbigquerydataset.json"
+    },
+    "GcpBigtableInstance": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpbigtableinstance.json"
+    },
+    "GcpCertManagerCert": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpcertmanagercert.json"
+    },
+    "GcpCloudArmorPolicy": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpcloudarmorpolicy.json"
+    },
+    "GcpCloudCdn": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpcloudcdn.json"
+    },
+    "GcpCloudComposerEnvironment": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpcloudcomposerenvironment.json"
+    },
+    "GcpCloudFunction": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpcloudfunction.json"
+    },
+    "GcpCloudRun": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpcloudrun.json"
+    },
+    "GcpCloudSchedulerJob": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpcloudschedulerjob.json"
+    },
+    "GcpCloudSql": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpcloudsql.json"
+    },
+    "GcpCloudTasksQueue": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpcloudtasksqueue.json"
+    },
+    "GcpComputeInstance": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpcomputeinstance.json"
+    },
+    "GcpDataprocCluster": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpdataproccluster.json"
+    },
+    "GcpDataprocVirtualCluster": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpdataprocvirtualcluster.json"
+    },
+    "GcpDnsRecord": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpdnsrecord.json"
+    },
+    "GcpDnsZone": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpdnszone.json"
+    },
+    "GcpFilestoreInstance": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpfilestoreinstance.json"
+    },
+    "GcpFirestoreDatabase": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpfirestoredatabase.json"
+    },
+    "GcpFirewallRule": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpfirewallrule.json"
+    },
+    "GcpGcsBucket": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpgcsbucket.json"
+    },
+    "GcpGkeCluster": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpgkecluster.json"
+    },
+    "GcpGkeNodePool": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpgkenodepool.json"
+    },
+    "GcpGkeWorkloadIdentityBinding": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpgkeworkloadidentitybinding.json"
+    },
+    "GcpGlobalAddress": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpglobaladdress.json"
+    },
+    "GcpKmsKey": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpkmskey.json"
+    },
+    "GcpKmsKeyRing": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpkmskeyring.json"
+    },
+    "GcpMemorystoreInstance": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpmemorystoreinstance.json"
+    },
+    "GcpProject": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpproject.json"
+    },
+    "GcpPubSubSubscription": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcppubsubsubscription.json"
+    },
+    "GcpPubSubTopic": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcppubsubtopic.json"
+    },
+    "GcpRedisInstance": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpredisinstance.json"
+    },
+    "GcpRouterNat": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcprouternat.json"
+    },
+    "GcpSecretsManager": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpsecretsmanager.json"
+    },
+    "GcpServiceAccount": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpserviceaccount.json"
+    },
+    "GcpSpannerDatabase": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpspannerdatabase.json"
+    },
+    "GcpSpannerInstance": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpspannerinstance.json"
+    },
+    "GcpSubnetwork": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpsubnetwork.json"
+    },
+    "GcpVertexAiEndpoint": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpvertexaiendpoint.json"
+    },
+    "GcpVertexAiNotebook": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpvertexainotebook.json"
+    },
+    "GcpVpc": {
+      "cloudProvider": "gcp",
+      "apiVersion": "gcp.openmcf.org/v1",
+      "schemaFile": "gcp/gcpvpc.json"
+    },
+    "HetznerCloudCertificate": {
+      "cloudProvider": "hetznercloud",
+      "apiVersion": "hetzner-cloud.openmcf.org/v1",
+      "schemaFile": "hetznercloud/hetznercloudcertificate.json"
+    },
+    "HetznerCloudDnsZone": {
+      "cloudProvider": "hetznercloud",
+      "apiVersion": "hetzner-cloud.openmcf.org/v1",
+      "schemaFile": "hetznercloud/hetznerclouddnszone.json"
+    },
+    "HetznerCloudFirewall": {
+      "cloudProvider": "hetznercloud",
+      "apiVersion": "hetzner-cloud.openmcf.org/v1",
+      "schemaFile": "hetznercloud/hetznercloudfirewall.json"
+    },
+    "HetznerCloudFloatingIp": {
+      "cloudProvider": "hetznercloud",
+      "apiVersion": "hetzner-cloud.openmcf.org/v1",
+      "schemaFile": "hetznercloud/hetznercloudfloatingip.json"
+    },
+    "HetznerCloudLoadBalancer": {
+      "cloudProvider": "hetznercloud",
+      "apiVersion": "hetzner-cloud.openmcf.org/v1",
+      "schemaFile": "hetznercloud/hetznercloudloadbalancer.json"
+    },
+    "HetznerCloudNetwork": {
+      "cloudProvider": "hetznercloud",
+      "apiVersion": "hetzner-cloud.openmcf.org/v1",
+      "schemaFile": "hetznercloud/hetznercloudnetwork.json"
+    },
+    "HetznerCloudPlacementGroup": {
+      "cloudProvider": "hetznercloud",
+      "apiVersion": "hetzner-cloud.openmcf.org/v1",
+      "schemaFile": "hetznercloud/hetznercloudplacementgroup.json"
+    },
+    "HetznerCloudPrimaryIp": {
+      "cloudProvider": "hetznercloud",
+      "apiVersion": "hetzner-cloud.openmcf.org/v1",
+      "schemaFile": "hetznercloud/hetznercloudprimaryip.json"
+    },
+    "HetznerCloudServer": {
+      "cloudProvider": "hetznercloud",
+      "apiVersion": "hetzner-cloud.openmcf.org/v1",
+      "schemaFile": "hetznercloud/hetznercloudserver.json"
+    },
+    "HetznerCloudSnapshot": {
+      "cloudProvider": "hetznercloud",
+      "apiVersion": "hetzner-cloud.openmcf.org/v1",
+      "schemaFile": "hetznercloud/hetznercloudsnapshot.json"
+    },
+    "HetznerCloudSshKey": {
+      "cloudProvider": "hetznercloud",
+      "apiVersion": "hetzner-cloud.openmcf.org/v1",
+      "schemaFile": "hetznercloud/hetznercloudsshkey.json"
+    },
+    "HetznerCloudVolume": {
+      "cloudProvider": "hetznercloud",
+      "apiVersion": "hetzner-cloud.openmcf.org/v1",
+      "schemaFile": "hetznercloud/hetznercloudvolume.json"
+    },
+    "KubernetesAltinityOperator": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesaltinityoperator.json"
+    },
+    "KubernetesArgocd": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesargocd.json"
+    },
+    "KubernetesCertManager": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetescertmanager.json"
+    },
+    "KubernetesClickHouse": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesclickhouse.json"
+    },
+    "KubernetesCronJob": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetescronjob.json"
+    },
+    "KubernetesDaemonSet": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesdaemonset.json"
+    },
+    "KubernetesDeployment": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesdeployment.json"
+    },
+    "KubernetesElasticOperator": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kuberneteselasticoperator.json"
+    },
+    "KubernetesElasticsearch": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kuberneteselasticsearch.json"
+    },
+    "KubernetesExternalDns": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesexternaldns.json"
+    },
+    "KubernetesExternalSecrets": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesexternalsecrets.json"
+    },
+    "KubernetesGatewayApiCrds": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesgatewayapicrds.json"
+    },
+    "KubernetesGhaRunnerScaleSet": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesgharunnerscaleset.json"
+    },
+    "KubernetesGhaRunnerScaleSetController": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesgharunnerscalesetcontroller.json"
+    },
+    "KubernetesGitlab": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesgitlab.json"
+    },
+    "KubernetesGrafana": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesgrafana.json"
+    },
+    "KubernetesHarbor": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesharbor.json"
+    },
+    "KubernetesHelmRelease": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kuberneteshelmrelease.json"
+    },
+    "KubernetesIngressNginx": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesingressnginx.json"
+    },
+    "KubernetesIstio": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesistio.json"
+    },
+    "KubernetesJenkins": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesjenkins.json"
+    },
+    "KubernetesJob": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesjob.json"
+    },
+    "KubernetesKafka": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kuberneteskafka.json"
+    },
+    "KubernetesKeycloak": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kuberneteskeycloak.json"
+    },
+    "KubernetesLocust": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kuberneteslocust.json"
+    },
+    "KubernetesManifest": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesmanifest.json"
+    },
+    "KubernetesMongodb": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesmongodb.json"
+    },
+    "KubernetesNamespace": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesnamespace.json"
+    },
+    "KubernetesNats": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesnats.json"
+    },
+    "KubernetesNeo4j": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesneo4j.json"
+    },
+    "KubernetesOpenBao": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesopenbao.json"
+    },
+    "KubernetesOpenFga": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesopenfga.json"
+    },
+    "KubernetesPerconaMongoOperator": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesperconamongooperator.json"
+    },
+    "KubernetesPerconaMysqlOperator": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesperconamysqloperator.json"
+    },
+    "KubernetesPerconaPostgresOperator": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesperconapostgresoperator.json"
+    },
+    "KubernetesPostgres": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetespostgres.json"
+    },
+    "KubernetesPrometheus": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesprometheus.json"
+    },
+    "KubernetesRedis": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesredis.json"
+    },
+    "KubernetesRookCephCluster": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesrookcephcluster.json"
+    },
+    "KubernetesRookCephOperator": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesrookcephoperator.json"
+    },
+    "KubernetesSecret": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetessecret.json"
+    },
+    "KubernetesService": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesservice.json"
+    },
+    "KubernetesSignoz": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetessignoz.json"
+    },
+    "KubernetesSolr": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetessolr.json"
+    },
+    "KubernetesSolrOperator": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetessolroperator.json"
+    },
+    "KubernetesStatefulSet": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesstatefulset.json"
+    },
+    "KubernetesStrimziKafkaOperator": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetesstrimzikafkaoperator.json"
+    },
+    "KubernetesTekton": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetestekton.json"
+    },
+    "KubernetesTektonOperator": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetestektonoperator.json"
+    },
+    "KubernetesTemporal": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kubernetestemporal.json"
+    },
+    "KubernetesZalandoPostgresOperator": {
+      "cloudProvider": "kubernetes",
+      "apiVersion": "kubernetes.openmcf.org/v1",
+      "schemaFile": "kubernetes/kuberneteszalandopostgresoperator.json"
+    },
+    "MongodbAtlas": {
+      "cloudProvider": "atlas",
+      "apiVersion": "atlas.openmcf.org/v1",
+      "schemaFile": "atlas/mongodbatlas.json"
+    },
+    "OciAlarm": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocialarm.json"
+    },
+    "OciApiGateway": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ociapigateway.json"
+    },
+    "OciApplicationLoadBalancer": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ociapplicationloadbalancer.json"
+    },
+    "OciAutonomousDatabase": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ociautonomousdatabase.json"
+    },
+    "OciBastion": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocibastion.json"
+    },
+    "OciBlockVolume": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ociblockvolume.json"
+    },
+    "OciCompartment": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocicompartment.json"
+    },
+    "OciComputeInstance": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocicomputeinstance.json"
+    },
+    "OciContainerEngineCluster": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocicontainerenginecluster.json"
+    },
+    "OciContainerEngineNodePool": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocicontainerenginenodepool.json"
+    },
+    "OciContainerInstance": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocicontainerinstance.json"
+    },
+    "OciDbSystem": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocidbsystem.json"
+    },
+    "OciDevopsProject": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocidevopsproject.json"
+    },
+    "OciDnsRecord": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocidnsrecord.json"
+    },
+    "OciDnsZone": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocidnszone.json"
+    },
+    "OciDynamicGroup": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocidynamicgroup.json"
+    },
+    "OciDynamicRoutingGateway": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocidynamicroutinggateway.json"
+    },
+    "OciFileSystem": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocifilesystem.json"
+    },
+    "OciFunctionsApplication": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocifunctionsapplication.json"
+    },
+    "OciIdentityPolicy": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ociidentitypolicy.json"
+    },
+    "OciKmsKey": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocikmskey.json"
+    },
+    "OciKmsVault": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocikmsvault.json"
+    },
+    "OciLogGroup": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ociloggroup.json"
+    },
+    "OciMysqlDbSystem": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocimysqldbsystem.json"
+    },
+    "OciNetworkFirewall": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocinetworkfirewall.json"
+    },
+    "OciNetworkLoadBalancer": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocinetworkloadbalancer.json"
+    },
+    "OciNosqlTable": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocinosqltable.json"
+    },
+    "OciObjectStorageBucket": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ociobjectstoragebucket.json"
+    },
+    "OciPostgresqlDbSystem": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocipostgresqldbsystem.json"
+    },
+    "OciPublicIp": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocipublicip.json"
+    },
+    "OciQueue": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ociqueue.json"
+    },
+    "OciRedisCluster": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocirediscluster.json"
+    },
+    "OciSecurityGroup": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocisecuritygroup.json"
+    },
+    "OciStreamPool": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocistreampool.json"
+    },
+    "OciSubnet": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocisubnet.json"
+    },
+    "OciVaultSecret": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocivaultsecret.json"
+    },
+    "OciVcn": {
+      "cloudProvider": "oci",
+      "apiVersion": "oci.openmcf.org/v1",
+      "schemaFile": "oci/ocivcn.json"
+    },
+    "OpenFgaAuthorizationModel": {
+      "cloudProvider": "openfga",
+      "apiVersion": "openfga.openmcf.org/v1",
+      "schemaFile": "openfga/openfgaauthorizationmodel.json"
+    },
+    "OpenFgaRelationshipTuple": {
+      "cloudProvider": "openfga",
+      "apiVersion": "openfga.openmcf.org/v1",
+      "schemaFile": "openfga/openfgarelationshiptuple.json"
+    },
+    "OpenFgaStore": {
+      "cloudProvider": "openfga",
+      "apiVersion": "openfga.openmcf.org/v1",
+      "schemaFile": "openfga/openfgastore.json"
+    },
+    "OpenStackApplicationCredential": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackapplicationcredential.json"
+    },
+    "OpenStackContainerCluster": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackcontainercluster.json"
+    },
+    "OpenStackContainerClusterTemplate": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackcontainerclustertemplate.json"
+    },
+    "OpenStackDnsRecord": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackdnsrecord.json"
+    },
+    "OpenStackDnsZone": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackdnszone.json"
+    },
+    "OpenStackFloatingIp": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackfloatingip.json"
+    },
+    "OpenStackFloatingIpAssociate": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackfloatingipassociate.json"
+    },
+    "OpenStackImage": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackimage.json"
+    },
+    "OpenStackInstance": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackinstance.json"
+    },
+    "OpenStackKeypair": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackkeypair.json"
+    },
+    "OpenStackLoadBalancer": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackloadbalancer.json"
+    },
+    "OpenStackLoadBalancerListener": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackloadbalancerlistener.json"
+    },
+    "OpenStackLoadBalancerMember": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackloadbalancermember.json"
+    },
+    "OpenStackLoadBalancerMonitor": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackloadbalancermonitor.json"
+    },
+    "OpenStackLoadBalancerPool": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackloadbalancerpool.json"
+    },
+    "OpenStackNetwork": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstacknetwork.json"
+    },
+    "OpenStackNetworkPort": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstacknetworkport.json"
+    },
+    "OpenStackProject": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackproject.json"
+    },
+    "OpenStackRoleAssignment": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackroleassignment.json"
+    },
+    "OpenStackRouter": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackrouter.json"
+    },
+    "OpenStackRouterInterface": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackrouterinterface.json"
+    },
+    "OpenStackSecurityGroup": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstacksecuritygroup.json"
+    },
+    "OpenStackSecurityGroupRule": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstacksecuritygrouprule.json"
+    },
+    "OpenStackServerGroup": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackservergroup.json"
+    },
+    "OpenStackSubnet": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstacksubnet.json"
+    },
+    "OpenStackVolume": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackvolume.json"
+    },
+    "OpenStackVolumeAttach": {
+      "cloudProvider": "openstack",
+      "apiVersion": "openstack.openmcf.org/v1",
+      "schemaFile": "openstack/openstackvolumeattach.json"
+    },
+    "ScalewayBlockVolume": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewayblockvolume.json"
+    },
+    "ScalewayContainerRegistry": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewaycontainerregistry.json"
+    },
+    "ScalewayDnsRecord": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewaydnsrecord.json"
+    },
+    "ScalewayDnsZone": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewaydnszone.json"
+    },
+    "ScalewayInstance": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewayinstance.json"
+    },
+    "ScalewayInstanceSecurityGroup": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewayinstancesecuritygroup.json"
+    },
+    "ScalewayKapsuleCluster": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewaykapsulecluster.json"
+    },
+    "ScalewayKapsulePool": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewaykapsulepool.json"
+    },
+    "ScalewayLoadBalancer": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewayloadbalancer.json"
+    },
+    "ScalewayMongodbInstance": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewaymongodbinstance.json"
+    },
+    "ScalewayObjectBucket": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewayobjectbucket.json"
+    },
+    "ScalewayPrivateNetwork": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewayprivatenetwork.json"
+    },
+    "ScalewayPublicGateway": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewaypublicgateway.json"
+    },
+    "ScalewayRdbInstance": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewayrdbinstance.json"
+    },
+    "ScalewayRedisCluster": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewayrediscluster.json"
+    },
+    "ScalewayServerlessContainer": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewayserverlesscontainer.json"
+    },
+    "ScalewayServerlessFunction": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewayserverlessfunction.json"
+    },
+    "ScalewayVpc": {
+      "cloudProvider": "scaleway",
+      "apiVersion": "scaleway.openmcf.org/v1",
+      "schemaFile": "scaleway/scalewayvpc.json"
+    },
+    "SnowflakeDatabase": {
+      "cloudProvider": "snowflake",
+      "apiVersion": "snowflake.openmcf.org/v1",
+      "schemaFile": "snowflake/snowflakedatabase.json"
+    }
+  }
+}

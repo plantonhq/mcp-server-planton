@@ -1,0 +1,72 @@
+{
+  "name": "AzurePrivateDnsZone",
+  "kind": "AzurePrivateDnsZone",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzurePrivateDnsZone is the top-level API resource for an Azure Private DNS Zone.\n Private DNS zones provide DNS resolution within a virtual network, enabling\n Private Link connectivity for Azure PaaS services and custom internal DNS\n for VM hostname resolution.",
+  "protoPackage": "org.openmcf.provider.azure.azureprivatednszone.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azureprivatednszone/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azureprivatednszone/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzurePrivateDnsZoneSpec",
+    "fields": [
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Private DNS Zone will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Private DNS Zone.\n Must be a valid DNS domain name. For Private Link scenarios, this must match\n the Azure-defined privatelink zone name for the target service.\n\n Common Private Link zone names:\n - \"privatelink.postgres.database.azure.com\" -- PostgreSQL Flexible Server\n - \"privatelink.mysql.database.azure.com\" -- MySQL Flexible Server\n - \"privatelink.database.windows.net\" -- Azure SQL Database\n - \"privatelink.documents.azure.com\" -- Cosmos DB\n - \"privatelink.redis.cache.windows.net\" -- Azure Cache for Redis\n - \"privatelink.blob.core.windows.net\" -- Azure Blob Storage\n - \"privatelink.vaultcore.azure.net\" -- Azure Key Vault\n\n For custom internal DNS, use any valid domain (e.g., \"contoso.internal\").",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "VnetId",
+        "jsonName": "vnetId",
+        "protoField": "vnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Manager ID of the Virtual Network to link to this zone.\n The VNet link enables DNS resolution of records in this zone from resources\n within the linked VNet. Without a VNet link, the zone is unreachable.\n Format: /subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Network/virtualNetworks/{name}",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureVpc",
+        "referenceFieldPath": "status.outputs.vnet_id"
+      },
+      {
+        "name": "RegistrationEnabled",
+        "jsonName": "registrationEnabled",
+        "protoField": "registration_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable auto-registration of VM DNS records in the linked VNet.\n\n When true, Azure automatically creates and removes A records in this zone\n for virtual machines in the linked VNet. This is useful for custom internal\n DNS zones (e.g., \"contoso.internal\") where you want VMs to be automatically\n discoverable by hostname.\n\n For Private Link zones (e.g., \"privatelink.postgres.database.azure.com\"),\n this should remain false (the default). Private endpoint DNS records are\n managed by the private endpoint resource itself, not by auto-registration.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_registration_enabled"
+      }
+    ]
+  }
+}

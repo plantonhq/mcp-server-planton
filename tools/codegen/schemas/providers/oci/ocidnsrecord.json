@@ -1,0 +1,121 @@
+{
+  "name": "OciDnsRecord",
+  "kind": "OciDnsRecord",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciDnsRecord is the top-level resource representing an OCI DNS\n Record Set (RRSet) -- a set of DNS resource records sharing the\n same domain and record type within an OCI DNS zone.",
+  "protoPackage": "org.openmcf.provider.oci.ocidnsrecord.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocidnsrecord/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocidnsrecord/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciDnsRecordSpec",
+    "fields": [
+      {
+        "name": "ZoneNameOrId",
+        "jsonName": "zoneNameOrId",
+        "protoField": "zone_name_or_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID or name of the target DNS zone. ForceNew.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciDnsZone",
+        "referenceFieldPath": "status.outputs.zoneId"
+      },
+      {
+        "name": "Domain",
+        "jsonName": "domain",
+        "protoField": "domain",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Fully qualified domain name for the record set (e.g.,\n \"app.example.com\"). ForceNew.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Rtype",
+        "jsonName": "rtype",
+        "protoField": "rtype",
+        "type": {
+          "kind": "string"
+        },
+        "description": "DNS record type (e.g., A, AAAA, CNAME, MX, TXT, SRV, CAA, NS,\n PTR). Plain string because DNS types are IETF-standardized,\n numerous, and extensible. ForceNew.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ViewId",
+        "jsonName": "viewId",
+        "protoField": "view_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the private DNS view. Required when accessing a private\n zone by name. Not needed when zone_name_or_id is an OCID.\n ForceNew.",
+        "required": false,
+        "referenceFieldPath": "status.outputs.viewId"
+      },
+      {
+        "name": "Items",
+        "jsonName": "items",
+        "protoField": "items",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "RecordItem"
+          }
+        },
+        "description": "DNS records in this record set. At least one record is required.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "RecordItem",
+      "description": "A single DNS record within the record set.",
+      "protoType": "org.openmcf.provider.oci.ocidnsrecord.v1.OciDnsRecordSpec.RecordItem",
+      "fields": [
+        {
+          "name": "Rdata",
+          "jsonName": "rdata",
+          "protoField": "rdata",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Record data in type-specific presentation format.\n Examples: \"192.0.2.1\" (A), \"2001:db8::1\" (AAAA),\n \"mail.example.com.\" (MX with priority as part of rdata: \"10 mail.example.com.\"),\n \"\\\"v=spf1 include:example.com ~all\\\"\" (TXT).",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Ttl",
+          "jsonName": "ttl",
+          "protoField": "ttl",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Time to live in seconds. Controls how long resolvers cache\n this record. Values below 30 are not recommended by OCI.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        }
+      ]
+    }
+  ]
+}

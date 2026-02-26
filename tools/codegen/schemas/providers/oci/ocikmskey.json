@@ -1,0 +1,217 @@
+{
+  "name": "OciKmsKey",
+  "kind": "OciKmsKey",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciKmsKey is the top-level resource representing an OCI KMS Key\n that provides cryptographic operations (encrypt, decrypt, sign, verify)\n backed by a vault's HSM, software, or external key manager.",
+  "protoPackage": "org.openmcf.provider.oci.ocikmskey.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocikmskey/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocikmskey/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciKmsKeySpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the key will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Display name for the key. When omitted, the metadata name is used.",
+        "required": false
+      },
+      {
+        "name": "ManagementEndpoint",
+        "jsonName": "managementEndpoint",
+        "protoField": "management_endpoint",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Management endpoint of the vault that will contain this key.\n This is the vault-specific API endpoint for key management operations.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciKmsVault",
+        "referenceFieldPath": "status.outputs.managementEndpoint"
+      },
+      {
+        "name": "KeyShape",
+        "jsonName": "keyShape",
+        "protoField": "key_shape",
+        "type": {
+          "kind": "message",
+          "messageType": "KeyShape"
+        },
+        "description": "Cryptographic properties of the key. Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ProtectionMode",
+        "jsonName": "protectionMode",
+        "protoField": "protection_mode",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ocikmskey.v1.ProtectionMode",
+          "enumValues": [
+            "hsm",
+            "software",
+            "external"
+          ]
+        },
+        "description": "Protection mode determines where key material is stored.\n When omitted, OCI defaults to HSM (hardware security module).\n Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "IsAutoRotationEnabled",
+        "jsonName": "isAutoRotationEnabled",
+        "protoField": "is_auto_rotation_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether automatic key rotation is enabled.",
+        "required": false
+      },
+      {
+        "name": "AutoKeyRotationDetails",
+        "jsonName": "autoKeyRotationDetails",
+        "protoField": "auto_key_rotation_details",
+        "type": {
+          "kind": "message",
+          "messageType": "AutoKeyRotationDetails"
+        },
+        "description": "Schedule configuration for automatic key rotation.\n Only valid when is_auto_rotation_enabled is true.",
+        "required": false
+      },
+      {
+        "name": "ExternalKeyReference",
+        "jsonName": "externalKeyReference",
+        "protoField": "external_key_reference",
+        "type": {
+          "kind": "message",
+          "messageType": "ExternalKeyReference"
+        },
+        "description": "Reference to an external key on a third-party key manager.\n Required when protection_mode is external; must not be set otherwise.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AutoKeyRotationDetails",
+      "description": "AutoKeyRotationDetails configures the schedule for automatic\n key rotation. Only the writable fields are exposed -- read-only\n status fields (last_rotation_message, last_rotation_status,\n time_of_last_rotation, time_of_next_rotation) are excluded.",
+      "protoType": "org.openmcf.provider.oci.ocikmskey.v1.OciKmsKeySpec.AutoKeyRotationDetails",
+      "fields": [
+        {
+          "name": "RotationIntervalInDays",
+          "jsonName": "rotationIntervalInDays",
+          "protoField": "rotation_interval_in_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Rotation interval in days. When omitted, OCI uses its default\n rotation interval.",
+          "required": false
+        },
+        {
+          "name": "TimeOfScheduleStart",
+          "jsonName": "timeOfScheduleStart",
+          "protoField": "time_of_schedule_start",
+          "type": {
+            "kind": "string"
+          },
+          "description": "RFC 3339 timestamp for when the first automatic rotation should\n occur. When omitted, OCI schedules based on creation time.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ExternalKeyReference",
+      "description": "ExternalKeyReference identifies the key material on an external\n key manager. Required when protection_mode is external.",
+      "protoType": "org.openmcf.provider.oci.ocikmskey.v1.OciKmsKeySpec.ExternalKeyReference",
+      "fields": [
+        {
+          "name": "ExternalKeyId",
+          "jsonName": "externalKeyId",
+          "protoField": "external_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Identifier of the key on the external key manager.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "KeyShape",
+      "description": "KeyShape defines the immutable cryptographic properties of the key.",
+      "protoType": "org.openmcf.provider.oci.ocikmskey.v1.OciKmsKeySpec.KeyShape",
+      "fields": [
+        {
+          "name": "Algorithm",
+          "jsonName": "algorithm",
+          "protoField": "algorithm",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocikmskey.v1.Algorithm",
+            "enumValues": [
+              "aes",
+              "rsa",
+              "ecdsa"
+            ]
+          },
+          "description": "Encryption algorithm. Immutable after creation.",
+          "required": false
+        },
+        {
+          "name": "Length",
+          "jsonName": "length",
+          "protoField": "length",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Key length in bytes. Valid values depend on the algorithm:\n   AES:   16 (128-bit), 24 (192-bit), 32 (256-bit)\n   RSA:   256 (2048-bit), 384 (3072-bit), 512 (4096-bit)\n   ECDSA: 32 (P-256), 48 (P-384), 66 (P-521)",
+          "required": false
+        },
+        {
+          "name": "CurveId",
+          "jsonName": "curveId",
+          "protoField": "curve_id",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocikmskey.v1.CurveId",
+            "enumValues": [
+              "nist_p256",
+              "nist_p384",
+              "nist_p521"
+            ]
+          },
+          "description": "Elliptic curve identifier. Required for ECDSA; must not be set\n for AES or RSA.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

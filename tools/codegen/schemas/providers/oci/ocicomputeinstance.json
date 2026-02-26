@@ -1,0 +1,811 @@
+{
+  "name": "OciComputeInstance",
+  "kind": "OciComputeInstance",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciComputeInstance is the top-level resource representing an Oracle Cloud\n Infrastructure compute instance (virtual machine or bare metal host).",
+  "protoPackage": "org.openmcf.provider.oci.ocicomputeinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocicomputeinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocicomputeinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciComputeInstanceSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the instance will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "AvailabilityDomain",
+        "jsonName": "availabilityDomain",
+        "protoField": "availability_domain",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Availability domain where the instance will be placed\n (e.g. \"Ixxj:US-ASHBURN-AD-1\"). Changing this forces recreation.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Shape",
+        "jsonName": "shape",
+        "protoField": "shape",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Compute shape that determines the base hardware profile\n (e.g. \"VM.Standard.E4.Flex\", \"VM.Standard.A1.Flex\", \"BM.Standard3.64\").\n Flex shapes require shape_config to specify OCPUs and memory.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable name shown in the OCI Console.\n Falls back to metadata.name if not provided.",
+        "required": false
+      },
+      {
+        "name": "ShapeConfig",
+        "jsonName": "shapeConfig",
+        "protoField": "shape_config",
+        "type": {
+          "kind": "message",
+          "messageType": "ShapeConfig"
+        },
+        "description": "Shape configuration for flexible shapes. Required when the chosen shape\n name contains \"Flex\". Ignored for fixed shapes.",
+        "required": false
+      },
+      {
+        "name": "SourceDetails",
+        "jsonName": "sourceDetails",
+        "protoField": "source_details",
+        "type": {
+          "kind": "message",
+          "messageType": "SourceDetails"
+        },
+        "description": "Boot source for the instance: either an image OCID or a boot volume OCID.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "CreateVnicDetails",
+        "jsonName": "createVnicDetails",
+        "protoField": "create_vnic_details",
+        "type": {
+          "kind": "message",
+          "messageType": "CreateVnicDetails"
+        },
+        "description": "Primary VNIC configuration that determines the instance's network placement.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Metadata",
+        "jsonName": "metadata",
+        "protoField": "metadata",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Instance metadata key-value pairs. Common keys:\n   - \"ssh_authorized_keys\": newline-separated public SSH keys\n   - \"user_data\": base64-encoded cloud-init script",
+        "required": false
+      },
+      {
+        "name": "FaultDomain",
+        "jsonName": "faultDomain",
+        "protoField": "fault_domain",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Fault domain within the availability domain (e.g. \"FAULT-DOMAIN-1\").\n OCI distributes instances across fault domains for HA when unspecified.",
+        "required": false
+      },
+      {
+        "name": "IsPvEncryptionInTransitEnabled",
+        "jsonName": "isPvEncryptionInTransitEnabled",
+        "protoField": "is_pv_encryption_in_transit_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, enables in-transit encryption for the paravirtualized boot\n and data volume attachments. Changing this forces recreation.",
+        "required": false,
+        "oneofGroup": "_is_pv_encryption_in_transit_enabled"
+      },
+      {
+        "name": "AgentConfig",
+        "jsonName": "agentConfig",
+        "protoField": "agent_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AgentConfig"
+        },
+        "description": "Oracle Cloud Agent configuration controlling monitoring, management,\n and plugin behavior on the instance.",
+        "required": false
+      },
+      {
+        "name": "AvailabilityConfig",
+        "jsonName": "availabilityConfig",
+        "protoField": "availability_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AvailabilityConfig"
+        },
+        "description": "Availability and recovery behavior for infrastructure maintenance events.",
+        "required": false
+      },
+      {
+        "name": "LaunchOptions",
+        "jsonName": "launchOptions",
+        "protoField": "launch_options",
+        "type": {
+          "kind": "message",
+          "messageType": "LaunchOptions"
+        },
+        "description": "Low-level launch options for boot volume type, network type, and firmware.\n Most users can omit this; the defaults chosen by OCI based on the image\n and shape are appropriate for the vast majority of workloads.",
+        "required": false
+      },
+      {
+        "name": "InstanceOptions",
+        "jsonName": "instanceOptions",
+        "protoField": "instance_options",
+        "type": {
+          "kind": "message",
+          "messageType": "InstanceOptions"
+        },
+        "description": "Instance Metadata Service (IMDS) endpoint configuration.",
+        "required": false
+      },
+      {
+        "name": "PreemptibleInstanceConfig",
+        "jsonName": "preemptibleInstanceConfig",
+        "protoField": "preemptible_instance_config",
+        "type": {
+          "kind": "message",
+          "messageType": "PreemptibleInstanceConfig"
+        },
+        "description": "Configures the instance as preemptible (spot-like), allowing OCI to\n reclaim it when capacity is needed. Significantly reduces cost for\n fault-tolerant workloads.",
+        "required": false
+      },
+      {
+        "name": "CapacityReservationId",
+        "jsonName": "capacityReservationId",
+        "protoField": "capacity_reservation_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of a capacity reservation to launch this instance against.",
+        "required": false
+      },
+      {
+        "name": "DedicatedVmHostId",
+        "jsonName": "dedicatedVmHostId",
+        "protoField": "dedicated_vm_host_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of a dedicated VM host to place this instance on.\n Used for workloads requiring physical isolation for compliance or licensing.",
+        "required": false
+      },
+      {
+        "name": "PlatformConfig",
+        "jsonName": "platformConfig",
+        "protoField": "platform_config",
+        "type": {
+          "kind": "message",
+          "messageType": "PlatformConfig"
+        },
+        "description": "Platform-level security and hardware configuration. The applicable fields\n depend on the platform type: VM shapes (amd_vm, intel_vm) support secure\n boot, measured boot, TPM, and memory encryption; bare metal shapes support\n additional hardware tuning (NUMA, core percentage, SMT, etc.).",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AgentConfig",
+      "description": "AgentConfig controls the Oracle Cloud Agent software that runs inside the\n instance for monitoring, management, and OS patching.",
+      "protoType": "org.openmcf.provider.oci.ocicomputeinstance.v1.OciComputeInstanceSpec.AgentConfig",
+      "fields": [
+        {
+          "name": "AreAllPluginsDisabled",
+          "jsonName": "areAllPluginsDisabled",
+          "protoField": "are_all_plugins_disabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, disables all Oracle Cloud Agent plugins.",
+          "required": false,
+          "oneofGroup": "_are_all_plugins_disabled"
+        },
+        {
+          "name": "IsManagementDisabled",
+          "jsonName": "isManagementDisabled",
+          "protoField": "is_management_disabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, disables the management agent (OS Management, etc.).",
+          "required": false,
+          "oneofGroup": "_is_management_disabled"
+        },
+        {
+          "name": "IsMonitoringDisabled",
+          "jsonName": "isMonitoringDisabled",
+          "protoField": "is_monitoring_disabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, disables the monitoring agent (Compute Instance Monitoring).",
+          "required": false,
+          "oneofGroup": "_is_monitoring_disabled"
+        },
+        {
+          "name": "PluginsConfig",
+          "jsonName": "pluginsConfig",
+          "protoField": "plugins_config",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "PluginConfig"
+            }
+          },
+          "description": "Per-plugin overrides.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AvailabilityConfig",
+      "description": "AvailabilityConfig controls how the instance behaves during infrastructure\n maintenance events.",
+      "protoType": "org.openmcf.provider.oci.ocicomputeinstance.v1.OciComputeInstanceSpec.AvailabilityConfig",
+      "fields": [
+        {
+          "name": "IsLiveMigrationPreferred",
+          "jsonName": "isLiveMigrationPreferred",
+          "protoField": "is_live_migration_preferred",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, OCI prefers live migration over reboot during maintenance.",
+          "required": false,
+          "oneofGroup": "_is_live_migration_preferred"
+        },
+        {
+          "name": "RecoveryAction",
+          "jsonName": "recoveryAction",
+          "protoField": "recovery_action",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocicomputeinstance.v1.RecoveryAction",
+            "enumValues": [
+              "restore_instance",
+              "stop_instance"
+            ]
+          },
+          "description": "Action to take when the underlying host has an unplanned failure.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CreateVnicDetails",
+      "description": "CreateVnicDetails configures the primary virtual network interface card\n (VNIC) attached to the instance. This determines the subnet, security\n groups, IP addressing, and DNS registration.",
+      "protoType": "org.openmcf.provider.oci.ocicomputeinstance.v1.OciComputeInstanceSpec.CreateVnicDetails",
+      "fields": [
+        {
+          "name": "SubnetId",
+          "jsonName": "subnetId",
+          "protoField": "subnet_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the subnet for the primary VNIC.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "OciSubnet",
+          "referenceFieldPath": "status.outputs.subnetId"
+        },
+        {
+          "name": "NsgIds",
+          "jsonName": "nsgIds",
+          "protoField": "nsg_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OCIDs of network security groups to associate with the VNIC.",
+          "required": false,
+          "validation": {
+            "maxItems": 5
+          },
+          "referenceKind": "OciSecurityGroup",
+          "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+        },
+        {
+          "name": "AssignPublicIp",
+          "jsonName": "assignPublicIp",
+          "protoField": "assign_public_ip",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to assign a public IP. When unset, uses the subnet default\n (public subnets assign; private subnets do not).",
+          "required": false,
+          "oneofGroup": "_assign_public_ip"
+        },
+        {
+          "name": "DisplayName",
+          "jsonName": "displayName",
+          "protoField": "display_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Display name for the VNIC in the OCI Console.",
+          "required": false
+        },
+        {
+          "name": "HostnameLabel",
+          "jsonName": "hostnameLabel",
+          "protoField": "hostname_label",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Hostname label for DNS within the subnet's DNS domain.\n Must be alphanumeric, start with a letter, max 63 chars.",
+          "required": false
+        },
+        {
+          "name": "PrivateIp",
+          "jsonName": "privateIp",
+          "protoField": "private_ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specific private IP address to assign. Must be available within the\n subnet's CIDR. When omitted, OCI auto-assigns.",
+          "required": false
+        },
+        {
+          "name": "SkipSourceDestCheck",
+          "jsonName": "skipSourceDestCheck",
+          "protoField": "skip_source_dest_check",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, disables source/destination checking on the VNIC.\n Required for NAT instances or virtual routers.",
+          "required": false,
+          "oneofGroup": "_skip_source_dest_check"
+        },
+        {
+          "name": "AssignPrivateDnsRecord",
+          "jsonName": "assignPrivateDnsRecord",
+          "protoField": "assign_private_dns_record",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to register a private DNS record for the VNIC.",
+          "required": false,
+          "oneofGroup": "_assign_private_dns_record"
+        }
+      ]
+    },
+    {
+      "name": "InstanceOptions",
+      "description": "InstanceOptions controls the Instance Metadata Service (IMDS) endpoint\n behavior.",
+      "protoType": "org.openmcf.provider.oci.ocicomputeinstance.v1.OciComputeInstanceSpec.InstanceOptions",
+      "fields": [
+        {
+          "name": "AreLegacyImdsEndpointsDisabled",
+          "jsonName": "areLegacyImdsEndpointsDisabled",
+          "protoField": "are_legacy_imds_endpoints_disabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, disables the legacy IMDSv1 endpoints. Recommended for\n security: use only the IMDSv2 token-based endpoint.",
+          "required": false,
+          "oneofGroup": "_are_legacy_imds_endpoints_disabled"
+        }
+      ]
+    },
+    {
+      "name": "LaunchOptions",
+      "description": "LaunchOptions configure low-level boot and network settings. These are\n usually set automatically based on the image and shape; only override\n when you have specific requirements (e.g., paravirtualized networking\n for higher throughput).\n\n boot_volume_type and network_type use strings instead of enums because\n both sets share values (\"VFIO\", \"PARAVIRTUALIZED\") and protobuf's C++\n scoping rules prevent duplicate enum values in the same enclosing message.",
+      "protoType": "org.openmcf.provider.oci.ocicomputeinstance.v1.OciComputeInstanceSpec.LaunchOptions",
+      "fields": [
+        {
+          "name": "BootVolumeType",
+          "jsonName": "bootVolumeType",
+          "protoField": "boot_volume_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Emulation type for the boot volume attachment.\n Valid values: \"ISCSI\", \"SCSI\", \"IDE\", \"VFIO\", \"PARAVIRTUALIZED\".",
+          "required": false
+        },
+        {
+          "name": "NetworkType",
+          "jsonName": "networkType",
+          "protoField": "network_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Emulation type for the primary network interface.\n Valid values: \"E1000\", \"VFIO\", \"PARAVIRTUALIZED\".",
+          "required": false
+        },
+        {
+          "name": "Firmware",
+          "jsonName": "firmware",
+          "protoField": "firmware",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocicomputeinstance.v1.Firmware",
+            "enumValues": [
+              "bios",
+              "uefi_64"
+            ]
+          },
+          "description": "Firmware type for the instance.",
+          "required": false
+        },
+        {
+          "name": "IsPvEncryptionInTransitEnabled",
+          "jsonName": "isPvEncryptionInTransitEnabled",
+          "protoField": "is_pv_encryption_in_transit_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "In-transit encryption for the boot volume attachment (within launch options).",
+          "required": false,
+          "oneofGroup": "_is_pv_encryption_in_transit_enabled"
+        },
+        {
+          "name": "IsConsistentVolumeNamingEnabled",
+          "jsonName": "isConsistentVolumeNamingEnabled",
+          "protoField": "is_consistent_volume_naming_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Consistent naming for attached volumes (e.g. /dev/oracleoci/...).",
+          "required": false,
+          "oneofGroup": "_is_consistent_volume_naming_enabled"
+        }
+      ]
+    },
+    {
+      "name": "PlatformConfig",
+      "description": "PlatformConfig provides hardware-level security and performance settings.\n The available settings vary by shape family:\n   - VM shapes (amd_vm, intel_vm): secure boot, measured boot, TPM, memory encryption\n   - Bare metal shapes: all VM options plus NUMA, core percentage, SMT, etc.\n Fields that don't apply to the chosen type are ignored by the OCI API.",
+      "protoType": "org.openmcf.provider.oci.ocicomputeinstance.v1.OciComputeInstanceSpec.PlatformConfig",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocicomputeinstance.v1.PlatformType",
+            "enumValues": [
+              "amd_milan_bm",
+              "amd_milan_bm_gpu",
+              "amd_rome_bm",
+              "amd_rome_bm_gpu",
+              "amd_vm",
+              "generic_bm",
+              "intel_icelake_bm",
+              "intel_skylake_bm",
+              "intel_vm"
+            ]
+          },
+          "description": "Platform type. Must match the instance shape family.",
+          "required": false
+        },
+        {
+          "name": "IsSecureBootEnabled",
+          "jsonName": "isSecureBootEnabled",
+          "protoField": "is_secure_boot_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Secure Boot to verify boot software signatures (VM + BM).",
+          "required": false,
+          "oneofGroup": "_is_secure_boot_enabled"
+        },
+        {
+          "name": "IsMeasuredBootEnabled",
+          "jsonName": "isMeasuredBootEnabled",
+          "protoField": "is_measured_boot_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Measured Boot for integrity measurements stored in the TPM (VM + BM).",
+          "required": false,
+          "oneofGroup": "_is_measured_boot_enabled"
+        },
+        {
+          "name": "IsTrustedPlatformModuleEnabled",
+          "jsonName": "isTrustedPlatformModuleEnabled",
+          "protoField": "is_trusted_platform_module_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable the Trusted Platform Module for secure key storage (VM + BM).",
+          "required": false,
+          "oneofGroup": "_is_trusted_platform_module_enabled"
+        },
+        {
+          "name": "IsMemoryEncryptionEnabled",
+          "jsonName": "isMemoryEncryptionEnabled",
+          "protoField": "is_memory_encryption_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable AMD SEV or Intel TME memory encryption (VM + BM).",
+          "required": false,
+          "oneofGroup": "_is_memory_encryption_enabled"
+        },
+        {
+          "name": "IsSymmetricMultiThreadingEnabled",
+          "jsonName": "isSymmetricMultiThreadingEnabled",
+          "protoField": "is_symmetric_multi_threading_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Symmetric Multi-Threading (SMT/Hyperthreading). BM shapes only.",
+          "required": false,
+          "oneofGroup": "_is_symmetric_multi_threading_enabled"
+        },
+        {
+          "name": "AreVirtualInstructionsEnabled",
+          "jsonName": "areVirtualInstructionsEnabled",
+          "protoField": "are_virtual_instructions_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable nested virtualization (AMD-V or VT-x). BM shapes only.",
+          "required": false,
+          "oneofGroup": "_are_virtual_instructions_enabled"
+        },
+        {
+          "name": "IsAccessControlServiceEnabled",
+          "jsonName": "isAccessControlServiceEnabled",
+          "protoField": "is_access_control_service_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Access Control Service for PCI passthrough isolation. BM shapes only.",
+          "required": false,
+          "oneofGroup": "_is_access_control_service_enabled"
+        },
+        {
+          "name": "IsInputOutputMemoryManagementUnitEnabled",
+          "jsonName": "isInputOutputMemoryManagementUnitEnabled",
+          "protoField": "is_input_output_memory_management_unit_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable IOMMU for device memory protection. BM shapes only.",
+          "required": false,
+          "oneofGroup": "_is_input_output_memory_management_unit_enabled"
+        },
+        {
+          "name": "NumaNodesPerSocket",
+          "jsonName": "numaNodesPerSocket",
+          "protoField": "numa_nodes_per_socket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "NUMA nodes per socket configuration. BM shapes only.\n Valid values: \"NPS0\", \"NPS1\", \"NPS2\", \"NPS4\".",
+          "required": false
+        },
+        {
+          "name": "PercentageOfCoresEnabled",
+          "jsonName": "percentageOfCoresEnabled",
+          "protoField": "percentage_of_cores_enabled",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Percentage of cores enabled on the instance. BM shapes only.",
+          "required": false,
+          "oneofGroup": "_percentage_of_cores_enabled"
+        }
+      ]
+    },
+    {
+      "name": "PluginConfig",
+      "protoType": "org.openmcf.provider.oci.ocicomputeinstance.v1.OciComputeInstanceSpec.AgentConfig.PluginConfig",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Plugin name (e.g. \"Vulnerability Scanning\", \"OS Management Service Agent\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DesiredState",
+          "jsonName": "desiredState",
+          "protoField": "desired_state",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocicomputeinstance.v1.DesiredState",
+            "enumValues": [
+              "enabled",
+              "disabled"
+            ]
+          },
+          "description": "Whether the plugin should be enabled or disabled.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "PreemptibleInstanceConfig",
+      "description": "PreemptibleInstanceConfig configures the instance as preemptible.\n Preemptible instances can be reclaimed by OCI at any time when capacity\n is needed, in exchange for significantly lower pricing.",
+      "protoType": "org.openmcf.provider.oci.ocicomputeinstance.v1.OciComputeInstanceSpec.PreemptibleInstanceConfig",
+      "fields": [
+        {
+          "name": "PreserveBootVolume",
+          "jsonName": "preserveBootVolume",
+          "protoField": "preserve_boot_volume",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, the boot volume is preserved when the instance is preempted.\n When false, both instance and boot volume are terminated.",
+          "required": false,
+          "oneofGroup": "_preserve_boot_volume"
+        }
+      ]
+    },
+    {
+      "name": "ShapeConfig",
+      "description": "ShapeConfig specifies the exact resource allocation for flexible shapes.",
+      "protoType": "org.openmcf.provider.oci.ocicomputeinstance.v1.OciComputeInstanceSpec.ShapeConfig",
+      "fields": [
+        {
+          "name": "Ocpus",
+          "jsonName": "ocpus",
+          "protoField": "ocpus",
+          "type": {
+            "kind": "float"
+          },
+          "description": "Number of OCPUs (Oracle CPUs). Each OCPU maps to a physical core\n with simultaneous multi-threading.",
+          "required": false,
+          "oneofGroup": "_ocpus"
+        },
+        {
+          "name": "MemoryInGbs",
+          "jsonName": "memoryInGbs",
+          "protoField": "memory_in_gbs",
+          "type": {
+            "kind": "float"
+          },
+          "description": "Amount of memory in GiB. Flex shapes allow a range per OCPU; consult\n the shape documentation for valid ratios.",
+          "required": false,
+          "oneofGroup": "_memory_in_gbs"
+        },
+        {
+          "name": "BaselineOcpuUtilization",
+          "jsonName": "baselineOcpuUtilization",
+          "protoField": "baseline_ocpu_utilization",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Baseline OCPU utilization for burstable instances.\n Valid values: \"BASELINE_1_8\", \"BASELINE_1_2\", \"BASELINE_1_1\".\n Only applicable to burstable shapes.",
+          "required": false
+        },
+        {
+          "name": "Nvmes",
+          "jsonName": "nvmes",
+          "protoField": "nvmes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of NVMe drives for dense-IO shapes.",
+          "required": false,
+          "oneofGroup": "_nvmes"
+        }
+      ]
+    },
+    {
+      "name": "SourceDetails",
+      "description": "SourceDetails defines the boot source -- either a platform/custom image\n or an existing boot volume to clone.",
+      "protoType": "org.openmcf.provider.oci.ocicomputeinstance.v1.OciComputeInstanceSpec.SourceDetails",
+      "fields": [
+        {
+          "name": "SourceType",
+          "jsonName": "sourceType",
+          "protoField": "source_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocicomputeinstance.v1.SourceType",
+            "enumValues": [
+              "image",
+              "boot_volume"
+            ]
+          },
+          "description": "Whether the instance boots from an image or an existing boot volume.",
+          "required": false
+        },
+        {
+          "name": "SourceId",
+          "jsonName": "sourceId",
+          "protoField": "source_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the image or boot volume to launch from.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "BootVolumeSizeInGbs",
+          "jsonName": "bootVolumeSizeInGbs",
+          "protoField": "boot_volume_size_in_gbs",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Size of the boot volume in GiB. When launching from an image, defaults\n to the image's minimum size. Must be \u003e= the image minimum.",
+          "required": false,
+          "oneofGroup": "_boot_volume_size_in_gbs"
+        },
+        {
+          "name": "BootVolumeVpusPerGb",
+          "jsonName": "bootVolumeVpusPerGb",
+          "protoField": "boot_volume_vpus_per_gb",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "VPUs per GB for the boot volume (10=Balanced, 20=Higher Performance,\n 30-120=Ultra High Performance). Defaults to 10.",
+          "required": false,
+          "oneofGroup": "_boot_volume_vpus_per_gb"
+        },
+        {
+          "name": "KmsKeyId",
+          "jsonName": "kmsKeyId",
+          "protoField": "kms_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of a KMS key to encrypt the boot volume at rest.\n default_kind will be added when OciKmsKey (R25) is implemented.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

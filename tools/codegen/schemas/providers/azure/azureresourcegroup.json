@@ -1,0 +1,46 @@
+{
+  "name": "AzureResourceGroup",
+  "kind": "AzureResourceGroup",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureResourceGroup is the top-level API resource for an Azure Resource Group.\n Resource groups are the foundational organizational unit in Azure -- every other\n Azure resource lives inside one.",
+  "protoPackage": "org.openmcf.provider.azure.azureresourcegroup.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azureresourcegroup/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azureresourcegroup/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureResourceGroupSpec",
+    "fields": [
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the resource group.\n Must be unique within the Azure subscription.\n Allowed characters: alphanumeric, underscores, hyphens, periods, and parentheses.\n Cannot end with a period. Maximum 90 characters.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 90
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the resource group will be created.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".\n Note: Resources within the resource group can be in different regions,\n but the resource group's region determines where its metadata is stored.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      }
+    ]
+  }
+}

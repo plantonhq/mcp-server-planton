@@ -1,0 +1,1183 @@
+{
+  "name": "KubernetesGhaRunnerScaleSet",
+  "kind": "KubernetesGhaRunnerScaleSet",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "KubernetesGhaRunnerScaleSet is a deployment component that creates a GitHub Actions\n Runner Scale Set on a Kubernetes cluster. The scale set provides self-hosted runners\n that automatically scale based on workflow demand.\n\n Each scale set creates an AutoScalingRunnerSet custom resource that the controller\n watches. When GitHub Actions workflows request runners with matching labels, the\n controller creates ephemeral runner pods to execute the jobs.\n\n Prerequisites:\n - KubernetesGhaRunnerScaleSetController must be deployed in the cluster\n - Valid GitHub authentication (PAT token or GitHub App)\n\n Example workflow configuration:\n   jobs:\n     build:\n       runs-on: [self-hosted, my-runner-scale-set-name]",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetesgharunnerscaleset/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetesgharunnerscaleset/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesGhaRunnerScaleSetSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "Target Kubernetes Cluster where the runner scale set will be deployed.",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes Namespace where the runner scale set will be installed.\n Multiple scale sets can be installed in different namespaces.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "CreateNamespace",
+        "jsonName": "createNamespace",
+        "protoField": "create_namespace",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Flag to indicate if the namespace should be created.",
+        "required": false
+      },
+      {
+        "name": "HelmChartVersion",
+        "jsonName": "helmChartVersion",
+        "protoField": "helm_chart_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Version of the Helm chart to deploy.\n Chart versions match the runner image versions.\n https://github.com/actions/actions-runner-controller/releases",
+        "required": false,
+        "default": "0.13.1",
+        "oneofGroup": "_helm_chart_version"
+      },
+      {
+        "name": "Github",
+        "jsonName": "github",
+        "protoField": "github",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesGhaRunnerScaleSetGitHubConfig"
+        },
+        "description": "GitHub configuration for connecting runners to GitHub.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Scaling",
+        "jsonName": "scaling",
+        "protoField": "scaling",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesGhaRunnerScaleSetScaling"
+        },
+        "description": "Scaling configuration for the runner pool.",
+        "required": false
+      },
+      {
+        "name": "RunnerGroup",
+        "jsonName": "runnerGroup",
+        "protoField": "runner_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Runner group name in GitHub (organization or enterprise level).\n Defaults to \"default\" if not specified.",
+        "required": false,
+        "default": "default",
+        "oneofGroup": "_runner_group"
+      },
+      {
+        "name": "RunnerScaleSetName",
+        "jsonName": "runnerScaleSetName",
+        "protoField": "runner_scale_set_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the runner scale set as it appears in GitHub.\n Defaults to the Helm release name (metadata.name) if not specified.\n This name is used as the runs-on label in workflow YAML.",
+        "required": false
+      },
+      {
+        "name": "ContainerMode",
+        "jsonName": "containerMode",
+        "protoField": "container_mode",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesGhaRunnerScaleSetContainerMode"
+        },
+        "description": "Container mode for running workflows.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Runner",
+        "jsonName": "runner",
+        "protoField": "runner",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesGhaRunnerScaleSetRunner"
+        },
+        "description": "Runner container configuration.",
+        "required": false
+      },
+      {
+        "name": "PersistentVolumes",
+        "jsonName": "persistentVolumes",
+        "protoField": "persistent_volumes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "KubernetesGhaRunnerScaleSetPersistentVolume"
+          }
+        },
+        "description": "Persistent volumes to attach to runner pods.\n Use this to persist build caches, dependencies, or workspace data across job runs.\n Each volume creates a PVC and mounts it to the specified path in runner pods.",
+        "required": false
+      },
+      {
+        "name": "ControllerServiceAccount",
+        "jsonName": "controllerServiceAccount",
+        "protoField": "controller_service_account",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesGhaRunnerScaleSetControllerServiceAccount"
+        },
+        "description": "Controller service account configuration.\n Required when the controller is installed with watchSingleNamespace flag\n or when automatic controller discovery doesn't work.",
+        "required": false
+      },
+      {
+        "name": "ImagePullSecrets",
+        "jsonName": "imagePullSecrets",
+        "protoField": "image_pull_secrets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Image pull secrets for private container registries.",
+        "required": false
+      },
+      {
+        "name": "Labels",
+        "jsonName": "labels",
+        "protoField": "labels",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Labels to apply to all resources created by the scale set.",
+        "required": false
+      },
+      {
+        "name": "Annotations",
+        "jsonName": "annotations",
+        "protoField": "annotations",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Annotations to apply to all resources created by the scale set.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ContainerResources",
+      "description": "**ContainerResources** specifies the CPU and memory resources for a container.\n It allows you to define resource limits and requests to manage resource allocation and ensure optimal performance.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerResources",
+      "fields": [
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource limits for the container.\n Specify the maximum amount of CPU and memory that the container can use.",
+          "required": false
+        },
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource requests for the container.\n Specify the minimum amount of CPU and memory that the container is guaranteed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CpuMemory",
+      "description": "**CpuMemory** defines CPU and memory resource quantities for a container.\n It is used to specify the limits and requests for CPU and memory resources.",
+      "protoType": "org.openmcf.provider.kubernetes.CpuMemory",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetContainerMode",
+      "description": "KubernetesGhaRunnerScaleSetContainerMode defines how workflows are executed.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1.KubernetesGhaRunnerScaleSetContainerMode",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1.ContainerModeType",
+            "enumValues": [
+              "DIND",
+              "KUBERNETES",
+              "KUBERNETES_NO_VOLUME",
+              "DEFAULT"
+            ]
+          },
+          "description": "The container mode type.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "WorkVolumeClaim",
+          "jsonName": "workVolumeClaim",
+          "protoField": "work_volume_claim",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesGhaRunnerScaleSetWorkVolumeClaim"
+          },
+          "description": "Work volume claim configuration for kubernetes mode.\n Required when type is KUBERNETES.\n This volume is used for the workspace where jobs run.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetControllerServiceAccount",
+      "description": "KubernetesGhaRunnerScaleSetControllerServiceAccount specifies the controller's\n service account for creating RBAC bindings.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1.KubernetesGhaRunnerScaleSetControllerServiceAccount",
+      "fields": [
+        {
+          "name": "Namespace",
+          "jsonName": "namespace",
+          "protoField": "namespace",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Namespace where the controller is installed.",
+          "required": false
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the controller's service account.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetEnvVar",
+      "description": "KubernetesGhaRunnerScaleSetEnvVar defines an environment variable.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1.KubernetesGhaRunnerScaleSetEnvVar",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the environment variable.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Value of the environment variable.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetGitHubApp",
+      "description": "KubernetesGhaRunnerScaleSetGitHubApp configures GitHub App authentication.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1.KubernetesGhaRunnerScaleSetGitHubApp",
+      "fields": [
+        {
+          "name": "AppId",
+          "jsonName": "appId",
+          "protoField": "app_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The GitHub App ID or Client ID.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "InstallationId",
+          "jsonName": "installationId",
+          "protoField": "installation_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The GitHub App Installation ID.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "PrivateKeyBase64",
+          "jsonName": "privateKeyBase64",
+          "protoField": "private_key_base64",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The private key for the GitHub App (base64 encoded PEM format).\n The PEM file contents must be base64 encoded before providing here.\n Example: cat private-key.pem | base64",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetGitHubConfig",
+      "description": "KubernetesGhaRunnerScaleSetGitHubConfig defines GitHub connection settings.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1.KubernetesGhaRunnerScaleSetGitHubConfig",
+      "fields": [
+        {
+          "name": "ConfigUrl",
+          "jsonName": "configUrl",
+          "protoField": "config_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "GitHub URL for where to configure runners.\n Examples:\n - Repository: https://github.com/myorg/myrepo\n - Organization: https://github.com/myorg\n - Enterprise: https://github.com/enterprises/myenterprise",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "PatToken",
+          "jsonName": "patToken",
+          "protoField": "pat_token",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesGhaRunnerScaleSetPatToken"
+          },
+          "description": "Personal Access Token for authentication.\n The token must have appropriate permissions:\n - For repositories: repo scope\n - For organizations: admin:org scope",
+          "required": false,
+          "oneofGroup": "auth"
+        },
+        {
+          "name": "GithubApp",
+          "jsonName": "githubApp",
+          "protoField": "github_app",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesGhaRunnerScaleSetGitHubApp"
+          },
+          "description": "GitHub App for authentication (recommended for organizations).",
+          "required": false,
+          "oneofGroup": "auth"
+        },
+        {
+          "name": "ExistingSecretName",
+          "jsonName": "existingSecretName",
+          "protoField": "existing_secret_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of a pre-existing Kubernetes secret containing GitHub credentials.\n The secret must be in the same namespace as the runner scale set.\n For PAT: must have 'github_token' key\n For GitHub App: must have 'github_app_id', 'github_app_installation_id', 'github_app_private_key' keys",
+          "required": false,
+          "oneofGroup": "auth"
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetPatToken",
+      "description": "KubernetesGhaRunnerScaleSetPatToken configures Personal Access Token authentication.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1.KubernetesGhaRunnerScaleSetPatToken",
+      "fields": [
+        {
+          "name": "Token",
+          "jsonName": "token",
+          "protoField": "token",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The GitHub Personal Access Token.\n Must have appropriate permissions for the scope (repo, org, or enterprise).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetPersistentVolume",
+      "description": "KubernetesGhaRunnerScaleSetPersistentVolume defines a PVC to create and mount.\n These volumes persist across runner pod restarts and job executions,\n making them ideal for caching build dependencies.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1.KubernetesGhaRunnerScaleSetPersistentVolume",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the volume.\n Used to reference this volume in volume_mounts.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "StorageClass",
+          "jsonName": "storageClass",
+          "protoField": "storage_class",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Storage class for the PVC.\n If not specified, uses the cluster's default storage class.",
+          "required": false
+        },
+        {
+          "name": "Size",
+          "jsonName": "size",
+          "protoField": "size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Size of the volume (e.g., \"10Gi\", \"100Gi\").",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AccessModes",
+          "jsonName": "accessModes",
+          "protoField": "access_modes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Access modes for the PVC.\n Common values: \"ReadWriteOnce\", \"ReadOnlyMany\", \"ReadWriteMany\"\n Default: [\"ReadWriteOnce\"]",
+          "required": false
+        },
+        {
+          "name": "MountPath",
+          "jsonName": "mountPath",
+          "protoField": "mount_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Mount path in the runner container.\n Where the volume will be mounted (e.g., \"/home/runner/.cache\").",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ReadOnly",
+          "jsonName": "readOnly",
+          "protoField": "read_only",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to mount the volume as read-only.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetRunner",
+      "description": "KubernetesGhaRunnerScaleSetRunner configures the runner container.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1.KubernetesGhaRunnerScaleSetRunner",
+      "fields": [
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesGhaRunnerScaleSetRunnerImage"
+          },
+          "description": "Custom runner image configuration.\n When not specified, uses the default ghcr.io/actions/actions-runner image.",
+          "required": false
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "CPU and memory resources for the runner container.",
+          "required": false
+        },
+        {
+          "name": "Env",
+          "jsonName": "env",
+          "protoField": "env",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "KubernetesGhaRunnerScaleSetEnvVar"
+            }
+          },
+          "description": "Environment variables to set in the runner container.",
+          "required": false
+        },
+        {
+          "name": "VolumeMounts",
+          "jsonName": "volumeMounts",
+          "protoField": "volume_mounts",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "KubernetesGhaRunnerScaleSetVolumeMount"
+            }
+          },
+          "description": "Volume mounts for the runner container.\n Used to mount persistent volumes to specific paths.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetRunnerImage",
+      "description": "KubernetesGhaRunnerScaleSetRunnerImage configures a custom runner image.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1.KubernetesGhaRunnerScaleSetRunnerImage",
+      "fields": [
+        {
+          "name": "Repository",
+          "jsonName": "repository",
+          "protoField": "repository",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Container image repository.\n Default: ghcr.io/actions/actions-runner",
+          "required": false,
+          "default": "ghcr.io/actions/actions-runner",
+          "oneofGroup": "_repository"
+        },
+        {
+          "name": "Tag",
+          "jsonName": "tag",
+          "protoField": "tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Image tag.\n When not specified, uses the chart appVersion (matches controller version).\n Default tag aligns with helm_chart_version default.\n https://github.com/actions/runner/pkgs/container/actions-runner",
+          "required": false,
+          "default": "2.331.0",
+          "oneofGroup": "_tag"
+        },
+        {
+          "name": "PullPolicy",
+          "jsonName": "pullPolicy",
+          "protoField": "pull_policy",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Image pull policy: Always, IfNotPresent, or Never.\n Default: IfNotPresent",
+          "required": false,
+          "default": "IfNotPresent",
+          "oneofGroup": "_pull_policy"
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetScaling",
+      "description": "KubernetesGhaRunnerScaleSetScaling defines autoscaling behavior.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1.KubernetesGhaRunnerScaleSetScaling",
+      "fields": [
+        {
+          "name": "MinRunners",
+          "jsonName": "minRunners",
+          "protoField": "min_runners",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of idle runners to maintain.\n Set to 0 for scale-to-zero behavior (most cost-effective).\n Set higher for faster job startup at the cost of idle resources.",
+          "required": false,
+          "default": "0",
+          "oneofGroup": "_min_runners"
+        },
+        {
+          "name": "MaxRunners",
+          "jsonName": "maxRunners",
+          "protoField": "max_runners",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of runners the scale set can scale up to.\n Limits concurrent job execution to prevent resource exhaustion.",
+          "required": false,
+          "validation": {
+            "min": 1
+          },
+          "default": "5",
+          "oneofGroup": "_max_runners"
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetVolumeMount",
+      "description": "KubernetesGhaRunnerScaleSetVolumeMount defines how to mount a volume in the runner.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1.KubernetesGhaRunnerScaleSetVolumeMount",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the volume to mount (must match a persistent_volume name).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "MountPath",
+          "jsonName": "mountPath",
+          "protoField": "mount_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path within the container where the volume should be mounted.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ReadOnly",
+          "jsonName": "readOnly",
+          "protoField": "read_only",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the volume should be mounted read-only.",
+          "required": false
+        },
+        {
+          "name": "SubPath",
+          "jsonName": "subPath",
+          "protoField": "sub_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path within the volume to mount (subdirectory).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetWorkVolumeClaim",
+      "description": "KubernetesGhaRunnerScaleSetWorkVolumeClaim configures the ephemeral work volume\n for kubernetes container mode.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscaleset.v1.KubernetesGhaRunnerScaleSetWorkVolumeClaim",
+      "fields": [
+        {
+          "name": "StorageClass",
+          "jsonName": "storageClass",
+          "protoField": "storage_class",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Storage class for the work volume.\n If not specified, uses the cluster's default storage class.",
+          "required": false
+        },
+        {
+          "name": "Size",
+          "jsonName": "size",
+          "protoField": "size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Size of the work volume (e.g., \"10Gi\", \"100Gi\").\n Should be large enough to hold the repository and build artifacts.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AccessModes",
+          "jsonName": "accessModes",
+          "protoField": "access_modes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Access modes for the volume.\n Default: [\"ReadWriteOnce\"]",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "name": "OciQueue",
+  "kind": "OciQueue",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciQueue is the top-level resource representing an OCI Queue -- a\n fully managed, serverless message queue for asynchronous\n communication between decoupled services.",
+  "protoPackage": "org.openmcf.provider.oci.ociqueue.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ociqueue/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ociqueue/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciQueueSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the queue will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "CustomEncryptionKeyId",
+        "jsonName": "customEncryptionKeyId",
+        "protoField": "custom_encryption_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the custom encryption key for encrypting message content.\n When omitted, Oracle-managed encryption is used.",
+        "required": false,
+        "referenceKind": "OciKmsKey",
+        "referenceFieldPath": "status.outputs.keyId"
+      },
+      {
+        "name": "DeadLetterQueueDeliveryCount",
+        "jsonName": "deadLetterQueueDeliveryCount",
+        "protoField": "dead_letter_queue_delivery_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of delivery attempts before a message is moved to the dead\n letter queue. A value of 0 disables the DLQ. When omitted, OCI\n applies its default.",
+        "required": false,
+        "oneofGroup": "_dead_letter_queue_delivery_count"
+      },
+      {
+        "name": "RetentionInSeconds",
+        "jsonName": "retentionInSeconds",
+        "protoField": "retention_in_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Retention period for messages in seconds. ForceNew -- changing this\n value forces queue recreation. When omitted, OCI applies its\n default (604800 seconds / 7 days).",
+        "required": false,
+        "oneofGroup": "_retention_in_seconds"
+      },
+      {
+        "name": "TimeoutInSeconds",
+        "jsonName": "timeoutInSeconds",
+        "protoField": "timeout_in_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Default polling timeout for GetMessages calls, in seconds.\n When omitted, OCI applies its default.",
+        "required": false,
+        "oneofGroup": "_timeout_in_seconds"
+      },
+      {
+        "name": "VisibilityInSeconds",
+        "jsonName": "visibilityInSeconds",
+        "protoField": "visibility_in_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Default visibility timeout for consumed messages, in seconds.\n A consumed message is invisible to other consumers for this\n duration. When omitted, OCI applies its default.",
+        "required": false,
+        "oneofGroup": "_visibility_in_seconds"
+      },
+      {
+        "name": "ChannelConsumptionLimit",
+        "jsonName": "channelConsumptionLimit",
+        "protoField": "channel_consumption_limit",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Percentage of allocated queue resources that can be consumed by a\n single channel. Both Terraform and Pulumi providers type this as\n integer; consult OCI documentation for the valid range and scale.\n When omitted, OCI applies its default (no per-channel limit).",
+        "required": false,
+        "oneofGroup": "_channel_consumption_limit"
+      },
+      {
+        "name": "IsLargeMessagesEnabled",
+        "jsonName": "isLargeMessagesEnabled",
+        "protoField": "is_large_messages_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable large message support (up to 512 KB per message).\n When omitted or false, standard message size limits apply.\n Maps to the LARGE_MESSAGES capability in the OCI API.",
+        "required": false,
+        "oneofGroup": "_is_large_messages_enabled"
+      },
+      {
+        "name": "ConsumerGroupConfig",
+        "jsonName": "consumerGroupConfig",
+        "protoField": "consumer_group_config",
+        "type": {
+          "kind": "message",
+          "messageType": "ConsumerGroupConfig"
+        },
+        "description": "Consumer group configuration. When provided, the CONSUMER_GROUPS\n capability is enabled for this queue, allowing partitioned\n consumption patterns.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ConsumerGroupConfig",
+      "description": "ConsumerGroupConfig controls the primary consumer group created\n when the CONSUMER_GROUPS capability is added to the queue.",
+      "protoType": "org.openmcf.provider.oci.ociqueue.v1.OciQueueSpec.ConsumerGroupConfig",
+      "fields": [
+        {
+          "name": "IsPrimaryEnabled",
+          "jsonName": "isPrimaryEnabled",
+          "protoField": "is_primary_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to automatically enable the primary consumer group\n after adding the capability.",
+          "required": false,
+          "oneofGroup": "_is_primary_enabled"
+        },
+        {
+          "name": "PrimaryDeadLetterQueueDeliveryCount",
+          "jsonName": "primaryDeadLetterQueueDeliveryCount",
+          "protoField": "primary_dead_letter_queue_delivery_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Dead letter queue delivery count for the primary consumer group.\n Overrides the queue-level dead_letter_queue_delivery_count.\n A value of 0 disables the DLQ for this consumer group.",
+          "required": false,
+          "oneofGroup": "_primary_dead_letter_queue_delivery_count"
+        },
+        {
+          "name": "PrimaryDisplayName",
+          "jsonName": "primaryDisplayName",
+          "protoField": "primary_display_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Display name for the primary consumer group.\n When omitted, OCI defaults to \"Primary Consumer Group\".",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

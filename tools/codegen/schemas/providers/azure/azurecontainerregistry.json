@@ -1,0 +1,97 @@
+{
+  "name": "AzureContainerRegistry",
+  "kind": "AzureContainerRegistry",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "azure-container-registry",
+  "protoPackage": "org.openmcf.provider.azure.azurecontainerregistry.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurecontainerregistry/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurecontainerregistry/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureContainerRegistrySpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Azure region in which to create the container registry (e.g., \"eastus\", \"westeurope\").\n This is the primary location where the registry is deployed.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Container Registry will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "RegistryName",
+        "jsonName": "registryName",
+        "protoField": "registry_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The globally unique name of the container registry.\n Must be 5-50 characters of lowercase letters or numbers (per Azure naming rules).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z0-9]{5,50}$"
+        }
+      },
+      {
+        "name": "Sku",
+        "jsonName": "sku",
+        "protoField": "sku",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.azure.azurecontainerregistry.v1.AzureContainerRegistrySku",
+          "enumValues": [
+            "STANDARD",
+            "PREMIUM"
+          ]
+        },
+        "description": "The pricing tier of the registry (Basic, Standard, or Premium).\n This influences features such as storage limits and geo-replication support.\n Defaults to STANDARD if not specified.",
+        "required": false
+      },
+      {
+        "name": "AdminUserEnabled",
+        "jsonName": "adminUserEnabled",
+        "protoField": "admin_user_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enables the admin user account for the registry.\n Default is false (admin user disabled). Enable only if needed for basic authentication scenarios.",
+        "required": false
+      },
+      {
+        "name": "GeoReplicationRegions",
+        "jsonName": "geoReplicationRegions",
+        "protoField": "geo_replication_regions",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "A list of additional Azure regions to replicate the registry (geo-replication).\n Only applicable for Premium SKU. Leave empty for Basic/Standard SKUs.",
+        "required": false
+      }
+    ]
+  }
+}

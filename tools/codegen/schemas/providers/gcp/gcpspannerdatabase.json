@@ -1,0 +1,128 @@
+{
+  "name": "GcpSpannerDatabase",
+  "kind": "GcpSpannerDatabase",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-spanner-database",
+  "protoPackage": "org.openmcf.provider.gcp.gcpspannerdatabase.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpspannerdatabase/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpspannerdatabase/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpSpannerDatabaseSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the Spanner database will be created.\n Must match the project of the parent Spanner instance.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "Instance",
+        "jsonName": "instance",
+        "protoField": "instance",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Spanner instance to create the database on. This determines the\n compute capacity and regional configuration available to the database.\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpSpannerInstance",
+        "referenceFieldPath": "status.outputs.instance_name"
+      },
+      {
+        "name": "DatabaseName",
+        "jsonName": "databaseName",
+        "protoField": "database_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Unique name for the Spanner database within the instance.\n Must start with a lowercase letter, can contain lowercase letters,\n digits, underscores, and hyphens, and must end with a lowercase\n letter or digit. 2-30 characters. Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 30,
+          "pattern": "^[a-z][a-z0-9_\\-]*[a-z0-9]$"
+        }
+      },
+      {
+        "name": "DatabaseDialect",
+        "jsonName": "databaseDialect",
+        "protoField": "database_dialect",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SQL dialect for the database. Determines the SQL syntax and features\n available. This choice is permanent and cannot be changed after creation.\n\n GOOGLE_STANDARD_SQL: Google's proprietary SQL dialect with full Spanner\n feature support including interleaved tables and STRUCT types.\n\n POSTGRESQL: PostgreSQL-compatible interface for teams familiar with\n PostgreSQL syntax. Some Spanner-specific features may not be available.\n\n If not set, defaults to GOOGLE_STANDARD_SQL.",
+        "required": false
+      },
+      {
+        "name": "VersionRetentionPeriod",
+        "jsonName": "versionRetentionPeriod",
+        "protoField": "version_retention_period",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Retention period for database versions, enabling point-in-time recovery.\n The retention period must be between 1 hour and 7 days.\n Accepts duration formats: \"1h\", \"24h\", \"1d\", \"1440m\", \"86400s\".\n Defaults to \"1h\" if not set.\n\n Increasing this value provides a longer window for point-in-time\n recovery but consumes more storage. Changing this value does not\n require database recreation.",
+        "required": false
+      },
+      {
+        "name": "Ddl",
+        "jsonName": "ddl",
+        "protoField": "ddl",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Optional list of DDL statements to execute when creating the database.\n Statements can create tables, indexes, views, and other schema objects.\n\n These statements execute atomically with the database creation. If any\n statement fails, the database is not created.\n\n Important lifecycle behavior:\n   - New statements can be appended after creation (executed via UpdateDDL).\n   - Modifying or removing existing statements forces database recreation.\n   - For ongoing schema management, use a migration tool (Liquibase, Flyway).",
+        "required": false
+      },
+      {
+        "name": "EnableDropProtection",
+        "jsonName": "enableDropProtection",
+        "protoField": "enable_drop_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable GCP API-level drop protection for this database.\n When true, the database cannot be deleted through any interface\n (Console, gcloud, API, Terraform, Pulumi) until this flag is set\n back to false.\n\n Additionally, enabling drop protection on a database prevents deletion\n of the parent Spanner instance.\n\n Defaults to false.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyName",
+        "jsonName": "kmsKeyName",
+        "protoField": "kms_key_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Fully qualified name of the KMS key to use for customer-managed\n encryption (CMEK). The key must exist in the same location as the\n Spanner instance. Immutable after creation.\n\n Format: projects/{project}/locations/{location}/keyRings/{ring}/cryptoKeys/{key}\n\n If not set, Google-managed encryption is used (default).",
+        "required": false,
+        "referenceKind": "GcpKmsKey",
+        "referenceFieldPath": "status.outputs.key_id"
+      },
+      {
+        "name": "DefaultTimeZone",
+        "jsonName": "defaultTimeZone",
+        "protoField": "default_time_zone",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Default time zone for the database. Affects SQL functions that depend\n on time zones, such as CURRENT_TIMESTAMP() and FORMAT_TIMESTAMP().\n Must be a valid name from the IANA Time Zone Database\n (e.g., \"America/New_York\", \"Europe/London\", \"UTC\").\n\n If not set, GCP defaults to \"America/Los_Angeles\".",
+        "required": false
+      }
+    ]
+  }
+}

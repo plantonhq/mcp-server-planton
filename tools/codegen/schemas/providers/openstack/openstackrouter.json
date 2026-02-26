@@ -1,0 +1,142 @@
+{
+  "name": "OpenStackRouter",
+  "kind": "OpenStackRouter",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackRouter is a Kubernetes Resource Model (KRM) style resource for managing\n Neutron routers in OpenStack.\n\n A router provides L3 routing between subnets and, optionally, external network\n connectivity. Routers connect tenant subnets to each other and to external networks\n via SNAT/DNAT. They are referenced by router interfaces that attach subnets.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackrouter.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackrouter/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackrouter/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackRouterSpec",
+    "fields": [
+      {
+        "name": "ExternalNetworkId",
+        "jsonName": "externalNetworkId",
+        "protoField": "external_network_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "external_network_id is the ID of the external (provider) network used as\n the router's gateway. When set, the router gains external connectivity and\n can perform SNAT for tenant traffic.\n Optional: routers without an external gateway provide internal routing only.\n Can reference an OpenStackNetwork resource's output or be a literal network UUID.",
+        "required": false,
+        "referenceKind": "OpenStackNetwork",
+        "referenceFieldPath": "status.outputs.network_id"
+      },
+      {
+        "name": "AdminStateUp",
+        "jsonName": "adminStateUp",
+        "protoField": "admin_state_up",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "admin_state_up controls the administrative state of the router.\n When false, the router is administratively disabled and does not forward traffic.\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_admin_state_up"
+      },
+      {
+        "name": "EnableSnat",
+        "jsonName": "enableSnat",
+        "protoField": "enable_snat",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "enable_snat controls whether Source NAT is enabled on the router's external gateway.\n When enabled, traffic from tenant subnets is NATed to the router's external IP.\n Only valid when external_network_id is configured.\n If omitted, OpenStack uses its deployment default (typically true).",
+        "required": false,
+        "oneofGroup": "_enable_snat"
+      },
+      {
+        "name": "Distributed",
+        "jsonName": "distributed",
+        "protoField": "distributed",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "distributed controls whether the router uses Distributed Virtual Router (DVR) mode.\n DVR eliminates the centralized L3 agent bottleneck by distributing routing to\n each compute node. This is a create-time setting and cannot be changed after creation.\n If omitted, OpenStack uses its deployment default.",
+        "required": false,
+        "oneofGroup": "_distributed"
+      },
+      {
+        "name": "ExternalFixedIps",
+        "jsonName": "externalFixedIps",
+        "protoField": "external_fixed_ips",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ExternalFixedIp"
+          }
+        },
+        "description": "external_fixed_ips specifies fixed IP addresses to allocate on the external network\n for the router's gateway. Each entry can request a specific subnet and/or IP address.\n Only valid when external_network_id is configured.\n If omitted, OpenStack automatically allocates an IP from the external network.",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description is a human-readable description of the router.\n This is stored on the OpenStack resource and visible in Horizon and API responses.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "tags are string tags to associate with the router in OpenStack.\n Tags are stored on the OpenStack resource and can be used for filtering\n and organization in the OpenStack API and Horizon dashboard.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this router.\n If omitted, the region from the OpenStack provider config is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ExternalFixedIp",
+      "description": "ExternalFixedIp specifies a fixed IP allocation on the router's external network.\n Both fields are optional: you can request a specific subnet, a specific IP, both, or neither.\n When neither is specified, OpenStack allocates from any available subnet on the external network.",
+      "protoType": "org.openmcf.provider.openstack.openstackrouter.v1.ExternalFixedIp",
+      "fields": [
+        {
+          "name": "SubnetId",
+          "jsonName": "subnetId",
+          "protoField": "subnet_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "subnet_id is the UUID of a subnet on the external network from which to allocate the IP.\n This references a subnet managed by the cloud administrator on the provider network.",
+          "required": false
+        },
+        {
+          "name": "IpAddress",
+          "jsonName": "ipAddress",
+          "protoField": "ip_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ip_address is the specific IP address to allocate on the external network.\n Must be within the range of the specified subnet (or any external subnet if subnet_id is omitted).",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

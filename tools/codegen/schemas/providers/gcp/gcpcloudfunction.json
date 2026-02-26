@@ -1,0 +1,573 @@
+{
+  "name": "GcpCloudFunction",
+  "kind": "GcpCloudFunction",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-cloud-function",
+  "protoPackage": "org.openmcf.provider.gcp.gcpcloudfunction.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpcloudfunction/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpcloudfunction/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpCloudFunctionSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project ID where the Cloud Function will be created.\n Supports either a literal value or a reference to another resource's output.\n Example literal: {value: \"my-gcp-project-123\"}\n Example reference: {value_from: {kind: GcpProject, name: \"main-project\", field_path: \"status.outputs.project_id\"}}",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Region where the function is deployed, for example \"us-central1\" or \"europe-west1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z]+-[a-z]+[0-9]$"
+        }
+      },
+      {
+        "name": "FunctionName",
+        "jsonName": "functionName",
+        "protoField": "function_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Cloud Function. If not specified, defaults to metadata.name.\n Must be 1-63 characters, start with a letter, and contain only lowercase letters,\n numbers, and hyphens.",
+        "required": false,
+        "validation": {
+          "maxLength": 63,
+          "pattern": "^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "BuildConfig",
+        "jsonName": "buildConfig",
+        "protoField": "build_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudFunctionBuildConfig"
+        },
+        "description": "Build configuration for the function (runtime, entry point, source code).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ServiceConfig",
+        "jsonName": "serviceConfig",
+        "protoField": "service_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudFunctionServiceConfig"
+        },
+        "description": "Service configuration (compute resources, networking, environment, scaling).",
+        "required": false
+      },
+      {
+        "name": "Trigger",
+        "jsonName": "trigger",
+        "protoField": "trigger",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudFunctionTrigger"
+        },
+        "description": "Trigger configuration. If not specified, defaults to HTTP trigger.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpCloudFunctionBuildConfig",
+      "description": "GcpCloudFunctionBuildConfig defines how the function is built from source code.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudfunction.v1.GcpCloudFunctionBuildConfig",
+      "fields": [
+        {
+          "name": "Runtime",
+          "jsonName": "runtime",
+          "protoField": "runtime",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Runtime environment for the function. Must be a supported Gen 2 runtime.\n Examples: \"python311\", \"python312\", \"nodejs20\", \"nodejs22\", \"go121\", \"go122\",\n \"java17\", \"java21\", \"dotnet6\", \"dotnet8\", \"ruby32\", \"php82\".\n Only current, non-deprecated runtimes should be used in production.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "pattern": "^(python3(10|11|12|13)|nodejs(20|22)|go1(21|22|23)|java(17|21)|dotnet(6|8)|ruby(32|33)|php(82|83))$"
+          }
+        },
+        {
+          "name": "EntryPoint",
+          "jsonName": "entryPoint",
+          "protoField": "entry_point",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the function in source code that will be executed (the entry point).\n For example: \"hello_http\" in Python, \"helloHttp\" in Node.js.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        {
+          "name": "Source",
+          "jsonName": "source",
+          "protoField": "source",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudFunctionSource"
+          },
+          "description": "Source code location in Google Cloud Storage.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "BuildEnvironmentVariables",
+          "jsonName": "buildEnvironmentVariables",
+          "protoField": "build_environment_variables",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Environment variables set at build time. These are available during the build\n process (e.g., for customizing buildpack behavior).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudFunctionEventFilter",
+      "description": "GcpCloudFunctionEventFilter filters events based on attribute values.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudfunction.v1.GcpCloudFunctionEventFilter",
+      "fields": [
+        {
+          "name": "Attribute",
+          "jsonName": "attribute",
+          "protoField": "attribute",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Attribute name to filter on (e.g., \"bucket\" for Storage events).",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Value to match. Supports wildcards (*) for pattern matching.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Operator",
+          "jsonName": "operator",
+          "protoField": "operator",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional: Operator for matching. Defaults to exact match.\n Supports \"match-path-pattern\" for Firestore document path patterns.",
+          "required": false,
+          "oneofGroup": "_operator"
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudFunctionEventTrigger",
+      "description": "GcpCloudFunctionEventTrigger defines event-driven triggers (Pub/Sub, Storage, Firestore, etc.).",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudfunction.v1.GcpCloudFunctionEventTrigger",
+      "fields": [
+        {
+          "name": "EventType",
+          "jsonName": "eventType",
+          "protoField": "event_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Event type that triggers the function. Uses CloudEvents format.\n Common examples:\n - \"google.cloud.pubsub.topic.v1.messagePublished\" (Pub/Sub)\n - \"google.cloud.storage.object.v1.finalized\" (Storage object created)\n - \"google.cloud.storage.object.v1.deleted\" (Storage object deleted)\n - \"google.cloud.firestore.document.v1.written\" (Firestore document write)",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "PubsubTopic",
+          "jsonName": "pubsubTopic",
+          "protoField": "pubsub_topic",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Pub/Sub topic resource name for Pub/Sub triggers.\n Format: \"projects/{project}/topics/{topic-name}\".\n Required for Pub/Sub event types.",
+          "required": false,
+          "validation": {
+            "pattern": "^projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/topics/[a-zA-Z]([a-zA-Z0-9-_.~+%]{0,253}[a-zA-Z0-9])?$"
+          }
+        },
+        {
+          "name": "EventFilters",
+          "jsonName": "eventFilters",
+          "protoField": "event_filters",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpCloudFunctionEventFilter"
+            }
+          },
+          "description": "Event filters. Used to filter events based on attributes.\n For Storage triggers, filter by bucket: attribute=\"bucket\" value=\"my-bucket\".\n For Firestore triggers, filter by document path pattern.",
+          "required": false
+        },
+        {
+          "name": "TriggerRegion",
+          "jsonName": "triggerRegion",
+          "protoField": "trigger_region",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Region where the event trigger listens for events. Should typically match\n the function region for optimal performance and data locality.",
+          "required": false,
+          "validation": {
+            "pattern": "^[a-z]+-[a-z]+[0-9]$"
+          }
+        },
+        {
+          "name": "RetryPolicy",
+          "jsonName": "retryPolicy",
+          "protoField": "retry_policy",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.gcp.gcpcloudfunction.v1.GcpCloudFunctionRetryPolicy",
+            "enumValues": [
+              "RETRY_POLICY_RETRY"
+            ]
+          },
+          "description": "Retry policy for event delivery. If RETRY_POLICY_RETRY, failed invocations\n are automatically retried. If RETRY_POLICY_DO_NOT_RETRY, events are delivered once.",
+          "required": false,
+          "recommendedDefault": "RETRY_POLICY_DO_NOT_RETRY"
+        },
+        {
+          "name": "ServiceAccountEmail",
+          "jsonName": "serviceAccountEmail",
+          "protoField": "service_account_email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account used by Eventarc to invoke the function.\n If not specified, uses the default Eventarc service account.",
+          "required": false,
+          "validation": {
+            "pattern": "^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudFunctionScalingConfig",
+      "description": "GcpCloudFunctionScalingConfig defines auto-scaling behavior: min/max instances.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudfunction.v1.GcpCloudFunctionScalingConfig",
+      "fields": [
+        {
+          "name": "MinInstanceCount",
+          "jsonName": "minInstanceCount",
+          "protoField": "min_instance_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of instances to keep warm. Setting min_instance_count \u003e 0\n eliminates cold starts but incurs cost for idle compute.\n Use for latency-sensitive, production workloads.",
+          "required": false,
+          "validation": {
+            "max": 100
+          },
+          "recommendedDefault": "0"
+        },
+        {
+          "name": "MaxInstanceCount",
+          "jsonName": "maxInstanceCount",
+          "protoField": "max_instance_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of instances. Controls cost and concurrency.\n Set to limit maximum scale-out and prevent runaway costs.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 3000
+          },
+          "recommendedDefault": "100"
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudFunctionServiceConfig",
+      "description": "GcpCloudFunctionServiceConfig defines runtime configuration: compute resources,\n networking, environment, secrets, and scaling behavior.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudfunction.v1.GcpCloudFunctionServiceConfig",
+      "fields": [
+        {
+          "name": "ServiceAccountEmail",
+          "jsonName": "serviceAccountEmail",
+          "protoField": "service_account_email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account email that the function runs as. This is the identity the function\n uses when calling other GCP services. Should follow least-privilege principle.\n If not specified, uses the default Compute Engine service account (not recommended\n for production due to overly broad permissions).",
+          "required": false,
+          "validation": {
+            "pattern": "^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$"
+          }
+        },
+        {
+          "name": "AvailableMemoryMb",
+          "jsonName": "availableMemoryMb",
+          "protoField": "available_memory_mb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Memory allocated to each function instance in megabytes.\n Valid values: 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768.\n Higher memory allocation also increases CPU allocation.",
+          "required": false,
+          "recommendedDefault": "256"
+        },
+        {
+          "name": "TimeoutSeconds",
+          "jsonName": "timeoutSeconds",
+          "protoField": "timeout_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Timeout for function execution in seconds.\n Gen 2 HTTP functions support up to 3600 seconds (60 minutes).\n Event-driven functions typically use shorter timeouts.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 3600
+          },
+          "recommendedDefault": "60"
+        },
+        {
+          "name": "MaxInstanceRequestConcurrency",
+          "jsonName": "maxInstanceRequestConcurrency",
+          "protoField": "max_instance_request_concurrency",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of concurrent requests that each function instance can handle.\n Gen 2 supports up to 1000 concurrent requests per instance.\n Higher concurrency reduces the number of instances needed, improving efficiency.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 1000
+          },
+          "recommendedDefault": "80"
+        },
+        {
+          "name": "EnvironmentVariables",
+          "jsonName": "environmentVariables",
+          "protoField": "environment_variables",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Environment variables injected into the function runtime as plain-text KEY=VALUE pairs.\n Use for non-sensitive configuration. For sensitive values, use secret_environment_variables.",
+          "required": false
+        },
+        {
+          "name": "SecretEnvironmentVariables",
+          "jsonName": "secretEnvironmentVariables",
+          "protoField": "secret_environment_variables",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Secret Manager references injected as environment variables.\n Format: KEY=secret_name where secret_name is the Secret Manager secret ID.\n The version \"latest\" is used automatically unless specified otherwise in the secret name.",
+          "required": false
+        },
+        {
+          "name": "VpcConnector",
+          "jsonName": "vpcConnector",
+          "protoField": "vpc_connector",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VPC connector for accessing resources in a VPC network (e.g., Cloud SQL, Memorystore).\n Format: \"projects/{project}/locations/{region}/connectors/{connector-name}\".\n The connector must exist before deploying the function.",
+          "required": false,
+          "validation": {
+            "pattern": "^projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/locations/[a-z]+-[a-z]+[0-9]/connectors/[a-z]([a-z0-9-]{0,61}[a-z0-9])?$"
+          }
+        },
+        {
+          "name": "VpcConnectorEgressSettings",
+          "jsonName": "vpcConnectorEgressSettings",
+          "protoField": "vpc_connector_egress_settings",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.gcp.gcpcloudfunction.v1.GcpCloudFunctionVpcEgressSetting",
+            "enumValues": [
+              "ALL_TRAFFIC"
+            ]
+          },
+          "description": "Egress settings for VPC connectivity.\n Determines which traffic is routed through the VPC connector.",
+          "required": false,
+          "recommendedDefault": "PRIVATE_RANGES_ONLY"
+        },
+        {
+          "name": "IngressSettings",
+          "jsonName": "ingressSettings",
+          "protoField": "ingress_settings",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.gcp.gcpcloudfunction.v1.GcpCloudFunctionIngressSetting",
+            "enumValues": [
+              "ALLOW_INTERNAL_ONLY",
+              "ALLOW_INTERNAL_AND_GCLB"
+            ]
+          },
+          "description": "Ingress settings control who can invoke the function.\n Use ALLOW_INTERNAL_ONLY for private functions accessible only within the VPC/project.",
+          "required": false,
+          "recommendedDefault": "ALLOW_ALL"
+        },
+        {
+          "name": "Scaling",
+          "jsonName": "scaling",
+          "protoField": "scaling",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudFunctionScalingConfig"
+          },
+          "description": "Scaling configuration: minimum and maximum number of function instances.",
+          "required": false
+        },
+        {
+          "name": "AllowUnauthenticated",
+          "jsonName": "allowUnauthenticated",
+          "protoField": "allow_unauthenticated",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "If true, makes the function publicly invokable by unauthenticated users.\n Grants the Cloud Run Invoker role to allUsers.\n For private functions, set to false and explicitly grant invoker role to specific identities.",
+          "required": false,
+          "recommendedDefault": "false"
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudFunctionSource",
+      "description": "GcpCloudFunctionSource specifies where the source code is stored.\n Gen 2 Cloud Functions require source code in a GCS bucket (Cloud Source Repositories\n was deprecated for new customers in June 2024).",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudfunction.v1.GcpCloudFunctionSource",
+      "fields": [
+        {
+          "name": "Bucket",
+          "jsonName": "bucket",
+          "protoField": "bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "GCS bucket name containing the source code archive.\n The bucket must be in the same project or accessible to the Cloud Build service account.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "pattern": "^[a-z0-9][a-z0-9._-]{1,61}[a-z0-9]$"
+          }
+        },
+        {
+          "name": "Object",
+          "jsonName": "object",
+          "protoField": "object",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Object name (path) of the source code archive in the bucket.\n Should be a .zip file containing the function code and dependencies.\n Example: \"functions/my-function-v1.2.3.zip\"",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Generation",
+          "jsonName": "generation",
+          "protoField": "generation",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Optional: Generation number of the object. If specified, the function will use\n this specific version of the object. If not specified, uses the latest version.",
+          "required": false,
+          "oneofGroup": "_generation"
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudFunctionTrigger",
+      "description": "GcpCloudFunctionTrigger defines what invokes the function: HTTP requests or cloud events.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudfunction.v1.GcpCloudFunctionTrigger",
+      "fields": [
+        {
+          "name": "TriggerType",
+          "jsonName": "triggerType",
+          "protoField": "trigger_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.gcp.gcpcloudfunction.v1.GcpCloudFunctionTriggerType",
+            "enumValues": [
+              "EVENT_TRIGGER"
+            ]
+          },
+          "description": "Type of trigger. Defaults to HTTP if not specified.",
+          "required": false,
+          "recommendedDefault": "HTTP"
+        },
+        {
+          "name": "EventTrigger",
+          "jsonName": "eventTrigger",
+          "protoField": "event_trigger",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudFunctionEventTrigger"
+          },
+          "description": "Event trigger configuration. Required if trigger_type is EVENT_TRIGGER.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

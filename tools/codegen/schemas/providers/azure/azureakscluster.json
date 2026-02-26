@@ -1,0 +1,472 @@
+{
+  "name": "AzureAksCluster",
+  "kind": "AzureAksCluster",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "azure-aks-cluster",
+  "protoPackage": "org.openmcf.provider.azure.azureakscluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azureakscluster/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azureakscluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureAksClusterSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Azure region in which to create the AKS cluster (e.g., \"eastus\").",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the AKS Cluster will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "VnetSubnetId",
+        "jsonName": "vnetSubnetId",
+        "protoField": "vnet_subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure resource ID of the Virtual Network subnet to use for cluster nodes.\n This should reference the subnet created by an AzureVirtualNetwork resource.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureVpc",
+        "referenceFieldPath": "status.outputs.nodes_subnet_id"
+      },
+      {
+        "name": "KubernetesVersion",
+        "jsonName": "kubernetesVersion",
+        "protoField": "kubernetes_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes version for the cluster control plane.\n It is recommended to explicitly set a version (e.g., \"1.30\") for production clusters to prevent unintended upgrades.",
+        "required": false,
+        "recommendedDefault": "1.30"
+      },
+      {
+        "name": "ControlPlaneSku",
+        "jsonName": "controlPlaneSku",
+        "protoField": "control_plane_sku",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.azure.azureakscluster.v1.AzureAksClusterControlPlaneSku",
+          "enumValues": [
+            "FREE"
+          ]
+        },
+        "description": "Control plane SKU tier. STANDARD provides financially-backed 99.95% uptime SLA (with AZs) and is required for production.\n FREE tier has no SLA and is only suitable for dev/test environments.\n Defaults to STANDARD for production-ready deployments.",
+        "required": false
+      },
+      {
+        "name": "NetworkPlugin",
+        "jsonName": "networkPlugin",
+        "protoField": "network_plugin",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.azure.azureakscluster.v1.AzureAksClusterNetworkPlugin",
+          "enumValues": [
+            "KUBENET"
+          ]
+        },
+        "description": "Networking plugin for the AKS cluster.\n AZURE_CNI provides advanced networking with full VNet integration. KUBENET is deprecated and will be retired in March 2028.\n Defaults to AZURE_CNI.",
+        "required": false
+      },
+      {
+        "name": "NetworkPluginMode",
+        "jsonName": "networkPluginMode",
+        "protoField": "network_plugin_mode",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.azure.azureakscluster.v1.AzureAksClusterNetworkPluginMode",
+          "enumValues": [
+            "DYNAMIC"
+          ]
+        },
+        "description": "Network plugin mode for Azure CNI. Only applicable when network_plugin is AZURE_CNI.\n OVERLAY mode (recommended) uses a private CIDR for pods (10.244.0.0/16) and solves VNet IP exhaustion.\n DYNAMIC mode assigns pods real VNet IPs dynamically from a dedicated pod subnet.\n Defaults to OVERLAY.",
+        "required": false
+      },
+      {
+        "name": "PrivateClusterEnabled",
+        "jsonName": "privateClusterEnabled",
+        "protoField": "private_cluster_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Deploy the cluster as a private cluster (no public API server endpoint).\n When true, the API server endpoint will be private and accessible only from within the VNet.\n When false (default), a public endpoint is created (use authorized_ip_ranges to restrict access).",
+        "required": false
+      },
+      {
+        "name": "AuthorizedIpRanges",
+        "jsonName": "authorizedIpRanges",
+        "protoField": "authorized_ip_ranges",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Authorized IP address ranges (CIDR blocks) that are allowed to access the API server.\n This is applicable only if the cluster has a public endpoint.\n Leave empty to allow all (0.0.0.0/0) or for private clusters.",
+        "required": false
+      },
+      {
+        "name": "DisableAzureAdRbac",
+        "jsonName": "disableAzureAdRbac",
+        "protoField": "disable_azure_ad_rbac",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Disable Azure Active Directory integration for Kubernetes RBAC.\n By default, AKS clusters have Azure AD integration enabled (this field is false).\n Set to true to disable Azure AD RBAC integration.",
+        "required": false
+      },
+      {
+        "name": "SystemNodePool",
+        "jsonName": "systemNodePool",
+        "protoField": "system_node_pool",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureAksClusterSystemNodePool"
+        },
+        "description": "System node pool configuration. Required for all clusters.\n System node pools run critical system pods (CoreDNS, metrics-server, etc.) and are tainted to prevent application workloads.\n For production, deploy across 3 availability zones with autoscaling enabled (min: 3, max: 5).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "UserNodePools",
+        "jsonName": "userNodePools",
+        "protoField": "user_node_pools",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureAksClusterUserNodePool"
+          }
+        },
+        "description": "User node pools for application workloads.\n Optional: if not specified, applications can run on system node pool (not recommended for production).\n For production, create dedicated user node pools with appropriate VM sizes and autoscaling configuration.",
+        "required": false
+      },
+      {
+        "name": "Addons",
+        "jsonName": "addons",
+        "protoField": "addons",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureAksClusterAddonsConfig"
+        },
+        "description": "Add-ons configuration for the AKS cluster.\n Enables Azure-managed add-ons like Container Insights, Key Vault CSI driver, Azure Policy, and Workload Identity.",
+        "required": false
+      },
+      {
+        "name": "AdvancedNetworking",
+        "jsonName": "advancedNetworking",
+        "protoField": "advanced_networking",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureAksClusterAdvancedNetworking"
+        },
+        "description": "Advanced networking configuration.\n Optional: most users should rely on defaults. Use this only if you need custom CIDRs or DNS servers.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureAksClusterAddonsConfig",
+      "description": "Add-ons configuration for the AKS cluster.",
+      "protoType": "org.openmcf.provider.azure.azureakscluster.v1.AzureAksClusterAddonsConfig",
+      "fields": [
+        {
+          "name": "EnableContainerInsights",
+          "jsonName": "enableContainerInsights",
+          "protoField": "enable_container_insights",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Azure Monitor Container Insights.\n Streams container logs, metrics, and Kubernetes events to Log Analytics.\n Requires log_analytics_workspace_id to be set in spec.\n Defaults to true if log_analytics_workspace_id is provided.",
+          "required": false
+        },
+        {
+          "name": "EnableKeyVaultCsiDriver",
+          "jsonName": "enableKeyVaultCsiDriver",
+          "protoField": "enable_key_vault_csi_driver",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Azure Key Vault CSI driver.\n Allows pods to mount secrets from Azure Key Vault as volumes.\n Recommended for production. Defaults to true.",
+          "required": false
+        },
+        {
+          "name": "EnableAzurePolicy",
+          "jsonName": "enableAzurePolicy",
+          "protoField": "enable_azure_policy",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Azure Policy add-on.\n Enforces policy-based governance on the cluster (pod security standards, resource quotas, etc.).\n Recommended for production. Defaults to true.",
+          "required": false
+        },
+        {
+          "name": "EnableWorkloadIdentity",
+          "jsonName": "enableWorkloadIdentity",
+          "protoField": "enable_workload_identity",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Azure AD Workload Identity.\n Allows pods to authenticate to Azure services using Kubernetes service accounts (secret-less authentication).\n Recommended for production. Defaults to true.",
+          "required": false
+        },
+        {
+          "name": "LogAnalyticsWorkspaceId",
+          "jsonName": "logAnalyticsWorkspaceId",
+          "protoField": "log_analytics_workspace_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure resource ID of a Log Analytics Workspace for Container Insights.\n Required if enable_container_insights is true.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureAksClusterAdvancedNetworking",
+      "description": "Advanced networking configuration.\n Optional: most users should rely on defaults.",
+      "protoType": "org.openmcf.provider.azure.azureakscluster.v1.AzureAksClusterAdvancedNetworking",
+      "fields": [
+        {
+          "name": "PodCidr",
+          "jsonName": "podCidr",
+          "protoField": "pod_cidr",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Pod CIDR for Overlay mode (e.g., \"10.244.0.0/16\").\n Only applicable when network_plugin_mode is OVERLAY.\n Leave empty to use default (10.244.0.0/16).",
+          "required": false,
+          "validation": {
+            "pattern": "^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])(?:\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])){3}(?:\\/(?:3[0-2]|[12]?[0-9]))?$"
+          }
+        },
+        {
+          "name": "ServiceCidr",
+          "jsonName": "serviceCidr",
+          "protoField": "service_cidr",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service CIDR for Kubernetes services (e.g., \"10.0.0.0/16\").\n Must not overlap with VNet, pod CIDR, or other networks.\n Leave empty to use default (10.0.0.0/16).",
+          "required": false,
+          "validation": {
+            "pattern": "^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])(?:\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])){3}(?:\\/(?:3[0-2]|[12]?[0-9]))?$"
+          }
+        },
+        {
+          "name": "DnsServiceIp",
+          "jsonName": "dnsServiceIp",
+          "protoField": "dns_service_ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "DNS service IP address (must be within service_cidr range).\n Leave empty to use default (10.0.0.10).",
+          "required": false,
+          "validation": {
+            "pattern": "^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])(?:\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])){3}$"
+          }
+        },
+        {
+          "name": "CustomDnsServers",
+          "jsonName": "customDnsServers",
+          "protoField": "custom_dns_servers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Custom DNS servers for the VNet.\n Leave empty to use Azure-provided DNS.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureAksClusterAutoscalingConfig",
+      "description": "Autoscaling configuration for node pools.",
+      "protoType": "org.openmcf.provider.azure.azureakscluster.v1.AzureAksClusterAutoscalingConfig",
+      "fields": [
+        {
+          "name": "MinCount",
+          "jsonName": "minCount",
+          "protoField": "min_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of nodes. For system pools, minimum should be 3 for high availability.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "MaxCount",
+          "jsonName": "maxCount",
+          "protoField": "max_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of nodes. Autoscaler will not scale beyond this limit.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "AzureAksClusterSystemNodePool",
+      "description": "System node pool configuration.\n System node pools run critical AKS components and should be isolated from application workloads.",
+      "protoType": "org.openmcf.provider.azure.azureakscluster.v1.AzureAksClusterSystemNodePool",
+      "fields": [
+        {
+          "name": "VmSize",
+          "jsonName": "vmSize",
+          "protoField": "vm_size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Azure VM size for system nodes (e.g., \"Standard_D4s_v5\").\n Minimum recommended: Standard_D2s_v3 for dev/test, Standard_D4s_v5 for production.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "recommendedDefault": "Standard_D4s_v5"
+        },
+        {
+          "name": "Autoscaling",
+          "jsonName": "autoscaling",
+          "protoField": "autoscaling",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureAksClusterAutoscalingConfig"
+          },
+          "description": "Autoscaling configuration.\n Production minimum: 3 nodes for high availability.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AvailabilityZones",
+          "jsonName": "availabilityZones",
+          "protoField": "availability_zones",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Availability zones for the node pool (e.g., [\"1\", \"2\", \"3\"]).\n For production, deploy across 3 zones for 99.95% SLA.\n For dev/test, single zone ([\"1\"]) is acceptable.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "AzureAksClusterUserNodePool",
+      "description": "User node pool configuration for application workloads.",
+      "protoType": "org.openmcf.provider.azure.azureakscluster.v1.AzureAksClusterUserNodePool",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the user node pool (e.g., \"general\", \"compute\", \"memory\").\n Must be lowercase alphanumeric, max 12 characters.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "pattern": "^[a-z0-9]{1,12}$"
+          }
+        },
+        {
+          "name": "VmSize",
+          "jsonName": "vmSize",
+          "protoField": "vm_size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Azure VM size for this node pool (e.g., \"Standard_D8s_v5\").\n Choose based on workload requirements (CPU vs memory intensive).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Autoscaling",
+          "jsonName": "autoscaling",
+          "protoField": "autoscaling",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureAksClusterAutoscalingConfig"
+          },
+          "description": "Autoscaling configuration for the user node pool.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AvailabilityZones",
+          "jsonName": "availabilityZones",
+          "protoField": "availability_zones",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Availability zones for the node pool (e.g., [\"1\", \"2\", \"3\"]).\n For production workloads, deploy across multiple zones.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "SpotEnabled",
+          "jsonName": "spotEnabled",
+          "protoField": "spot_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Azure Spot instances for this node pool.\n Spot instances provide 30-90% cost savings but can be evicted when Azure needs capacity.\n Only suitable for fault-tolerant, stateless workloads.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

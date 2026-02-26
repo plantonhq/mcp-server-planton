@@ -1,0 +1,1201 @@
+{
+  "name": "AzureFunctionApp",
+  "kind": "AzureFunctionApp",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureFunctionApp is the top-level API resource for an Azure Linux Function App.\n A Function App is a serverless compute platform for event-driven workloads,\n supporting HTTP triggers, queue triggers, timer triggers, and more.\n\n It runs on an AzureServicePlan (Consumption, Elastic Premium, or Dedicated)\n and requires an AzureStorageAccount for runtime state management.",
+  "protoPackage": "org.openmcf.provider.azure.azurefunctionapp.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurefunctionapp/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurefunctionapp/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureFunctionAppSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Function App will be created.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".\n\n **ForceNew**: Changing this destroys and recreates the function app.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Function App will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.\n\n **ForceNew**: Changing this destroys and recreates the function app.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Function App.\n Must be globally unique across Azure (it forms the default hostname:\n `{name}.azurewebsites.net`).\n\n Allowed characters: alphanumeric and hyphens.\n Must start and end with an alphanumeric character.\n Length: 2 to 60 characters.\n\n **ForceNew**: Changing this destroys and recreates the function app.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 60
+        }
+      },
+      {
+        "name": "ServicePlanId",
+        "jsonName": "servicePlanId",
+        "protoField": "service_plan_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The App Service Plan that provides compute resources for this Function App.\n Determines the pricing tier, scale behavior, and available features.\n\n Consumption (Y1): pay-per-execution, auto-scale to 200 instances\n Elastic Premium (EP*): pre-warmed instances, up to 100\n Dedicated (B*/S*/P*): fixed or auto-scaled instances\n\n **Conditional ForceNew**: Changing between Dynamic tiers (Consumption to/from\n any other tier) forces recreation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureServicePlan",
+        "referenceFieldPath": "status.outputs.plan_id"
+      },
+      {
+        "name": "StorageAccountName",
+        "jsonName": "storageAccountName",
+        "protoField": "storage_account_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Azure Storage Account used for Function App runtime state.\n Azure Functions use storage for trigger management, execution logs, and\n internal coordination. The storage account must already exist.\n\n Mutually exclusive with storage_key_vault_secret_id (not exposed in v1).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureStorageAccount",
+        "referenceFieldPath": "status.outputs.storage_account_name"
+      },
+      {
+        "name": "StorageAccountAccessKey",
+        "jsonName": "storageAccountAccessKey",
+        "protoField": "storage_account_access_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The access key for the storage account.\n This is a sensitive credential. Provide it directly as a literal value\n or reference it from a secrets manager via StringValueOrRef.\n\n Note: AzureStorageAccount does not export access keys in its status outputs\n (by design -- exporting secrets through status is an anti-pattern). Provide\n the key directly or use storage_uses_managed_identity instead.\n\n Conflicts with storage_uses_managed_identity.",
+        "required": false
+      },
+      {
+        "name": "StorageUsesManagedIdentity",
+        "jsonName": "storageUsesManagedIdentity",
+        "protoField": "storage_uses_managed_identity",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Use the Function App's managed identity to access the storage account\n instead of an access key. This is the modern, credential-free approach.\n\n When true, the Function App's system-assigned or user-assigned identity\n must have Storage Blob Data Owner and Storage Queue Data Contributor\n roles on the storage account.\n\n Conflicts with storage_account_access_key.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_storage_uses_managed_identity"
+      },
+      {
+        "name": "FunctionsExtensionVersion",
+        "jsonName": "functionsExtensionVersion",
+        "protoField": "functions_extension_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Functions runtime version.\n Controls which version of the Azure Functions host runs the app.\n\n Common values: \"~4\" (current LTS), \"~3\" (legacy, EOL).\n The \"~\" prefix enables automatic minor version updates.\n\n Default: \"~4\"",
+        "required": false,
+        "default": "~4",
+        "oneofGroup": "_functions_extension_version"
+      },
+      {
+        "name": "SiteConfig",
+        "jsonName": "siteConfig",
+        "protoField": "site_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureFunctionAppSiteConfig"
+        },
+        "description": "Site configuration for the Function App.\n Contains the application stack (runtime), scaling settings, security\n settings, and operational configuration.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "AppSettings",
+        "jsonName": "appSettings",
+        "protoField": "app_settings",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Application settings (environment variables) for the Function App.\n Key-value pairs that are available to functions at runtime via\n environment variables.\n\n Azure automatically manages several settings (AzureWebJobsStorage,\n FUNCTIONS_WORKER_RUNTIME, etc.). User-provided settings are merged\n with these system settings.\n\n Common use cases: database connection strings, API keys, feature flags,\n third-party service configuration.",
+        "required": false
+      },
+      {
+        "name": "ConnectionStrings",
+        "jsonName": "connectionStrings",
+        "protoField": "connection_strings",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureFunctionAppConnectionString"
+          }
+        },
+        "description": "Named connection strings for database and service connections.\n Each connection string has a name, type, and value. The type determines\n how Azure exposes the connection in the runtime environment.\n\n For most use cases, app_settings is simpler. Use connection_strings when\n you need Azure's native connection string management (e.g., for Entity\n Framework, Azure Service Bus SDK auto-discovery).",
+        "required": false
+      },
+      {
+        "name": "ApplicationInsightsConnectionString",
+        "jsonName": "applicationInsightsConnectionString",
+        "protoField": "application_insights_connection_string",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Application Insights connection string for APM telemetry.\n When provided, Azure automatically configures the Function App to send\n telemetry (requests, dependencies, exceptions, traces) to Application\n Insights. This is the recommended way to monitor Function Apps.\n\n Uses the connection_string format (not the legacy instrumentation_key).",
+        "required": false,
+        "referenceKind": "AzureApplicationInsights",
+        "referenceFieldPath": "status.outputs.connection_string"
+      },
+      {
+        "name": "HttpsOnly",
+        "jsonName": "httpsOnly",
+        "protoField": "https_only",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enforce HTTPS-only access to the Function App.\n When true, all HTTP requests are redirected to HTTPS.\n\n Default: true (secure by default, unlike the Azure API default of false)",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_https_only"
+      },
+      {
+        "name": "PublicNetworkAccessEnabled",
+        "jsonName": "publicNetworkAccessEnabled",
+        "protoField": "public_network_access_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable or disable public network access to the Function App.\n When false, the Function App is only accessible via VNet integration\n or Private Endpoints.\n\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_public_network_access_enabled"
+      },
+      {
+        "name": "BuiltinLoggingEnabled",
+        "jsonName": "builtinLoggingEnabled",
+        "protoField": "builtin_logging_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable built-in logging via AzureWebJobsDashboard.\n When true, Azure configures the AzureWebJobsDashboard storage connection\n for the legacy Functions dashboard. When Application Insights is configured,\n you may want to disable this to avoid duplicate logging and storage costs.\n\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_builtin_logging_enabled"
+      },
+      {
+        "name": "VirtualNetworkSubnetId",
+        "jsonName": "virtualNetworkSubnetId",
+        "protoField": "virtual_network_subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The subnet ID for VNet integration. When provided, the Function App's\n outbound traffic routes through this subnet, enabling access to\n VNet-connected resources (databases, Redis, etc.) without public endpoints.\n\n The subnet must be delegated to Microsoft.Web/serverFarms.\n Not supported on Consumption plans (Y1).",
+        "required": false,
+        "referenceKind": "AzureSubnet",
+        "referenceFieldPath": "status.outputs.subnet_id"
+      },
+      {
+        "name": "Identity",
+        "jsonName": "identity",
+        "protoField": "identity",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureFunctionAppIdentity"
+        },
+        "description": "Managed identity configuration for the Function App.\n Enables the app to authenticate with Azure services (Key Vault, Storage,\n ACR, etc.) without managing credentials.\n\n When identity is configured with SystemAssigned, the function app gets\n a system-assigned identity whose principal_id and tenant_id are exported\n as stack outputs.",
+        "required": false
+      },
+      {
+        "name": "KeyVaultReferenceIdentityId",
+        "jsonName": "keyVaultReferenceIdentityId",
+        "protoField": "key_vault_reference_identity_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "User Assigned Identity ID for accessing Key Vault references.\n When the Function App uses Key Vault references in app_settings\n (e.g., `@Microsoft.KeyVault(SecretUri=...)`), this identity is used\n to authenticate with Key Vault.\n\n If not specified, the system-assigned identity is used.",
+        "required": false,
+        "referenceKind": "AzureUserAssignedIdentity",
+        "referenceFieldPath": "status.outputs.identity_id"
+      },
+      {
+        "name": "ClientCertificateEnabled",
+        "jsonName": "clientCertificateEnabled",
+        "protoField": "client_certificate_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable client certificate authentication (mutual TLS).\n When true, clients must present a valid certificate to access the app.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_client_certificate_enabled"
+      },
+      {
+        "name": "ClientCertificateMode",
+        "jsonName": "clientCertificateMode",
+        "protoField": "client_certificate_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Client certificate mode when client_certificate_enabled is true.\n\n Valid values:\n - \"Required\": All requests must have a valid client certificate\n - \"Optional\": Certificate is requested but not required\n - \"OptionalInteractiveUser\": Certificate is optional for browser users\n\n Default: \"Optional\"",
+        "required": false,
+        "default": "Optional",
+        "oneofGroup": "_client_certificate_mode"
+      },
+      {
+        "name": "ClientCertificateExclusionPaths",
+        "jsonName": "clientCertificateExclusionPaths",
+        "protoField": "client_certificate_exclusion_paths",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Paths excluded from client certificate validation.\n Semicolon-separated list of paths where client certificates are not required.\n Example: \"/api/health;/api/status\"",
+        "required": false
+      },
+      {
+        "name": "ContentShareForceDisabled",
+        "jsonName": "contentShareForceDisabled",
+        "protoField": "content_share_force_disabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Force disable the Azure Files content share that Azure Functions\n automatically creates. Set to true when using a custom deployment\n method and the content share is not needed.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_content_share_force_disabled"
+      },
+      {
+        "name": "StorageMounts",
+        "jsonName": "storageMounts",
+        "protoField": "storage_mounts",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureFunctionAppStorageMount"
+          }
+        },
+        "description": "Azure Storage Account mounts for the Function App.\n Mounts Azure File Shares or Blob containers as directories accessible\n to the function code at runtime.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureFunctionAppAppServiceLogs",
+      "description": "AzureFunctionAppAppServiceLogs configures the App Service logging\n for the Function App.",
+      "protoType": "org.openmcf.provider.azure.azurefunctionapp.v1.AzureFunctionAppAppServiceLogs",
+      "fields": [
+        {
+          "name": "DiskQuotaMb",
+          "jsonName": "diskQuotaMb",
+          "protoField": "disk_quota_mb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Disk quota for app service logs in megabytes.\n Range: 25 to 100.\n\n Default: 35",
+          "required": false,
+          "validation": {
+            "min": 25,
+            "max": 100
+          },
+          "default": "35",
+          "oneofGroup": "_disk_quota_mb"
+        },
+        {
+          "name": "RetentionPeriodDays",
+          "jsonName": "retentionPeriodDays",
+          "protoField": "retention_period_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Log retention in days. Set to 0 for indefinite retention.",
+          "required": false,
+          "oneofGroup": "_retention_period_days"
+        }
+      ]
+    },
+    {
+      "name": "AzureFunctionAppApplicationStack",
+      "description": "AzureFunctionAppApplicationStack defines the runtime for the Function App.\n\n Exactly one runtime must be specified. This maps to the `application_stack`\n block within `site_config` in the Terraform provider. The constraint is\n documented (not enforced via proto) because protobuf lacks native oneOf-with-\n optional semantics for this pattern.\n\n Runtime options:\n - .NET: dotnet_version (+ optional use_dotnet_isolated_runtime)\n - Node.js: node_version\n - Python: python_version\n - Java: java_version\n - PowerShell: powershell_core_version\n - Container: docker (registry_url + image_name + image_tag)\n - Custom: use_custom_runtime",
+      "protoType": "org.openmcf.provider.azure.azurefunctionapp.v1.AzureFunctionAppApplicationStack",
+      "fields": [
+        {
+          "name": "DotnetVersion",
+          "jsonName": "dotnetVersion",
+          "protoField": "dotnet_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": ".NET runtime version.\n Uses the dotnet-isolated worker model by default in Functions v4+.\n\n Valid values: \"3.1\", \"6.0\", \"7.0\", \"8.0\", \"9.0\", \"10.0\"\n\n Note: .NET 6+ uses isolated worker by default. Set\n use_dotnet_isolated_runtime = false only for legacy in-process apps.",
+          "required": false
+        },
+        {
+          "name": "UseDotnetIsolatedRuntime",
+          "jsonName": "useDotnetIsolatedRuntime",
+          "protoField": "use_dotnet_isolated_runtime",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Use the .NET isolated worker runtime model.\n The isolated model runs functions in a separate process from the host,\n enabling different .NET versions and full dependency control.\n\n Default: false (in-process model for backward compatibility, though\n Microsoft recommends isolated for new apps)",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_use_dotnet_isolated_runtime"
+        },
+        {
+          "name": "NodeVersion",
+          "jsonName": "nodeVersion",
+          "protoField": "node_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Node.js runtime version.\n\n Valid values: \"12\", \"14\", \"16\", \"18\", \"20\", \"22\", \"24\"",
+          "required": false
+        },
+        {
+          "name": "PythonVersion",
+          "jsonName": "pythonVersion",
+          "protoField": "python_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Python runtime version.\n\n Valid values: \"3.8\", \"3.9\", \"3.10\", \"3.11\", \"3.12\", \"3.13\", \"3.14\"",
+          "required": false
+        },
+        {
+          "name": "JavaVersion",
+          "jsonName": "javaVersion",
+          "protoField": "java_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Java runtime version.\n\n Valid values: \"8\", \"11\", \"17\", \"21\"",
+          "required": false
+        },
+        {
+          "name": "PowershellCoreVersion",
+          "jsonName": "powershellCoreVersion",
+          "protoField": "powershell_core_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PowerShell Core runtime version.\n\n Valid values: \"7\", \"7.2\", \"7.4\"",
+          "required": false
+        },
+        {
+          "name": "Docker",
+          "jsonName": "docker",
+          "protoField": "docker",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureFunctionAppDockerConfig"
+          },
+          "description": "Docker container configuration.\n Runs a custom container image as the Function App runtime.\n The image must include the Azure Functions runtime.",
+          "required": false
+        },
+        {
+          "name": "UseCustomRuntime",
+          "jsonName": "useCustomRuntime",
+          "protoField": "use_custom_runtime",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Use a custom handler runtime.\n Custom handlers allow any language/runtime to work with Azure Functions\n by implementing a lightweight HTTP server that communicates with the\n Functions host process.",
+          "required": false,
+          "oneofGroup": "_use_custom_runtime"
+        }
+      ]
+    },
+    {
+      "name": "AzureFunctionAppConnectionString",
+      "description": "AzureFunctionAppConnectionString defines a named connection string\n for the Function App. Connection strings are exposed to functions via\n environment variables with a prefix based on the type.",
+      "protoType": "org.openmcf.provider.azure.azurefunctionapp.v1.AzureFunctionAppConnectionString",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the connection string.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The type of connection string. Determines the environment variable prefix.\n\n Valid values: MySQL, SQLServer, SQLAzure, Custom, NotificationHub,\n ServiceBus, EventHub, APIHub, DocDb, RedisCache, PostgreSQL",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The connection string value. This is a sensitive credential.\n Can be a literal value or a reference to a secrets manager.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AzureFunctionAppCorsSettings",
+      "description": "AzureFunctionAppCorsSettings configures Cross-Origin Resource Sharing\n for the Function App's HTTP endpoints.",
+      "protoType": "org.openmcf.provider.azure.azurefunctionapp.v1.AzureFunctionAppCorsSettings",
+      "fields": [
+        {
+          "name": "AllowedOrigins",
+          "jsonName": "allowedOrigins",
+          "protoField": "allowed_origins",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "List of origins allowed to make cross-origin requests.\n Use \"*\" to allow all origins (not recommended for production).\n Example: [\"https://myapp.example.com\", \"https://admin.example.com\"]",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "SupportCredentials",
+          "jsonName": "supportCredentials",
+          "protoField": "support_credentials",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Allow credentials (cookies, authorization headers) in cross-origin requests.\n Cannot be used with allowed_origins = [\"*\"].\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_support_credentials"
+        }
+      ]
+    },
+    {
+      "name": "AzureFunctionAppDockerConfig",
+      "description": "AzureFunctionAppDockerConfig defines the container configuration for\n running the Function App as a custom Docker container.\n\n The container image must include the Azure Functions runtime base image\n or implement the Functions custom handler protocol.",
+      "protoType": "org.openmcf.provider.azure.azurefunctionapp.v1.AzureFunctionAppDockerConfig",
+      "fields": [
+        {
+          "name": "RegistryUrl",
+          "jsonName": "registryUrl",
+          "protoField": "registry_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The URL of the container registry.\n Examples: \"https://myregistry.azurecr.io\", \"https://ghcr.io\"",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ImageName",
+          "jsonName": "imageName",
+          "protoField": "image_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The container image name (without tag).\n Example: \"myorg/my-function-app\"",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ImageTag",
+          "jsonName": "imageTag",
+          "protoField": "image_tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The container image tag.\n Example: \"latest\", \"v1.2.3\", \"sha-abc123\"",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "RegistryUsername",
+          "jsonName": "registryUsername",
+          "protoField": "registry_username",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Username for authenticating with the container registry.\n Not needed when using managed identity for ACR authentication\n (set container_registry_use_managed_identity in site_config).",
+          "required": false
+        },
+        {
+          "name": "RegistryPassword",
+          "jsonName": "registryPassword",
+          "protoField": "registry_password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Password for authenticating with the container registry.\n This is a sensitive credential. Provide directly or via StringValueOrRef.\n\n Not needed when using managed identity for ACR authentication.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureFunctionAppIdentity",
+      "description": "AzureFunctionAppIdentity configures managed identity for the Function App.\n\n Managed identities eliminate the need to manage credentials for\n authenticating with Azure services. The identity is automatically managed\n by Azure AD and can be assigned RBAC roles on Azure resources.\n\n Follows the same pattern as AzureContainerAppIdentity.",
+      "protoType": "org.openmcf.provider.azure.azurefunctionapp.v1.AzureFunctionAppIdentity",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Identity type.\n \"SystemAssigned\": Azure-managed identity tied to the Function App lifecycle.\n \"UserAssigned\": Pre-created identity with independent lifecycle.\n \"SystemAssigned,UserAssigned\": Both identity types.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "IdentityIds",
+          "jsonName": "identityIds",
+          "protoField": "identity_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "User Assigned Identity Azure resource IDs.\n Required when type includes \"UserAssigned\".\n\n Can be literal ARM resource IDs or references to AzureUserAssignedIdentity outputs.",
+          "required": false,
+          "referenceKind": "AzureUserAssignedIdentity",
+          "referenceFieldPath": "status.outputs.identity_id"
+        }
+      ]
+    },
+    {
+      "name": "AzureFunctionAppIpRestriction",
+      "description": "AzureFunctionAppIpRestriction defines an IP-based access restriction rule.\n Rules are evaluated in priority order (lower number = higher priority).\n\n Exactly one of ip_address, service_tag, or virtual_network_subnet_id\n must be specified per rule.",
+      "protoType": "org.openmcf.provider.azure.azurefunctionapp.v1.AzureFunctionAppIpRestriction",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Rule name for identification.",
+          "required": false
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Rule priority. Lower numbers are evaluated first.\n Range: 1 to 65000.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65000
+          },
+          "oneofGroup": "_priority"
+        },
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action to take when the rule matches.\n\n Valid values: \"Allow\", \"Deny\"\n\n Default: \"Allow\"",
+          "required": false,
+          "default": "Allow",
+          "oneofGroup": "_action"
+        },
+        {
+          "name": "IpAddress",
+          "jsonName": "ipAddress",
+          "protoField": "ip_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP address or CIDR range.\n Example: \"10.0.0.0/24\", \"203.0.113.50/32\"",
+          "required": false
+        },
+        {
+          "name": "ServiceTag",
+          "jsonName": "serviceTag",
+          "protoField": "service_tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Azure service tag.\n Example: \"AzureFrontDoor.Backend\", \"AzureCloud.WestUS\"",
+          "required": false
+        },
+        {
+          "name": "VirtualNetworkSubnetId",
+          "jsonName": "virtualNetworkSubnetId",
+          "protoField": "virtual_network_subnet_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Subnet ID for VNet-based access control.\n Traffic from this subnet is allowed/denied based on the action.",
+          "required": false,
+          "referenceKind": "AzureSubnet",
+          "referenceFieldPath": "status.outputs.subnet_id"
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description of the rule.",
+          "required": false
+        },
+        {
+          "name": "Headers",
+          "jsonName": "headers",
+          "protoField": "headers",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureFunctionAppIpRestrictionHeaders"
+          },
+          "description": "HTTP header filters for the rule.\n Used with Azure Front Door or other reverse proxies to restrict\n access based on request headers.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureFunctionAppIpRestrictionHeaders",
+      "description": "AzureFunctionAppIpRestrictionHeaders defines header-based filters for\n IP restriction rules. Used primarily with Azure Front Door to ensure\n traffic comes through the CDN rather than directly to the Function App.",
+      "protoType": "org.openmcf.provider.azure.azurefunctionapp.v1.AzureFunctionAppIpRestrictionHeaders",
+      "fields": [
+        {
+          "name": "XForwardedFor",
+          "jsonName": "xForwardedFor",
+          "protoField": "x_forwarded_for",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "X-Forwarded-For header values to match.\n Up to 8 entries. CIDR ranges are supported.",
+          "required": false
+        },
+        {
+          "name": "XForwardedHost",
+          "jsonName": "xForwardedHost",
+          "protoField": "x_forwarded_host",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "X-Forwarded-Host header values to match.\n Up to 8 entries.",
+          "required": false
+        },
+        {
+          "name": "XAzureFdid",
+          "jsonName": "xAzureFdid",
+          "protoField": "x_azure_fdid",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "X-Azure-FDID (Front Door ID) header values to match.\n Up to 8 entries. Used to ensure traffic comes from your specific\n Front Door instance.",
+          "required": false
+        },
+        {
+          "name": "XFdHealthProbe",
+          "jsonName": "xFdHealthProbe",
+          "protoField": "x_fd_health_probe",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "X-FD-HealthProbe header values to match.\n Used to allow Front Door health probe traffic.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureFunctionAppSiteConfig",
+      "description": "AzureFunctionAppSiteConfig defines the site-level configuration for a\n Linux Function App. This maps to the `site_config` block in the\n Terraform azurerm_linux_function_app resource.\n\n Contains the application stack (runtime selection), scaling settings,\n security configuration, networking behavior, and operational controls.",
+      "protoType": "org.openmcf.provider.azure.azurefunctionapp.v1.AzureFunctionAppSiteConfig",
+      "fields": [
+        {
+          "name": "ApplicationStack",
+          "jsonName": "applicationStack",
+          "protoField": "application_stack",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureFunctionAppApplicationStack"
+          },
+          "description": "The application stack defines the runtime for the Function App.\n Exactly one runtime must be specified: dotnet_version, node_version,\n python_version, java_version, powershell_core_version, docker, or\n use_custom_runtime.",
+          "required": false
+        },
+        {
+          "name": "AlwaysOn",
+          "jsonName": "alwaysOn",
+          "protoField": "always_on",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Keep the Function App always loaded in memory.\n When true, the app is never unloaded due to inactivity.\n\n Critical for Dedicated plans (B*/S*/P*) -- without this, the app\n may be unloaded after idle periods, causing cold start latency.\n\n Automatically managed on Consumption and Elastic Premium plans.\n Not supported on Free (F1) tier.",
+          "required": false,
+          "oneofGroup": "_always_on"
+        },
+        {
+          "name": "AppCommandLine",
+          "jsonName": "appCommandLine",
+          "protoField": "app_command_line",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Custom startup command for the Function App.\n Overrides the default startup behavior. Useful for custom Docker\n containers or runtimes that need specific initialization.",
+          "required": false
+        },
+        {
+          "name": "HealthCheckPath",
+          "jsonName": "healthCheckPath",
+          "protoField": "health_check_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Health check endpoint path.\n Azure periodically sends requests to this path and marks the instance\n as unhealthy if it doesn't respond with a 200-299 status code.\n Unhealthy instances are removed from the load balancer rotation.\n\n Recommended for production deployments. Common paths: \"/api/health\",\n \"/healthz\".",
+          "required": false
+        },
+        {
+          "name": "MinimumTlsVersion",
+          "jsonName": "minimumTlsVersion",
+          "protoField": "minimum_tls_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Minimum TLS version for incoming HTTPS requests.\n\n Valid values: \"1.0\", \"1.1\", \"1.2\", \"1.3\"\n\n Default: \"1.2\" (industry standard; \"1.3\" for maximum security)",
+          "required": false,
+          "default": "1.2",
+          "oneofGroup": "_minimum_tls_version"
+        },
+        {
+          "name": "ScmMinimumTlsVersion",
+          "jsonName": "scmMinimumTlsVersion",
+          "protoField": "scm_minimum_tls_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Minimum TLS version for SCM (Kudu) site.\n\n Default: \"1.2\"",
+          "required": false,
+          "default": "1.2",
+          "oneofGroup": "_scm_minimum_tls_version"
+        },
+        {
+          "name": "AppScaleLimit",
+          "jsonName": "appScaleLimit",
+          "protoField": "app_scale_limit",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of workers for scale-out.\n Only applicable to Consumption and Elastic Premium plans.\n\n Consumption (Y1): Azure auto-scales up to 200, but this field caps\n the maximum to control costs.\n Elastic Premium (EP*): Caps the elastic scale-out range.\n\n Ignored on Dedicated plans (use worker_count on the Service Plan instead).",
+          "required": false,
+          "oneofGroup": "_app_scale_limit"
+        },
+        {
+          "name": "ElasticInstanceMinimum",
+          "jsonName": "elasticInstanceMinimum",
+          "protoField": "elastic_instance_minimum",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of pre-warmed instances for Elastic Premium plans.\n These instances are always running and ready to handle requests,\n eliminating cold start latency.\n\n Only applicable to Elastic Premium (EP*) plans. Ignored on other tiers.",
+          "required": false,
+          "oneofGroup": "_elastic_instance_minimum"
+        },
+        {
+          "name": "PreWarmedInstanceCount",
+          "jsonName": "preWarmedInstanceCount",
+          "protoField": "pre_warmed_instance_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of pre-warmed instances beyond the minimum.\n Pre-warmed instances sit in a \"warm\" state and can handle requests\n faster than cold-starting new instances.\n\n Only applicable to Elastic Premium (EP*) plans.",
+          "required": false,
+          "oneofGroup": "_pre_warmed_instance_count"
+        },
+        {
+          "name": "WorkerCount",
+          "jsonName": "workerCount",
+          "protoField": "worker_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of worker instances for the Function App.\n Controls how many instances are allocated on Dedicated plans.\n\n Range: 1-100.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 100
+          },
+          "oneofGroup": "_worker_count"
+        },
+        {
+          "name": "Http2Enabled",
+          "jsonName": "http2Enabled",
+          "protoField": "http2_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable HTTP/2 protocol for the Function App.\n HTTP/2 provides multiplexing, header compression, and server push\n for improved performance.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_http2_enabled"
+        },
+        {
+          "name": "WebsocketsEnabled",
+          "jsonName": "websocketsEnabled",
+          "protoField": "websockets_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable WebSocket connections for the Function App.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_websockets_enabled"
+        },
+        {
+          "name": "Use32BitWorker",
+          "jsonName": "use32BitWorker",
+          "protoField": "use_32_bit_worker",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Use a 32-bit worker process instead of 64-bit.\n Reduces memory footprint but limits addressable memory to ~2 GB.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_use_32_bit_worker"
+        },
+        {
+          "name": "VnetRouteAllEnabled",
+          "jsonName": "vnetRouteAllEnabled",
+          "protoField": "vnet_route_all_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Route all outbound traffic from the Function App through the VNet.\n Requires virtual_network_subnet_id to be set on the spec.\n\n When false (default), only RFC1918 traffic routes through the VNet.\n When true, all outbound traffic (including public internet) routes\n through the VNet, enabling inspection via NSG rules or a firewall.\n\n Not supported on Consumption plans (Y1).\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_vnet_route_all_enabled"
+        },
+        {
+          "name": "FtpsState",
+          "jsonName": "ftpsState",
+          "protoField": "ftps_state",
+          "type": {
+            "kind": "string"
+          },
+          "description": "FTPS state for the Function App.\n Controls whether FTP/FTPS file deployment is allowed.\n\n Valid values:\n - \"AllAllowed\": Both FTP and FTPS are enabled\n - \"FtpsOnly\": Only FTPS (encrypted) is enabled\n - \"Disabled\": FTP/FTPS is completely disabled (recommended)\n\n Default: \"Disabled\" (secure by default)",
+          "required": false,
+          "default": "Disabled",
+          "oneofGroup": "_ftps_state"
+        },
+        {
+          "name": "LoadBalancingMode",
+          "jsonName": "loadBalancingMode",
+          "protoField": "load_balancing_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Load balancing mode for distributing requests across instances.\n\n Valid values: LeastRequests, WeightedRoundRobin, LeastResponseTime,\n WeightedTotalTraffic, RequestHash, PerSiteRoundRobin\n\n Default: \"LeastRequests\"",
+          "required": false,
+          "default": "LeastRequests",
+          "oneofGroup": "_load_balancing_mode"
+        },
+        {
+          "name": "RuntimeScaleMonitoringEnabled",
+          "jsonName": "runtimeScaleMonitoringEnabled",
+          "protoField": "runtime_scale_monitoring_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable runtime scale monitoring for KEDA-based triggers.\n When enabled, the Functions runtime can directly monitor event sources\n to make more accurate scaling decisions.\n\n Supported on Elastic Premium and Dedicated plans with Functions v4+.",
+          "required": false,
+          "oneofGroup": "_runtime_scale_monitoring_enabled"
+        },
+        {
+          "name": "Cors",
+          "jsonName": "cors",
+          "protoField": "cors",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureFunctionAppCorsSettings"
+          },
+          "description": "CORS (Cross-Origin Resource Sharing) configuration.\n Controls which origins are allowed to make cross-origin requests to\n the Function App's HTTP endpoints.",
+          "required": false
+        },
+        {
+          "name": "IpRestrictions",
+          "jsonName": "ipRestrictions",
+          "protoField": "ip_restrictions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AzureFunctionAppIpRestriction"
+            }
+          },
+          "description": "IP restriction rules for the main site.\n Controls which IP addresses, service tags, or subnets can access\n the Function App.",
+          "required": false
+        },
+        {
+          "name": "IpRestrictionDefaultAction",
+          "jsonName": "ipRestrictionDefaultAction",
+          "protoField": "ip_restriction_default_action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Default action for IP restrictions on the main site.\n When \"Allow\", unlisted IPs are allowed (rules are deny-list).\n When \"Deny\", unlisted IPs are denied (rules are allow-list).\n\n Default: \"Allow\"",
+          "required": false,
+          "default": "Allow",
+          "oneofGroup": "_ip_restriction_default_action"
+        },
+        {
+          "name": "ScmUseMainIpRestriction",
+          "jsonName": "scmUseMainIpRestriction",
+          "protoField": "scm_use_main_ip_restriction",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Use the main site's IP restrictions for the SCM (Kudu) site.\n When true, scm_ip_restrictions are ignored.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_scm_use_main_ip_restriction"
+        },
+        {
+          "name": "ScmIpRestrictions",
+          "jsonName": "scmIpRestrictions",
+          "protoField": "scm_ip_restrictions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AzureFunctionAppIpRestriction"
+            }
+          },
+          "description": "IP restriction rules for the SCM (Kudu) site.\n Only used when scm_use_main_ip_restriction is false.",
+          "required": false
+        },
+        {
+          "name": "ScmIpRestrictionDefaultAction",
+          "jsonName": "scmIpRestrictionDefaultAction",
+          "protoField": "scm_ip_restriction_default_action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Default action for IP restrictions on the SCM site.\n\n Default: \"Allow\"",
+          "required": false,
+          "default": "Allow",
+          "oneofGroup": "_scm_ip_restriction_default_action"
+        },
+        {
+          "name": "AppServiceLogs",
+          "jsonName": "appServiceLogs",
+          "protoField": "app_service_logs",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureFunctionAppAppServiceLogs"
+          },
+          "description": "App Service logging configuration.",
+          "required": false
+        },
+        {
+          "name": "DefaultDocuments",
+          "jsonName": "defaultDocuments",
+          "protoField": "default_documents",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Default documents list for the web server.\n Defines which files are served when a request hits the root path.",
+          "required": false
+        },
+        {
+          "name": "ContainerRegistryUseManagedIdentity",
+          "jsonName": "containerRegistryUseManagedIdentity",
+          "protoField": "container_registry_use_managed_identity",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Use managed identity for pulling container images from Azure Container Registry.\n Requires the Function App's identity to have AcrPull role on the registry.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_container_registry_use_managed_identity"
+        },
+        {
+          "name": "ContainerRegistryManagedIdentityClientId",
+          "jsonName": "containerRegistryManagedIdentityClientId",
+          "protoField": "container_registry_managed_identity_client_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Client ID of the managed identity used for ACR image pulls.\n Only used when container_registry_use_managed_identity is true and\n a user-assigned identity (not system-assigned) should be used.",
+          "required": false
+        },
+        {
+          "name": "ApplicationInsightsKey",
+          "jsonName": "applicationInsightsKey",
+          "protoField": "application_insights_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Application Insights instrumentation key (classic).\n Prefer application_insights_connection_string on the parent spec\n for new deployments. This field is for backward compatibility with\n apps already using the instrumentation key.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureFunctionAppStorageMount",
+      "description": "AzureFunctionAppStorageMount defines an Azure Storage mount for\n the Function App. Mounts Azure File Shares or Blob containers as\n directories accessible to function code at runtime.",
+      "protoType": "org.openmcf.provider.azure.azurefunctionapp.v1.AzureFunctionAppStorageMount",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this mount within the Function App.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Storage type.\n\n Valid values:\n - \"AzureBlob\": Mount an Azure Blob container (read-only)\n - \"AzureFiles\": Mount an Azure File Share (read-write)",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AccountName",
+          "jsonName": "accountName",
+          "protoField": "account_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the Azure Storage Account that contains the share or container.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ShareName",
+          "jsonName": "shareName",
+          "protoField": "share_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the file share or blob container to mount.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "AccessKey",
+          "jsonName": "accessKey",
+          "protoField": "access_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Access key for the storage account.\n This is a sensitive credential.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "MountPath",
+          "jsonName": "mountPath",
+          "protoField": "mount_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path inside the container where the share is mounted.\n Example: \"/mnt/data\"",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

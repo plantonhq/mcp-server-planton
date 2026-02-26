@@ -1,0 +1,466 @@
+{
+  "name": "AwsGlobalAccelerator",
+  "kind": "AwsGlobalAccelerator",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsGlobalAccelerator is a deployment component for creating and managing\n AWS Global Accelerator resources — a networking service that improves\n availability and performance by routing traffic through the AWS global\n network to optimal regional endpoints.",
+  "protoPackage": "org.openmcf.provider.aws.awsglobalaccelerator.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsglobalaccelerator/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsglobalaccelerator/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsGlobalAcceleratorSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Enabled",
+        "jsonName": "enabled",
+        "protoField": "enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the accelerator is enabled and accepting traffic. When disabled,\n the accelerator's DNS name stops resolving and no traffic is routed.\n Useful for temporarily disabling an accelerator during maintenance without\n destroying it.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_enabled"
+      },
+      {
+        "name": "IpAddressType",
+        "jsonName": "ipAddressType",
+        "protoField": "ip_address_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IP address type for the accelerator.\n - \"IPV4\": Two static IPv4 anycast addresses (default).\n - \"DUAL_STACK\": IPv4 + IPv6 anycast addresses for clients on IPv6 networks.",
+        "required": false,
+        "default": "IPV4",
+        "oneofGroup": "_ip_address_type"
+      },
+      {
+        "name": "IpAddresses",
+        "jsonName": "ipAddresses",
+        "protoField": "ip_addresses",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Bring-Your-Own-IP (BYOIP) addresses to assign to the accelerator instead\n of AWS-allocated anycast IPs. Provide exactly 1 or 2 IPv4 addresses from\n a BYOIP address pool registered with AWS.\n\n ForceNew — changing this destroys and recreates the accelerator.\n Leave empty to use AWS-allocated IPs (the default for most deployments).",
+        "required": false
+      },
+      {
+        "name": "FlowLogs",
+        "jsonName": "flowLogs",
+        "protoField": "flow_logs",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsGlobalAcceleratorFlowLogs"
+        },
+        "description": "Optional flow log configuration for traffic analysis. When enabled,\n Global Accelerator publishes flow logs to the specified S3 bucket.",
+        "required": false
+      },
+      {
+        "name": "Listeners",
+        "jsonName": "listeners",
+        "protoField": "listeners",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsGlobalAcceleratorListener"
+          }
+        },
+        "description": "Listeners define the ports and protocols the accelerator accepts traffic on.\n Each listener routes traffic to one or more regional endpoint groups.\n\n At least one listener is required — an accelerator without listeners\n serves no purpose beyond reserving static IPs.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 1
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsGlobalAcceleratorEndpoint",
+      "description": "AwsGlobalAcceleratorEndpoint defines a single endpoint within an endpoint\n group. Endpoints are the actual resources that receive traffic.\n\n Supported endpoint types:\n - Application Load Balancer (ALB ARN)\n - Network Load Balancer (NLB ARN)\n - Elastic IP (allocation ID)\n - EC2 instance (instance ID)\n\n The endpoint_id field is polymorphic — Global Accelerator determines the\n endpoint type from the identifier format.",
+      "protoType": "org.openmcf.provider.aws.awsglobalaccelerator.v1.AwsGlobalAcceleratorEndpoint",
+      "fields": [
+        {
+          "name": "EndpointId",
+          "jsonName": "endpointId",
+          "protoField": "endpoint_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Resource identifier for the endpoint. Accepts:\n - ALB ARN: \"arn:aws:elasticloadbalancing:...\"\n - NLB ARN: \"arn:aws:elasticloadbalancing:...\"\n - EIP allocation ID: \"eipalloc-...\"\n - EC2 instance ID: \"i-...\"\n\n Uses StringValueOrRef for cross-resource referencing (e.g., reference an\n AwsAlb's load_balancer_arn output via valueFrom). No default_kind is set\n because the target resource type varies.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Weight",
+          "jsonName": "weight",
+          "protoField": "weight",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Relative weight for this endpoint. Range: 0-255. Default: 128.\n Higher weight means more traffic. Set to 0 to temporarily stop routing\n traffic to this endpoint without removing it.",
+          "required": false,
+          "validation": {
+            "max": 255
+          }
+        },
+        {
+          "name": "ClientIpPreservationEnabled",
+          "jsonName": "clientIpPreservationEnabled",
+          "protoField": "client_ip_preservation_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Preserve the client's source IP address in requests forwarded to the\n endpoint. When enabled, the endpoint sees the original client IP instead\n of the Global Accelerator IP.\n\n Supported for ALB and EC2 instance endpoints only. For NLB and EIP\n endpoints, client IP is always preserved regardless of this setting.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsGlobalAcceleratorEndpointGroup",
+      "description": "AwsGlobalAcceleratorEndpointGroup defines a regional set of endpoints that\n receive traffic from a listener. Each endpoint group maps to one\n `aws_globalaccelerator_endpoint_group` resource.\n\n Endpoint groups enable multi-region architectures: place groups in different\n AWS regions and Global Accelerator routes users to the nearest healthy region.\n Use traffic_dial_percentage for gradual regional traffic shifting (blue/green,\n canary deployments across regions).",
+      "protoType": "org.openmcf.provider.aws.awsglobalaccelerator.v1.AwsGlobalAcceleratorEndpointGroup",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "User-assigned name for this endpoint group. Used as part of the composite\n key in the endpoint_group_arns output map (format: \"listener_name/group_name\").\n\n Must be unique within the parent listener's endpoint groups. Lowercase\n alphanumeric and hyphens only, starting with a letter (max 63 characters).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "EndpointGroupRegion",
+          "jsonName": "endpointGroupRegion",
+          "protoField": "endpoint_group_region",
+          "type": {
+            "kind": "string"
+          },
+          "description": "AWS region for this endpoint group (e.g., \"us-east-1\", \"eu-west-1\").\n When omitted, defaults to the AWS provider region. ForceNew — changing\n the region requires replacing the endpoint group.",
+          "required": false
+        },
+        {
+          "name": "HealthCheckPort",
+          "jsonName": "healthCheckPort",
+          "protoField": "health_check_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port to use for health checks. When omitted, uses the listener port.\n Use this to check health on a dedicated health-check port separate from\n the traffic port.",
+          "required": false,
+          "validation": {
+            "max": 65535
+          }
+        },
+        {
+          "name": "HealthCheckProtocol",
+          "jsonName": "healthCheckProtocol",
+          "protoField": "health_check_protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol for health checks.\n - \"TCP\" (default): Verifies port reachability only.\n - \"HTTP\": Sends GET request to health_check_path, expects 200 response.\n - \"HTTPS\": Same as HTTP but over TLS.",
+          "required": false,
+          "default": "TCP",
+          "oneofGroup": "_health_check_protocol"
+        },
+        {
+          "name": "HealthCheckPath",
+          "jsonName": "healthCheckPath",
+          "protoField": "health_check_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path for HTTP/HTTPS health checks. The accelerator sends a GET request\n to this path. Required when health_check_protocol is HTTP or HTTPS.\n Ignored for TCP health checks. Example: \"/health\" or \"/api/status\".",
+          "required": false
+        },
+        {
+          "name": "HealthCheckIntervalSeconds",
+          "jsonName": "healthCheckIntervalSeconds",
+          "protoField": "health_check_interval_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Seconds between health checks for each endpoint. AWS only supports\n two values: 10 or 30 seconds. This is NOT a continuous range — any\n other value will be rejected by the API.",
+          "required": false,
+          "default": "30",
+          "oneofGroup": "_health_check_interval_seconds"
+        },
+        {
+          "name": "ThresholdCount",
+          "jsonName": "thresholdCount",
+          "protoField": "threshold_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive health checks that must succeed (or fail) to\n change an endpoint's health status. Range: 1-10.",
+          "required": false,
+          "validation": {
+            "max": 10
+          },
+          "default": "3",
+          "oneofGroup": "_threshold_count"
+        },
+        {
+          "name": "TrafficDialPercentage",
+          "jsonName": "trafficDialPercentage",
+          "protoField": "traffic_dial_percentage",
+          "type": {
+            "kind": "double"
+          },
+          "description": "Percentage of traffic to route to this endpoint group. Range: 0.0-100.0.\n Default: 100.0 (all traffic). Use values below 100 for gradual traffic\n shifting between regions (blue/green, canary deployments).\n\n Set to 0 to temporarily drain a region without removing its endpoints.",
+          "required": false,
+          "recommendedDefault": "100.0"
+        },
+        {
+          "name": "Endpoints",
+          "jsonName": "endpoints",
+          "protoField": "endpoints",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsGlobalAcceleratorEndpoint"
+            }
+          },
+          "description": "Endpoints within this regional group. Each endpoint is a resource that\n receives traffic — an ALB, NLB, Elastic IP, or EC2 instance.\n\n Endpoints are optional. You may create the endpoint group first and\n register endpoints later (e.g., when the ALB or NLB is deployed).",
+          "required": false
+        },
+        {
+          "name": "PortOverrides",
+          "jsonName": "portOverrides",
+          "protoField": "port_overrides",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsGlobalAcceleratorPortOverride"
+            }
+          },
+          "description": "Port overrides remap listener ports to different endpoint ports. Useful\n when the listener accepts traffic on one port but the endpoint serves\n on a different port. Maximum 10 overrides per endpoint group.\n\n Example: listener on port 443, endpoint on port 8443.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsGlobalAcceleratorFlowLogs",
+      "description": "AwsGlobalAcceleratorFlowLogs configures flow log delivery to S3 for traffic\n analysis. Flow logs capture information about the IP address traffic flowing\n to and from network interfaces in Global Accelerator.",
+      "protoType": "org.openmcf.provider.aws.awsglobalaccelerator.v1.AwsGlobalAcceleratorFlowLogs",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable flow log delivery.",
+          "required": false
+        },
+        {
+          "name": "S3Bucket",
+          "jsonName": "s3Bucket",
+          "protoField": "s3_bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 bucket name for flow log storage. Required when enabled is true.",
+          "required": false,
+          "referenceKind": "AwsS3Bucket",
+          "referenceFieldPath": "status.outputs.bucket_name"
+        },
+        {
+          "name": "S3Prefix",
+          "jsonName": "s3Prefix",
+          "protoField": "s3_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 key prefix for flow logs. Useful for organizing logs when multiple\n accelerators share a bucket. Example: \"ga-logs/prod-accelerator/\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsGlobalAcceleratorListener",
+      "description": "AwsGlobalAcceleratorListener defines a port/protocol combination that the\n accelerator accepts traffic on, along with the endpoint groups that receive\n the routed traffic.\n\n Each listener maps to one `aws_globalaccelerator_listener` resource.\n Listeners are ForceNew on accelerator_arn (handled automatically by the\n module) but can have port ranges and endpoint groups updated in place.",
+      "protoType": "org.openmcf.provider.aws.awsglobalaccelerator.v1.AwsGlobalAcceleratorListener",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "User-assigned name for this listener. Used as a key in the output maps\n (listener_arns, endpoint_group_arns) so downstream resources can reference\n specific listener or endpoint group ARNs via valueFrom.\n\n Must be unique within the accelerator's listeners. Lowercase alphanumeric\n and hyphens only, starting with a letter (max 63 characters).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol for this listener. Global Accelerator operates at Layer 4.\n - \"TCP\": For HTTP, HTTPS, WebSocket, gRPC, and other TCP workloads.\n - \"UDP\": For DNS, gaming, IoT, and real-time media workloads.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ClientAffinity",
+          "jsonName": "clientAffinity",
+          "protoField": "client_affinity",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Client affinity setting for this listener.\n - \"NONE\" (default): Requests from the same client may be routed to\n   different endpoints. Best for stateless workloads.\n - \"SOURCE_IP\": All requests from the same source IP address are routed\n   to the same endpoint within an endpoint group. Required for stateful\n   protocols (gaming, WebSocket connections, long-lived TCP sessions).",
+          "required": false,
+          "default": "NONE",
+          "oneofGroup": "_client_affinity"
+        },
+        {
+          "name": "PortRanges",
+          "jsonName": "portRanges",
+          "protoField": "port_ranges",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsGlobalAcceleratorPortRange"
+            }
+          },
+          "description": "Port ranges that this listener accepts traffic on. Each range defines\n a from_port and to_port (inclusive). Use a single port range for most\n workloads, or multiple ranges for services on different ports.\n\n At least one port range is required. Maximum 10 ranges per listener.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minItems": 1
+          }
+        },
+        {
+          "name": "EndpointGroups",
+          "jsonName": "endpointGroups",
+          "protoField": "endpoint_groups",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsGlobalAcceleratorEndpointGroup"
+            }
+          },
+          "description": "Endpoint groups define regional destinations for this listener's traffic.\n Each endpoint group represents a set of endpoints in one AWS region.\n\n At least one endpoint group is required — a listener without endpoint\n groups drops all traffic.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsGlobalAcceleratorPortOverride",
+      "description": "AwsGlobalAcceleratorPortOverride remaps a listener port to a different\n endpoint port. This allows endpoints to serve on a port different from\n what the listener advertises.",
+      "protoType": "org.openmcf.provider.aws.awsglobalaccelerator.v1.AwsGlobalAcceleratorPortOverride",
+      "fields": [
+        {
+          "name": "ListenerPort",
+          "jsonName": "listenerPort",
+          "protoField": "listener_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The listener port that is remapped. Must match a port within one of the\n listener's port ranges.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "EndpointPort",
+          "jsonName": "endpointPort",
+          "protoField": "endpoint_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The endpoint port that traffic is forwarded to.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1,
+            "max": 65535
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsGlobalAcceleratorPortRange",
+      "description": "AwsGlobalAcceleratorPortRange defines an inclusive port range for a listener.",
+      "protoType": "org.openmcf.provider.aws.awsglobalaccelerator.v1.AwsGlobalAcceleratorPortRange",
+      "fields": [
+        {
+          "name": "FromPort",
+          "jsonName": "fromPort",
+          "protoField": "from_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "First port in the range (inclusive). Range: 1-65535.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "ToPort",
+          "jsonName": "toPort",
+          "protoField": "to_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Last port in the range (inclusive). Must be \u003e= from_port. Range: 1-65535.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1,
+            "max": 65535
+          }
+        }
+      ]
+    }
+  ]
+}

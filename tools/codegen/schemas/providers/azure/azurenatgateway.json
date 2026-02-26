@@ -1,0 +1,107 @@
+{
+  "name": "AzureNatGateway",
+  "kind": "AzureNatGateway",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "azure-nat-gateway",
+  "protoPackage": "org.openmcf.provider.azure.azurenatgateway.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurenatgateway/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurenatgateway/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureNatGatewaySpec",
+    "fields": [
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to the subnet to attach this NAT Gateway to (usually an existing Azure Subnet).\n Defaults to referencing an AzureSubnet resource’s ID output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureVpc",
+        "referenceFieldPath": "status.outputs.nodes_subnet_id"
+      },
+      {
+        "name": "IdleTimeoutMinutes",
+        "jsonName": "idleTimeoutMinutes",
+        "protoField": "idle_timeout_minutes",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Idle timeout in minutes for TCP connections through the NAT Gateway.\n Defaults to 4 if not set. Valid range: 4 to 120 (inclusive).",
+        "required": false,
+        "validation": {
+          "min": 4,
+          "max": 120
+        },
+        "oneofGroup": "_idle_timeout_minutes"
+      },
+      {
+        "name": "PublicIpPrefixLength",
+        "jsonName": "publicIpPrefixLength",
+        "protoField": "public_ip_prefix_length",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Optional prefix length for allocating a Public IP Prefix for this NAT Gateway.\n If set (allowed values 28–31), a Public IP Prefix of /\u003cprefix_length\u003e is created instead of a single IP.",
+        "required": false,
+        "validation": {
+          "min": 28,
+          "max": 31
+        },
+        "oneofGroup": "_public_ip_prefix_length"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Optional tags to assign to the NAT Gateway resource.",
+        "required": false
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the NAT Gateway will be deployed.\n Examples: \"eastus\", \"westus2\", \"westeurope\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the NAT Gateway will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      }
+    ]
+  }
+}

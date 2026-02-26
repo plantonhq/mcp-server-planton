@@ -1,0 +1,55 @@
+{
+  "name": "OciDevopsProject",
+  "kind": "OciDevopsProject",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciDevopsProject is the top-level resource representing an OCI\n DevOps Project -- the organizational container for CI/CD pipelines,\n code repositories, artifacts, and triggers.",
+  "protoPackage": "org.openmcf.provider.oci.ocidevopsproject.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocidevopsproject/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocidevopsproject/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciDevopsProjectSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the project will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "NotificationTopicId",
+        "jsonName": "notificationTopicId",
+        "protoField": "notification_topic_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the ONS (Oracle Notification Service) topic that receives\n DevOps pipeline events such as build completions, deployment\n successes, and failures. Required by the OCI API.\n\n Flattened from the provider's notification_config.topic_id block.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the project's purpose.",
+        "required": false
+      }
+    ]
+  }
+}

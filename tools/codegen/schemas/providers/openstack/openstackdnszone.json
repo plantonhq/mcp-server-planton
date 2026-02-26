@@ -1,0 +1,187 @@
+{
+  "name": "OpenStackDnsZone",
+  "kind": "OpenStackDnsZone",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackDnsZone is a Kubernetes Resource Model (KRM) style resource for managing\n Designate DNS zones in OpenStack.\n\n A DNS zone represents an authoritative domain managed by the OpenStack Designate\n service. It can optionally include inline DNS records that are provisioned alongside\n the zone. For independently managed records (DAG-visible in InfraCharts), use the\n standalone OpenStackDnsRecord component.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackdnszone.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackdnszone/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackdnszone/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackDnsZoneSpec",
+    "fields": [
+      {
+        "name": "DomainName",
+        "jsonName": "domainName",
+        "protoField": "domain_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The DNS domain name for the zone (e.g., \"example.com\").\n This is the authoritative domain managed by Designate.\n Must be a valid domain name (lowercase labels separated by dots, ending with a TLD).\n Note: Designate may auto-append a trailing dot internally.\n ForceNew: changing this requires recreating the zone.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Email",
+        "jsonName": "email",
+        "protoField": "email",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Email address of the zone administrator.\n Used in the SOA record for the zone.\n Example: \"admin@example.com\"",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Human-readable description of the DNS zone.",
+        "required": false
+      },
+      {
+        "name": "Ttl",
+        "jsonName": "ttl",
+        "protoField": "ttl",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Optional) Default Time To Live (in seconds) for records in this zone.\n Determines how long resolvers cache records from this zone.\n If omitted, Designate uses its deployment default.",
+        "required": false,
+        "oneofGroup": "_ttl"
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The zone type.\n \"PRIMARY\" for zones where Designate is the authoritative source.\n \"SECONDARY\" for zones replicated from upstream master nameservers.\n If omitted, Designate defaults to PRIMARY.\n ForceNew: changing this requires recreating the zone.",
+        "required": false
+      },
+      {
+        "name": "Masters",
+        "jsonName": "masters",
+        "protoField": "masters",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "(Optional) List of master nameserver addresses for SECONDARY zones.\n Required when type is \"SECONDARY\". Ignored for PRIMARY zones.\n Example: [\"ns1.upstream.com\", \"ns2.upstream.com\"]",
+        "required": false
+      },
+      {
+        "name": "Records",
+        "jsonName": "records",
+        "protoField": "records",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "OpenStackDnsRecord"
+          }
+        },
+        "description": "(Optional) Inline DNS records to create alongside the zone.\n Each record is provisioned as a separate openstack_dns_recordset_v2 resource,\n keyed by record_type + record_name for stable IaC state management.\n For DAG-visible, independently managed records in InfraCharts, use the\n standalone OpenStackDnsRecord component instead.",
+        "required": false
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Override the region from the provider config for this zone.\n If omitted, the region from the OpenStack provider config is used.\n ForceNew: changing this requires recreating the zone.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "OpenStackDnsRecord",
+      "description": "OpenStackDnsRecord defines an inline DNS record within a zone.\n Each record creates a Designate recordset (one name + one type + one or more values).",
+      "protoType": "org.openmcf.provider.openstack.openstackdnszone.v1.OpenStackDnsRecord",
+      "fields": [
+        {
+          "name": "RecordType",
+          "jsonName": "recordType",
+          "protoField": "record_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.openstack.openstackdnszone.v1.RecordType",
+            "enumValues": [
+              "A",
+              "AAAA",
+              "CNAME",
+              "MX",
+              "TXT",
+              "SRV",
+              "NS",
+              "PTR",
+              "CAA",
+              "SOA",
+              "SPF",
+              "SSHFP",
+              "NAPTR"
+            ]
+          },
+          "description": "(Required) The DNS record type.\n Supported types: A, AAAA, CNAME, MX, TXT, SRV, NS, PTR, CAA, SOA, SPF, SSHFP, NAPTR.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "RecordName",
+          "jsonName": "recordName",
+          "protoField": "record_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "(Required) The fully qualified domain name for this record.\n Must end with a trailing dot to indicate FQDN.\n Example: \"www.example.com.\" or \"api.example.com.\"",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Values",
+          "jsonName": "values",
+          "protoField": "values",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "(Required) The DNS record values.\n For A records: IPv4 addresses (e.g., \"192.0.2.1\")\n For AAAA records: IPv6 addresses (e.g., \"2001:db8::1\")\n For CNAME records: target hostname with trailing dot (e.g., \"target.example.com.\")\n For MX records: priority and mail server (e.g., \"10 mail.example.com.\")\n For TXT records: text values (e.g., \"v=spf1 include:_spf.google.com ~all\")\n Multiple values create a round-robin record set.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "Ttl",
+          "jsonName": "ttl",
+          "protoField": "ttl",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "(Optional) Time To Live (in seconds) for this specific record.\n Overrides the zone-level TTL for this record.\n Default: 60 seconds.",
+          "required": false,
+          "default": "60",
+          "oneofGroup": "_ttl"
+        }
+      ]
+    }
+  ]
+}

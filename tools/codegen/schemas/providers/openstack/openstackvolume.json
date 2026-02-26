@@ -1,0 +1,115 @@
+{
+  "name": "OpenStackVolume",
+  "kind": "OpenStackVolume",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackVolume is a Kubernetes Resource Model (KRM) style resource for an\n OpenStack Cinder block storage volume.\n\n Volumes provide persistent block storage that can be attached to compute\n instances. They survive instance termination and can be detached and\n reattached to different instances, making them essential for databases,\n application data, and any workload that requires durable storage.\n\n A volume can be created blank, cloned from an existing volume, restored from\n a snapshot, or initialized from a Glance image (for bootable volumes).\n\n In InfraCharts, volumes typically appear alongside instances. Use\n OpenStackVolumeAttach to bind a volume to an instance as a visible DAG node.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackvolume.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackvolume/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackvolume/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackVolumeSpec",
+    "fields": [
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description is a human-readable description of the volume.\n This is stored on the OpenStack resource and visible in Horizon and API responses.",
+        "required": false
+      },
+      {
+        "name": "Size",
+        "jsonName": "size",
+        "protoField": "size",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "size is the volume size in gigabytes (GB).\n Required for blank volumes and image-based volumes.\n For snapshot-based or clone-based volumes, if omitted or set to 0, the size\n of the source is used. If provided, it must be \u003e= the source size.\n Must be greater than 0 for blank volumes.",
+        "required": false
+      },
+      {
+        "name": "VolumeType",
+        "jsonName": "volumeType",
+        "protoField": "volume_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "volume_type is the Cinder volume type (backend storage class).\n Examples: \"SSD\", \"HDD\", \"__DEFAULT__\", \"ceph-ssd\", \"lvm\".\n If omitted, the Cinder default volume type for the project is used.\n Changing this on an existing volume triggers a retype operation.",
+        "required": false
+      },
+      {
+        "name": "AvailabilityZone",
+        "jsonName": "availabilityZone",
+        "protoField": "availability_zone",
+        "type": {
+          "kind": "string"
+        },
+        "description": "availability_zone is the availability zone where the volume is created.\n ForceNew: changing the AZ requires recreating the volume.\n If omitted, Cinder selects the default AZ.\n Must match the instance's AZ for attachment to work (in most deployments).",
+        "required": false
+      },
+      {
+        "name": "SnapshotId",
+        "jsonName": "snapshotId",
+        "protoField": "snapshot_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "snapshot_id is the UUID of a Cinder volume snapshot to restore from.\n ForceNew: the source cannot be changed after creation.\n Mutually exclusive with source_vol_id and image_id.",
+        "required": false
+      },
+      {
+        "name": "SourceVolId",
+        "jsonName": "sourceVolId",
+        "protoField": "source_vol_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "source_vol_id is the UUID of an existing Cinder volume to clone.\n ForceNew: the source cannot be changed after creation.\n Mutually exclusive with snapshot_id and image_id.",
+        "required": false
+      },
+      {
+        "name": "ImageId",
+        "jsonName": "imageId",
+        "protoField": "image_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "image_id is the ID of a Glance image to initialize the volume from.\n This creates a bootable volume that can be used as a root disk.\n ForceNew: the source cannot be changed after creation.\n Mutually exclusive with snapshot_id and source_vol_id.\n Can reference an OpenStackImage resource's output or be a literal image UUID.",
+        "required": false,
+        "referenceKind": "OpenStackImage",
+        "referenceFieldPath": "status.outputs.image_id"
+      },
+      {
+        "name": "Metadata",
+        "jsonName": "metadata",
+        "protoField": "metadata",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "metadata is a map of key-value pairs stored on the volume.\n Metadata is visible in the OpenStack API and Horizon dashboard.\n Can be used for tagging, billing, or organizational purposes.",
+        "required": false
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this volume.\n If omitted, the region from the OpenStack provider config is used.\n ForceNew: changing the region requires recreating the volume.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  }
+}

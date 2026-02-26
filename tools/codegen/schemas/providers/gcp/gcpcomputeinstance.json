@@ -1,0 +1,578 @@
+{
+  "name": "GcpComputeInstance",
+  "kind": "GcpComputeInstance",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-compute-instance",
+  "protoPackage": "org.openmcf.provider.gcp.gcpcomputeinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpcomputeinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpcomputeinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpComputeInstanceSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project ID where the Compute Engine instance will be created.\n Can be a literal value or a reference to a GcpProject resource.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "Zone",
+        "jsonName": "zone",
+        "protoField": "zone",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Zone where the instance will be deployed, for example \"us-central1-a\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z]+-[a-z]+[0-9]-[a-z]$"
+        }
+      },
+      {
+        "name": "MachineType",
+        "jsonName": "machineType",
+        "protoField": "machine_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Machine type for the instance, for example \"e2-medium\", \"n1-standard-1\", \"n2-standard-2\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "BootDisk",
+        "jsonName": "bootDisk",
+        "protoField": "boot_disk",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpComputeInstanceBootDisk"
+        },
+        "description": "Boot disk configuration for the instance.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "NetworkInterfaces",
+        "jsonName": "networkInterfaces",
+        "protoField": "network_interfaces",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "GcpComputeInstanceNetworkInterface"
+          }
+        },
+        "description": "Network interface configurations for the instance.\n At least one network interface is required.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 1
+        }
+      },
+      {
+        "name": "AttachedDisks",
+        "jsonName": "attachedDisks",
+        "protoField": "attached_disks",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "GcpComputeInstanceAttachedDisk"
+          }
+        },
+        "description": "Additional attached disks (non-boot disks).",
+        "required": false
+      },
+      {
+        "name": "ServiceAccount",
+        "jsonName": "serviceAccount",
+        "protoField": "service_account",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpComputeInstanceServiceAccount"
+        },
+        "description": "Service account configuration for the instance.",
+        "required": false
+      },
+      {
+        "name": "Preemptible",
+        "jsonName": "preemptible",
+        "protoField": "preemptible",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the instance should be preemptible (deprecated, use spot instead).",
+        "required": false
+      },
+      {
+        "name": "Spot",
+        "jsonName": "spot",
+        "protoField": "spot",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the instance should be a Spot VM (cost-effective, can be preempted).",
+        "required": false
+      },
+      {
+        "name": "DeletionProtection",
+        "jsonName": "deletionProtection",
+        "protoField": "deletion_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable deletion protection.",
+        "required": false
+      },
+      {
+        "name": "Metadata",
+        "jsonName": "metadata",
+        "protoField": "metadata",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Custom metadata key-value pairs for the instance.",
+        "required": false
+      },
+      {
+        "name": "Labels",
+        "jsonName": "labels",
+        "protoField": "labels",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Labels to apply to the instance.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Network tags for firewall rules.",
+        "required": false
+      },
+      {
+        "name": "SshKeys",
+        "jsonName": "sshKeys",
+        "protoField": "ssh_keys",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "SSH keys for accessing the instance (in \"username:ssh-key\" format).",
+        "required": false
+      },
+      {
+        "name": "StartupScript",
+        "jsonName": "startupScript",
+        "protoField": "startup_script",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Startup script to run when the instance boots.",
+        "required": false
+      },
+      {
+        "name": "AllowStoppingForUpdate",
+        "jsonName": "allowStoppingForUpdate",
+        "protoField": "allow_stopping_for_update",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to allow stopping the instance for update operations.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "Scheduling",
+        "jsonName": "scheduling",
+        "protoField": "scheduling",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpComputeInstanceScheduling"
+        },
+        "description": "Scheduling configuration for the instance.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpComputeInstanceAccessConfig",
+      "description": "GcpComputeInstanceAccessConfig defines external IP configuration.",
+      "protoType": "org.openmcf.provider.gcp.gcpcomputeinstance.v1.GcpComputeInstanceAccessConfig",
+      "fields": [
+        {
+          "name": "NatIp",
+          "jsonName": "natIp",
+          "protoField": "nat_ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Type of access config (ONE_TO_ONE_NAT is the only supported type).",
+          "required": false
+        },
+        {
+          "name": "NetworkTier",
+          "jsonName": "networkTier",
+          "protoField": "network_tier",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Network tier (PREMIUM or STANDARD).",
+          "required": false,
+          "validation": {
+            "enum": [
+              "PREMIUM",
+              "STANDARD",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpComputeInstanceAliasIpRange",
+      "description": "GcpComputeInstanceAliasIpRange defines alias IP range for a network interface.",
+      "protoType": "org.openmcf.provider.gcp.gcpcomputeinstance.v1.GcpComputeInstanceAliasIpRange",
+      "fields": [
+        {
+          "name": "IpCidrRange",
+          "jsonName": "ipCidrRange",
+          "protoField": "ip_cidr_range",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP CIDR range for alias IPs.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "SubnetworkRangeName",
+          "jsonName": "subnetworkRangeName",
+          "protoField": "subnetwork_range_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Subnetwork range name (optional).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpComputeInstanceAttachedDisk",
+      "description": "GcpComputeInstanceAttachedDisk defines an additional disk attached to the instance.",
+      "protoType": "org.openmcf.provider.gcp.gcpcomputeinstance.v1.GcpComputeInstanceAttachedDisk",
+      "fields": [
+        {
+          "name": "Source",
+          "jsonName": "source",
+          "protoField": "source",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Source disk self-link or name.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "DeviceName",
+          "jsonName": "deviceName",
+          "protoField": "device_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Device name for the disk.",
+          "required": false
+        },
+        {
+          "name": "Mode",
+          "jsonName": "mode",
+          "protoField": "mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Mode of the disk (READ_WRITE or READ_ONLY).",
+          "required": false,
+          "validation": {
+            "enum": [
+              "READ_WRITE",
+              "READ_ONLY",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpComputeInstanceBootDisk",
+      "description": "GcpComputeInstanceBootDisk defines the boot disk configuration.",
+      "protoType": "org.openmcf.provider.gcp.gcpcomputeinstance.v1.GcpComputeInstanceBootDisk",
+      "fields": [
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Source image for the boot disk (e.g., \"debian-cloud/debian-11\", \"ubuntu-os-cloud/ubuntu-2204-lts\").",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "SizeGb",
+          "jsonName": "sizeGb",
+          "protoField": "size_gb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Size of the boot disk in GB.",
+          "required": false,
+          "validation": {
+            "min": 10,
+            "max": 65536
+          },
+          "recommendedDefault": "10"
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Type of the boot disk (e.g., \"pd-standard\", \"pd-ssd\", \"pd-balanced\").",
+          "required": false,
+          "recommendedDefault": "pd-standard"
+        },
+        {
+          "name": "AutoDelete",
+          "jsonName": "autoDelete",
+          "protoField": "auto_delete",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to auto-delete the boot disk when the instance is deleted.",
+          "required": false,
+          "recommendedDefault": "true"
+        }
+      ]
+    },
+    {
+      "name": "GcpComputeInstanceNetworkInterface",
+      "description": "GcpComputeInstanceNetworkInterface defines a network interface configuration.",
+      "protoType": "org.openmcf.provider.gcp.gcpcomputeinstance.v1.GcpComputeInstanceNetworkInterface",
+      "fields": [
+        {
+          "name": "Network",
+          "jsonName": "network",
+          "protoField": "network",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VPC network for this interface.\n Can be a literal value or a reference to a GcpVpc resource.",
+          "required": false,
+          "referenceKind": "GcpVpc",
+          "referenceFieldPath": "status.outputs.network_self_link"
+        },
+        {
+          "name": "Subnetwork",
+          "jsonName": "subnetwork",
+          "protoField": "subnetwork",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Subnetwork for this interface.\n Can be a literal value or a reference to a GcpSubnetwork resource.",
+          "required": false,
+          "referenceKind": "GcpSubnetwork",
+          "referenceFieldPath": "status.outputs.subnetwork_self_link"
+        },
+        {
+          "name": "AccessConfigs",
+          "jsonName": "accessConfigs",
+          "protoField": "access_configs",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpComputeInstanceAccessConfig"
+            }
+          },
+          "description": "Access configurations for external IPs (NAT).\n If empty, the instance will not have an external IP.",
+          "required": false
+        },
+        {
+          "name": "AliasIpRanges",
+          "jsonName": "aliasIpRanges",
+          "protoField": "alias_ip_ranges",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpComputeInstanceAliasIpRange"
+            }
+          },
+          "description": "Alias IP ranges for this interface.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpComputeInstanceScheduling",
+      "description": "GcpComputeInstanceScheduling defines scheduling options for the instance.",
+      "protoType": "org.openmcf.provider.gcp.gcpcomputeinstance.v1.GcpComputeInstanceScheduling",
+      "fields": [
+        {
+          "name": "Preemptible",
+          "jsonName": "preemptible",
+          "protoField": "preemptible",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the instance is preemptible.",
+          "required": false
+        },
+        {
+          "name": "AutomaticRestart",
+          "jsonName": "automaticRestart",
+          "protoField": "automatic_restart",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Automatic restart policy on failure.",
+          "required": false,
+          "recommendedDefault": "true"
+        },
+        {
+          "name": "OnHostMaintenance",
+          "jsonName": "onHostMaintenance",
+          "protoField": "on_host_maintenance",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Behavior when host maintenance occurs (MIGRATE or TERMINATE).",
+          "required": false,
+          "validation": {
+            "enum": [
+              "MIGRATE",
+              "TERMINATE",
+              ""
+            ]
+          }
+        },
+        {
+          "name": "ProvisioningModel",
+          "jsonName": "provisioningModel",
+          "protoField": "provisioning_model",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Provisioning model (STANDARD or SPOT).",
+          "required": false,
+          "validation": {
+            "enum": [
+              "STANDARD",
+              "SPOT",
+              ""
+            ]
+          }
+        },
+        {
+          "name": "InstanceTerminationAction",
+          "jsonName": "instanceTerminationAction",
+          "protoField": "instance_termination_action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Instance termination action for Spot VMs (STOP or DELETE).",
+          "required": false,
+          "validation": {
+            "enum": [
+              "STOP",
+              "DELETE",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpComputeInstanceServiceAccount",
+      "description": "GcpComputeInstanceServiceAccount defines the service account configuration.",
+      "protoType": "org.openmcf.provider.gcp.gcpcomputeinstance.v1.GcpComputeInstanceServiceAccount",
+      "fields": [
+        {
+          "name": "Email",
+          "jsonName": "email",
+          "protoField": "email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Email of the service account to use.\n Can be a literal value or a reference to a GcpServiceAccount resource.\n If not specified, the default Compute Engine service account is used.",
+          "required": false,
+          "referenceKind": "GcpServiceAccount",
+          "referenceFieldPath": "status.outputs.email"
+        },
+        {
+          "name": "Scopes",
+          "jsonName": "scopes",
+          "protoField": "scopes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "List of OAuth scopes for the service account.\n Common scopes: \"https://www.googleapis.com/auth/cloud-platform\"",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

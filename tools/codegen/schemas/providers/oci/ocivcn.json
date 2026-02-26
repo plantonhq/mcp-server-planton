@@ -1,0 +1,108 @@
+{
+  "name": "OciVcn",
+  "kind": "OciVcn",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciVcn is the top-level resource representing an Oracle Cloud Infrastructure\n Virtual Cloud Network with optional gateway sub-resources.",
+  "protoPackage": "org.openmcf.provider.oci.ocivcn.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocivcn/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocivcn/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciVcnSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the VCN and its gateways will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "CidrBlocks",
+        "jsonName": "cidrBlocks",
+        "protoField": "cidr_blocks",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "IPv4 CIDR blocks for the VCN. At least one is required.\n OCI supports multiple non-overlapping CIDRs per VCN (e.g. [\"10.0.0.0/16\", \"172.16.0.0/16\"]).\n Each block must be between /16 and /30.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable name for the VCN shown in the OCI Console.\n Falls back to metadata.name if not provided.",
+        "required": false
+      },
+      {
+        "name": "DnsLabel",
+        "jsonName": "dnsLabel",
+        "protoField": "dns_label",
+        "type": {
+          "kind": "string"
+        },
+        "description": "DNS label for the VCN. Enables DNS hostnames within the VCN.\n Must be alphanumeric, start with a letter, and be at most 15 characters.\n When set, the VCN domain becomes: \u003cdns_label\u003e.oraclevcn.com",
+        "required": false
+      },
+      {
+        "name": "IsIpv6Enabled",
+        "jsonName": "isIpv6Enabled",
+        "protoField": "is_ipv6_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, allocate an Oracle-assigned /56 IPv6 GUA prefix for the VCN.",
+        "required": false
+      },
+      {
+        "name": "IsInternetGatewayEnabled",
+        "jsonName": "isInternetGatewayEnabled",
+        "protoField": "is_internet_gateway_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, create an Internet Gateway attached to this VCN.\n Required for resources that need direct inbound/outbound internet access.",
+        "required": false
+      },
+      {
+        "name": "IsNatGatewayEnabled",
+        "jsonName": "isNatGatewayEnabled",
+        "protoField": "is_nat_gateway_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, create a NAT Gateway attached to this VCN.\n Allows private resources to initiate outbound internet connections\n without exposing them to inbound traffic.",
+        "required": false
+      },
+      {
+        "name": "IsServiceGatewayEnabled",
+        "jsonName": "isServiceGatewayEnabled",
+        "protoField": "is_service_gateway_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, create a Service Gateway attached to this VCN.\n Provides private access to OCI services (Object Storage, etc.) without\n traffic leaving the Oracle network. The gateway is automatically\n configured for \"All Services in Oracle Services Network\".",
+        "required": false
+      }
+    ]
+  }
+}

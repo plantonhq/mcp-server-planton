@@ -1,0 +1,125 @@
+{
+  "name": "GcpFirestoreDatabase",
+  "kind": "GcpFirestoreDatabase",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-firestore-database",
+  "protoPackage": "org.openmcf.provider.gcp.gcpfirestoredatabase.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpfirestoredatabase/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpfirestoredatabase/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpFirestoreDatabaseSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the Firestore database will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "LocationId",
+        "jsonName": "locationId",
+        "protoField": "location_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Location of the Firestore database. This determines where data is stored\n and affects latency and availability. Immutable after creation.\n\n Multi-region locations: \"nam5\" (United States), \"eur3\" (Europe).\n Single-region locations: any supported GCP region (e.g., \"us-east1\",\n \"europe-west1\").\n\n Multi-region locations provide higher availability but at higher cost\n and with slightly higher write latency.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "DatabaseName",
+        "jsonName": "databaseName",
+        "protoField": "database_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name for the Firestore database. Must be 4-63 characters, start with a\n lowercase letter, contain only lowercase letters, digits, and hyphens,\n and end with a letter or digit.\n\n The special value \"(default)\" creates the project's default database.\n Only one default database can exist per project. Client libraries connect\n to the default database when no database ID is specified.\n\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Firestore database type. Determines the data model and API surface.\n\n FIRESTORE_NATIVE: Modern Firestore with real-time listeners, offline\n support, and the Firestore client library API. Recommended for new\n applications.\n\n DATASTORE_MODE: Legacy Datastore-compatible mode with the Datastore\n client library API. Use for existing Datastore applications or workloads\n that need Datastore's entity-group transactions.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ConcurrencyMode",
+        "jsonName": "concurrencyMode",
+        "protoField": "concurrency_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Concurrency control mode for the database. Determines how conflicts\n between concurrent reads and writes are resolved.\n\n OPTIMISTIC: Uses optimistic concurrency control. Reads do not block\n writes, and writes are validated at commit time. Default for\n FIRESTORE_NATIVE databases.\n\n PESSIMISTIC: Uses pessimistic concurrency control. Reads block\n concurrent writes to the same data. Default for DATASTORE_MODE\n databases.\n\n OPTIMISTIC_WITH_ENTITY_GROUPS: Legacy Datastore mode using entity\n group-based transactions. Only valid for DATASTORE_MODE databases.\n\n If not set, GCP applies the default for the chosen database type.",
+        "required": false
+      },
+      {
+        "name": "PointInTimeRecoveryEnablement",
+        "jsonName": "pointInTimeRecoveryEnablement",
+        "protoField": "point_in_time_recovery_enablement",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Whether to enable point-in-time recovery (PITR) for this database.\n\n POINT_IN_TIME_RECOVERY_ENABLED: Retains 7 days of version history.\n Reads can target any timestamp within the past hour or any 1-minute\n snapshot within the past 7 days.\n\n POINT_IN_TIME_RECOVERY_DISABLED: Retains 1 hour of version history.\n Reads can target any timestamp within the past hour.\n\n If not set, defaults to POINT_IN_TIME_RECOVERY_DISABLED.",
+        "required": false
+      },
+      {
+        "name": "DeleteProtectionState",
+        "jsonName": "deleteProtectionState",
+        "protoField": "delete_protection_state",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Delete protection for the database. When enabled, the database cannot\n be deleted through any interface (Console, gcloud, API, IaC tools)\n until protection is disabled.\n\n Defaults to DELETE_PROTECTION_DISABLED.",
+        "required": false,
+        "default": "DELETE_PROTECTION_DISABLED",
+        "oneofGroup": "_delete_protection_state"
+      },
+      {
+        "name": "DatabaseEdition",
+        "jsonName": "databaseEdition",
+        "protoField": "database_edition",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Database edition. Determines the feature set and SLA tier.\n\n STANDARD: Default edition suitable for most workloads. Provides\n standard Firestore features and SLA.\n\n ENTERPRISE: Enhanced edition with higher availability SLA, advanced\n security features, and support for additional data access modes.\n Requires type to be FIRESTORE_NATIVE.\n\n Immutable after creation. If not set, defaults to STANDARD.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyName",
+        "jsonName": "kmsKeyName",
+        "protoField": "kms_key_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Fully qualified name of the KMS key to use for customer-managed\n encryption (CMEK). The key must exist in the same location as the\n database. Immutable after creation.\n\n For multi-region databases: nam5 requires a Cloud KMS key in the\n \"us\" multi-region; eur3 requires a key in the \"europe\" multi-region.\n\n Format: projects/{project}/locations/{location}/keyRings/{ring}/cryptoKeys/{key}\n\n If not set, Google-managed encryption is used (default).",
+        "required": false,
+        "referenceKind": "GcpKmsKey",
+        "referenceFieldPath": "status.outputs.key_id"
+      }
+    ]
+  }
+}

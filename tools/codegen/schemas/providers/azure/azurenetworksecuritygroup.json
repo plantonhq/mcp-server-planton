@@ -1,0 +1,242 @@
+{
+  "name": "AzureNetworkSecurityGroup",
+  "kind": "AzureNetworkSecurityGroup",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureNetworkSecurityGroup is the top-level API resource for an Azure Network\n Security Group. NSGs provide stateful packet filtering for Azure resources,\n controlling inbound and outbound traffic with priority-ordered security rules.",
+  "protoPackage": "org.openmcf.provider.azure.azurenetworksecuritygroup.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurenetworksecuritygroup/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurenetworksecuritygroup/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureNetworkSecurityGroupSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the NSG will be created.\n Must match the region of the resources it will be associated with (subnets, NICs).\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the NSG will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Network Security Group.\n Must be unique within the resource group.\n Allowed characters: alphanumeric, underscores, hyphens, and periods.\n Must start with alphanumeric. Length: 1 to 80 characters.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      {
+        "name": "SecurityRules",
+        "jsonName": "securityRules",
+        "protoField": "security_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureSecurityRule"
+          }
+        },
+        "description": "Security rules that define allowed or denied traffic flows.\n Each rule specifies a 5-tuple filter (source, destination, port, protocol, direction)\n combined with an access decision (Allow/Deny) and a priority for ordering.\n\n Rules are evaluated in priority order (lowest number = highest priority).\n The first matching rule determines whether traffic is allowed or denied.\n If no user-defined rule matches, Azure's implicit default rules apply.\n\n An NSG with no rules relies entirely on Azure's defaults: allow VNet-to-VNet,\n allow load balancer probes, deny all other inbound, allow all outbound.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureSecurityRule",
+      "description": "AzureSecurityRule defines a single network security rule within the NSG.\n Each rule is a 5-tuple filter combined with an access decision and priority.\n\n Rules are evaluated in priority order within their direction (Inbound or Outbound).\n Lower priority numbers are evaluated first. The first matching rule wins.",
+      "protoType": "org.openmcf.provider.azure.azurenetworksecuritygroup.v1.AzureSecurityRule",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "A user-chosen name for this rule.\n Must be unique within the NSG. Used for identification in Azure Portal, CLI,\n and IaC state. Use descriptive names like \"allow-https-inbound\" or \"deny-all-outbound\".",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional human-readable description of the rule's purpose.\n Useful for documenting intent (e.g., \"Allow HTTPS from corporate VPN range\").\n Maximum 140 characters.",
+          "required": false,
+          "validation": {
+            "maxLength": 140
+          }
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The evaluation priority of this rule. Lower numbers are evaluated first.\n Range: 100 to 4096 (inclusive).\n Azure reserves priorities 65000-65500 for implicit default rules.\n\n Best practice: Use increments of 10 or 100 (e.g., 100, 200, 300) to leave\n room for inserting rules later without renumbering.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 100,
+            "max": 4096
+          }
+        },
+        {
+          "name": "Direction",
+          "jsonName": "direction",
+          "protoField": "direction",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The traffic direction this rule applies to.\n Uses Azure's exact API values for provider authenticity.\n\n Valid values:\n - \"Inbound\" -- traffic entering the resource (from external to internal)\n - \"Outbound\" -- traffic leaving the resource (from internal to external)",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Access",
+          "jsonName": "access",
+          "protoField": "access",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The access decision when this rule matches.\n Uses Azure's exact API values.\n\n Valid values:\n - \"Allow\" -- permit matching traffic\n - \"Deny\" -- block matching traffic",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The network protocol this rule matches.\n Uses Azure's exact API values.\n\n Valid values:\n - \"Tcp\" -- TCP traffic\n - \"Udp\" -- UDP traffic\n - \"Icmp\" -- ICMP traffic (ping, traceroute)\n - \"*\" -- any protocol",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "SourcePortRange",
+          "jsonName": "sourcePortRange",
+          "protoField": "source_port_range",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The source port or port range for this rule.\n Accepts a single port (\"443\"), a range (\"1024-65535\"), or \"*\" for any port.\n Most rules use \"*\" for source port since source ports are typically ephemeral.\n Default: \"*\"",
+          "required": false,
+          "default": "*",
+          "oneofGroup": "_source_port_range"
+        },
+        {
+          "name": "DestinationPortRange",
+          "jsonName": "destinationPortRange",
+          "protoField": "destination_port_range",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The destination port or port range for this rule.\n Accepts a single port (\"443\"), a range (\"1024-65535\"), or \"*\" for any port.\n This is the field that typically defines what service the rule targets.\n Examples: \"22\" (SSH), \"80\" (HTTP), \"443\" (HTTPS), \"3306\" (MySQL), \"5432\" (PostgreSQL).",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "SourceAddressPrefix",
+          "jsonName": "sourceAddressPrefix",
+          "protoField": "source_address_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The source address prefix for this rule.\n Accepts a CIDR (\"10.0.0.0/8\"), a single IP (\"10.0.0.1\"), an Azure service tag\n (\"VirtualNetwork\", \"AzureLoadBalancer\", \"Internet\"), or \"*\" for any source.\n Default: \"*\"\n\n If source_address_prefixes (plural) is also set, the plural field takes precedence\n and this field is ignored. Use singular for simple rules and plural for multi-CIDR rules.",
+          "required": false,
+          "default": "*",
+          "oneofGroup": "_source_address_prefix"
+        },
+        {
+          "name": "DestinationAddressPrefix",
+          "jsonName": "destinationAddressPrefix",
+          "protoField": "destination_address_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The destination address prefix for this rule.\n Accepts a CIDR (\"10.0.1.0/24\"), a single IP, an Azure service tag\n (\"VirtualNetwork\", \"AzureLoadBalancer\", \"Internet\"), or \"*\" for any destination.\n Default: \"*\"\n\n If destination_address_prefixes (plural) is also set, the plural field takes\n precedence and this field is ignored.",
+          "required": false,
+          "default": "*",
+          "oneofGroup": "_destination_address_prefix"
+        },
+        {
+          "name": "SourceAddressPrefixes",
+          "jsonName": "sourceAddressPrefixes",
+          "protoField": "source_address_prefixes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Optional list of source address prefixes (CIDRs or IPs).\n Use this when a rule needs to allow/deny traffic from multiple non-contiguous\n source ranges in a single rule (e.g., multiple VPN CIDR blocks).\n\n When set (non-empty), this field takes precedence over source_address_prefix.\n Note: Azure service tags (e.g., \"VirtualNetwork\") are only supported in the\n singular source_address_prefix field, not in this list.",
+          "required": false
+        },
+        {
+          "name": "DestinationAddressPrefixes",
+          "jsonName": "destinationAddressPrefixes",
+          "protoField": "destination_address_prefixes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Optional list of destination address prefixes (CIDRs or IPs).\n Use this when a rule needs to target multiple non-contiguous destination ranges.\n\n When set (non-empty), this field takes precedence over destination_address_prefix.\n Note: Azure service tags are only supported in the singular destination_address_prefix\n field, not in this list.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

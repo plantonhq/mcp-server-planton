@@ -1,0 +1,1132 @@
+{
+  "name": "KubernetesSignoz",
+  "kind": "KubernetesSignoz",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "signoz-kubernetes",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetessignoz.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetessignoz/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetessignoz/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesSignozSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "Target Kubernetes Cluster",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes Namespace",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "CreateNamespace",
+        "jsonName": "createNamespace",
+        "protoField": "create_namespace",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "flag to indicate if the namespace should be created",
+        "required": false
+      },
+      {
+        "name": "SignozContainer",
+        "jsonName": "signozContainer",
+        "protoField": "signoz_container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesSignozContainer"
+        },
+        "description": "The container specifications for the main SigNoz binary (UI, API server, Ruler, Alertmanager).",
+        "required": false
+      },
+      {
+        "name": "OtelCollectorContainer",
+        "jsonName": "otelCollectorContainer",
+        "protoField": "otel_collector_container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesSignozContainer"
+        },
+        "description": "The container specifications for the OpenTelemetry Collector (data ingestion gateway).",
+        "required": false
+      },
+      {
+        "name": "Database",
+        "jsonName": "database",
+        "protoField": "database",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesSignozDatabaseConfig"
+        },
+        "description": "The database configuration for SigNoz, supporting both self-managed and external ClickHouse.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Ingress",
+        "jsonName": "ingress",
+        "protoField": "ingress",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesSignozIngress"
+        },
+        "description": "The ingress configuration for SigNoz UI and OpenTelemetry Collector endpoints.",
+        "required": false
+      },
+      {
+        "name": "HelmValues",
+        "jsonName": "helmValues",
+        "protoField": "helm_values",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "*\n A map of key-value pairs that provide additional customization options for the SigNoz Helm chart.\n These values allow for further refinement of the deployment, such as setting environment variables,\n configuring alerting integrations, or customizing retention policies.\n For detailed information on available options, refer to the Helm chart documentation at:\n https://github.com/SigNoz/charts",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ContainerImage",
+      "description": "**ContainerImage** represents the container image information.\n It includes the repository, tag, and optional image pull secret for private registries.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerImage",
+      "fields": [
+        {
+          "name": "Repo",
+          "jsonName": "repo",
+          "protoField": "repo",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The repository of the image (e.g., \"gcr.io/project/image\").",
+          "required": false
+        },
+        {
+          "name": "Tag",
+          "jsonName": "tag",
+          "protoField": "tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The tag of the image (e.g., \"latest\" or \"1.0.0\").",
+          "required": false
+        },
+        {
+          "name": "PullSecretName",
+          "jsonName": "pullSecretName",
+          "protoField": "pull_secret_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the image pull secret for private image repositories.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ContainerResources",
+      "description": "**ContainerResources** specifies the CPU and memory resources for a container.\n It allows you to define resource limits and requests to manage resource allocation and ensure optimal performance.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerResources",
+      "fields": [
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource limits for the container.\n Specify the maximum amount of CPU and memory that the container can use.",
+          "required": false
+        },
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource requests for the container.\n Specify the minimum amount of CPU and memory that the container is guaranteed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CpuMemory",
+      "description": "**CpuMemory** defines CPU and memory resource quantities for a container.\n It is used to specify the limits and requests for CPU and memory resources.",
+      "protoType": "org.openmcf.provider.kubernetes.CpuMemory",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSecretKeyRef",
+      "description": "*\n **KubernetesSecretKeyRef** is a reference to a specific key within a Kubernetes Secret.\n This allows components to retrieve sensitive values from existing secrets rather than\n storing them as plain text in the configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesSecretKeyRef",
+      "fields": [
+        {
+          "name": "Namespace",
+          "jsonName": "namespace",
+          "protoField": "namespace",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The namespace of the Kubernetes Secret.\n If not specified, defaults to the namespace where the component is deployed.\n Note: Cross-namespace secret references may not be supported by all Helm charts.",
+          "required": false
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The name of the Kubernetes Secret.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The key within the Kubernetes Secret that contains the value.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSensitiveValue",
+      "description": "*\n **KubernetesSensitiveValue** represents a sensitive value that can be provided either\n as a literal string or as a reference to a Kubernetes Secret.\n\n Using secret references is recommended for production deployments to avoid storing\n sensitive values in plain text within configuration files or version control.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesSensitiveValue",
+      "fields": [
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n A literal string value.\n Warning: Using plain text for sensitive values is not recommended for production.\n Consider using secret_ref instead.",
+          "required": false,
+          "oneofGroup": "sensitive_value"
+        },
+        {
+          "name": "SecretRef",
+          "jsonName": "secretRef",
+          "protoField": "secret_ref",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSecretKeyRef"
+          },
+          "description": "*\n A reference to a key within a Kubernetes Secret.\n The secret must exist in the cluster before the component is deployed.",
+          "required": false,
+          "oneofGroup": "sensitive_value"
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSignozClickhouseCluster",
+      "description": "*\n **KubernetesSignozClickhouseCluster** defines the clustering configuration for ClickHouse.\n Clustering enables distributed data storage and high availability through sharding and replication.\n Note: Clustering requires Zookeeper to be configured.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetessignoz.v1.KubernetesSignozClickhouseCluster",
+      "fields": [
+        {
+          "name": "IsEnabled",
+          "jsonName": "isEnabled",
+          "protoField": "is_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n Flag to enable or disable clustering mode for ClickHouse.\n When enabled, ClickHouse will be deployed in a distributed cluster configuration.\n Defaults to false.",
+          "required": false
+        },
+        {
+          "name": "ShardCount",
+          "jsonName": "shardCount",
+          "protoField": "shard_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "*\n The number of shards in the ClickHouse cluster.\n Sharding distributes data across multiple nodes for horizontal scaling.\n Recommended: 2 or more for production.\n This value is ignored if clustering is not enabled.",
+          "required": false
+        },
+        {
+          "name": "ReplicaCount",
+          "jsonName": "replicaCount",
+          "protoField": "replica_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "*\n The number of replicas for each shard.\n Replication provides data redundancy and high availability.\n Recommended: 2 for production.\n This value is ignored if clustering is not enabled.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSignozClickhouseContainer",
+      "description": "*\n **KubernetesSignozClickhouseContainer** specifies the container configuration for ClickHouse.\n It includes replica count, resource allocations, and persistence settings.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetessignoz.v1.KubernetesSignozClickhouseContainer",
+      "fields": [
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of ClickHouse pods to deploy.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "The CPU and memory resources allocated to the ClickHouse container.",
+          "required": false
+        },
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerImage"
+          },
+          "description": "The container image configuration for ClickHouse.",
+          "required": false
+        },
+        {
+          "name": "PersistenceEnabled",
+          "jsonName": "persistenceEnabled",
+          "protoField": "persistence_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n Flag to enable or disable data persistence for ClickHouse.\n When enabled, data is persisted to a storage volume, allowing data to survive pod restarts.\n Defaults to true.",
+          "required": false
+        },
+        {
+          "name": "DiskSize",
+          "jsonName": "diskSize",
+          "protoField": "disk_size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The size of the persistent volume attached to each ClickHouse pod (e.g., \"20Gi\").\n This attribute is ignored when persistence is not enabled.\n Note: This value cannot be modified after creation due to Kubernetes StatefulSet limitations.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSignozContainer",
+      "description": "*\n **KubernetesSignozContainer** specifies the container configuration for various SigNoz components.\n It includes settings such as the number of replicas, container image, and resource allocations.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetessignoz.v1.KubernetesSignozContainer",
+      "fields": [
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of pods to deploy for this component.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "The CPU and memory resources allocated to the container.",
+          "required": false
+        },
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerImage"
+          },
+          "description": "The container image configuration (repository and tag).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSignozDatabaseConfig",
+      "description": "*\n **KubernetesSignozDatabaseConfig** defines the ClickHouse database configuration for SigNoz.\n It supports two deployment modes:\n 1. Self-managed: Deploy ClickHouse and Zookeeper within the Kubernetes cluster (default).\n 2. External: Connect to an existing external ClickHouse instance.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetessignoz.v1.KubernetesSignozDatabaseConfig",
+      "fields": [
+        {
+          "name": "IsExternal",
+          "jsonName": "isExternal",
+          "protoField": "is_external",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n Flag to enable using an external ClickHouse database.\n When false (default), SigNoz will deploy and manage its own ClickHouse instance.\n When true, the external_database field must be configured.",
+          "required": false
+        },
+        {
+          "name": "ExternalDatabase",
+          "jsonName": "externalDatabase",
+          "protoField": "external_database",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSignozExternalClickhouse"
+          },
+          "description": "*\n External ClickHouse database connection details.\n This field is required when is_external is true and ignored when false.",
+          "required": false
+        },
+        {
+          "name": "ManagedDatabase",
+          "jsonName": "managedDatabase",
+          "protoField": "managed_database",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSignozManagedClickhouse"
+          },
+          "description": "*\n Self-managed ClickHouse configuration.\n This field is used when is_external is false and configures the in-cluster ClickHouse deployment.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSignozExternalClickhouse",
+      "description": "*\n **KubernetesSignozExternalClickhouse** defines connection parameters for an external ClickHouse instance.\n This allows SigNoz to use a pre-existing ClickHouse database instead of deploying one within the cluster.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetessignoz.v1.KubernetesSignozExternalClickhouse",
+      "fields": [
+        {
+          "name": "Host",
+          "jsonName": "host",
+          "protoField": "host",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The hostname or endpoint of the external ClickHouse instance.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "HttpPort",
+          "jsonName": "httpPort",
+          "protoField": "http_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The HTTP port for ClickHouse (default is 8123).",
+          "required": false,
+          "validation": {
+            "max": 65535
+          },
+          "default": "8123",
+          "oneofGroup": "_http_port"
+        },
+        {
+          "name": "TcpPort",
+          "jsonName": "tcpPort",
+          "protoField": "tcp_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The TCP port for ClickHouse native protocol (default is 9000).",
+          "required": false,
+          "validation": {
+            "max": 65535
+          },
+          "default": "9000",
+          "oneofGroup": "_tcp_port"
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the distributed cluster in ClickHouse configuration.",
+          "required": false,
+          "default": "cluster",
+          "oneofGroup": "_cluster_name"
+        },
+        {
+          "name": "IsSecure",
+          "jsonName": "isSecure",
+          "protoField": "is_secure",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to use secure (TLS) connection to ClickHouse.",
+          "required": false
+        },
+        {
+          "name": "Username",
+          "jsonName": "username",
+          "protoField": "username",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The username for authenticating to ClickHouse.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSensitiveValue"
+          },
+          "description": "*\n The password for authenticating to ClickHouse.\n Can be provided either as a plain string value or as a reference to an existing Kubernetes Secret.\n\n Using a secret reference is recommended for production deployments:\n ```yaml\n password:\n   secretRef:\n     name: clickhouse-credentials\n     key: password\n ```\n\n For development/testing, a plain string value can be used:\n ```yaml\n password:\n   stringValue: my-password\n ```",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSignozIngress",
+      "description": "*\n **KubernetesSignozIngress** defines the ingress configuration for SigNoz components.\n It provides separate ingress settings for the UI and OpenTelemetry Collector endpoints.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetessignoz.v1.KubernetesSignozIngress",
+      "fields": [
+        {
+          "name": "Ui",
+          "jsonName": "ui",
+          "protoField": "ui",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSignozIngressEndpoint"
+          },
+          "description": "Ingress configuration for SigNoz UI and API.",
+          "required": false
+        },
+        {
+          "name": "OtelCollector",
+          "jsonName": "otelCollector",
+          "protoField": "otel_collector",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSignozIngressEndpoint"
+          },
+          "description": "Ingress configuration for OpenTelemetry Collector data ingestion endpoint.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSignozIngressEndpoint",
+      "description": "*\n **KubernetesSignozIngressEndpoint** defines ingress configuration for a specific SigNoz endpoint.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetessignoz.v1.KubernetesSignozIngressEndpoint",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Flag to enable or disable ingress for this endpoint.",
+          "required": false
+        },
+        {
+          "name": "Hostname",
+          "jsonName": "hostname",
+          "protoField": "hostname",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The full hostname for external access (e.g., \"signoz.example.com\").\n This hostname will be configured via Gateway API resources.\n Required when enabled is true.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSignozManagedClickhouse",
+      "description": "*\n **KubernetesSignozManagedClickhouse** defines configuration for a self-managed ClickHouse deployment.\n This supports both simple single-node deployments and production-grade distributed clusters with high availability.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetessignoz.v1.KubernetesSignozManagedClickhouse",
+      "fields": [
+        {
+          "name": "Container",
+          "jsonName": "container",
+          "protoField": "container",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSignozClickhouseContainer"
+          },
+          "description": "The container specifications for ClickHouse.",
+          "required": false
+        },
+        {
+          "name": "Cluster",
+          "jsonName": "cluster",
+          "protoField": "cluster",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSignozClickhouseCluster"
+          },
+          "description": "The cluster configuration for ClickHouse (sharding and replication).",
+          "required": false
+        },
+        {
+          "name": "Zookeeper",
+          "jsonName": "zookeeper",
+          "protoField": "zookeeper",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSignozZookeeperConfig"
+          },
+          "description": "The Zookeeper configuration (required for distributed ClickHouse clusters).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSignozZookeeperConfig",
+      "description": "*\n **KubernetesSignozZookeeperConfig** defines the Zookeeper configuration for ClickHouse coordination.\n Zookeeper is required for distributed ClickHouse deployments to manage replica metadata and leader election.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetessignoz.v1.KubernetesSignozZookeeperConfig",
+      "fields": [
+        {
+          "name": "IsEnabled",
+          "jsonName": "isEnabled",
+          "protoField": "is_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n Flag to enable or disable Zookeeper deployment.\n This must be true if ClickHouse clustering is enabled.\n Defaults to false.",
+          "required": false
+        },
+        {
+          "name": "Container",
+          "jsonName": "container",
+          "protoField": "container",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSignozZookeeperContainer"
+          },
+          "description": "The container specifications for Zookeeper.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSignozZookeeperContainer",
+      "description": "*\n **KubernetesSignozZookeeperContainer** specifies the container configuration for Zookeeper.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetessignoz.v1.KubernetesSignozZookeeperContainer",
+      "fields": [
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "*\n The number of Zookeeper pods to deploy.\n For production, this should be an odd number (3 or 5) to maintain quorum.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "The CPU and memory resources allocated to the Zookeeper container.",
+          "required": false
+        },
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerImage"
+          },
+          "description": "The container image configuration for Zookeeper.",
+          "required": false
+        },
+        {
+          "name": "DiskSize",
+          "jsonName": "diskSize",
+          "protoField": "disk_size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The size of the persistent volume attached to each Zookeeper pod (e.g., \"8Gi\").",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

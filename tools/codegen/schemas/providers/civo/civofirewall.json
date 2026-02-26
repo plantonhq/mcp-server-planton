@@ -1,0 +1,214 @@
+{
+  "name": "CivoFirewall",
+  "kind": "CivoFirewall",
+  "cloudProvider": "civo",
+  "apiVersion": "civo.openmcf.org/v1",
+  "description": "civo-firewall",
+  "protoPackage": "org.openmcf.provider.civo.civofirewall.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/civo/civofirewall/v1/api.proto",
+    "spec": "org/openmcf/provider/civo/civofirewall/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CivoFirewallSpec",
+    "fields": [
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the firewall (must be unique per Civo account/project).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "NetworkId",
+        "jsonName": "networkId",
+        "protoField": "network_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The network (VPC) in which to create this firewall. Must refer to an existing CivoNetwork.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "CivoVpc",
+        "referenceFieldPath": "status.outputs.network_id"
+      },
+      {
+        "name": "InboundRules",
+        "jsonName": "inboundRules",
+        "protoField": "inbound_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "CivoFirewallInboundRule"
+          }
+        },
+        "description": "Inbound (ingress) rules: traffic allowed **to** instances.\n Any traffic not matching an inbound rule is denied (stateful firewall).",
+        "required": false
+      },
+      {
+        "name": "OutboundRules",
+        "jsonName": "outboundRules",
+        "protoField": "outbound_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "CivoFirewallOutboundRule"
+          }
+        },
+        "description": "Outbound (egress) rules: traffic allowed **from** instances.\n If no egress rules are specified, all outbound traffic is allowed by default.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Instance tag selectors: names of instance tags to auto-apply this firewall to.\n Any instance in the same network with any of these tags will use this firewall.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "CivoFirewallInboundRule",
+      "description": "Definition of an inbound (ingress) firewall rule.",
+      "protoType": "org.openmcf.provider.civo.civofirewall.v1.CivoFirewallInboundRule",
+      "fields": [
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol to allow (\"tcp\", \"udp\", or \"icmp\").",
+          "required": false,
+          "validation": {
+            "pattern": "^(tcp|udp|icmp)$"
+          }
+        },
+        {
+          "name": "PortRange",
+          "jsonName": "portRange",
+          "protoField": "port_range",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Port or port range to allow (e.g., \"80\", \"443\", \"22\", \"8000-9000\"; for \"tcp\"/\"udp\"\n leave empty or use \"1-65535\" to allow all ports).",
+          "required": false
+        },
+        {
+          "name": "Cidrs",
+          "jsonName": "cidrs",
+          "protoField": "cidrs",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "CIDR blocks from which traffic is permitted (defaults to \"0.0.0.0/0\" if not specified).",
+          "required": false
+        },
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action for this rule: \"allow\" (default) or \"deny\". Default is \"allow\" if unspecified.",
+          "required": false
+        },
+        {
+          "name": "Label",
+          "jsonName": "label",
+          "protoField": "label",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional label for the rule (for user reference).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CivoFirewallOutboundRule",
+      "description": "Definition of an outbound (egress) firewall rule.",
+      "protoType": "org.openmcf.provider.civo.civofirewall.v1.CivoFirewallOutboundRule",
+      "fields": [
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol to allow or deny (\"tcp\", \"udp\", or \"icmp\").",
+          "required": false,
+          "validation": {
+            "pattern": "^(tcp|udp|icmp)$"
+          }
+        },
+        {
+          "name": "PortRange",
+          "jsonName": "portRange",
+          "protoField": "port_range",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Port or port range to allow/deny (format as in inbound rules).",
+          "required": false
+        },
+        {
+          "name": "Cidrs",
+          "jsonName": "cidrs",
+          "protoField": "cidrs",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "CIDR blocks to which traffic is permitted (defaults to \"0.0.0.0/0\" if not specified).",
+          "required": false
+        },
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action for this rule: \"allow\" (default) or \"deny\". Default is \"allow\" if unspecified.",
+          "required": false
+        },
+        {
+          "name": "Label",
+          "jsonName": "label",
+          "protoField": "label",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional label for the rule.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

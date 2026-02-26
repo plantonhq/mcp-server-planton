@@ -1,0 +1,311 @@
+{
+  "name": "AzureRedisCache",
+  "kind": "AzureRedisCache",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureRedisCache is the top-level API resource for an Azure Cache for Redis.\n Azure Cache for Redis provides a fully managed, in-memory data store based\n on the open-source Redis engine. It supports caching, session management,\n real-time analytics, and message brokering with sub-millisecond latency.",
+  "protoPackage": "org.openmcf.provider.azure.azurerediscache.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurerediscache/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurerediscache/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureRedisCacheSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Redis cache will be created.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Redis cache will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Redis cache.\n Must be globally unique across Azure. Used as the cache endpoint:\n `{name}.redis.cache.windows.net`\n Allowed characters: lowercase letters, numbers, and hyphens.\n Must start with a letter, must not end with a hyphen.\n Length: 1 to 63 characters.\n\n **ForceNew**: Changing this destroys and recreates the cache.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 63
+        }
+      },
+      {
+        "name": "SkuName",
+        "jsonName": "skuName",
+        "protoField": "sku_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The SKU tier for the Redis cache.\n Uses Azure's exact API values for provider authenticity.\n\n Valid values:\n - \"Basic\": Single node, no SLA, no replication. Dev/test only.\n - \"Standard\" (default): Primary + replica, 99.9% SLA. Production recommended.\n - \"Premium\": Advanced features -- VNet injection, clustering, persistence,\n   zone redundancy. Required for `subnet_id` and `shard_count`.\n\n SKU downgrades force resource recreation. Basic does not support\n `maxmemory_reserved`, `maxmemory_delta`, or `maxfragmentationmemory_reserved`.",
+        "required": false,
+        "default": "Standard",
+        "oneofGroup": "_sku_name"
+      },
+      {
+        "name": "Capacity",
+        "jsonName": "capacity",
+        "protoField": "capacity",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Cache capacity (size) within the chosen SKU tier.\n The actual memory size depends on the SKU family:\n\n Basic/Standard (C-family):\n   0=250MB, 1=1GB, 2=2.5GB, 3=6GB, 4=13GB, 5=26GB, 6=53GB\n\n Premium (P-family):\n   1=6GB, 2=13GB, 3=26GB, 4=53GB, 5=120GB (per shard)\n\n The `family` field (\"C\" or \"P\") is auto-derived from `sku_name` in the\n IaC modules -- users do not need to specify it.",
+        "required": false,
+        "validation": {
+          "max": 6
+        }
+      },
+      {
+        "name": "RedisVersion",
+        "jsonName": "redisVersion",
+        "protoField": "redis_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Redis engine version.\n\n Valid values: \"4\", \"6\"\n Default: \"6\" (recommended -- Redis 4 is end-of-life).\n\n Note: Azure represents versions as major version only. Version \"6\" maps\n to the latest Redis 6.x release available in the region.",
+        "required": false,
+        "default": "6",
+        "oneofGroup": "_redis_version"
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Subnet ID for VNet injection (Premium SKU only).\n When set, the cache is deployed inside the specified subnet with private\n IP addressing. The subnet must be dedicated to Azure Cache for Redis\n (no other resources in the subnet).\n\n **ForceNew**: Changing this destroys and recreates the cache.\n\n Can be a literal ARM resource ID or a reference to an AzureSubnet output.",
+        "required": false,
+        "referenceKind": "AzureSubnet",
+        "referenceFieldPath": "status.outputs.subnet_id"
+      },
+      {
+        "name": "Zones",
+        "jsonName": "zones",
+        "protoField": "zones",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Availability zones for the Redis cache.\n Distributes cache nodes across specified zones for higher availability.\n Requires Standard or Premium SKU.\n\n Examples: [\"1\"], [\"1\", \"2\", \"3\"]",
+        "required": false
+      },
+      {
+        "name": "ShardCount",
+        "jsonName": "shardCount",
+        "protoField": "shard_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of shards for Redis Cluster (Premium SKU only).\n Enables data partitioning across multiple Redis nodes for higher\n throughput and larger data sets.\n\n Each shard is a primary/replica pair. Total cache memory = capacity * (1 + shard_count).\n Range: 1-10 shards.",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 10
+        },
+        "oneofGroup": "_shard_count"
+      },
+      {
+        "name": "NonSslPortEnabled",
+        "jsonName": "nonSslPortEnabled",
+        "protoField": "non_ssl_port_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable the non-SSL port (6379).\n When false (default), only the SSL port (6380) is available.\n It is strongly recommended to keep this disabled for production workloads.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_non_ssl_port_enabled"
+      },
+      {
+        "name": "MinimumTlsVersion",
+        "jsonName": "minimumTlsVersion",
+        "protoField": "minimum_tls_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Minimum TLS version for client connections.\n Azure enforces this on all connections to the SSL port.\n\n Default: \"1.2\" (only valid value in Azure provider v5.0+)",
+        "required": false,
+        "default": "1.2",
+        "oneofGroup": "_minimum_tls_version"
+      },
+      {
+        "name": "PublicNetworkAccessEnabled",
+        "jsonName": "publicNetworkAccessEnabled",
+        "protoField": "public_network_access_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the Redis cache is accessible over the public internet.\n When false, the cache can only be accessed via VNet injection or\n AzurePrivateEndpoint.\n\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_public_network_access_enabled"
+      },
+      {
+        "name": "MaxmemoryPolicy",
+        "jsonName": "maxmemoryPolicy",
+        "protoField": "maxmemory_policy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Memory eviction policy when the cache reaches its memory limit.\n Uses Redis's exact configuration value names for provider authenticity.\n\n Valid values:\n - \"volatile-lru\" (default): Evict keys with TTL, least-recently-used first\n - \"allkeys-lru\": Evict any key, least-recently-used first (cache-only workloads)\n - \"volatile-lfu\": Evict keys with TTL, least-frequently-used first\n - \"allkeys-lfu\": Evict any key, least-frequently-used first\n - \"volatile-random\": Evict random keys with TTL\n - \"allkeys-random\": Evict random keys\n - \"volatile-ttl\": Evict keys with shortest TTL first\n - \"noeviction\": Return errors on writes when memory is full (data integrity)\n\n **Guidance:**\n - Cache-only workload (all keys expendable): use `allkeys-lru`\n - Mixed workload (some keys must persist): use `volatile-lru` (default)\n - Data must never be evicted: use `noeviction` (monitor memory carefully)",
+        "required": false,
+        "default": "volatile-lru",
+        "oneofGroup": "_maxmemory_policy"
+      },
+      {
+        "name": "PatchSchedules",
+        "jsonName": "patchSchedules",
+        "protoField": "patch_schedules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureRedisPatchSchedule"
+          }
+        },
+        "description": "Patch (maintenance) schedules for the Redis cache.\n Defines when Azure can apply Redis engine patches and updates.\n If not specified, Azure chooses the maintenance window automatically.\n\n For production workloads, specify at least one patch schedule during\n a low-traffic window.",
+        "required": false
+      },
+      {
+        "name": "FirewallRules",
+        "jsonName": "firewallRules",
+        "protoField": "firewall_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureRedisFirewallRule"
+          }
+        },
+        "description": "Firewall rules for IP-based access control.\n Only effective when `public_network_access_enabled` is true and the cache\n is NOT VNet-injected.\n\n Each rule allows a range of IPv4 addresses to access the cache.\n Without firewall rules, all public IP addresses are blocked by default.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureRedisFirewallRule",
+      "description": "AzureRedisFirewallRule defines an IP-based access rule for the Redis cache.\n Each rule allows a contiguous range of IPv4 addresses to connect.\n\n Firewall rules are only effective when:\n - `public_network_access_enabled` is true\n - The cache is NOT deployed with VNet injection (`subnet_id` is not set)\n\n **Note:** Azure requires firewall rule names to contain only alphanumeric\n characters and underscores (no hyphens).",
+      "protoType": "org.openmcf.provider.azure.azurerediscache.v1.AzureRedisFirewallRule",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Rule name.\n Must contain only alphanumeric characters and underscores.\n Azure rejects names with hyphens or special characters.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "StartIp",
+          "jsonName": "startIp",
+          "protoField": "start_ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Start of the IP address range (inclusive).\n Must be a valid IPv4 address.\n Use \"0.0.0.0\" for both start and end to allow Azure services.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "EndIp",
+          "jsonName": "endIp",
+          "protoField": "end_ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "End of the IP address range (inclusive).\n Must be a valid IPv4 address.\n Set equal to `start_ip` for a single IP address.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "AzureRedisPatchSchedule",
+      "description": "AzureRedisPatchSchedule defines a maintenance window for Redis engine\n patches and updates. Azure uses these windows to apply updates with\n minimal disruption.\n\n It is recommended to schedule patches during low-traffic periods.\n Multiple schedules can be specified (e.g., one per week).",
+      "protoType": "org.openmcf.provider.azure.azurerediscache.v1.AzureRedisPatchSchedule",
+      "fields": [
+        {
+          "name": "DayOfWeek",
+          "jsonName": "dayOfWeek",
+          "protoField": "day_of_week",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Day of the week for the maintenance window.\n Uses English day names (case-insensitive in the provider, but we\n validate for capitalized form for consistency).\n\n Valid values: \"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\",\n \"Saturday\", \"Sunday\", \"Everyday\", \"Weekend\"",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "StartHourUtc",
+          "jsonName": "startHourUtc",
+          "protoField": "start_hour_utc",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "UTC hour at which the maintenance window starts (0-23).\n Default: 0",
+          "required": false,
+          "validation": {
+            "max": 23
+          },
+          "oneofGroup": "_start_hour_utc"
+        },
+        {
+          "name": "MaintenanceWindow",
+          "jsonName": "maintenanceWindow",
+          "protoField": "maintenance_window",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Duration of the maintenance window as an ISO 8601 duration string.\n Default: \"PT5H\" (5 hours)\n\n Examples: \"PT5H\" (5 hours), \"PT3H\" (3 hours)",
+          "required": false,
+          "default": "PT5H",
+          "oneofGroup": "_maintenance_window"
+        }
+      ]
+    }
+  ]
+}

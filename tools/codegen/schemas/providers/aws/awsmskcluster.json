@@ -1,0 +1,558 @@
+{
+  "name": "AwsMskCluster",
+  "kind": "AwsMskCluster",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-msk-cluster",
+  "protoPackage": "org.openmcf.provider.aws.awsmskcluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsmskcluster/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsmskcluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsMskClusterSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "KafkaVersion",
+        "jsonName": "kafkaVersion",
+        "protoField": "kafka_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "kafka_version is the Apache Kafka version for all brokers in the cluster.\n Examples: \"3.6.0\", \"3.5.1\", \"3.4.0\", \"2.8.1\".\n Upgrades are applied via rolling restart; downgrades force cluster replacement.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "NumberOfBrokerNodes",
+        "jsonName": "numberOfBrokerNodes",
+        "protoField": "number_of_broker_nodes",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "number_of_broker_nodes is the total number of Kafka broker nodes in the cluster.\n Must be a multiple of the number of subnets provided in subnet_ids so that\n brokers are evenly distributed across Availability Zones.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "min": 1
+        }
+      },
+      {
+        "name": "InstanceType",
+        "jsonName": "instanceType",
+        "protoField": "instance_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "instance_type determines the compute and memory capacity of each broker node.\n Standard types: kafka.m5.large, kafka.m5.xlarge, kafka.m5.2xlarge, kafka.m5.4xlarge.\n Graviton types: kafka.m7g.large, kafka.m7g.xlarge (better price-performance).\n Small/dev types: kafka.t3.small.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "subnet_ids are the VPC subnets where broker nodes are placed.\n Brokers are distributed round-robin across subnets. The number of broker nodes\n must be a multiple of the number of subnets for even AZ distribution.\n ForceNew: changing subnets forces cluster replacement.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        },
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "security_group_ids are source security groups allowed to reach brokers on Kafka and ZooKeeper ports.\n When provided (along with vpc_id), a managed security group is created with ingress rules\n permitting TCP traffic from these source security groups on ports 9092-9098 (Kafka) and 2181-2182 (ZooKeeper).",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "AllowedCidrBlocks",
+        "jsonName": "allowedCidrBlocks",
+        "protoField": "allowed_cidr_blocks",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "allowed_cidr_blocks are IPv4 CIDR ranges allowed to reach brokers.\n When provided (along with vpc_id), a managed security group is created with ingress rules\n permitting TCP traffic from these CIDRs on ports 9092-9098 (Kafka) and 2181-2182 (ZooKeeper).",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "AssociateSecurityGroupIds",
+        "jsonName": "associateSecurityGroupIds",
+        "protoField": "associate_security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "associate_security_group_ids are existing security groups attached directly to the cluster\n alongside the managed security group (if one is created from security_group_ids/allowed_cidr_blocks).\n IMPORTANT: The broker_node_group_info.security_groups field in AWS is ForceNew.\n Adding or removing entries here after cluster creation forces cluster replacement.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "vpc_id is the VPC in which to create the managed security group.\n Required when security_group_ids or allowed_cidr_blocks are provided.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "EbsVolumeSizeGib",
+        "jsonName": "ebsVolumeSizeGib",
+        "protoField": "ebs_volume_size_gib",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "ebs_volume_size_gib is the size of the EBS volume per broker, in GiB.\n Range: 1-16384. If omitted, AWS uses the instance-type-specific default.",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 16384
+        },
+        "oneofGroup": "_ebs_volume_size_gib"
+      },
+      {
+        "name": "ProvisionedThroughputEnabled",
+        "jsonName": "provisionedThroughputEnabled",
+        "protoField": "provisioned_throughput_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "provisioned_throughput_enabled enables provisioned EBS throughput for higher streaming performance.\n Only supported on kafka.m5.4xlarge and larger instance types with ebs_volume_size_gib \u003e= 10 GiB.",
+        "required": false
+      },
+      {
+        "name": "ProvisionedThroughputMbs",
+        "jsonName": "provisionedThroughputMbs",
+        "protoField": "provisioned_throughput_mbs",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "provisioned_throughput_mbs is the provisioned EBS throughput in MiB/s per broker.\n Range: 250-2375. Required when provisioned_throughput_enabled is true.",
+        "required": false,
+        "validation": {
+          "min": 250,
+          "max": 2375
+        }
+      },
+      {
+        "name": "StorageMode",
+        "jsonName": "storageMode",
+        "protoField": "storage_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "storage_mode controls data storage strategy.\n \"LOCAL\" (default): all data on broker EBS volumes.\n \"TIERED\": hot data on EBS, warm data automatically offloaded to S3 for cost optimization.\n Tiered storage requires Kafka 2.8.2.tiered+ and supported instance types.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "LOCAL",
+            "TIERED"
+          ]
+        }
+      },
+      {
+        "name": "KmsKeyArn",
+        "jsonName": "kmsKeyArn",
+        "protoField": "kms_key_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "kms_key_arn is the KMS key ARN for encrypting data at rest on broker EBS volumes.\n If omitted, AWS uses the default aws/msk service key.\n ForceNew: changing the KMS key forces cluster replacement.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "ClientBrokerEncryption",
+        "jsonName": "clientBrokerEncryption",
+        "protoField": "client_broker_encryption",
+        "type": {
+          "kind": "string"
+        },
+        "description": "client_broker_encryption controls encryption for data in transit between clients and brokers.\n \"TLS\" (default, recommended): all client-broker traffic is TLS-encrypted (port 9094).\n \"TLS_PLAINTEXT\": both TLS (9094) and plaintext (9092) are available.\n \"PLAINTEXT\": all client-broker traffic is unencrypted (port 9092).",
+        "required": false,
+        "validation": {
+          "enum": [
+            "TLS",
+            "TLS_PLAINTEXT",
+            "PLAINTEXT"
+          ]
+        },
+        "default": "TLS",
+        "oneofGroup": "_client_broker_encryption"
+      },
+      {
+        "name": "InClusterEncryption",
+        "jsonName": "inClusterEncryption",
+        "protoField": "in_cluster_encryption",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "in_cluster_encryption enables TLS encryption for data in transit between brokers.\n Strongly recommended for production. ForceNew: changing this forces cluster replacement.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_in_cluster_encryption"
+      },
+      {
+        "name": "Authentication",
+        "jsonName": "authentication",
+        "protoField": "authentication",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsMskClusterAuthentication"
+        },
+        "description": "authentication configures client authentication methods for the cluster.\n Multiple methods can be enabled simultaneously (e.g., SASL/IAM + TLS).\n If no authentication is configured, the cluster accepts unauthenticated connections.",
+        "required": false
+      },
+      {
+        "name": "ConfigurationArn",
+        "jsonName": "configurationArn",
+        "protoField": "configuration_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "configuration_arn is the ARN of an externally managed MSK Configuration resource.\n MSK Configurations hold Apache Kafka server.properties overrides (e.g., replication factor,\n min ISR, log retention). Mutually exclusive with server_properties.",
+        "required": false
+      },
+      {
+        "name": "ConfigurationRevision",
+        "jsonName": "configurationRevision",
+        "protoField": "configuration_revision",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "configuration_revision is the revision number of the external MSK Configuration.\n Required when configuration_arn is set. Must be \u003e= 1.",
+        "required": false,
+        "validation": {
+          "min": 1
+        }
+      },
+      {
+        "name": "ServerProperties",
+        "jsonName": "serverProperties",
+        "protoField": "server_properties",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "server_properties defines Apache Kafka server.properties overrides as key-value pairs.\n When provided, an inline MSK Configuration resource is created and associated with the cluster.\n Common properties: auto.create.topics.enable, default.replication.factor, min.insync.replicas,\n num.partitions, log.retention.hours, log.retention.bytes.\n Mutually exclusive with configuration_arn.",
+        "required": false
+      },
+      {
+        "name": "Logging",
+        "jsonName": "logging",
+        "protoField": "logging",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsMskClusterLogging"
+        },
+        "description": "logging configures broker log delivery to one or more destinations.\n All three destinations (CloudWatch Logs, Kinesis Data Firehose, S3) can be\n enabled simultaneously for different operational workflows.",
+        "required": false
+      },
+      {
+        "name": "EnhancedMonitoring",
+        "jsonName": "enhancedMonitoring",
+        "protoField": "enhanced_monitoring",
+        "type": {
+          "kind": "string"
+        },
+        "description": "enhanced_monitoring sets the level of CloudWatch metrics published by the cluster.\n \"DEFAULT\": cluster-level and topic-level metrics.\n \"PER_BROKER\": adds per-broker metrics.\n \"PER_TOPIC_PER_BROKER\": adds per-topic-per-broker metrics.\n \"PER_TOPIC_PER_PARTITION\": most granular, adds per-partition metrics.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "DEFAULT",
+            "PER_BROKER",
+            "PER_TOPIC_PER_BROKER",
+            "PER_TOPIC_PER_PARTITION"
+          ]
+        }
+      },
+      {
+        "name": "JmxExporterEnabled",
+        "jsonName": "jmxExporterEnabled",
+        "protoField": "jmx_exporter_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "jmx_exporter_enabled enables the Prometheus JMX Exporter on all brokers.\n When enabled, JMX metrics are available on port 11001 for Prometheus scraping.\n Provides detailed JVM and Kafka broker metrics.",
+        "required": false
+      },
+      {
+        "name": "NodeExporterEnabled",
+        "jsonName": "nodeExporterEnabled",
+        "protoField": "node_exporter_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "node_exporter_enabled enables the Prometheus Node Exporter on all brokers.\n When enabled, host-level metrics (CPU, memory, disk, network) are available\n on port 11002 for Prometheus scraping.",
+        "required": false
+      },
+      {
+        "name": "PublicAccessType",
+        "jsonName": "publicAccessType",
+        "protoField": "public_access_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "public_access_type controls whether the cluster is reachable from the public internet.\n \"DISABLED\" (default): brokers are only reachable within the VPC.\n \"SERVICE_PROVIDED_EIPS\": AWS assigns Elastic IPs to brokers for public access.\n Public access requires specific authentication (SASL/IAM or SASL/SCRAM) and TLS encryption.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "DISABLED",
+            "SERVICE_PROVIDED_EIPS"
+          ]
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsMskClusterAuthentication",
+      "description": "AwsMskClusterAuthentication configures client authentication methods for the MSK cluster.\n Multiple methods can be enabled simultaneously to support diverse client populations.",
+      "protoType": "org.openmcf.provider.aws.awsmskcluster.v1.AwsMskClusterAuthentication",
+      "fields": [
+        {
+          "name": "SaslIamEnabled",
+          "jsonName": "saslIamEnabled",
+          "protoField": "sasl_iam_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "sasl_iam_enabled enables SASL/IAM authentication.\n Recommended for most workloads. Clients authenticate using AWS IAM credentials\n (access key, role assumption, or instance profiles). No password management required.\n Brokers listen on port 9098 for SASL/IAM connections.",
+          "required": false
+        },
+        {
+          "name": "SaslScramEnabled",
+          "jsonName": "saslScramEnabled",
+          "protoField": "sasl_scram_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "sasl_scram_enabled enables SASL/SCRAM-SHA-512 authentication.\n Clients authenticate with username/password stored in AWS Secrets Manager.\n Useful for non-AWS clients that cannot use IAM. Brokers listen on port 9096.\n Secrets must be associated with the cluster via aws_msk_scram_secret_association.",
+          "required": false
+        },
+        {
+          "name": "TlsEnabled",
+          "jsonName": "tlsEnabled",
+          "protoField": "tls_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "tls_enabled enables mutual TLS (mTLS) authentication.\n Clients present X.509 certificates signed by a private Certificate Authority.\n Requires tls_certificate_authority_arns to specify trusted CAs.\n Brokers listen on port 9094 for TLS connections.",
+          "required": false
+        },
+        {
+          "name": "TlsCertificateAuthorityArns",
+          "jsonName": "tlsCertificateAuthorityArns",
+          "protoField": "tls_certificate_authority_arns",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "tls_certificate_authority_arns are the ARNs of ACM Private Certificate Authority resources\n trusted for client certificate validation. Required when tls_enabled is true.",
+          "required": false
+        },
+        {
+          "name": "Unauthenticated",
+          "jsonName": "unauthenticated",
+          "protoField": "unauthenticated",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "unauthenticated allows clients to connect without any authentication.\n Not recommended for production. Useful for development or when network-level\n security (VPC + security groups) provides sufficient access control.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsMskClusterCloudwatchLogging",
+      "description": "AwsMskClusterCloudwatchLogging configures CloudWatch Logs delivery for broker logs.",
+      "protoType": "org.openmcf.provider.aws.awsmskcluster.v1.AwsMskClusterCloudwatchLogging",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "enabled controls whether broker logs are delivered to CloudWatch Logs.",
+          "required": false
+        },
+        {
+          "name": "LogGroup",
+          "jsonName": "logGroup",
+          "protoField": "log_group",
+          "type": {
+            "kind": "string"
+          },
+          "description": "log_group is the CloudWatch Logs group that receives broker logs.\n Required when enabled is true.",
+          "required": false,
+          "referenceKind": "AwsCloudwatchLogGroup",
+          "referenceFieldPath": "status.outputs.log_group_name"
+        }
+      ]
+    },
+    {
+      "name": "AwsMskClusterFirehoseLogging",
+      "description": "AwsMskClusterFirehoseLogging configures Kinesis Data Firehose delivery for broker logs.",
+      "protoType": "org.openmcf.provider.aws.awsmskcluster.v1.AwsMskClusterFirehoseLogging",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "enabled controls whether broker logs are delivered to Kinesis Data Firehose.",
+          "required": false
+        },
+        {
+          "name": "DeliveryStream",
+          "jsonName": "deliveryStream",
+          "protoField": "delivery_stream",
+          "type": {
+            "kind": "string"
+          },
+          "description": "delivery_stream is the Firehose delivery stream that receives broker logs.\n Required when enabled is true.",
+          "required": false,
+          "referenceKind": "AwsKinesisFirehose",
+          "referenceFieldPath": "status.outputs.delivery_stream_name"
+        }
+      ]
+    },
+    {
+      "name": "AwsMskClusterLogging",
+      "description": "AwsMskClusterLogging configures broker log delivery destinations.\n All three destinations can be enabled simultaneously.",
+      "protoType": "org.openmcf.provider.aws.awsmskcluster.v1.AwsMskClusterLogging",
+      "fields": [
+        {
+          "name": "CloudwatchLogs",
+          "jsonName": "cloudwatchLogs",
+          "protoField": "cloudwatch_logs",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsMskClusterCloudwatchLogging"
+          },
+          "description": "cloudwatch_logs configures delivery of broker logs to CloudWatch Logs.",
+          "required": false
+        },
+        {
+          "name": "Firehose",
+          "jsonName": "firehose",
+          "protoField": "firehose",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsMskClusterFirehoseLogging"
+          },
+          "description": "firehose configures delivery of broker logs to a Kinesis Data Firehose stream.",
+          "required": false
+        },
+        {
+          "name": "S3",
+          "jsonName": "s3",
+          "protoField": "s3",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsMskClusterS3Logging"
+          },
+          "description": "s3 configures delivery of broker logs to an S3 bucket.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsMskClusterS3Logging",
+      "description": "AwsMskClusterS3Logging configures S3 delivery for broker logs.",
+      "protoType": "org.openmcf.provider.aws.awsmskcluster.v1.AwsMskClusterS3Logging",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "enabled controls whether broker logs are delivered to S3.",
+          "required": false
+        },
+        {
+          "name": "Bucket",
+          "jsonName": "bucket",
+          "protoField": "bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "bucket is the S3 bucket that receives broker logs.\n Required when enabled is true.",
+          "required": false,
+          "referenceKind": "AwsS3Bucket",
+          "referenceFieldPath": "status.outputs.bucket_name"
+        },
+        {
+          "name": "Prefix",
+          "jsonName": "prefix",
+          "protoField": "prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "prefix is an optional S3 key prefix for log objects.\n Example: \"msk-logs/my-cluster/\" produces keys like \"msk-logs/my-cluster/broker-1/...\".",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

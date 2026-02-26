@@ -1,0 +1,52 @@
+{
+  "name": "ScalewayVpc",
+  "kind": "ScalewayVpc",
+  "cloudProvider": "scaleway",
+  "apiVersion": "scaleway.openmcf.org/v1",
+  "description": "scaleway-vpc",
+  "protoPackage": "org.openmcf.provider.scaleway.scalewayvpc.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/scaleway/scalewayvpc/v1/api.proto",
+    "spec": "org/openmcf/provider/scaleway/scalewayvpc/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ScalewayVpcSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Scaleway region where the VPC will be created.\n Examples: \"fr-par\", \"nl-ams\", \"pl-waw\"\n\n This field is required and cannot be changed after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "EnableRouting",
+        "jsonName": "enableRouting",
+        "protoField": "enable_routing",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable routing between Private Networks in this VPC.\n\n When enabled, resources in different Private Networks attached to this VPC\n can communicate with each other. This is essential for multi-tier architectures\n (e.g., a Kapsule cluster in one Private Network talking to an RDB instance\n in another).\n\n IMPORTANT: Once enabled, routing cannot be disabled. Plan accordingly.\n\n Default: false",
+        "required": false,
+        "recommendedDefault": "false"
+      },
+      {
+        "name": "EnableCustomRoutesPropagation",
+        "jsonName": "enableCustomRoutesPropagation",
+        "protoField": "enable_custom_routes_propagation",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable custom routes propagation between Private Networks in this VPC.\n\n When enabled, custom routes from one Private Network are advertised to other\n Private Networks in the same VPC. This is useful for advanced networking\n scenarios such as VPN gateways or network appliances.\n\n IMPORTANT: Once enabled, custom routes propagation cannot be disabled. Plan accordingly.\n\n Default: false",
+        "required": false,
+        "recommendedDefault": "false"
+      }
+    ]
+  }
+}

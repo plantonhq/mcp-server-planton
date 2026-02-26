@@ -1,0 +1,220 @@
+{
+  "name": "AwsRdsInstance",
+  "kind": "AwsRdsInstance",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsRdsInstance represents a single AWS RDS DB instance.",
+  "protoPackage": "org.openmcf.provider.aws.awsrdsinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsrdsinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsrdsinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsRdsInstanceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Subnets for the DB subnet group. Provide at least two private subnets for high availability.\n Alternatively, provide an existing DB subnet group name via db_subnet_group_name.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "DbSubnetGroupName",
+        "jsonName": "dbSubnetGroupName",
+        "protoField": "db_subnet_group_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of an existing DB subnet group to use instead of specifying subnet_ids.",
+        "required": false
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Security groups to associate with the instance's network interface.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "Engine",
+        "jsonName": "engine",
+        "protoField": "engine",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Database engine (e.g., \"postgres\", \"mysql\", \"mariadb\", \"oracle-se2\", \"sqlserver-ex\").",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "EngineVersion",
+        "jsonName": "engineVersion",
+        "protoField": "engine_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Desired engine version (e.g., \"14.10\" for Postgres, or a version string appropriate to the engine).",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "InstanceClass",
+        "jsonName": "instanceClass",
+        "protoField": "instance_class",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance class (size), e.g., \"db.t3.micro\", \"db.m6g.large\".",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "pattern": "^db\\."
+        }
+      },
+      {
+        "name": "AllocatedStorageGb",
+        "jsonName": "allocatedStorageGb",
+        "protoField": "allocated_storage_gb",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Allocated storage size in GiB for the primary storage.",
+        "required": false
+      },
+      {
+        "name": "StorageEncrypted",
+        "jsonName": "storageEncrypted",
+        "protoField": "storage_encrypted",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable storage encryption for the instance.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed KMS key ARN/alias for storage encryption when enabled.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "Username",
+        "jsonName": "username",
+        "protoField": "username",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Master user credentials. When using platform-managed secrets, a later rule will define validations.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Password",
+        "jsonName": "password",
+        "protoField": "password",
+        "type": {
+          "kind": "string"
+        },
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Port",
+        "jsonName": "port",
+        "protoField": "port",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Database port.",
+        "required": false,
+        "validation": {
+          "max": 65535
+        }
+      },
+      {
+        "name": "PubliclyAccessible",
+        "jsonName": "publiclyAccessible",
+        "protoField": "publicly_accessible",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the instance has a public IP address.",
+        "required": false
+      },
+      {
+        "name": "MultiAz",
+        "jsonName": "multiAz",
+        "protoField": "multi_az",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to deploy the instance in Multi-AZ mode.",
+        "required": false
+      },
+      {
+        "name": "ParameterGroupName",
+        "jsonName": "parameterGroupName",
+        "protoField": "parameter_group_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Optional parameter group name to associate with the instance.",
+        "required": false
+      },
+      {
+        "name": "OptionGroupName",
+        "jsonName": "optionGroupName",
+        "protoField": "option_group_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Optional option group name to associate with the instance (for certain engines).",
+        "required": false
+      }
+    ]
+  }
+}

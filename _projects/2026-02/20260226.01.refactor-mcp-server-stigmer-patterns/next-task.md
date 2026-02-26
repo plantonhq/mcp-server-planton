@@ -13,7 +13,7 @@
 ---
 
 **Project**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/`
-**Current Status**: Phase 1 COMPLETED → Ready for Phase 2
+**Current Status**: Phase 2 Stage 1 COMPLETED → Ready for Phase 2 Stage 2 (generator)
 
 ## Quick Context
 
@@ -22,6 +22,7 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
 - Consistent apply/delete/get patterns
 - Codegen pipeline from day one (proto → schema → Go input types)
 - Three tools: `apply_cloud_resource`, `delete_cloud_resource`, `get_cloud_resource`
+- MCP resource templates for per-kind schema discovery
 
 ## Current Step
 
@@ -31,7 +32,16 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
   - Deleted all old domain code (55 files, ~9400 lines removed)
   - Built 12-file Stigmer-pattern foundation (auth, config, grpc, domains, server, pkg/mcpserver, main)
   - `go build ./...` and `go vet ./...` pass cleanly
-- 🔵 Next: **Phase 2: Codegen Pipeline**
+- ✅ **Phase 2 planning** — Design decisions finalized (2026-02-26)
+  - See "Resolved Decisions" section below for full list
+- ✅ **Phase 2 Stage 1: proto2schema** (2026-02-26)
+  - Built proto2schema codegen tool (5 source files, ~760 lines)
+  - Parses OpenMCF provider .proto files via local SCM_ROOT convention
+  - Generated JSON schemas for 362 providers across 17 cloud platforms
+  - StringValueOrRef simplified to string with referenceKind metadata (Option C)
+  - Extracts buf.validate rules and OpenMCF custom options via protowire
+  - `make codegen-schemas` target added, zero parse errors
+- 🔵 Next: **Phase 2 Stage 2: generator** — JSON schemas → Go input types with ToProto()
 
 ---
 
@@ -81,19 +91,59 @@ Refactoring mcp-server-planton to follow stigmer/mcp-server architecture:
 
 ---
 
+### ✅ COMPLETED: Phase 2 Stage 1 — proto2schema Codegen Tool (2026-02-26)
+
+**Built the proto2schema codegen tool that parses OpenMCF provider .proto files and generates JSON schemas for code generation and MCP resource template discovery.**
+
+**What was delivered:**
+
+1. **proto2schema tool** (`tools/codegen/proto2schema/`) — 5-file Go CLI tool adapted from Stigmer's codegen pipeline. Parses all OpenMCF provider protos using `jhump/protoreflect`, extracts spec fields, nested types, validation rules, and custom OpenMCF options.
+
+2. **362 provider schemas** — Generated JSON schemas for all providers across 17 cloud platforms (AWS, GCP, Azure, Kubernetes, DigitalOcean, Civo, Cloudflare, Confluent, Auth0, OpenFGA, Snowflake, Atlas, AliCloud, HetznerCloud, OCI, OpenStack, Scaleway). Zero parse errors.
+
+3. **Provider registry** (`tools/codegen/schemas/providers/registry.json`) — Kind-to-schema-path index for all 362 providers. Used by Stage 2 generator and MCP resource template handlers.
+
+4. **Shared metadata schema** (`tools/codegen/schemas/shared/metadata.json`) — CloudResourceMetadata fields shared across all providers, with nested CloudResourceRelationship type.
+
+5. **Makefile target** — `make codegen-schemas` runs the full pipeline.
+
+**Key Decisions Made:**
+- StringValueOrRef → simplified to `string` with `referenceKind`/`referenceFieldPath` metadata (Option C). Respects bounded context boundary between specification and provisioning layers.
+- OpenMCF custom options (`default_kind`, `default_kind_field_path`, `default`, `recommended_default`) extracted via protowire from unknown fields.
+- Proto file resolution via `SCM_ROOT` convention (`$HOME/scm/github.com/{org}/{repo}/`) with `--openmcf-apis-dir` CLI override.
+- Split into 5 focused files (vs Stigmer's single file) for maintainability at this scale (362 providers vs Stigmer's ~15).
+
+**Files Created:**
+- `tools/codegen/proto2schema/main.go` — CLI entry point, provider scanning, buf cache detection
+- `tools/codegen/proto2schema/schema.go` — Schema type definitions
+- `tools/codegen/proto2schema/parser.go` — Proto parsing, field extraction, validation
+- `tools/codegen/proto2schema/options.go` — OpenMCF custom option extraction via protowire
+- `tools/codegen/proto2schema/registry.go` — Registry and file writing
+- `tools/codegen/schemas/` — 362 provider schemas + registry + shared metadata
+
+**Files Modified:**
+- `go.mod` / `go.sum` — Added `jhump/protoreflect`, `buf.build/gen/go/bufbuild/protovalidate`
+- `Makefile` — Added `codegen-schemas` target
+
+---
+
 ## Execution Order
 
 ### Phase 1: Clean Slate + Shared Utilities ✅
 Delete existing domain code, set up Stigmer-style foundation.
 
 ### Phase 2: Codegen Pipeline
-Adapt Stigmer's two-stage codegen:
-- Stage 1: `proto2schema` — Proto → JSON schemas
-- Stage 2: `generator --target=mcp` — JSON schemas → Go input types with `ToProto()`
-- Makefile targets for codegen
+Adapt Stigmer's two-stage codegen for OpenMCF provider specs:
+- Stage 1: `proto2schema` — Parse OpenMCF provider .proto files → JSON schemas ✅
+- Stage 2: `generator` — JSON schemas → Go input types with `ToProto()` for each provider kind
+- Generate CloudResourceKind enum validation map
+- Makefile targets: `codegen-schemas` (Stage 1) ✅, `codegen` (full pipeline)
 
-### Phase 3: Implement apply_cloud_resource
-First working MCP tool with generated input types.
+### Phase 3: Implement apply_cloud_resource + MCP Resource Templates
+- First working MCP tool with generated input types
+- `cloud_object` stays opaque in tool schema (typed validation happens inside handler)
+- MCP resource templates expose per-kind typed schemas for client discovery
+- No separate schema lookup tool — agents use MCP resources
 
 ### Phase 4: Implement delete_cloud_resource + get_cloud_resource
 Complete the tool set.
@@ -108,6 +158,8 @@ Complete the tool set.
 - **OpenMCF provider specs**: `@openmcf/apis/org/openmcf/provider/`
 - **Design decisions**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/design-decisions/`
 - **Phase 1 plan**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/plans/phase-1-foundation.plan.md`
+- **Proto2schema plan**: `_projects/2026-02/20260226.01.refactor-mcp-server-stigmer-patterns/plans/proto2schema-codegen-tool.plan.md`
+- **Generated schemas**: `tools/codegen/schemas/`
 
 ## Resolved Decisions
 
@@ -118,3 +170,20 @@ Complete the tool set.
 5. **MCP SDK**: Official `modelcontextprotocol/go-sdk` (not community `mark3labs/mcp-go`)
 6. **HTTP transport**: Streamable HTTP (native SDK support, replaces SSE proxy)
 7. **Logging**: `slog` structured logging (replaces `log.Printf`)
+8. **Typed provider codegen (Option B)**: Generate typed Go input structs for OpenMCF provider specs
+   starting with a subset (~10-20 most common providers), expand to all ~150 later.
+   Same discriminated-union pattern as Stigmer workflow task configs
+   (kind + Struct with `discriminated_by`).
+9. **Tool schema stays small**: Do NOT expand 150+ typed provider fields into the
+   `apply_cloud_resource` tool input schema — that would be 50,000-100,000+ tokens,
+   overwhelming MCP clients. The tool keeps `cloud_object` as opaque `map[string]any`.
+   Typed validation happens inside the handler using generated input structs.
+10. **Schema discovery via MCP resource templates**: Expose per-kind typed schemas
+    as MCP resource templates (e.g., `cloud-resource-schema://{kind}`). Clients
+    fetch the schema for the specific kind they need before calling apply.
+    No separate `get_cloud_resource_schema` tool — agents use MCP resources.
+11. **Dependency: Stigmer agent runner MCP resources support**: The Stigmer agent
+    runner currently only uses MCP tools (via `langchain_mcp_adapters`), not MCP
+    resources. A separate project in the stigmer repo will add MCP resources
+    support so agents can auto-discover schemas.
+    See: `stigmer/_projects/2026-02/20260226.02.agent-runner-mcp-resources/`

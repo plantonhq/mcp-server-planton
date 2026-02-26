@@ -1,0 +1,716 @@
+{
+  "name": "Auth0Connection",
+  "kind": "Auth0Connection",
+  "cloudProvider": "auth0",
+  "apiVersion": "auth0.openmcf.org/v1",
+  "description": "Auth0Connection is a deployment component that configures an identity connection in Auth0.\n Connections are the bridge between Auth0 and identity sources, enabling users to authenticate\n using various methods including databases, social providers, and enterprise identity providers.\n\n This component supports:\n - Database connections (Auth0's hosted user database)\n - Social connections (Google, Facebook, GitHub, LinkedIn, etc.)\n - Enterprise connections (SAML, OIDC, Azure AD/Entra ID)\n\n Example manifest:\n ```yaml\n apiVersion: auth0.openmcf.org/v1\n kind: Auth0Connection\n metadata:\n   name: google-social-login\n   org: my-organization\n   env: production\n spec:\n   strategy: google-oauth2\n   display_name: Sign in with Google\n   enabled_clients:\n     - value: \"abc123def456\"\n   social_options:\n     client_id: \"your-google-client-id.apps.googleusercontent.com\"\n     client_secret: \"your-google-client-secret\"\n     scopes:\n       - openid\n       - profile\n       - email\n ```",
+  "protoPackage": "org.openmcf.provider.auth0.auth0connection.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/auth0/auth0connection/v1/api.proto",
+    "spec": "org/openmcf/provider/auth0/auth0connection/v1/spec.proto"
+  },
+  "spec": {
+    "name": "Auth0ConnectionSpec",
+    "fields": [
+      {
+        "name": "Strategy",
+        "jsonName": "strategy",
+        "protoField": "strategy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "strategy is the identity provider strategy/type for this connection.\n This determines how users authenticate and what additional configuration is required.\n\n Database strategies:\n - \"auth0\": Auth0's hosted database (default, recommended for most use cases)\n\n Social strategies:\n - \"google-oauth2\": Google OAuth 2.0\n - \"facebook\": Facebook Login\n - \"github\": GitHub OAuth\n - \"linkedin\": LinkedIn OAuth\n - \"twitter\": Twitter OAuth\n - \"microsoft-account\": Microsoft Account (personal)\n - \"apple\": Sign in with Apple\n\n Enterprise strategies:\n - \"samlp\": SAML Protocol\n - \"oidc\": OpenID Connect\n - \"waad\": Windows Azure Active Directory (Entra ID)\n - \"ad\": Active Directory/LDAP\n - \"adfs\": Active Directory Federation Services\n\n https://registry.terraform.io/providers/auth0/auth0/latest/docs/resources/connection#strategy",
+        "required": true,
+        "validation": {
+          "required": true,
+          "enum": [
+            "auth0",
+            "google-oauth2",
+            "facebook",
+            "github",
+            "linkedin",
+            "twitter",
+            "microsoft-account",
+            "apple",
+            "samlp",
+            "oidc",
+            "waad",
+            "ad",
+            "adfs"
+          ]
+        }
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "display_name is the human-readable name shown in the Auth0 Universal Login page.\n This is the name users will see when choosing how to log in.\n If not specified, Auth0 will use a default name based on the strategy.\n Example: \"Google\", \"Company SSO\", \"Sign up with Email\"",
+        "required": false
+      },
+      {
+        "name": "EnabledClients",
+        "jsonName": "enabledClients",
+        "protoField": "enabled_clients",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "enabled_clients is a list of Auth0 application client IDs that can use this connection.\n Only applications in this list will show this connection as a login option.\n If empty, no applications will be able to use this connection.\n\n You can provide either:\n - Direct client ID: {value: \"abc123clientID\"}\n - Reference to Auth0Client component: {value_from: {kind: Auth0Client, name: \"my-app\"}}\n\n When using references, the client_id is automatically resolved from the\n Auth0Client's status.outputs.client_id field.",
+        "required": false,
+        "referenceKind": "Auth0Client",
+        "referenceFieldPath": "status.outputs.client_id"
+      },
+      {
+        "name": "IsDomainConnection",
+        "jsonName": "isDomainConnection",
+        "protoField": "is_domain_connection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "is_domain_connection indicates whether this connection can be used for identifier-first\n authentication flows. When true, Auth0 will attempt to discover the appropriate\n connection based on the user's email domain.\n Default: false",
+        "required": false
+      },
+      {
+        "name": "Realms",
+        "jsonName": "realms",
+        "protoField": "realms",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "realms are the identifiers that can be used for this connection in authentication requests.\n This is useful for routing users to the correct connection.\n If not specified, defaults to the connection name.",
+        "required": false
+      },
+      {
+        "name": "ShowAsButton",
+        "jsonName": "showAsButton",
+        "protoField": "show_as_button",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "show_as_button controls whether this connection shows as a button on the Universal Login page.\n When false, the connection will only be used if explicitly requested or discovered via domain.\n Default: true",
+        "required": false
+      },
+      {
+        "name": "Metadata",
+        "jsonName": "metadata",
+        "protoField": "metadata",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "metadata is a map of custom metadata key-value pairs to store with the connection.\n This can be used to store integration-specific identifiers or configuration.\n Maximum 10 key-value pairs, with keys and values up to 255 characters each.",
+        "required": false
+      },
+      {
+        "name": "DatabaseOptions",
+        "jsonName": "databaseOptions",
+        "protoField": "database_options",
+        "type": {
+          "kind": "message",
+          "messageType": "Auth0DatabaseOptions"
+        },
+        "description": "database_options configures database connection behavior.\n Only applicable when strategy is \"auth0\" (Auth0 database).",
+        "required": false
+      },
+      {
+        "name": "SocialOptions",
+        "jsonName": "socialOptions",
+        "protoField": "social_options",
+        "type": {
+          "kind": "message",
+          "messageType": "Auth0SocialOptions"
+        },
+        "description": "social_options configures social identity provider connections.\n Only applicable when strategy is a social provider (google-oauth2, facebook, github, etc.).",
+        "required": false
+      },
+      {
+        "name": "SamlOptions",
+        "jsonName": "samlOptions",
+        "protoField": "saml_options",
+        "type": {
+          "kind": "message",
+          "messageType": "Auth0SamlOptions"
+        },
+        "description": "saml_options configures SAML enterprise connections.\n Only applicable when strategy is \"samlp\".",
+        "required": false
+      },
+      {
+        "name": "OidcOptions",
+        "jsonName": "oidcOptions",
+        "protoField": "oidc_options",
+        "type": {
+          "kind": "message",
+          "messageType": "Auth0OidcOptions"
+        },
+        "description": "oidc_options configures OpenID Connect enterprise connections.\n Only applicable when strategy is \"oidc\".",
+        "required": false
+      },
+      {
+        "name": "AzureAdOptions",
+        "jsonName": "azureAdOptions",
+        "protoField": "azure_ad_options",
+        "type": {
+          "kind": "message",
+          "messageType": "Auth0AzureAdOptions"
+        },
+        "description": "azure_ad_options configures Azure AD/Entra ID enterprise connections.\n Only applicable when strategy is \"waad\".",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "Auth0AzureAdOptions",
+      "description": "Auth0AzureAdOptions configures Azure Active Directory (Entra ID) enterprise connections.\n Used for integrating with Microsoft Azure AD for enterprise SSO.",
+      "protoType": "org.openmcf.provider.auth0.auth0connection.v1.Auth0AzureAdOptions",
+      "fields": [
+        {
+          "name": "ClientId",
+          "jsonName": "clientId",
+          "protoField": "client_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "client_id is the Application (client) ID from Azure AD app registration.\n Found in Azure Portal \u003e Azure Active Directory \u003e App Registrations \u003e Your App \u003e Overview\n Required for Azure AD connections.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ClientSecret",
+          "jsonName": "clientSecret",
+          "protoField": "client_secret",
+          "type": {
+            "kind": "string"
+          },
+          "description": "client_secret is the client secret from Azure AD app registration.\n Found in Azure Portal \u003e Azure Active Directory \u003e App Registrations \u003e Your App \u003e Certificates \u0026 secrets\n Required for Azure AD connections.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Domain",
+          "jsonName": "domain",
+          "protoField": "domain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "domain is the Azure AD tenant domain.\n This can be the primary domain (e.g., \"contoso.onmicrosoft.com\")\n or a custom domain (e.g., \"contoso.com\").\n Required for Azure AD connections.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "TenantId",
+          "jsonName": "tenantId",
+          "protoField": "tenant_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "tenant_id is the Azure AD tenant ID (Directory ID).\n Found in Azure Portal \u003e Azure Active Directory \u003e Overview\n If not specified, \"common\" is used, allowing any Azure AD tenant.",
+          "required": false
+        },
+        {
+          "name": "UseCommonEndpoint",
+          "jsonName": "useCommonEndpoint",
+          "protoField": "use_common_endpoint",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "use_common_endpoint determines whether to use the common endpoint.\n When true, allows users from any Azure AD tenant (multi-tenant app).\n When false, restricts to the specified tenant.\n Default: false",
+          "required": false
+        },
+        {
+          "name": "MaxGroupsToRetrieve",
+          "jsonName": "maxGroupsToRetrieve",
+          "protoField": "max_groups_to_retrieve",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "max_groups_to_retrieve limits the number of groups retrieved from Azure AD.\n Azure AD can return many groups; set this to limit the groups in the user profile.\n Set to 0 for no limit.\n Default: 50",
+          "required": false
+        },
+        {
+          "name": "ShouldTrustEmailVerified",
+          "jsonName": "shouldTrustEmailVerified",
+          "protoField": "should_trust_email_verified",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "should_trust_email_verified indicates whether to trust Azure AD's email_verified claim.\n When true, Auth0 trusts that Azure AD has verified the user's email.\n Default: true",
+          "required": false
+        },
+        {
+          "name": "ApiEnableUsers",
+          "jsonName": "apiEnableUsers",
+          "protoField": "api_enable_users",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "api_enable_users enables the ability to retrieve users from the Azure AD directory.\n When true, you can use Auth0's Management API to list users from Azure AD.\n Requires additional Azure AD permissions (Directory.Read.All).\n Default: false",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Auth0DatabaseOptions",
+      "description": "Auth0DatabaseOptions configures Auth0's hosted database connection.\n These options control password policies, username requirements, and security settings.",
+      "protoType": "org.openmcf.provider.auth0.auth0connection.v1.Auth0DatabaseOptions",
+      "fields": [
+        {
+          "name": "PasswordPolicy",
+          "jsonName": "passwordPolicy",
+          "protoField": "password_policy",
+          "type": {
+            "kind": "string"
+          },
+          "description": "password_policy defines the password complexity requirements.\n - \"none\": No password requirements\n - \"low\": At least 6 characters\n - \"fair\": At least 8 characters, including lower and upper case\n - \"good\": At least 8 characters, including lower, upper, numeric\n - \"excellent\": At least 10 characters, including lower, upper, numeric, special\n Default: \"good\"",
+          "required": false,
+          "validation": {
+            "enum": [
+              "",
+              "none",
+              "low",
+              "fair",
+              "good",
+              "excellent"
+            ]
+          }
+        },
+        {
+          "name": "RequiresUsername",
+          "jsonName": "requiresUsername",
+          "protoField": "requires_username",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "requires_username determines if users must provide a username in addition to email.\n When true, users sign up with both username and email.\n Default: false",
+          "required": false
+        },
+        {
+          "name": "DisableSignup",
+          "jsonName": "disableSignup",
+          "protoField": "disable_signup",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "disable_signup prevents new user signups through this connection.\n Useful when you only want existing users to log in, or when onboarding is done programmatically.\n Default: false",
+          "required": false
+        },
+        {
+          "name": "BruteForceProtection",
+          "jsonName": "bruteForceProtection",
+          "protoField": "brute_force_protection",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "brute_force_protection enables protection against brute force login attacks.\n When enabled, Auth0 will block login attempts after multiple failures.\n Default: true (recommended)",
+          "required": false
+        },
+        {
+          "name": "PasswordHistorySize",
+          "jsonName": "passwordHistorySize",
+          "protoField": "password_history_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "password_history_size is the number of previous passwords to check against.\n Users cannot reuse passwords from their history. Set to 0 to disable.\n Valid range: 0-24\n Default: 5",
+          "required": false,
+          "validation": {
+            "max": 24
+          }
+        },
+        {
+          "name": "PasswordNoPersonalInfo",
+          "jsonName": "passwordNoPersonalInfo",
+          "protoField": "password_no_personal_info",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "password_no_personal_info prevents passwords containing user's personal information\n (name, username, email). Recommended for security.\n Default: true",
+          "required": false
+        },
+        {
+          "name": "PasswordDictionary",
+          "jsonName": "passwordDictionary",
+          "protoField": "password_dictionary",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "password_dictionary enables checking passwords against a dictionary of common passwords.\n When true, users cannot use common/weak passwords.\n Default: true",
+          "required": false
+        },
+        {
+          "name": "MfaEnabled",
+          "jsonName": "mfaEnabled",
+          "protoField": "mfa_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "mfa_enabled enables Multi-Factor Authentication for this connection.\n When true, users will be prompted for a second factor during login.\n Default: false",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Auth0OidcOptions",
+      "description": "Auth0OidcOptions configures OpenID Connect enterprise connections.\n Used for integrating with OIDC-compliant identity providers.",
+      "protoType": "org.openmcf.provider.auth0.auth0connection.v1.Auth0OidcOptions",
+      "fields": [
+        {
+          "name": "Issuer",
+          "jsonName": "issuer",
+          "protoField": "issuer",
+          "type": {
+            "kind": "string"
+          },
+          "description": "issuer is the OIDC issuer URL (the \"iss\" claim value).\n Auth0 will use OIDC Discovery to fetch configuration from /.well-known/openid-configuration\n Required for OIDC connections.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ClientId",
+          "jsonName": "clientId",
+          "protoField": "client_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "client_id is the OAuth client ID from the OIDC provider.\n Obtained from the provider's application registration.\n Required for OIDC connections.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ClientSecret",
+          "jsonName": "clientSecret",
+          "protoField": "client_secret",
+          "type": {
+            "kind": "string"
+          },
+          "description": "client_secret is the OAuth client secret from the OIDC provider.\n Required for OIDC connections using authorization code flow.",
+          "required": false
+        },
+        {
+          "name": "Scopes",
+          "jsonName": "scopes",
+          "protoField": "scopes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "scopes is a list of OIDC scopes to request.\n \"openid\" is always requested implicitly.\n Common scopes: \"profile\", \"email\", \"address\", \"phone\"\n Default: [\"openid\", \"profile\", \"email\"]",
+          "required": false
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "type specifies the OIDC flow type.\n - \"front_channel\": Authorization Code Flow (recommended for web apps)\n - \"back_channel\": Uses token endpoint directly\n Default: front_channel",
+          "required": false,
+          "validation": {
+            "enum": [
+              "",
+              "front_channel",
+              "back_channel"
+            ]
+          }
+        },
+        {
+          "name": "AuthorizationEndpoint",
+          "jsonName": "authorizationEndpoint",
+          "protoField": "authorization_endpoint",
+          "type": {
+            "kind": "string"
+          },
+          "description": "authorization_endpoint overrides the authorization endpoint from discovery.\n Only set this if the provider's discovery document is incorrect.",
+          "required": false
+        },
+        {
+          "name": "TokenEndpoint",
+          "jsonName": "tokenEndpoint",
+          "protoField": "token_endpoint",
+          "type": {
+            "kind": "string"
+          },
+          "description": "token_endpoint overrides the token endpoint from discovery.\n Only set this if the provider's discovery document is incorrect.",
+          "required": false
+        },
+        {
+          "name": "UserinfoEndpoint",
+          "jsonName": "userinfoEndpoint",
+          "protoField": "userinfo_endpoint",
+          "type": {
+            "kind": "string"
+          },
+          "description": "userinfo_endpoint overrides the userinfo endpoint from discovery.\n Only set this if the provider's discovery document is incorrect.",
+          "required": false
+        },
+        {
+          "name": "JwksUri",
+          "jsonName": "jwksUri",
+          "protoField": "jwks_uri",
+          "type": {
+            "kind": "string"
+          },
+          "description": "jwks_uri overrides the JWKS URI from discovery.\n Only set this if the provider's discovery document is incorrect.",
+          "required": false
+        },
+        {
+          "name": "AttributeMappings",
+          "jsonName": "attributeMappings",
+          "protoField": "attribute_mappings",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "attribute_mappings maps OIDC claims to Auth0 user profile fields.\n Keys are Auth0 profile fields (email, name, given_name, family_name, nickname, picture).\n Values are OIDC claim names from the ID token or userinfo response.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Auth0SamlOptions",
+      "description": "Auth0SamlOptions configures SAML enterprise connections.\n SAML is commonly used for enterprise SSO integrations.",
+      "protoType": "org.openmcf.provider.auth0.auth0connection.v1.Auth0SamlOptions",
+      "fields": [
+        {
+          "name": "SignInEndpoint",
+          "jsonName": "signInEndpoint",
+          "protoField": "sign_in_endpoint",
+          "type": {
+            "kind": "string"
+          },
+          "description": "sign_in_endpoint is the SAML Identity Provider's Single Sign-On URL.\n This is where Auth0 sends SAML authentication requests.\n Also known as \"SSO URL\" or \"Login URL\".\n Required for SAML connections.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "SigningCert",
+          "jsonName": "signingCert",
+          "protoField": "signing_cert",
+          "type": {
+            "kind": "string"
+          },
+          "description": "signing_cert is the X.509 signing certificate from the Identity Provider.\n Used to verify the signature on SAML responses.\n Should be in PEM format (including BEGIN/END CERTIFICATE headers).\n Required for SAML connections.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "SignOutEndpoint",
+          "jsonName": "signOutEndpoint",
+          "protoField": "sign_out_endpoint",
+          "type": {
+            "kind": "string"
+          },
+          "description": "sign_out_endpoint is the SAML Identity Provider's Single Logout URL.\n This is where Auth0 sends logout requests.\n Optional but recommended for complete logout functionality.",
+          "required": false
+        },
+        {
+          "name": "EntityId",
+          "jsonName": "entityId",
+          "protoField": "entity_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "entity_id is the unique identifier for the Identity Provider.\n Also known as \"Issuer\" or \"EntityID\".\n If not specified, Auth0 will attempt to derive it from the metadata.",
+          "required": false
+        },
+        {
+          "name": "ProtocolBinding",
+          "jsonName": "protocolBinding",
+          "protoField": "protocol_binding",
+          "type": {
+            "kind": "string"
+          },
+          "description": "protocol_binding specifies how SAML requests should be sent.\n - \"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\": URL-encoded in query string\n - \"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\": Form POST\n Default: HTTP-Redirect",
+          "required": false,
+          "validation": {
+            "enum": [
+              "",
+              "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+              "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+            ]
+          }
+        },
+        {
+          "name": "UserIdAttribute",
+          "jsonName": "userIdAttribute",
+          "protoField": "user_id_attribute",
+          "type": {
+            "kind": "string"
+          },
+          "description": "user_id_attribute is the SAML attribute to use as the user identifier.\n Default: \"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier\"",
+          "required": false
+        },
+        {
+          "name": "SignRequest",
+          "jsonName": "signRequest",
+          "protoField": "sign_request",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "sign_request indicates whether Auth0 should sign SAML requests.\n Required by some Identity Providers.\n Default: false",
+          "required": false
+        },
+        {
+          "name": "SignatureAlgorithm",
+          "jsonName": "signatureAlgorithm",
+          "protoField": "signature_algorithm",
+          "type": {
+            "kind": "string"
+          },
+          "description": "signature_algorithm is the algorithm used for signing SAML requests.\n - \"rsa-sha256\": RSA with SHA-256 (recommended)\n - \"rsa-sha1\": RSA with SHA-1 (deprecated, use only for legacy systems)\n Default: rsa-sha256",
+          "required": false,
+          "validation": {
+            "enum": [
+              "",
+              "rsa-sha256",
+              "rsa-sha1"
+            ]
+          }
+        },
+        {
+          "name": "DigestAlgorithm",
+          "jsonName": "digestAlgorithm",
+          "protoField": "digest_algorithm",
+          "type": {
+            "kind": "string"
+          },
+          "description": "digest_algorithm is the algorithm used for digest in SAML signatures.\n - \"sha256\": SHA-256 (recommended)\n - \"sha1\": SHA-1 (deprecated, use only for legacy systems)\n Default: sha256",
+          "required": false,
+          "validation": {
+            "enum": [
+              "",
+              "sha256",
+              "sha1"
+            ]
+          }
+        },
+        {
+          "name": "AttributeMappings",
+          "jsonName": "attributeMappings",
+          "protoField": "attribute_mappings",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "attribute_mappings maps SAML attributes to Auth0 user profile fields.\n Keys are Auth0 profile fields (email, name, given_name, family_name, nickname, picture).\n Values are SAML attribute names from the IdP response.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Auth0SocialOptions",
+      "description": "Auth0SocialOptions configures social identity provider connections (Google, Facebook, GitHub, etc.).\n These credentials are obtained from the respective social provider's developer console.",
+      "protoType": "org.openmcf.provider.auth0.auth0connection.v1.Auth0SocialOptions",
+      "fields": [
+        {
+          "name": "ClientId",
+          "jsonName": "clientId",
+          "protoField": "client_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "client_id is the OAuth client ID from the social provider.\n This is obtained from the provider's developer console.\n Required for all social connections.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ClientSecret",
+          "jsonName": "clientSecret",
+          "protoField": "client_secret",
+          "type": {
+            "kind": "string"
+          },
+          "description": "client_secret is the OAuth client secret from the social provider.\n This is obtained from the provider's developer console.\n Required for all social connections.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Scopes",
+          "jsonName": "scopes",
+          "protoField": "scopes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "scopes is a list of OAuth scopes to request from the social provider.\n These determine what user information Auth0 can access.\n If not specified, default scopes for the strategy will be used.\n Example for Google: [\"openid\", \"profile\", \"email\"]",
+          "required": false
+        },
+        {
+          "name": "AllowedAudiences",
+          "jsonName": "allowedAudiences",
+          "protoField": "allowed_audiences",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "allowed_audiences restricts which audiences (applications) can use this connection.\n Only applicable for providers that support audience restrictions.",
+          "required": false
+        },
+        {
+          "name": "UpstreamParams",
+          "jsonName": "upstreamParams",
+          "protoField": "upstream_params",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "upstream_params are custom parameters to pass to the upstream social provider.\n Useful for provider-specific features like login hints or prompt types.\n Example: {\"login_hint\": \"user@example.com\", \"prompt\": \"select_account\"}",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

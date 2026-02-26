@@ -1,0 +1,799 @@
+{
+  "name": "KubernetesGhaRunnerScaleSetController",
+  "kind": "KubernetesGhaRunnerScaleSetController",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "KubernetesGhaRunnerScaleSetController is a deployment component that installs the GitHub Actions\n Runner Scale Set Controller on a Kubernetes cluster. The controller manages AutoScalingRunnerSets\n and EphemeralRunners, enabling dynamic scaling of self-hosted GitHub Actions runners based on\n workflow demand.\n\n Use this component to deploy the controller first, then deploy runner scale sets using the\n separate gha-runner-scale-set Helm chart (or a corresponding OpenMCF component).",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetesgharunnerscalesetcontroller.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetesgharunnerscalesetcontroller/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetesgharunnerscalesetcontroller/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesGhaRunnerScaleSetControllerSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "Target Kubernetes Cluster where the controller will be deployed.",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes Namespace where the controller will be installed.\n The controller watches for AutoScalingRunnerSet resources across all namespaces by default,\n or can be restricted to a single namespace via flags.watch_single_namespace.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "CreateNamespace",
+        "jsonName": "createNamespace",
+        "protoField": "create_namespace",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Flag to indicate if the namespace should be created.",
+        "required": false
+      },
+      {
+        "name": "HelmChartVersion",
+        "jsonName": "helmChartVersion",
+        "protoField": "helm_chart_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Version of the Helm chart to deploy.\n Chart versions match the controller image versions.\n https://github.com/actions/actions-runner-controller/releases",
+        "required": false,
+        "default": "0.13.1",
+        "oneofGroup": "_helm_chart_version"
+      },
+      {
+        "name": "ReplicaCount",
+        "jsonName": "replicaCount",
+        "protoField": "replica_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of controller replicas.\n When replicaCount \u003e 1, leader election is automatically enabled.",
+        "required": false,
+        "default": "1",
+        "oneofGroup": "_replica_count"
+      },
+      {
+        "name": "Container",
+        "jsonName": "container",
+        "protoField": "container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesGhaRunnerScaleSetControllerContainer"
+        },
+        "description": "Container specifications for the controller.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Flags",
+        "jsonName": "flags",
+        "protoField": "flags",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesGhaRunnerScaleSetControllerFlags"
+        },
+        "description": "Controller behavior flags.",
+        "required": false
+      },
+      {
+        "name": "Metrics",
+        "jsonName": "metrics",
+        "protoField": "metrics",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesGhaRunnerScaleSetControllerMetrics"
+        },
+        "description": "Metrics configuration for monitoring.\n When not specified, metrics are disabled.",
+        "required": false
+      },
+      {
+        "name": "ImagePullSecrets",
+        "jsonName": "imagePullSecrets",
+        "protoField": "image_pull_secrets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Image pull secrets for private container registries.\n These secrets are also passed to the auto-scaler for pulling listener images.",
+        "required": false
+      },
+      {
+        "name": "PriorityClassName",
+        "jsonName": "priorityClassName",
+        "protoField": "priority_class_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Priority class name for the controller pods.\n Use \"system-cluster-critical\" to ensure controller survives resource pressure.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ContainerResources",
+      "description": "**ContainerResources** specifies the CPU and memory resources for a container.\n It allows you to define resource limits and requests to manage resource allocation and ensure optimal performance.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerResources",
+      "fields": [
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource limits for the container.\n Specify the maximum amount of CPU and memory that the container can use.",
+          "required": false
+        },
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource requests for the container.\n Specify the minimum amount of CPU and memory that the container is guaranteed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CpuMemory",
+      "description": "**CpuMemory** defines CPU and memory resource quantities for a container.\n It is used to specify the limits and requests for CPU and memory resources.",
+      "protoType": "org.openmcf.provider.kubernetes.CpuMemory",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetControllerContainer",
+      "description": "KubernetesGhaRunnerScaleSetControllerContainer specifies container configuration for the controller.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscalesetcontroller.v1.KubernetesGhaRunnerScaleSetControllerContainer",
+      "fields": [
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "CPU and memory resources for the controller container.",
+          "required": false
+        },
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesGhaRunnerScaleSetControllerImage"
+          },
+          "description": "Custom container image configuration.\n When not specified, uses the default image from the Helm chart.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetControllerFlags",
+      "description": "KubernetesGhaRunnerScaleSetControllerFlags configures controller behavior.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscalesetcontroller.v1.KubernetesGhaRunnerScaleSetControllerFlags",
+      "fields": [
+        {
+          "name": "LogLevel",
+          "jsonName": "logLevel",
+          "protoField": "log_level",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscalesetcontroller.v1.LogLevel",
+            "enumValues": [
+              "debug",
+              "info",
+              "warn",
+              "error"
+            ]
+          },
+          "description": "Log level for the controller.\n Valid values: debug, info, warn, error",
+          "required": false
+        },
+        {
+          "name": "LogFormat",
+          "jsonName": "logFormat",
+          "protoField": "log_format",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscalesetcontroller.v1.LogFormat",
+            "enumValues": [
+              "text",
+              "json"
+            ]
+          },
+          "description": "Log format for the controller.\n Valid values: text, json",
+          "required": false
+        },
+        {
+          "name": "WatchSingleNamespace",
+          "jsonName": "watchSingleNamespace",
+          "protoField": "watch_single_namespace",
+          "type": {
+            "kind": "string"
+          },
+          "description": "When set, restricts the controller to watch only the specified namespace.\n By default (empty), watches all namespaces.",
+          "required": false
+        },
+        {
+          "name": "RunnerMaxConcurrentReconciles",
+          "jsonName": "runnerMaxConcurrentReconciles",
+          "protoField": "runner_max_concurrent_reconciles",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum concurrent reconciles for the EphemeralRunner controller.\n Increase to improve throughput at the cost of higher API server load.",
+          "required": false,
+          "default": "2",
+          "oneofGroup": "_runner_max_concurrent_reconciles"
+        },
+        {
+          "name": "UpdateStrategy",
+          "jsonName": "updateStrategy",
+          "protoField": "update_strategy",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscalesetcontroller.v1.UpdateStrategy",
+            "enumValues": [
+              "immediate",
+              "eventual"
+            ]
+          },
+          "description": "Strategy for handling upgrades while jobs are running.",
+          "required": false
+        },
+        {
+          "name": "ExcludeLabelPropagationPrefixes",
+          "jsonName": "excludeLabelPropagationPrefixes",
+          "protoField": "exclude_label_propagation_prefixes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Label prefixes to exclude from propagation to internal resources.\n Useful for labels used by external tools (e.g., ArgoCD) that shouldn't\n be propagated to listener pods.",
+          "required": false
+        },
+        {
+          "name": "K8sClientRateLimiterQps",
+          "jsonName": "k8sClientRateLimiterQps",
+          "protoField": "k8s_client_rate_limiter_qps",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Kubernetes API client rate limiter QPS.",
+          "required": false
+        },
+        {
+          "name": "K8sClientRateLimiterBurst",
+          "jsonName": "k8sClientRateLimiterBurst",
+          "protoField": "k8s_client_rate_limiter_burst",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Kubernetes API client rate limiter burst.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetControllerImage",
+      "description": "KubernetesGhaRunnerScaleSetControllerImage configures a custom controller image.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscalesetcontroller.v1.KubernetesGhaRunnerScaleSetControllerImage",
+      "fields": [
+        {
+          "name": "Repository",
+          "jsonName": "repository",
+          "protoField": "repository",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Container image repository.\n Default: ghcr.io/actions/gha-runner-scale-set-controller",
+          "required": false
+        },
+        {
+          "name": "Tag",
+          "jsonName": "tag",
+          "protoField": "tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Image tag. When not specified, uses the chart appVersion.",
+          "required": false
+        },
+        {
+          "name": "PullPolicy",
+          "jsonName": "pullPolicy",
+          "protoField": "pull_policy",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Image pull policy: Always, IfNotPresent, or Never.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesGhaRunnerScaleSetControllerMetrics",
+      "description": "KubernetesGhaRunnerScaleSetControllerMetrics configures metrics endpoints.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesgharunnerscalesetcontroller.v1.KubernetesGhaRunnerScaleSetControllerMetrics",
+      "fields": [
+        {
+          "name": "ControllerManagerAddr",
+          "jsonName": "controllerManagerAddr",
+          "protoField": "controller_manager_addr",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Metrics address for the controller manager (e.g., \":8080\").",
+          "required": false
+        },
+        {
+          "name": "ListenerAddr",
+          "jsonName": "listenerAddr",
+          "protoField": "listener_addr",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Metrics address for the listener (e.g., \":8080\").",
+          "required": false
+        },
+        {
+          "name": "ListenerEndpoint",
+          "jsonName": "listenerEndpoint",
+          "protoField": "listener_endpoint",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Metrics endpoint path for the listener (e.g., \"/metrics\").",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

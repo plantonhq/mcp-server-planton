@@ -1,0 +1,122 @@
+{
+  "name": "CloudflareDnsRecord",
+  "kind": "CloudflareDnsRecord",
+  "cloudProvider": "cloudflare",
+  "apiVersion": "cloudflare.openmcf.org/v1",
+  "description": "CloudflareDnsRecord is a Kubernetes Resource Model (KRM) style resource for managing\n individual DNS records within a Cloudflare DNS zone.",
+  "protoPackage": "org.openmcf.provider.cloudflare.cloudflarednsrecord.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/cloudflare/cloudflarednsrecord/v1/api.proto",
+    "spec": "org/openmcf/provider/cloudflare/cloudflarednsrecord/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CloudflareDnsRecordSpec",
+    "fields": [
+      {
+        "name": "ZoneId",
+        "jsonName": "zoneId",
+        "protoField": "zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Cloudflare Zone ID where this DNS record will be created.\n Can be provided as a literal string or as a reference to a CloudflareDnsZone resource.\n When using value_from, defaults to CloudflareDnsZone kind and status.outputs.zone_id field path.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "CloudflareDnsZone",
+        "referenceFieldPath": "status.outputs.zone_id"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the DNS record (e.g., \"www\", \"api\", \"@\" for root).\n Use \"@\" to create a record at the zone apex (root domain).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.cloudflare.cloudflarednsrecord.v1.RecordType",
+          "enumValues": [
+            "A",
+            "AAAA",
+            "CNAME",
+            "MX",
+            "TXT",
+            "SRV",
+            "NS",
+            "CAA"
+          ]
+        },
+        "description": "The type of DNS record to create.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Value",
+        "jsonName": "value",
+        "protoField": "value",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The value/target of the DNS record.\n For A records: IPv4 address (e.g., \"192.0.2.1\")\n For AAAA records: IPv6 address (e.g., \"2001:db8::1\")\n For CNAME records: target hostname (e.g., \"example.com\")\n For MX records: mail server hostname (e.g., \"mail.example.com\")\n For TXT records: text value (e.g., \"v=spf1 include:_spf.google.com ~all\")",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Proxied",
+        "jsonName": "proxied",
+        "protoField": "proxied",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the record is proxied through Cloudflare (orange cloud).\n When true: traffic flows through Cloudflare's CDN/WAF (hides origin IP).\n When false: DNS-only resolution (grey cloud, reveals origin IP).\n Only applicable to A, AAAA, and CNAME records.\n Defaults to false.",
+        "required": false
+      },
+      {
+        "name": "Ttl",
+        "jsonName": "ttl",
+        "protoField": "ttl",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Time to live (TTL) for the DNS record in seconds.\n Set to 1 for automatic TTL (recommended for proxied records).\n Valid values: 1 (auto), or 60-86400 seconds.\n Defaults to 1 (automatic).",
+        "required": false
+      },
+      {
+        "name": "Priority",
+        "jsonName": "priority",
+        "protoField": "priority",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Priority for MX and SRV records.\n Lower values indicate higher priority.\n Required for MX records, optional for SRV records.\n Range: 0-65535.",
+        "required": false
+      },
+      {
+        "name": "Comment",
+        "jsonName": "comment",
+        "protoField": "comment",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Optional comment/note for the DNS record.\n Useful for documenting the purpose of the record.\n Maximum 100 characters.",
+        "required": false
+      }
+    ]
+  }
+}

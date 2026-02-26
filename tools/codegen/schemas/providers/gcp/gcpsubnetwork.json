@@ -1,0 +1,152 @@
+{
+  "name": "GcpSubnetwork",
+  "kind": "GcpSubnetwork",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-subnetwork",
+  "protoPackage": "org.openmcf.provider.gcp.gcpsubnetwork.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpsubnetwork/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpsubnetwork/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpSubnetworkSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The GCP project ID in which to create this subnetwork.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "VpcSelfLink",
+        "jsonName": "vpcSelfLink",
+        "protoField": "vpc_self_link",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to the parent VPC network (must be an existing GcpVpc).\n This should point to the VPC's selfLink for the network:contentReference[oaicite:8]{index=8}.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpVpc",
+        "referenceFieldPath": "status.outputs.network_self_link"
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Region in which to create this subnet (e.g. \"us-west1\").\n Must be a valid GCP region code (ends with a digit) and cannot be changed after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "IpCidrRange",
+        "jsonName": "ipCidrRange",
+        "protoField": "ip_cidr_range",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Primary IPv4 CIDR range for the subnet. Example: \"10.0.0.0/16\".\n Must be unique and non-overlapping within the VPC. Only IPv4 ranges are supported:contentReference[oaicite:9]{index=9}.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^\\d+\\.\\d+\\.\\d+\\.\\d+/\\d+$"
+        }
+      },
+      {
+        "name": "SecondaryIpRanges",
+        "jsonName": "secondaryIpRanges",
+        "protoField": "secondary_ip_ranges",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "GcpSubnetworkSecondaryRange"
+          }
+        },
+        "description": "Secondary IP ranges for alias IPs (e.g., for GKE Pod or Service IPs). Optional.\n Each secondary range has a name (1-63 chars, lowercase alphanumeric or '-') and an IPv4 CIDR.\n Up to 170 secondary ranges can be defined per subnet:contentReference[oaicite:10]{index=10} (typical usage is one or two).",
+        "required": false
+      },
+      {
+        "name": "PrivateIpGoogleAccess",
+        "jsonName": "privateIpGoogleAccess",
+        "protoField": "private_ip_google_access",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable Private Google Access on this subnet.\n If true, VMs without external IPs in this subnet can access Google APIs internally:contentReference[oaicite:11]{index=11}.",
+        "required": false
+      },
+      {
+        "name": "SubnetworkName",
+        "jsonName": "subnetworkName",
+        "protoField": "subnetwork_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the subnetwork to create in GCP.\n Must be 1-63 characters, lowercase letters, numbers, or hyphens.\n Must start with a lowercase letter and end with a lowercase letter or number.\n Example: \"my-subnet\", \"prod-uswest1-subnet\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$"
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpSubnetworkSecondaryRange",
+      "description": "Define the structure for a secondary IP range.",
+      "protoType": "org.openmcf.provider.gcp.gcpsubnetwork.v1.GcpSubnetworkSecondaryRange",
+      "fields": [
+        {
+          "name": "RangeName",
+          "jsonName": "rangeName",
+          "protoField": "range_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name for this secondary range (unique within the subnet).\n 1-63 characters, must start with a letter and end with a letter or digit (RFC1035):contentReference[oaicite:12]{index=12}.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 63,
+            "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$"
+          }
+        },
+        {
+          "name": "IpCidrRange",
+          "jsonName": "ipCidrRange",
+          "protoField": "ip_cidr_range",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The IPv4 CIDR for this secondary range (non-overlapping within the VPC).",
+          "required": true,
+          "validation": {
+            "required": true,
+            "pattern": "^\\d+\\.\\d+\\.\\d+\\.\\d+/\\d+$"
+          }
+        }
+      ]
+    }
+  ]
+}

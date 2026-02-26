@@ -1,0 +1,230 @@
+{
+  "name": "OciNosqlTable",
+  "kind": "OciNosqlTable",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciNosqlTable is the top-level resource representing an OCI NoSQL\n table -- a fully managed, serverless NoSQL database with provisioned\n or on-demand throughput capacity and DDL-defined schema.",
+  "protoPackage": "org.openmcf.provider.oci.ocinosqltable.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocinosqltable/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocinosqltable/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciNosqlTableSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the NoSQL table will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Table name. Must match the table name used in ddl_statement.\n Changing this forces recreation.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DdlStatement",
+        "jsonName": "ddlStatement",
+        "protoField": "ddl_statement",
+        "type": {
+          "kind": "string"
+        },
+        "description": "DDL statement defining the table schema. For new tables use\n CREATE TABLE; for schema evolution use ALTER TABLE.\n Column order should not change; new columns can only be appended.\n Example: \"CREATE TABLE users (id INTEGER, name STRING, PRIMARY KEY(id))\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "TableLimits",
+        "jsonName": "tableLimits",
+        "protoField": "table_limits",
+        "type": {
+          "kind": "message",
+          "messageType": "TableLimits"
+        },
+        "description": "Throughput and storage limits for the table.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "IsAutoReclaimable",
+        "jsonName": "isAutoReclaimable",
+        "protoField": "is_auto_reclaimable",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, the table can be automatically reclaimed by OCI after\n an idle period. Changing this forces recreation.",
+        "required": false
+      },
+      {
+        "name": "Indexes",
+        "jsonName": "indexes",
+        "protoField": "indexes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Index"
+          }
+        },
+        "description": "Secondary indexes on the table. Each index is immutable; any\n change to an index requires its recreation.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "Index",
+      "description": "Index defines a secondary index on the table.",
+      "protoType": "org.openmcf.provider.oci.ocinosqltable.v1.OciNosqlTableSpec.Index",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Index name. Used as the resource key in IaC modules.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Keys",
+          "jsonName": "keys",
+          "protoField": "keys",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "IndexKey"
+            }
+          },
+          "description": "Columns included in the index.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "IndexKey",
+      "description": "IndexKey identifies a column (or JSON field within a column)\n to include in the index.",
+      "protoType": "org.openmcf.provider.oci.ocinosqltable.v1.OciNosqlTableSpec.Index.IndexKey",
+      "fields": [
+        {
+          "name": "ColumnName",
+          "jsonName": "columnName",
+          "protoField": "column_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the column to index.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "JsonFieldType",
+          "jsonName": "jsonFieldType",
+          "protoField": "json_field_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "If the column is of type JSON, the scalar type of the JSON\n field being indexed (e.g. \"STRING\", \"INTEGER\", \"NUMBER\").",
+          "required": false
+        },
+        {
+          "name": "JsonPath",
+          "jsonName": "jsonPath",
+          "protoField": "json_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "If the column is of type JSON, the dot-separated path to the\n field being indexed (e.g. \"address.zipCode\").",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "TableLimits",
+      "description": "TableLimits controls throughput capacity and storage for the table.",
+      "protoType": "org.openmcf.provider.oci.ocinosqltable.v1.OciNosqlTableSpec.TableLimits",
+      "fields": [
+        {
+          "name": "CapacityMode",
+          "jsonName": "capacityMode",
+          "protoField": "capacity_mode",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocinosqltable.v1.CapacityMode",
+            "enumValues": [
+              "provisioned",
+              "on_demand"
+            ]
+          },
+          "description": "Capacity mode determines how throughput is managed.\n When on_demand, max_read_units and max_write_units are ignored.\n When unset, defaults to provisioned.",
+          "required": false
+        },
+        {
+          "name": "MaxReadUnits",
+          "jsonName": "maxReadUnits",
+          "protoField": "max_read_units",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum sustained read throughput limit.\n Required when capacity_mode is provisioned (or unspecified).",
+          "required": false
+        },
+        {
+          "name": "MaxWriteUnits",
+          "jsonName": "maxWriteUnits",
+          "protoField": "max_write_units",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum sustained write throughput limit.\n Required when capacity_mode is provisioned (or unspecified).",
+          "required": false
+        },
+        {
+          "name": "MaxStorageInGbs",
+          "jsonName": "maxStorageInGbs",
+          "protoField": "max_storage_in_gbs",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum amount of storage in GB that the table can use.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        }
+      ]
+    }
+  ]
+}

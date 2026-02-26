@@ -1,0 +1,582 @@
+{
+  "name": "GcpGcsBucket",
+  "kind": "GcpGcsBucket",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-gcs-bucket",
+  "protoPackage": "org.openmcf.provider.gcp.gcpgcsbucket.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpgcsbucket/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpgcsbucket/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpGcsBucketSpec",
+    "fields": [
+      {
+        "name": "GcpProjectId",
+        "jsonName": "gcpProjectId",
+        "protoField": "gcp_project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The ID of the GCP project where the storage bucket will be created.\n Can be a literal value or a reference to another resource (e.g., GcpProject).\n Required field.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The location for the bucket. Can be a region (e.g., \"us-east1\"), dual-region (e.g., \"NAM4\"),\n or multi-region (e.g., \"US\", \"EU\", \"ASIA\").\n This field is immutable after bucket creation.\n Required field.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "UniformBucketLevelAccessEnabled",
+        "jsonName": "uniformBucketLevelAccessEnabled",
+        "protoField": "uniform_bucket_level_access_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable Uniform Bucket-Level Access (UBLA) for simplified IAM-only access control.\n When enabled, all access is controlled via IAM policies (no object ACLs).\n Recommended: true (modern security model).\n Defaults to true if not specified.",
+        "required": false
+      },
+      {
+        "name": "StorageClass",
+        "jsonName": "storageClass",
+        "protoField": "storage_class",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.gcp.gcpgcsbucket.v1.GcpGcsStorageClass",
+          "enumValues": [
+            "STANDARD",
+            "NEARLINE",
+            "COLDLINE",
+            "ARCHIVE"
+          ]
+        },
+        "description": "Storage class for the bucket. Determines pricing and availability.\n Optional. Defaults to STANDARD if not specified.",
+        "required": false,
+        "oneofGroup": "_storage_class"
+      },
+      {
+        "name": "VersioningEnabled",
+        "jsonName": "versioningEnabled",
+        "protoField": "versioning_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable object versioning to protect against accidental deletion/overwrite.\n Versioning should be combined with lifecycle rules to prevent unbounded storage growth.\n Optional. Defaults to false.",
+        "required": false
+      },
+      {
+        "name": "LifecycleRules",
+        "jsonName": "lifecycleRules",
+        "protoField": "lifecycle_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "GcpGcsLifecycleRule"
+          }
+        },
+        "description": "Lifecycle rules for automatic object management (deletion, storage class transitions).\n Essential for cost optimization when versioning is enabled.\n Optional.",
+        "required": false
+      },
+      {
+        "name": "IamBindings",
+        "jsonName": "iamBindings",
+        "protoField": "iam_bindings",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "GcpGcsIamBinding"
+          }
+        },
+        "description": "IAM bindings for bucket-level access control.\n Each binding grants a specific role to a set of members.\n Required when UBLA is enabled for any public or service account access.\n Optional.",
+        "required": false
+      },
+      {
+        "name": "Encryption",
+        "jsonName": "encryption",
+        "protoField": "encryption",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpGcsEncryption"
+        },
+        "description": "Encryption configuration using Customer-Managed Encryption Keys (CMEK).\n Optional. If not specified, Google-managed encryption is used (default).",
+        "required": false,
+        "oneofGroup": "_encryption"
+      },
+      {
+        "name": "CorsRules",
+        "jsonName": "corsRules",
+        "protoField": "cors_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "GcpGcsCorsRule"
+          }
+        },
+        "description": "CORS rules for cross-origin browser access.\n Required for buckets accessed directly from web browsers (e.g., font hosting, direct uploads).\n Optional.",
+        "required": false
+      },
+      {
+        "name": "Website",
+        "jsonName": "website",
+        "protoField": "website",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpGcsWebsite"
+        },
+        "description": "Website configuration for static website hosting.\n Note: For production websites, use Cloud CDN + Load Balancer instead for HTTPS support.\n Optional.",
+        "required": false,
+        "oneofGroup": "_website"
+      },
+      {
+        "name": "RetentionPolicy",
+        "jsonName": "retentionPolicy",
+        "protoField": "retention_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpGcsRetentionPolicy"
+        },
+        "description": "Retention policy for WORM (Write Once, Read Many) compliance.\n Once locked, objects cannot be deleted until retention period expires.\n Optional.",
+        "required": false,
+        "oneofGroup": "_retention_policy"
+      },
+      {
+        "name": "RequesterPays",
+        "jsonName": "requesterPays",
+        "protoField": "requester_pays",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable requester pays mode. Requesters pay for data access and egress charges.\n Useful for public datasets where the bucket owner doesn't want to pay for all access costs.\n Optional. Defaults to false.",
+        "required": false
+      },
+      {
+        "name": "Logging",
+        "jsonName": "logging",
+        "protoField": "logging",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpGcsLogging"
+        },
+        "description": "Logging configuration for legacy access logs.\n Note: Modern deployments should use Cloud Logging instead.\n Optional.",
+        "required": false,
+        "oneofGroup": "_logging"
+      },
+      {
+        "name": "PublicAccessPrevention",
+        "jsonName": "publicAccessPrevention",
+        "protoField": "public_access_prevention",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Public access prevention policy.\n Values: \"inherited\" (default), \"enforced\" (prevent all public access).\n Recommended: \"enforced\" for private buckets to prevent accidental public exposure.\n Optional.",
+        "required": false
+      },
+      {
+        "name": "GcpLabels",
+        "jsonName": "gcpLabels",
+        "protoField": "gcp_labels",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Custom labels for the bucket (cost tracking, governance, compliance).\n These are merged with auto-generated labels (planton-cloud-resource-*).\n Optional.",
+        "required": false
+      },
+      {
+        "name": "BucketName",
+        "jsonName": "bucketName",
+        "protoField": "bucket_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the GCS bucket to create in GCP.\n Must be globally unique across all GCP projects.\n Must be 3-63 characters, lowercase letters, numbers, hyphens, or dots.\n Must start and end with a lowercase letter or number.\n Cannot contain consecutive dots or be formatted as an IP address.\n Example: \"my-bucket-prod\", \"company-data-archive\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 3,
+          "maxLength": 63,
+          "pattern": "^[a-z0-9]([a-z0-9-._]*[a-z0-9])?$"
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpGcsCorsRule",
+      "description": "CORS rule for cross-origin browser access",
+      "protoType": "org.openmcf.provider.gcp.gcpgcsbucket.v1.GcpGcsCorsRule",
+      "fields": [
+        {
+          "name": "Methods",
+          "jsonName": "methods",
+          "protoField": "methods",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "HTTP methods allowed for CORS requests",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Origins",
+          "jsonName": "origins",
+          "protoField": "origins",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Origins allowed for CORS requests (e.g., \"https://example.com\")",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ResponseHeaders",
+          "jsonName": "responseHeaders",
+          "protoField": "response_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Response headers that browsers can access",
+          "required": false
+        },
+        {
+          "name": "MaxAgeSeconds",
+          "jsonName": "maxAgeSeconds",
+          "protoField": "max_age_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum time (seconds) browsers can cache preflight responses",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpGcsEncryption",
+      "description": "Customer-Managed Encryption Keys (CMEK) configuration",
+      "protoType": "org.openmcf.provider.gcp.gcpgcsbucket.v1.GcpGcsEncryption",
+      "fields": [
+        {
+          "name": "KmsKeyName",
+          "jsonName": "kmsKeyName",
+          "protoField": "kms_key_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Cloud KMS key name for encryption\n Format: projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpGcsIamBinding",
+      "description": "IAM binding for bucket-level access control",
+      "protoType": "org.openmcf.provider.gcp.gcpgcsbucket.v1.GcpGcsIamBinding",
+      "fields": [
+        {
+          "name": "Role",
+          "jsonName": "role",
+          "protoField": "role",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM role to grant (e.g., \"roles/storage.objectViewer\", \"roles/storage.objectAdmin\")",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Members",
+          "jsonName": "members",
+          "protoField": "members",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "List of members to grant the role to\n Format: \"user:email\", \"group:email\", \"serviceAccount:email\", \"allUsers\", \"allAuthenticatedUsers\"",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Condition",
+          "jsonName": "condition",
+          "protoField": "condition",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM condition expression (CEL syntax) for conditional access\n Optional. If not specified, binding applies unconditionally.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpGcsLifecycleAction",
+      "description": "Lifecycle action (Delete or SetStorageClass)",
+      "protoType": "org.openmcf.provider.gcp.gcpgcsbucket.v1.GcpGcsLifecycleAction",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action type: \"Delete\" or \"SetStorageClass\"",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "StorageClass",
+          "jsonName": "storageClass",
+          "protoField": "storage_class",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.gcp.gcpgcsbucket.v1.GcpGcsStorageClass",
+            "enumValues": [
+              "STANDARD",
+              "NEARLINE",
+              "COLDLINE",
+              "ARCHIVE"
+            ]
+          },
+          "description": "Storage class to transition to (only for SetStorageClass action)",
+          "required": false,
+          "oneofGroup": "_storage_class"
+        }
+      ]
+    },
+    {
+      "name": "GcpGcsLifecycleCondition",
+      "description": "Lifecycle condition (when to trigger the action)",
+      "protoType": "org.openmcf.provider.gcp.gcpgcsbucket.v1.GcpGcsLifecycleCondition",
+      "fields": [
+        {
+          "name": "AgeDays",
+          "jsonName": "ageDays",
+          "protoField": "age_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Age in days since object creation",
+          "required": false
+        },
+        {
+          "name": "CreatedBefore",
+          "jsonName": "createdBefore",
+          "protoField": "created_before",
+          "type": {
+            "kind": "string"
+          },
+          "description": "RFC 3339 date before which objects should match",
+          "required": false
+        },
+        {
+          "name": "IsLive",
+          "jsonName": "isLive",
+          "protoField": "is_live",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Match objects that are live (current version) or noncurrent",
+          "required": false
+        },
+        {
+          "name": "NumNewerVersions",
+          "jsonName": "numNewerVersions",
+          "protoField": "num_newer_versions",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of newer versions to keep (for version cleanup)",
+          "required": false
+        },
+        {
+          "name": "MatchesStorageClass",
+          "jsonName": "matchesStorageClass",
+          "protoField": "matches_storage_class",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "enum",
+              "enumType": "org.openmcf.provider.gcp.gcpgcsbucket.v1.GcpGcsStorageClass",
+              "enumValues": [
+                "STANDARD",
+                "NEARLINE",
+                "COLDLINE",
+                "ARCHIVE"
+              ]
+            }
+          },
+          "description": "Match only objects in these storage classes",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpGcsLifecycleRule",
+      "description": "Lifecycle rule for automatic object management",
+      "protoType": "org.openmcf.provider.gcp.gcpgcsbucket.v1.GcpGcsLifecycleRule",
+      "fields": [
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpGcsLifecycleAction"
+          },
+          "description": "Action to take when conditions are met",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Condition",
+          "jsonName": "condition",
+          "protoField": "condition",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpGcsLifecycleCondition"
+          },
+          "description": "Condition that triggers the action",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpGcsLogging",
+      "description": "Legacy access logging configuration",
+      "protoType": "org.openmcf.provider.gcp.gcpgcsbucket.v1.GcpGcsLogging",
+      "fields": [
+        {
+          "name": "LogBucket",
+          "jsonName": "logBucket",
+          "protoField": "log_bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Destination bucket for access logs",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "LogObjectPrefix",
+          "jsonName": "logObjectPrefix",
+          "protoField": "log_object_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Prefix for log object names",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpGcsRetentionPolicy",
+      "description": "Retention policy for WORM compliance",
+      "protoType": "org.openmcf.provider.gcp.gcpgcsbucket.v1.GcpGcsRetentionPolicy",
+      "fields": [
+        {
+          "name": "RetentionPeriodSeconds",
+          "jsonName": "retentionPeriodSeconds",
+          "protoField": "retention_period_seconds",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Minimum retention period in seconds",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "IsLocked",
+          "jsonName": "isLocked",
+          "protoField": "is_locked",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Lock the retention policy (irreversible operation!)\n Once locked, objects cannot be deleted until retention period expires.\n WARNING: This cannot be undone. Test thoroughly before locking.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpGcsWebsite",
+      "description": "Static website hosting configuration",
+      "protoType": "org.openmcf.provider.gcp.gcpgcsbucket.v1.GcpGcsWebsite",
+      "fields": [
+        {
+          "name": "MainPageSuffix",
+          "jsonName": "mainPageSuffix",
+          "protoField": "main_page_suffix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Main page suffix (e.g., \"index.html\")",
+          "required": false
+        },
+        {
+          "name": "NotFoundPage",
+          "jsonName": "notFoundPage",
+          "protoField": "not_found_page",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Custom 404 page (e.g., \"404.html\")",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

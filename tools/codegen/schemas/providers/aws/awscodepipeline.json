@@ -1,0 +1,684 @@
+{
+  "name": "AwsCodePipeline",
+  "kind": "AwsCodePipeline",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsCodePipeline is a deployment component for creating and managing\n AWS CodePipeline continuous delivery pipelines that orchestrate build,\n test, and deploy phases of your release process through an ordered\n sequence of stages and actions.",
+  "protoPackage": "org.openmcf.provider.aws.awscodepipeline.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awscodepipeline/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awscodepipeline/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsCodePipelineSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "PipelineType",
+        "jsonName": "pipelineType",
+        "protoField": "pipeline_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "pipeline_type selects the pipeline version.\n   V1: Legacy pipeline (no triggers, no variables, SUPERSEDED execution only)\n   V2: Modern pipeline with triggers, variables, and advanced execution modes\n Default: V2 (recommended for all new pipelines).",
+        "required": false,
+        "validation": {
+          "enum": [
+            "V1",
+            "V2"
+          ]
+        },
+        "default": "V2",
+        "oneofGroup": "_pipeline_type"
+      },
+      {
+        "name": "ExecutionMode",
+        "jsonName": "executionMode",
+        "protoField": "execution_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "execution_mode controls how concurrent pipeline executions are handled.\n   SUPERSEDED: New execution supersedes any in-progress execution (default)\n   QUEUED:     New executions queue behind the current one (V2 only)\n   PARALLEL:   Executions run simultaneously without waiting (V2 only)\n Default: SUPERSEDED.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "SUPERSEDED",
+            "QUEUED",
+            "PARALLEL"
+          ]
+        },
+        "default": "SUPERSEDED",
+        "oneofGroup": "_execution_mode"
+      },
+      {
+        "name": "RoleArn",
+        "jsonName": "roleArn",
+        "protoField": "role_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "role_arn is the IAM role ARN that grants CodePipeline permission to\n access source providers, invoke build/deploy actions, and manage\n artifacts in S3. This role must have policies for every action provider\n used in the pipeline (e.g., CodeBuild, S3, ECS, Lambda).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsIamRole",
+        "referenceFieldPath": "status.outputs.role_arn"
+      },
+      {
+        "name": "ArtifactStores",
+        "jsonName": "artifactStores",
+        "protoField": "artifact_stores",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsCodePipelineArtifactStore"
+          }
+        },
+        "description": "artifact_stores define S3 buckets where pipeline artifacts are stored.\n For single-region pipelines, provide exactly one store without a region.\n For cross-region pipelines, provide one store per region (each with a\n region field) so that actions in different regions have local artifact\n access.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Stages",
+        "jsonName": "stages",
+        "protoField": "stages",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsCodePipelineStage"
+          }
+        },
+        "description": "stages define the ordered sequence of pipeline stages. Each stage\n contains one or more actions that run in parallel (same run_order)\n or sequentially (different run_order values).\n A pipeline requires at minimum two stages: a source stage and at\n least one build, test, deploy, or approval stage.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 2
+        }
+      },
+      {
+        "name": "Triggers",
+        "jsonName": "triggers",
+        "protoField": "triggers",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsCodePipelineTrigger"
+          }
+        },
+        "description": "triggers define automatic pipeline execution rules based on git events.\n V2 pipelines only. Triggers use CodeStar Connections to listen for\n push or pull request events on source repositories with branch, tag,\n and file path filtering.",
+        "required": false,
+        "validation": {
+          "maxItems": 50
+        }
+      },
+      {
+        "name": "Variables",
+        "jsonName": "variables",
+        "protoField": "variables",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsCodePipelineVariable"
+          }
+        },
+        "description": "variables define pipeline-level parameters that can be referenced in\n action configurations using #{variables.VariableName} syntax.\n V2 pipelines only.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsCodePipelineAction",
+      "description": "AwsCodePipelineAction defines a single action within a pipeline stage.\n Actions are the building blocks of a pipeline — each action connects to\n a provider (CodeBuild, S3, Lambda, ECS, etc.) and performs a specific\n task in the release process.",
+      "protoType": "org.openmcf.provider.aws.awscodepipeline.v1.AwsCodePipelineAction",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is the action name. Must be unique within the stage.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        {
+          "name": "Category",
+          "jsonName": "category",
+          "protoField": "category",
+          "type": {
+            "kind": "string"
+          },
+          "description": "category classifies the action type.\n   Source:   Fetches source code or artifacts from a provider\n   Build:    Compiles, tests, or transforms code\n   Test:     Runs test suites\n   Deploy:   Deploys artifacts to a target environment\n   Approval: Requires manual approval before proceeding\n   Invoke:   Invokes a Lambda function or other compute\n   Compute:  Runs commands in a managed compute environment (V2)",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "Source",
+              "Build",
+              "Test",
+              "Deploy",
+              "Approval",
+              "Invoke",
+              "Compute"
+            ]
+          }
+        },
+        {
+          "name": "Owner",
+          "jsonName": "owner",
+          "protoField": "owner",
+          "type": {
+            "kind": "string"
+          },
+          "description": "owner identifies who created the action type.\n   AWS:        Built-in AWS actions (CodeBuild, S3, ECS, Lambda, etc.)\n   ThirdParty: Third-party integrations (GitHub v1, etc.)\n   Custom:     User-defined custom action types",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "AWS",
+              "ThirdParty",
+              "Custom"
+            ]
+          }
+        },
+        {
+          "name": "Provider",
+          "jsonName": "provider",
+          "protoField": "provider",
+          "type": {
+            "kind": "string"
+          },
+          "description": "provider is the service that performs the action. The valid values\n depend on the category and owner combination. Common providers:\n   Source:   CodeStarSourceConnection, S3, ECR, CodeCommit\n   Build:    CodeBuild\n   Test:     CodeBuild, DeviceFarm\n   Deploy:   S3, CodeDeploy, CloudFormation, ECS, ElasticBeanstalk, Lambda\n   Approval: Manual\n   Invoke:   Lambda\n   Compute:  EC2 (V2)",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 35
+          }
+        },
+        {
+          "name": "Version",
+          "jsonName": "version",
+          "protoField": "version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "version is the action type version. Typically \"1\" for all built-in actions.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 9
+          }
+        },
+        {
+          "name": "Configuration",
+          "jsonName": "configuration",
+          "protoField": "configuration",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "configuration contains provider-specific key-value pairs that control\n the action's behavior. Each provider expects different keys.\n\n Common examples:\n   CodeStarSourceConnection: ConnectionArn, FullRepositoryId, BranchName,\n                             OutputArtifactFormat, DetectChanges\n   CodeBuild:                ProjectName, PrimarySource, EnvironmentVariables\n   S3 (source):              S3Bucket, S3ObjectKey, PollForSourceChanges\n   S3 (deploy):              BucketName, Extract, ObjectKey, CannedACL\n   ECS:                      ClusterName, ServiceName, FileName\n   Lambda:                   FunctionName, UserParameters\n   Manual (approval):        CustomData, ExternalEntityLink, NotificationArn\n   CloudFormation:           ActionMode, StackName, TemplatePath, RoleArn",
+          "required": false
+        },
+        {
+          "name": "InputArtifacts",
+          "jsonName": "inputArtifacts",
+          "protoField": "input_artifacts",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "input_artifacts are artifact names from previous stages or actions\n that this action consumes. For Source actions, this is typically empty.",
+          "required": false
+        },
+        {
+          "name": "OutputArtifacts",
+          "jsonName": "outputArtifacts",
+          "protoField": "output_artifacts",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "output_artifacts are artifact names that this action produces for\n consumption by downstream stages or actions.",
+          "required": false
+        },
+        {
+          "name": "Namespace",
+          "jsonName": "namespace",
+          "protoField": "namespace",
+          "type": {
+            "kind": "string"
+          },
+          "description": "namespace defines a variable namespace for this action's output variables.\n Other actions can reference these variables as #{namespace.VariableName}.\n Only meaningful for actions that produce output variables (e.g., source actions).",
+          "required": false,
+          "validation": {
+            "maxLength": 100
+          }
+        },
+        {
+          "name": "Region",
+          "jsonName": "region",
+          "protoField": "region",
+          "type": {
+            "kind": "string"
+          },
+          "description": "region is the AWS region where this action executes. Required for\n cross-region actions. If omitted, the action runs in the pipeline's region.",
+          "required": false
+        },
+        {
+          "name": "RoleArn",
+          "jsonName": "roleArn",
+          "protoField": "role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "role_arn is an IAM role ARN that the action assumes instead of the\n pipeline's role. Useful for cross-account deployments or when an action\n needs different permissions than the pipeline role.",
+          "required": false,
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        },
+        {
+          "name": "RunOrder",
+          "jsonName": "runOrder",
+          "protoField": "run_order",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "run_order controls execution order within a stage. Actions with the\n same run_order execute in parallel. Lower values run first.\n Range: 1-999. Default: 1 (all actions parallel).",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 999
+          }
+        },
+        {
+          "name": "TimeoutInMinutes",
+          "jsonName": "timeoutInMinutes",
+          "protoField": "timeout_in_minutes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "timeout_in_minutes is the maximum time an action can run before timing out.\n Range: 5-86400 (60 days). If omitted, the action uses the provider default.",
+          "required": false,
+          "validation": {
+            "min": 5,
+            "max": 86400
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsCodePipelineArtifactStore",
+      "description": "AwsCodePipelineArtifactStore defines an S3 bucket used to store pipeline\n artifacts (source code, build outputs) between stages.",
+      "protoType": "org.openmcf.provider.aws.awscodepipeline.v1.AwsCodePipelineArtifactStore",
+      "fields": [
+        {
+          "name": "Location",
+          "jsonName": "location",
+          "protoField": "location",
+          "type": {
+            "kind": "string"
+          },
+          "description": "location is the S3 bucket name for artifact storage.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsS3Bucket",
+          "referenceFieldPath": "status.outputs.bucket_name"
+        },
+        {
+          "name": "Region",
+          "jsonName": "region",
+          "protoField": "region",
+          "type": {
+            "kind": "string"
+          },
+          "description": "region is the AWS region for this artifact store. Required only for\n cross-region pipelines. For single-region pipelines, omit this field.",
+          "required": false
+        },
+        {
+          "name": "EncryptionKeyId",
+          "jsonName": "encryptionKeyId",
+          "protoField": "encryption_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "encryption_key_id is the KMS key ARN or ID used to encrypt artifacts.\n If omitted, the default AWS-managed S3 encryption key is used.",
+          "required": false,
+          "referenceKind": "AwsKmsKey",
+          "referenceFieldPath": "status.outputs.key_arn"
+        }
+      ]
+    },
+    {
+      "name": "AwsCodePipelineGitConfiguration",
+      "description": "AwsCodePipelineGitConfiguration defines git event filters for a trigger.\n At least one push or pull_request filter must be specified.",
+      "protoType": "org.openmcf.provider.aws.awscodepipeline.v1.AwsCodePipelineGitConfiguration",
+      "fields": [
+        {
+          "name": "SourceActionName",
+          "jsonName": "sourceActionName",
+          "protoField": "source_action_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "source_action_name must match the name of a Source action in the first\n stage that uses a CodeStarSourceConnection provider.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        {
+          "name": "Push",
+          "jsonName": "push",
+          "protoField": "push",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsCodePipelineGitPush"
+            }
+          },
+          "description": "push defines filters for git push events (branch pushes, tag pushes).\n Multiple push filters are OR'd — a push triggers the pipeline if ANY\n filter matches.",
+          "required": false,
+          "validation": {
+            "maxItems": 3
+          }
+        },
+        {
+          "name": "PullRequest",
+          "jsonName": "pullRequest",
+          "protoField": "pull_request",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsCodePipelineGitPullRequest"
+            }
+          },
+          "description": "pull_request defines filters for pull request events (open, update, close).\n Multiple PR filters are OR'd.",
+          "required": false,
+          "validation": {
+            "maxItems": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsCodePipelineGitFilter",
+      "description": "AwsCodePipelineGitFilter provides include and exclude patterns for\n git-based trigger filtering. Patterns use glob syntax.",
+      "protoType": "org.openmcf.provider.aws.awscodepipeline.v1.AwsCodePipelineGitFilter",
+      "fields": [
+        {
+          "name": "Includes",
+          "jsonName": "includes",
+          "protoField": "includes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "includes are glob patterns that must match for the filter to pass.\n At least one include pattern must match.",
+          "required": false,
+          "validation": {
+            "maxItems": 8
+          }
+        },
+        {
+          "name": "Excludes",
+          "jsonName": "excludes",
+          "protoField": "excludes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "excludes are glob patterns that cause the filter to reject a match.\n Exclusions take precedence over inclusions.",
+          "required": false,
+          "validation": {
+            "maxItems": 8
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsCodePipelineGitPullRequest",
+      "description": "AwsCodePipelineGitPullRequest defines filters for pull request events.\n All specified filter types within a single block are AND'd together.",
+      "protoType": "org.openmcf.provider.aws.awscodepipeline.v1.AwsCodePipelineGitPullRequest",
+      "fields": [
+        {
+          "name": "Branches",
+          "jsonName": "branches",
+          "protoField": "branches",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsCodePipelineGitFilter"
+          },
+          "description": "branches filters by target branch name patterns (glob syntax).",
+          "required": false
+        },
+        {
+          "name": "FilePaths",
+          "jsonName": "filePaths",
+          "protoField": "file_paths",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsCodePipelineGitFilter"
+          },
+          "description": "file_paths filters by changed file path patterns (glob syntax).",
+          "required": false
+        },
+        {
+          "name": "Events",
+          "jsonName": "events",
+          "protoField": "events",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "events specifies which PR lifecycle events trigger the pipeline.\n Valid values: OPEN, UPDATE, CLOSED.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCodePipelineGitPush",
+      "description": "AwsCodePipelineGitPush defines filters for git push events. All specified\n filter types within a single push block are AND'd together.",
+      "protoType": "org.openmcf.provider.aws.awscodepipeline.v1.AwsCodePipelineGitPush",
+      "fields": [
+        {
+          "name": "Branches",
+          "jsonName": "branches",
+          "protoField": "branches",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsCodePipelineGitFilter"
+          },
+          "description": "branches filters by branch name patterns (glob syntax).",
+          "required": false
+        },
+        {
+          "name": "FilePaths",
+          "jsonName": "filePaths",
+          "protoField": "file_paths",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsCodePipelineGitFilter"
+          },
+          "description": "file_paths filters by changed file path patterns (glob syntax).",
+          "required": false
+        },
+        {
+          "name": "Tags",
+          "jsonName": "tags",
+          "protoField": "tags",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsCodePipelineGitFilter"
+          },
+          "description": "tags filters by tag name patterns (glob syntax).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsCodePipelineStage",
+      "description": "AwsCodePipelineStage defines a stage in the pipeline. Stages execute in\n the order they are listed. Each stage contains one or more actions.",
+      "protoType": "org.openmcf.provider.aws.awscodepipeline.v1.AwsCodePipelineStage",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is the stage name. Must be unique within the pipeline.\n Pattern: alphanumeric, dots, at-signs, hyphens, underscores (1-100 chars).",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        {
+          "name": "Actions",
+          "jsonName": "actions",
+          "protoField": "actions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsCodePipelineAction"
+            }
+          },
+          "description": "actions define the operations performed in this stage. Actions with\n the same run_order execute in parallel; different run_order values\n execute sequentially within the stage.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsCodePipelineTrigger",
+      "description": "AwsCodePipelineTrigger defines an automatic pipeline execution trigger\n based on git events. V2 pipelines only.",
+      "protoType": "org.openmcf.provider.aws.awscodepipeline.v1.AwsCodePipelineTrigger",
+      "fields": [
+        {
+          "name": "ProviderType",
+          "jsonName": "providerType",
+          "protoField": "provider_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "provider_type is the trigger provider. Currently only\n CodeStarSourceConnection is supported.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "const": "CodeStarSourceConnection"
+          }
+        },
+        {
+          "name": "GitConfiguration",
+          "jsonName": "gitConfiguration",
+          "protoField": "git_configuration",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsCodePipelineGitConfiguration"
+          },
+          "description": "git_configuration defines the git event filters that trigger the pipeline.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsCodePipelineVariable",
+      "description": "AwsCodePipelineVariable defines a pipeline-level variable that can be\n referenced in action configurations. V2 pipelines only.",
+      "protoType": "org.openmcf.provider.aws.awscodepipeline.v1.AwsCodePipelineVariable",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is the variable name. Referenced in action configurations as\n #{variables.Name}.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "DefaultValue",
+          "jsonName": "defaultValue",
+          "protoField": "default_value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "default_value is used when no value is supplied at execution time.",
+          "required": false
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "description is a human-readable explanation of the variable's purpose.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

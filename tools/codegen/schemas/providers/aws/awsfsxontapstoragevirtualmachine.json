@@ -1,0 +1,189 @@
+{
+  "name": "AwsFsxOntapStorageVirtualMachine",
+  "kind": "AwsFsxOntapStorageVirtualMachine",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-fsx-ontap-storage-virtual-machine",
+  "protoPackage": "org.openmcf.provider.aws.awsfsxontapstoragevirtualmachine.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsfsxontapstoragevirtualmachine/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsfsxontapstoragevirtualmachine/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsFsxOntapStorageVirtualMachineSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "FileSystemId",
+        "jsonName": "fileSystemId",
+        "protoField": "file_system_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The ID of the FSx for ONTAP file system that this SVM belongs to. Required.\n ForceNew — the SVM cannot be moved to a different file system.\n\n The file system provides the underlying storage, throughput, networking,\n and HA infrastructure. Multiple SVMs can share a single file system for\n multi-tenancy scenarios.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsFsxOntapFileSystem",
+        "referenceFieldPath": "status.outputs.file_system_id"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the SVM within the ONTAP file system. Required. ForceNew.\n\n This is the ONTAP SVM name (not the OpenMCF metadata name). It must be\n unique within the file system and is used as the SVM identity in ONTAP CLI\n operations, SnapMirror relationships, and DNS endpoint names.\n\n Constraints: 1-47 characters, alphanumeric and underscore only (no hyphens,\n no spaces, no special characters).",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "maxLength": 47
+        }
+      },
+      {
+        "name": "RootVolumeSecurityStyle",
+        "jsonName": "rootVolumeSecurityStyle",
+        "protoField": "root_volume_security_style",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The security style for the root volume and the default for all volumes\n created under this SVM. ForceNew — cannot be changed after creation.\n\n - \"UNIX\": UNIX permissions (mode bits, uid/gid). Best for Linux/NFS\n   workloads. This is the most common choice for NFS-only SVMs.\n - \"NTFS\": Windows ACLs. Best for Windows/SMB workloads with Active\n   Directory. Requires AD configuration for meaningful use.\n - \"MIXED\": Both UNIX and NTFS permissions. The effective security style\n   depends on which protocol last set permissions. Use for mixed NFS/SMB\n   access patterns (advanced use case).\n\n Default: UNIX",
+        "required": false,
+        "default": "UNIX",
+        "oneofGroup": "_root_volume_security_style"
+      },
+      {
+        "name": "SvmAdminPassword",
+        "jsonName": "svmAdminPassword",
+        "protoField": "svm_admin_password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Password for the SVM administrative user (\"vsadmin\"). Enables SSH access\n to the SVM management endpoint for ONTAP CLI operations scoped to this SVM.\n\n The vsadmin account can manage volumes, LIFs, export policies, and other\n SVM-scoped resources. Unlike the file system's fsxadmin account (which has\n cluster-wide access), vsadmin is limited to this SVM.\n\n Length: 8-50 characters. Optional — omit if SVM CLI access is not needed.\n This value is sensitive and will not be returned in read operations.",
+        "required": false
+      },
+      {
+        "name": "ActiveDirectoryConfiguration",
+        "jsonName": "activeDirectoryConfiguration",
+        "protoField": "active_directory_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsFsxOntapStorageVirtualMachineActiveDirectoryConfiguration"
+        },
+        "description": "Active Directory configuration for enabling SMB protocol access. Optional.\n\n When configured, the SVM joins the specified AD domain and an SMB endpoint\n is automatically created. Without AD, only NFS and iSCSI endpoints are\n available.\n\n ONTAP SVMs support only self-managed Active Directory (on-premises, on EC2,\n or Azure AD DS). AWS Managed Microsoft AD is not supported for ONTAP SVMs.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsFsxOntapStorageVirtualMachineActiveDirectoryConfiguration",
+      "description": "AwsFsxOntapStorageVirtualMachineActiveDirectoryConfiguration configures the\n SVM to join a self-managed Active Directory domain for SMB protocol access.\n\n When this block is specified, the SVM joins the AD domain during creation and\n an SMB endpoint is automatically provisioned. The SVM appears as a computer\n object in the specified organizational unit (or the default \"Computers\" OU).\n\n Only self-managed AD is supported for ONTAP SVMs. Use this when your AD\n domain controller runs on-premises, on EC2, or on Azure AD DS. AWS Managed\n Microsoft AD integration is not available for ONTAP SVMs.",
+      "protoType": "org.openmcf.provider.aws.awsfsxontapstoragevirtualmachine.v1.AwsFsxOntapStorageVirtualMachineActiveDirectoryConfiguration",
+      "fields": [
+        {
+          "name": "NetbiosName",
+          "jsonName": "netbiosName",
+          "protoField": "netbios_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "NetBIOS name for the SVM's computer object in Active Directory.\n\n This is the short name (up to 15 characters) that identifies the SVM in\n the AD domain. If omitted, AWS generates a name automatically.\n\n Constraints: 1-15 characters, alphanumeric only.",
+          "required": false
+        },
+        {
+          "name": "DomainName",
+          "jsonName": "domainName",
+          "protoField": "domain_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Fully qualified domain name of the Active Directory directory.\n Example: \"corp.example.com\"",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DnsIps",
+          "jsonName": "dnsIps",
+          "protoField": "dns_ips",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "IP addresses of the DNS servers for the AD domain. Required. These must be\n reachable from the file system's subnets (typically in the same VPC CIDR or\n connected via VPN/peering).\n\n Minimum 1, maximum 3 IP addresses.",
+          "required": false,
+          "validation": {
+            "minItems": 1,
+            "maxItems": 3
+          }
+        },
+        {
+          "name": "Username",
+          "jsonName": "username",
+          "protoField": "username",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account username for AD domain join operations. Required.\n\n This account must have permissions to create computer objects in the\n specified OU (or the default Computers container).",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account password for AD domain join operations. Required.\n\n This value is sensitive and will not be returned in read operations.\n For production workloads, consider injecting this value via CI/CD secrets\n management rather than storing it in the resource manifest.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "FileSystemAdministratorsGroup",
+          "jsonName": "fileSystemAdministratorsGroup",
+          "protoField": "file_system_administrators_group",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the AD domain group whose members are granted administrative\n privileges on the SVM for file share management.\n\n Default: Domain Admins",
+          "required": false,
+          "default": "Domain Admins",
+          "oneofGroup": "_file_system_administrators_group"
+        },
+        {
+          "name": "OrganizationalUnitDistinguishedName",
+          "jsonName": "organizationalUnitDistinguishedName",
+          "protoField": "organizational_unit_distinguished_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Organizational Unit (OU) distinguished name within the AD directory where\n the SVM's computer object is created.\n\n Example: \"OU=FSx,DC=corp,DC=example,DC=com\"\n\n Only the OU immediately above the computer object can be specified.\n If not provided, the computer object is created in the default \"Computers\"\n container in the AD domain.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

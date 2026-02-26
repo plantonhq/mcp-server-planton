@@ -1,0 +1,410 @@
+{
+  "name": "AwsFsxWindowsFileSystem",
+  "kind": "AwsFsxWindowsFileSystem",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-fsx-windows-file-system",
+  "protoPackage": "org.openmcf.provider.aws.awsfsxwindowsfilesystem.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsfsxwindowsfilesystem/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsfsxwindowsfilesystem/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsFsxWindowsFileSystemSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DeploymentType",
+        "jsonName": "deploymentType",
+        "protoField": "deployment_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Deployment type controlling availability and performance characteristics.\n ForceNew — cannot be changed after creation.\n\n - \"SINGLE_AZ_1\": first-generation single-AZ. Limited throughput tiers.\n - \"SINGLE_AZ_2\": latest single-AZ with higher throughput ceiling and HDD\n   support. Recommended for most workloads.\n - \"MULTI_AZ_1\": multi-AZ with automatic failover across two AZs. Requires\n   two subnets and a preferred_subnet_id. Supports HDD storage.\n\n Default: SINGLE_AZ_2",
+        "required": false,
+        "default": "SINGLE_AZ_2",
+        "oneofGroup": "_deployment_type"
+      },
+      {
+        "name": "StorageCapacityGib",
+        "jsonName": "storageCapacityGib",
+        "protoField": "storage_capacity_gib",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Storage capacity in GiB. Required.\n\n Valid ranges depend on storage type:\n - SSD: 32–65536 GiB\n - HDD: 2000–65536 GiB\n\n Storage can be increased after creation but never decreased.",
+        "required": false,
+        "validation": {
+          "min": 32
+        }
+      },
+      {
+        "name": "StorageType",
+        "jsonName": "storageType",
+        "protoField": "storage_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Storage media type. ForceNew — cannot be changed after creation.\n\n - \"SSD\": solid-state drives. Sub-millisecond latency. Required for\n   SINGLE_AZ_1. Recommended for most workloads.\n - \"HDD\": hard disk drives. Lower cost, higher latency. Only available for\n   SINGLE_AZ_2 and MULTI_AZ_1 deployment types. Requires minimum 2000 GiB\n   storage capacity.\n\n Default: SSD",
+        "required": false,
+        "default": "SSD",
+        "oneofGroup": "_storage_type"
+      },
+      {
+        "name": "ThroughputCapacity",
+        "jsonName": "throughputCapacity",
+        "protoField": "throughput_capacity",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Throughput capacity in MB/s. Required.\n\n Valid values: 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4608, 6144, 9216, 12288.\n The maximum available throughput depends on the deployment type.\n\n Throughput can be changed after creation to scale performance up or down.",
+        "required": false
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Subnet IDs for the file system's network interfaces. Required. ForceNew.\n\n - SINGLE_AZ_1 / SINGLE_AZ_2: exactly one subnet.\n - MULTI_AZ_1: exactly two subnets in different availability zones.\n\n All compute resources mounting this file system must have SMB network\n connectivity to these subnets (TCP port 445).",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        },
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "PreferredSubnetId",
+        "jsonName": "preferredSubnetId",
+        "protoField": "preferred_subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Preferred subnet for the active file server in a MULTI_AZ_1 deployment.\n ForceNew. Required when deployment_type is MULTI_AZ_1. Must be one of the\n subnets specified in subnet_ids.\n\n In a failover event, the standby file server in the other subnet takes over.\n Ignored for SINGLE_AZ deployments.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[0].id"
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Security groups for the file system's network interfaces. ForceNew.\n\n Must allow SMB traffic between the file system and its clients:\n - TCP port 445 (SMB)\n - TCP port 5985 (WinRM for PowerShell remote administration)\n\n Additionally, for Active Directory communication:\n - TCP/UDP port 53 (DNS), TCP/UDP port 88 (Kerberos),\n   TCP port 389 (LDAP), TCP port 636 (LDAPS)\n\n Up to 50 security groups.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed KMS key ARN for encryption at rest. ForceNew — the KMS key\n cannot be changed after creation. When omitted, the file system uses the\n AWS-managed FSx key. All Windows file systems are encrypted at rest by\n default; this field upgrades to a customer-managed key.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "ActiveDirectoryId",
+        "jsonName": "activeDirectoryId",
+        "protoField": "active_directory_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ID of an existing AWS Managed Microsoft AD (Directory Service) to join.\n ForceNew. Mutually exclusive with `self_managed_active_directory`.\n\n Use this when you have an AWS Directory Service managed AD already\n provisioned. The file system joins the domain automatically.",
+        "required": false
+      },
+      {
+        "name": "SelfManagedActiveDirectory",
+        "jsonName": "selfManagedActiveDirectory",
+        "protoField": "self_managed_active_directory",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsFsxWindowsFileSystemSelfManagedActiveDirectory"
+        },
+        "description": "Self-managed Active Directory configuration for joining an on-premises or\n EC2-hosted AD domain. Mutually exclusive with `active_directory_id`.\n\n Use this when your AD domain controller runs outside AWS Directory Service\n (e.g., on-premises AD, AD on EC2, or Azure AD DS).",
+        "required": false
+      },
+      {
+        "name": "Aliases",
+        "jsonName": "aliases",
+        "protoField": "aliases",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "DNS alias names to associate with the file system. Up to 50 aliases.\n\n Aliases allow the file system to be accessed via custom DNS names\n (e.g., \"finance.corp.example.com\") in addition to the default DNS name.\n Useful for DFS namespace integration, migration from on-premises filers,\n or providing user-friendly mount points.\n\n Each alias must be a valid DNS name (4-253 characters). You must create a\n DNS CNAME record pointing each alias to the file system's DNS name.",
+        "required": false,
+        "validation": {
+          "maxItems": 50
+        }
+      },
+      {
+        "name": "AuditLogConfiguration",
+        "jsonName": "auditLogConfiguration",
+        "protoField": "audit_log_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsFsxWindowsFileSystemAuditLogConfiguration"
+        },
+        "description": "Audit log configuration for tracking file access and file share access\n events. Logs are sent to CloudWatch Logs for compliance and security\n monitoring. When omitted, audit logging is disabled.",
+        "required": false
+      },
+      {
+        "name": "DiskIopsConfiguration",
+        "jsonName": "diskIopsConfiguration",
+        "protoField": "disk_iops_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsFsxWindowsFileSystemDiskIopsConfiguration"
+        },
+        "description": "SSD IOPS configuration for the file system. Controls the total provisioned\n IOPS. When omitted, AWS uses AUTOMATIC mode which scales IOPS with storage.\n Only applicable to SSD storage type.",
+        "required": false
+      },
+      {
+        "name": "AutomaticBackupRetentionDays",
+        "jsonName": "automaticBackupRetentionDays",
+        "protoField": "automatic_backup_retention_days",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of days to retain automatic backups. Range: 0-90. Set to 0 to\n disable automatic backups.\n\n Default: 7",
+        "required": false,
+        "default": "7",
+        "oneofGroup": "_automatic_backup_retention_days"
+      },
+      {
+        "name": "DailyAutomaticBackupStartTime",
+        "jsonName": "dailyAutomaticBackupStartTime",
+        "protoField": "daily_automatic_backup_start_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Daily UTC time to start automatic backups, in HH:MM format (e.g., \"01:00\").\n If not specified and backups are enabled, AWS chooses a default window.",
+        "required": false
+      },
+      {
+        "name": "CopyTagsToBackups",
+        "jsonName": "copyTagsToBackups",
+        "protoField": "copy_tags_to_backups",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Copy tags from the file system to backups. ForceNew.",
+        "required": false
+      },
+      {
+        "name": "SkipFinalBackup",
+        "jsonName": "skipFinalBackup",
+        "protoField": "skip_final_backup",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Skip creating a final backup when the file system is deleted.\n\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_skip_final_backup"
+      },
+      {
+        "name": "WeeklyMaintenanceStartTime",
+        "jsonName": "weeklyMaintenanceStartTime",
+        "protoField": "weekly_maintenance_start_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Weekly UTC maintenance window in the format \"d:HH:MM\" where d is the day of\n the week (1=Monday, 7=Sunday). Example: \"7:02:00\" for Sunday at 02:00 UTC.\n If not specified, AWS chooses a default window.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsFsxWindowsFileSystemAuditLogConfiguration",
+      "description": "AwsFsxWindowsFileSystemAuditLogConfiguration configures Windows audit logging\n for the file system. Two independent audit levels can be set: one for file\n access events (open, read, write, delete) and one for file share access events\n (connect, disconnect, change permissions). Logs are sent to CloudWatch Logs.",
+      "protoType": "org.openmcf.provider.aws.awsfsxwindowsfilesystem.v1.AwsFsxWindowsFileSystemAuditLogConfiguration",
+      "fields": [
+        {
+          "name": "FileAccessAuditLogLevel",
+          "jsonName": "fileAccessAuditLogLevel",
+          "protoField": "file_access_audit_log_level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Logging level for individual file access events (open, read, write, delete,\n rename, change permissions on files and folders).\n\n - \"DISABLED\": no file access logging.\n - \"SUCCESS_ONLY\": log successful access events only.\n - \"FAILURE_ONLY\": log failed access attempts only (e.g., access denied).\n - \"SUCCESS_AND_FAILURE\": log all access events.\n\n Default: DISABLED",
+          "required": false,
+          "default": "DISABLED",
+          "oneofGroup": "_file_access_audit_log_level"
+        },
+        {
+          "name": "FileShareAccessAuditLogLevel",
+          "jsonName": "fileShareAccessAuditLogLevel",
+          "protoField": "file_share_access_audit_log_level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Logging level for file share access events (connect to share, disconnect,\n change share permissions).\n\n - \"DISABLED\": no file share access logging.\n - \"SUCCESS_ONLY\": log successful share access events only.\n - \"FAILURE_ONLY\": log failed share access attempts only.\n - \"SUCCESS_AND_FAILURE\": log all share access events.\n\n Default: DISABLED",
+          "required": false,
+          "default": "DISABLED",
+          "oneofGroup": "_file_share_access_audit_log_level"
+        },
+        {
+          "name": "AuditLogDestination",
+          "jsonName": "auditLogDestination",
+          "protoField": "audit_log_destination",
+          "type": {
+            "kind": "string"
+          },
+          "description": "CloudWatch Logs log group ARN to receive audit events. The log group must\n start with \"/aws/fsx/\" as required by AWS. If not set when audit levels are\n enabled, FSx creates a default log stream in the \"/aws/fsx/windows\" group.\n\n Only valid when at least one audit log level is not DISABLED.",
+          "required": false,
+          "referenceKind": "AwsCloudwatchLogGroup",
+          "referenceFieldPath": "status.outputs.log_group_arn"
+        }
+      ]
+    },
+    {
+      "name": "AwsFsxWindowsFileSystemDiskIopsConfiguration",
+      "description": "AwsFsxWindowsFileSystemDiskIopsConfiguration controls the SSD IOPS provisioned\n for the file system. In AUTOMATIC mode, IOPS scale with storage capacity. In\n USER_PROVISIONED mode, you specify the exact IOPS independently of storage.\n Only applicable to SSD storage type.",
+      "protoType": "org.openmcf.provider.aws.awsfsxwindowsfilesystem.v1.AwsFsxWindowsFileSystemDiskIopsConfiguration",
+      "fields": [
+        {
+          "name": "Mode",
+          "jsonName": "mode",
+          "protoField": "mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IOPS provisioning mode.\n\n - \"AUTOMATIC\": IOPS scale automatically based on storage capacity.\n   Provides 3 IOPS per GiB of storage.\n - \"USER_PROVISIONED\": you specify the exact IOPS via the `iops` field.\n   Allows higher performance independent of storage size but at extra cost.\n\n Default: AUTOMATIC",
+          "required": false,
+          "default": "AUTOMATIC",
+          "oneofGroup": "_mode"
+        },
+        {
+          "name": "Iops",
+          "jsonName": "iops",
+          "protoField": "iops",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Total SSD IOPS provisioned. Only valid when mode is \"USER_PROVISIONED\".\n\n Valid range: 0–350000.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsFsxWindowsFileSystemSelfManagedActiveDirectory",
+      "description": "AwsFsxWindowsFileSystemSelfManagedActiveDirectory configures the file system\n to join a self-managed Active Directory domain. Use this when your AD domain\n controller runs outside AWS Directory Service (e.g., on-premises, on EC2,\n or Azure AD DS).\n\n Two authentication methods are supported (mutually exclusive):\n 1. Direct credentials: `username` + `password`\n 2. AWS Secrets Manager: `domain_join_service_account_secret_arn`\n\n The Secrets Manager approach is recommended for production as it avoids\n storing credentials in the resource manifest.",
+      "protoType": "org.openmcf.provider.aws.awsfsxwindowsfilesystem.v1.AwsFsxWindowsFileSystemSelfManagedActiveDirectory",
+      "fields": [
+        {
+          "name": "DomainName",
+          "jsonName": "domainName",
+          "protoField": "domain_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Fully qualified domain name of the self-managed AD directory.\n Example: \"corp.example.com\"",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DnsIps",
+          "jsonName": "dnsIps",
+          "protoField": "dns_ips",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "IP addresses of the DNS servers for the AD domain. Required.\n Must be reachable from the file system's subnets (same VPC CIDR or\n RFC 1918 private ranges). Minimum 1, maximum 2 IP addresses.",
+          "required": false,
+          "validation": {
+            "minItems": 1,
+            "maxItems": 2
+          }
+        },
+        {
+          "name": "Username",
+          "jsonName": "username",
+          "protoField": "username",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account username for domain join operations. Mutually exclusive\n with `domain_join_service_account_secret_arn`. Length: 1-256 characters.",
+          "required": false
+        },
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account password for domain join operations. Mutually exclusive\n with `domain_join_service_account_secret_arn`. Length: 1-256 characters.\n\n For production workloads, prefer `domain_join_service_account_secret_arn`\n to avoid storing credentials in the resource manifest.",
+          "required": false
+        },
+        {
+          "name": "DomainJoinServiceAccountSecretArn",
+          "jsonName": "domainJoinServiceAccountSecretArn",
+          "protoField": "domain_join_service_account_secret_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of an AWS Secrets Manager secret containing the service account\n credentials for domain join. Mutually exclusive with `username`/`password`.\n\n The secret must contain a JSON object with \"username\" and \"password\" keys.\n This is the recommended approach for production deployments.",
+          "required": false
+        },
+        {
+          "name": "FileSystemAdministratorsGroup",
+          "jsonName": "fileSystemAdministratorsGroup",
+          "protoField": "file_system_administrators_group",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the AD group whose members are granted administrative privileges\n on the file system. Members can administer the file system from a remote\n PowerShell endpoint using the FSx Remote PowerShell.\n\n Default: Domain Admins",
+          "required": false,
+          "default": "Domain Admins",
+          "oneofGroup": "_file_system_administrators_group"
+        },
+        {
+          "name": "OrganizationalUnitDistinguishedName",
+          "jsonName": "organizationalUnitDistinguishedName",
+          "protoField": "organizational_unit_distinguished_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Organizational Unit (OU) distinguished name within the AD directory where\n the file system's computer object is created.\n\n Example: \"OU=FSx,DC=corp,DC=example,DC=com\"\n\n Only the OU immediately above the computer object can be specified.\n If not provided, the computer object is created in the default \"Computers\"\n container in the AD domain.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

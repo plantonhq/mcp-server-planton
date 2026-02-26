@@ -1,0 +1,446 @@
+{
+  "name": "GcpCloudTasksQueue",
+  "kind": "GcpCloudTasksQueue",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-cloud-tasks-queue",
+  "protoPackage": "org.openmcf.provider.gcp.gcpcloudtasksqueue.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpcloudtasksqueue/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpcloudtasksqueue/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpCloudTasksQueueSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the queue will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "QueueName",
+        "jsonName": "queueName",
+        "protoField": "queue_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Cloud Tasks queue.\n Must start with a letter, contain only letters, numbers, and hyphens,\n and be between 1 and 63 characters.\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9-]*$"
+        }
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP region where the queue will be created (e.g., \"us-central1\").\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "DesiredState",
+        "jsonName": "desiredState",
+        "protoField": "desired_state",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Desired state of the queue. Controls whether tasks are actively dispatched.\n RUNNING: Tasks are dispatched normally (default).\n PAUSED: Tasks are held in the queue without being dispatched. New tasks\n   can still be added. Resume by setting back to RUNNING.",
+        "required": false
+      },
+      {
+        "name": "HttpTarget",
+        "jsonName": "httpTarget",
+        "protoField": "http_target",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudTasksQueueHttpTarget"
+        },
+        "description": "Queue-level HTTP target configuration. When set, these settings apply\n to all HTTP tasks dispatched from this queue, overriding task-level\n HTTP configuration.\n\n This is the recommended pattern for microservices: configure auth and\n routing at the queue level, then enqueue tasks with just a request body.",
+        "required": false
+      },
+      {
+        "name": "RateLimits",
+        "jsonName": "rateLimits",
+        "protoField": "rate_limits",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudTasksQueueRateLimits"
+        },
+        "description": "Rate limits for task dispatches. Controls how fast and how many tasks\n are dispatched concurrently.",
+        "required": false
+      },
+      {
+        "name": "RetryConfig",
+        "jsonName": "retryConfig",
+        "protoField": "retry_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudTasksQueueRetryConfig"
+        },
+        "description": "Retry configuration for failed task attempts. Controls backoff behavior,\n maximum attempts, and retry duration.",
+        "required": false
+      },
+      {
+        "name": "StackdriverLoggingConfig",
+        "jsonName": "stackdriverLoggingConfig",
+        "protoField": "stackdriver_logging_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudTasksQueueLoggingConfig"
+        },
+        "description": "Cloud Logging configuration for task dispatch operations.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpCloudTasksQueueHttpHeaderOverride",
+      "description": "GcpCloudTasksQueueHttpHeaderOverride defines a single HTTP header key-value pair\n that overrides task-level headers for all tasks dispatched from this queue.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudtasksqueue.v1.GcpCloudTasksQueueHttpHeaderOverride",
+      "fields": [
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The header field name.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The header field value.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudTasksQueueHttpTarget",
+      "description": "GcpCloudTasksQueueHttpTarget configures queue-level HTTP target settings that\n apply to all HTTP tasks in this queue. These settings override task-level\n HTTP configuration when specified.\n\n This is the modern pattern for Cloud Tasks: configure queue-level auth and\n routing, then enqueue tasks with just a body. Ideal for microservices where\n all tasks in a queue target the same Cloud Run / Cloud Functions endpoint.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudtasksqueue.v1.GcpCloudTasksQueueHttpTarget",
+      "fields": [
+        {
+          "name": "HttpMethod",
+          "jsonName": "httpMethod",
+          "protoField": "http_method",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP method override for all tasks in this queue.\n When specified, overrides the method on individual tasks.\n Note: if set to GET, the task body is ignored at execution time.\n Valid values: \"POST\", \"GET\", \"HEAD\", \"PUT\", \"DELETE\", \"PATCH\", \"OPTIONS\".",
+          "required": false
+        },
+        {
+          "name": "HeaderOverrides",
+          "jsonName": "headerOverrides",
+          "protoField": "header_overrides",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpCloudTasksQueueHttpHeaderOverride"
+            }
+          },
+          "description": "HTTP headers to set on all tasks dispatched from this queue.\n These headers override any task-level headers with the same key.\n Header size must be less than 80KB total.",
+          "required": false
+        },
+        {
+          "name": "OauthToken",
+          "jsonName": "oauthToken",
+          "protoField": "oauth_token",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudTasksQueueOAuthToken"
+          },
+          "description": "OAuth2 access token configuration for authenticating HTTP task requests.\n Use for calling Google APIs on *.googleapis.com.\n Mutually exclusive with oidc_token.",
+          "required": false
+        },
+        {
+          "name": "OidcToken",
+          "jsonName": "oidcToken",
+          "protoField": "oidc_token",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudTasksQueueOidcToken"
+          },
+          "description": "OIDC token configuration for authenticating HTTP task requests.\n Use for calling Cloud Run, Cloud Functions, or custom endpoints.\n Mutually exclusive with oauth_token.",
+          "required": false
+        },
+        {
+          "name": "UriOverride",
+          "jsonName": "uriOverride",
+          "protoField": "uri_override",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudTasksQueueUriOverride"
+          },
+          "description": "URI override settings. When specified, modifies the URI of all tasks\n dispatched from this queue before dispatch.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudTasksQueueLoggingConfig",
+      "description": "GcpCloudTasksQueueLoggingConfig configures Cloud Logging for task dispatch\n operations. Controls the fraction of operations written to Stackdriver Logging.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudtasksqueue.v1.GcpCloudTasksQueueLoggingConfig",
+      "fields": [
+        {
+          "name": "SamplingRatio",
+          "jsonName": "samplingRatio",
+          "protoField": "sampling_ratio",
+          "type": {
+            "kind": "double"
+          },
+          "description": "Fraction of operations to log. Must be between 0.0 and 1.0 inclusive.\n 0.0 means no logging (default), 1.0 means log every dispatch operation.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudTasksQueueOAuthToken",
+      "description": "GcpCloudTasksQueueOAuthToken configures OAuth2 access token generation for\n queue-level HTTP task authentication. Use this when calling Google APIs\n hosted on *.googleapis.com.\n\n Both service_account_email and scope MUST be specified when using\n queue-level authorization override.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudtasksqueue.v1.GcpCloudTasksQueueOAuthToken",
+      "fields": [
+        {
+          "name": "ServiceAccountEmail",
+          "jsonName": "serviceAccountEmail",
+          "protoField": "service_account_email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account email to generate the OAuth token.\n The service account must be within the same project as the queue.\n The caller must have iam.serviceAccounts.actAs on this service account.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "GcpServiceAccount",
+          "referenceFieldPath": "status.outputs.email"
+        },
+        {
+          "name": "Scope",
+          "jsonName": "scope",
+          "protoField": "scope",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OAuth scope for the generated access token.\n If not specified, defaults to \"https://www.googleapis.com/auth/cloud-platform\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudTasksQueueOidcToken",
+      "description": "GcpCloudTasksQueueOidcToken configures OIDC token generation for queue-level\n HTTP task authentication. Use this for calling Cloud Run, Cloud Functions,\n or any endpoint where you validate the token yourself.\n\n Both service_account_email and audience MUST be specified when using\n queue-level authorization override.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudtasksqueue.v1.GcpCloudTasksQueueOidcToken",
+      "fields": [
+        {
+          "name": "ServiceAccountEmail",
+          "jsonName": "serviceAccountEmail",
+          "protoField": "service_account_email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account email to generate the OIDC token.\n The service account must be within the same project as the queue.\n The caller must have iam.serviceAccounts.actAs on this service account.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "GcpServiceAccount",
+          "referenceFieldPath": "status.outputs.email"
+        },
+        {
+          "name": "Audience",
+          "jsonName": "audience",
+          "protoField": "audience",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Audience for the generated OIDC token.\n If not specified, the URI specified in the target will be used.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudTasksQueueRateLimits",
+      "description": "GcpCloudTasksQueueRateLimits controls the rate at which tasks are dispatched\n from the queue. The actual dispatch rate is determined by the combination of\n these settings, the number of tasks in the queue, and system throttling\n (429/503 responses, high error rates, traffic smoothing).\n\n Note: max_burst_size is computed by GCP from max_dispatches_per_second\n and is NOT configurable. It is reported in stack outputs instead.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudtasksqueue.v1.GcpCloudTasksQueueRateLimits",
+      "fields": [
+        {
+          "name": "MaxDispatchesPerSecond",
+          "jsonName": "maxDispatchesPerSecond",
+          "protoField": "max_dispatches_per_second",
+          "type": {
+            "kind": "double"
+          },
+          "description": "Maximum rate at which tasks are dispatched from this queue (tasks/second).\n If unspecified, Cloud Tasks picks a default based on queue configuration.",
+          "required": false
+        },
+        {
+          "name": "MaxConcurrentDispatches",
+          "jsonName": "maxConcurrentDispatches",
+          "protoField": "max_concurrent_dispatches",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of concurrent tasks that Cloud Tasks allows to be\n dispatched for this queue. After this threshold, Cloud Tasks stops\n dispatching until the concurrency drops.\n If unspecified, Cloud Tasks picks a default.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudTasksQueueRetryConfig",
+      "description": "GcpCloudTasksQueueRetryConfig controls retry behavior for failed task attempts.\n A task is retried between min_backoff and max_backoff after it fails, with\n exponential backoff that doubles max_doublings times before becoming linear.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudtasksqueue.v1.GcpCloudTasksQueueRetryConfig",
+      "fields": [
+        {
+          "name": "MaxAttempts",
+          "jsonName": "maxAttempts",
+          "protoField": "max_attempts",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of attempts per task. Includes the first attempt.\n Must be \u003e= -1. Set to -1 for unlimited attempts.\n If unspecified, Cloud Tasks picks a default.",
+          "required": false
+        },
+        {
+          "name": "MaxRetryDuration",
+          "jsonName": "maxRetryDuration",
+          "protoField": "max_retry_duration",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Maximum time limit for retrying a failed task, measured from the first attempt.\n Once elapsed, no further attempts are made regardless of max_attempts.\n Set to \"0s\" for unlimited retry duration.\n Format: duration string (e.g., \"3600s\" for 1 hour).",
+          "required": false
+        },
+        {
+          "name": "MinBackoff",
+          "jsonName": "minBackoff",
+          "protoField": "min_backoff",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Minimum wait time between retry attempts.\n Format: duration string (e.g., \"0.100s\" for 100ms).",
+          "required": false
+        },
+        {
+          "name": "MaxBackoff",
+          "jsonName": "maxBackoff",
+          "protoField": "max_backoff",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Maximum wait time between retry attempts.\n Format: duration string (e.g., \"3600s\" for 1 hour).",
+          "required": false
+        },
+        {
+          "name": "MaxDoublings",
+          "jsonName": "maxDoublings",
+          "protoField": "max_doublings",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of times the retry interval doubles before becoming constant.\n The retry interval starts at min_backoff, doubles max_doublings times,\n then increases linearly until reaching max_backoff.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudTasksQueueUriOverride",
+      "description": "GcpCloudTasksQueueUriOverride defines URI override settings that apply to all\n HTTP tasks dispatched from this queue. Individual task URIs are modified\n according to these overrides before dispatch.\n\n Flattened from the Terraform/Pulumi nested structure for clarity:\n path_override.path -\u003e path, query_override.query_params -\u003e query_params.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudtasksqueue.v1.GcpCloudTasksQueueUriOverride",
+      "fields": [
+        {
+          "name": "Scheme",
+          "jsonName": "scheme",
+          "protoField": "scheme",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Scheme override. Replaces the task URI scheme with HTTP or HTTPS.\n Valid values: \"HTTP\", \"HTTPS\".",
+          "required": false
+        },
+        {
+          "name": "Host",
+          "jsonName": "host",
+          "protoField": "host",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Host override. Replaces the host part of the task URL.\n For example, if the task URL is \"https://www.google.com\" and host is\n \"example.net\", the overridden URI becomes \"https://example.net\".\n Must not be empty when set (INVALID_ARGUMENT).",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Port override. Replaces the port part of the task URI.\n Must be a positive integer. Setting to \"0\" clears the URI port.",
+          "required": false
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path override. Replaces the existing path of the task URL.\n Setting to an empty string clears the URI path segment.",
+          "required": false
+        },
+        {
+          "name": "QueryParams",
+          "jsonName": "queryParams",
+          "protoField": "query_params",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Query parameters override. Replaces the query part of the task URI.\n For example: \"qparam1=123\u0026qparam2=456\".\n Setting to an empty string clears the URI query segment.",
+          "required": false
+        },
+        {
+          "name": "EnforceMode",
+          "jsonName": "enforceMode",
+          "protoField": "enforce_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URI Override Enforce Mode.\n ALWAYS: Always override the task URI (default).\n IF_NOT_EXISTS: Only apply the override if the task does not already have\n the corresponding URI component set.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

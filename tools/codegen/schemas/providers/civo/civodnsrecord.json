@@ -1,0 +1,101 @@
+{
+  "name": "CivoDnsRecord",
+  "kind": "CivoDnsRecord",
+  "cloudProvider": "civo",
+  "apiVersion": "civo.openmcf.org/v1",
+  "description": "CivoDnsRecord is a Kubernetes Resource Model (KRM) style resource for managing\n individual DNS records within a Civo DNS zone.",
+  "protoPackage": "org.openmcf.provider.civo.civodnsrecord.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/civo/civodnsrecord/v1/api.proto",
+    "spec": "org/openmcf/provider/civo/civodnsrecord/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CivoDnsRecordSpec",
+    "fields": [
+      {
+        "name": "ZoneId",
+        "jsonName": "zoneId",
+        "protoField": "zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The ID of the Civo DNS Zone where this record will be created.\n Can be provided as a literal value or referenced from a CivoDnsZone resource.\n\n When using value_from, the default kind is CivoDnsZone and the default field path\n is \"status.outputs.zone_id\", allowing you to wire this directly to a zone resource.\n\n Example value_from:\n   value_from:\n     name: my-zone",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "CivoDnsZone",
+        "referenceFieldPath": "status.outputs.zone_id"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the DNS record (e.g., \"www\", \"api\", \"@\" for root).\n Use \"@\" to create a record at the zone apex (root domain).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.civo.civodnsrecord.v1.RecordType",
+          "enumValues": [
+            "A",
+            "AAAA",
+            "CNAME",
+            "MX",
+            "TXT",
+            "SRV",
+            "NS"
+          ]
+        },
+        "description": "The type of DNS record to create.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Value",
+        "jsonName": "value",
+        "protoField": "value",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The value/target of the DNS record.\n For A records: IPv4 address (e.g., \"192.0.2.1\")\n For AAAA records: IPv6 address (e.g., \"2001:db8::1\")\n For CNAME records: target hostname (e.g., \"example.com\")\n For MX records: mail server hostname (e.g., \"mail.example.com\")\n For TXT records: text value (e.g., \"v=spf1 include:_spf.google.com ~all\")\n For SRV records: target in format \"priority weight port target\"",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Ttl",
+        "jsonName": "ttl",
+        "protoField": "ttl",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Time to live (TTL) for the DNS record in seconds.\n Determines how long resolvers cache the record.\n Valid range: 60-86400 seconds (1 minute to 24 hours).\n Defaults to 3600 (1 hour) if not specified.",
+        "required": false
+      },
+      {
+        "name": "Priority",
+        "jsonName": "priority",
+        "protoField": "priority",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Priority for MX and SRV records.\n Lower values indicate higher priority.\n Required for MX records, optional for SRV records.\n Range: 0-65535.",
+        "required": false
+      }
+    ]
+  }
+}

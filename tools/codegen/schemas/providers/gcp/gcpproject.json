@@ -1,0 +1,146 @@
+{
+  "name": "GcpProject",
+  "kind": "GcpProject",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-project",
+  "protoPackage": "org.openmcf.provider.gcp.gcpproject.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpproject/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpproject/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpProjectSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Unique project ID for the GCP project. Must be 6-30 characters long,\n contain only lowercase letters, digits, and hyphens, must start with\n a letter, and cannot end with a hyphen. This ID is globally unique\n across all GCP projects.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 6,
+          "maxLength": 30,
+          "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$"
+        }
+      },
+      {
+        "name": "AddSuffix",
+        "jsonName": "addSuffix",
+        "protoField": "add_suffix",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "If true, a random 3-character suffix will be appended to the project_id\n to ensure uniqueness across multiple deployments. This is useful when\n creating temporary or test projects. Defaults to false.",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_add_suffix"
+      },
+      {
+        "name": "ParentType",
+        "jsonName": "parentType",
+        "protoField": "parent_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.gcp.gcpproject.v1.GcpProjectParentType",
+          "enumValues": [
+            "organization",
+            "folder"
+          ]
+        },
+        "description": "The type of parent resource under which the project is created.",
+        "required": false
+      },
+      {
+        "name": "ParentId",
+        "jsonName": "parentId",
+        "protoField": "parent_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Organization ID/Folder ID (numeric string) under which the project is created.",
+        "required": false
+      },
+      {
+        "name": "BillingAccountId",
+        "jsonName": "billingAccountId",
+        "protoField": "billing_account_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Billing account ID in the form \"0123AB-4567CD-89EFGH\".\n Strongly recommended for any project that will use billable services.",
+        "required": false,
+        "validation": {
+          "pattern": "^[A-Z0-9]{6}-[A-Z0-9]{6}-[A-Z0-9]{6}$"
+        }
+      },
+      {
+        "name": "Labels",
+        "jsonName": "labels",
+        "protoField": "labels",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Key/value metadata labels for cost allocation and governance.\n GCP label keys must be \u003c= 63 chars, lowercase letters, digits, or underscores.",
+        "required": false
+      },
+      {
+        "name": "DisableDefaultNetwork",
+        "jsonName": "disableDefaultNetwork",
+        "protoField": "disable_default_network",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "If true, the auto-created \"default\" VPC network is deleted immediately\n after project creation. Disabling the default network is a common\n security hardening step.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_disable_default_network"
+      },
+      {
+        "name": "EnabledApis",
+        "jsonName": "enabledApis",
+        "protoField": "enabled_apis",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "List of Cloud APIs to enable (e.g. \"compute.googleapis.com\").\n Each entry must end with \".googleapis.com\".",
+        "required": false
+      },
+      {
+        "name": "OwnerMember",
+        "jsonName": "ownerMember",
+        "protoField": "owner_member",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Optional IAM member (user / group / serviceAccount) to be granted\n the Owner role at project creation.\n Examples:\n   \"group:devops-admins@example.com\"\n   \"user:alice@example.com\"\n   \"serviceAccount:ci-automation@example.iam.gserviceaccount.com\"",
+        "required": false
+      },
+      {
+        "name": "DeleteProtection",
+        "jsonName": "deleteProtection",
+        "protoField": "delete_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "If true, enables deletion protection on the GCP project.\n When enabled, the project cannot be deleted until this flag is set to false.\n This is a GCP-native feature (not a Pulumi/Terraform lifecycle option)\n that provides an additional layer of protection against accidental deletion.\n Defaults to false.",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_delete_protection"
+      }
+    ]
+  }
+}

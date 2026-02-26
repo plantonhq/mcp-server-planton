@@ -1,0 +1,572 @@
+{
+  "name": "GcpPubSubSubscription",
+  "kind": "GcpPubSubSubscription",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-pubsub-subscription",
+  "protoPackage": "org.openmcf.provider.gcp.gcppubsubsubscription.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcppubsubsubscription/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcppubsubsubscription/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpPubSubSubscriptionSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the subscription will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "SubscriptionName",
+        "jsonName": "subscriptionName",
+        "protoField": "subscription_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Pub/Sub subscription.\n Must be 3-255 characters, start with a letter, and contain only letters,\n numbers, hyphens, underscores, periods, tildes, plus signs, and percent signs.\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 3,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_\\.~+%]*$"
+        }
+      },
+      {
+        "name": "Topic",
+        "jsonName": "topic",
+        "protoField": "topic",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The topic from which this subscription receives messages.\n Format: projects/{project}/topics/{name} or just the topic name if\n the topic is in the same project as the subscription.\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpPubSubTopic",
+        "referenceFieldPath": "status.outputs.topic_id"
+      },
+      {
+        "name": "AckDeadlineSeconds",
+        "jsonName": "ackDeadlineSeconds",
+        "protoField": "ack_deadline_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum time (in seconds) after a subscriber receives a message before the\n subscriber should acknowledge the message. After the deadline expires,\n the message is redelivered.\n Range: 10 to 600 seconds. Defaults to 10 seconds.",
+        "required": false
+      },
+      {
+        "name": "MessageRetentionDuration",
+        "jsonName": "messageRetentionDuration",
+        "protoField": "message_retention_duration",
+        "type": {
+          "kind": "string"
+        },
+        "description": "How long to retain unacknowledged messages in the subscription's backlog.\n If retain_acked_messages is true, this also controls retention of acknowledged\n messages and determines how far back a seek operation can go.\n Format: duration string (e.g., \"604800s\" for 7 days).\n Range: 600s (10 minutes) to 2678400s (31 days). Default: 604800s (7 days).",
+        "required": false
+      },
+      {
+        "name": "RetainAckedMessages",
+        "jsonName": "retainAckedMessages",
+        "protoField": "retain_acked_messages",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, acknowledged messages are retained in the backlog until they\n fall out of the message_retention_duration window. Enables replay via seek.",
+        "required": false
+      },
+      {
+        "name": "ExpirationPolicy",
+        "jsonName": "expirationPolicy",
+        "protoField": "expiration_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpPubSubSubscriptionExpirationPolicy"
+        },
+        "description": "Expiration policy for the subscription. Controls automatic deletion of\n inactive subscriptions. If not set, GCP defaults to 31 days TTL.",
+        "required": false
+      },
+      {
+        "name": "Filter",
+        "jsonName": "filter",
+        "protoField": "filter",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Message attribute filter expression. Only messages matching the filter are\n delivered; non-matching messages are automatically acknowledged.\n Maximum length: 256 bytes. Immutable after creation.",
+        "required": false,
+        "validation": {
+          "maxLength": 256
+        }
+      },
+      {
+        "name": "EnableMessageOrdering",
+        "jsonName": "enableMessageOrdering",
+        "protoField": "enable_message_ordering",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, messages with the same ordering key are delivered to subscribers\n in the order they were published. Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "EnableExactlyOnceDelivery",
+        "jsonName": "enableExactlyOnceDelivery",
+        "protoField": "enable_exactly_once_delivery",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, Pub/Sub guarantees that a message is not resent before its\n acknowledgement deadline expires. An acknowledged message will not be\n resent. Note: subscribers may still receive duplicates if the publisher\n sends the same message multiple times.",
+        "required": false
+      },
+      {
+        "name": "DeadLetterPolicy",
+        "jsonName": "deadLetterPolicy",
+        "protoField": "dead_letter_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpPubSubSubscriptionDeadLetterPolicy"
+        },
+        "description": "Dead-letter policy. Messages that cannot be processed after repeated\n delivery attempts are forwarded to the configured dead-letter topic.",
+        "required": false
+      },
+      {
+        "name": "RetryPolicy",
+        "jsonName": "retryPolicy",
+        "protoField": "retry_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpPubSubSubscriptionRetryPolicy"
+        },
+        "description": "Retry policy. Controls the backoff between consecutive delivery attempts\n after a NACK or ack deadline exceeded event.",
+        "required": false
+      },
+      {
+        "name": "PushConfig",
+        "jsonName": "pushConfig",
+        "protoField": "push_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpPubSubSubscriptionPushConfig"
+        },
+        "description": "Push delivery configuration. When set, Pub/Sub sends messages as HTTP POST\n requests to the configured endpoint. Mutually exclusive with bigquery_config\n and cloud_storage_config.",
+        "required": false
+      },
+      {
+        "name": "BigqueryConfig",
+        "jsonName": "bigqueryConfig",
+        "protoField": "bigquery_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpPubSubSubscriptionBigQueryConfig"
+        },
+        "description": "BigQuery delivery configuration. When set, Pub/Sub writes messages directly\n to a BigQuery table. Mutually exclusive with push_config and\n cloud_storage_config.",
+        "required": false
+      },
+      {
+        "name": "CloudStorageConfig",
+        "jsonName": "cloudStorageConfig",
+        "protoField": "cloud_storage_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpPubSubSubscriptionCloudStorageConfig"
+        },
+        "description": "Cloud Storage delivery configuration. When set, Pub/Sub writes messages to\n Cloud Storage objects in batches. Mutually exclusive with push_config and\n bigquery_config.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpPubSubSubscriptionBigQueryConfig",
+      "description": "GcpPubSubSubscriptionBigQueryConfig configures delivery to a BigQuery table.\n Each message is written as a row. Pub/Sub handles batching and streaming inserts.\n\n Mutually exclusive with push_config and cloud_storage_config.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubsubscription.v1.GcpPubSubSubscriptionBigQueryConfig",
+      "fields": [
+        {
+          "name": "Table",
+          "jsonName": "table",
+          "protoField": "table",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The BigQuery table to write messages to.\n Format: {project_id}.{dataset_id}.{table_id}",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "UseTopicSchema",
+          "jsonName": "useTopicSchema",
+          "protoField": "use_topic_schema",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, use the Pub/Sub topic's schema to map message fields to BigQuery columns.\n Only one of use_topic_schema and use_table_schema can be true.",
+          "required": false
+        },
+        {
+          "name": "UseTableSchema",
+          "jsonName": "useTableSchema",
+          "protoField": "use_table_schema",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, use the BigQuery table's schema to determine which message fields\n to write. Only one of use_topic_schema and use_table_schema can be true.",
+          "required": false
+        },
+        {
+          "name": "DropUnknownFields",
+          "jsonName": "dropUnknownFields",
+          "protoField": "drop_unknown_fields",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true (and use_topic_schema or use_table_schema is true), message fields\n not present in the BigQuery table schema are silently dropped. When false,\n messages with extra fields are not written and remain in the backlog.",
+          "required": false
+        },
+        {
+          "name": "WriteMetadata",
+          "jsonName": "writeMetadata",
+          "protoField": "write_metadata",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, the subscription name, messageId, publishTime, attributes, and\n orderingKey are written to additional columns in the BigQuery table.",
+          "required": false
+        },
+        {
+          "name": "ServiceAccountEmail",
+          "jsonName": "serviceAccountEmail",
+          "protoField": "service_account_email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account to use for writing to BigQuery. Defaults to the Pub/Sub\n service agent if not specified.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubSubscriptionCloudStorageConfig",
+      "description": "GcpPubSubSubscriptionCloudStorageConfig configures delivery to a Cloud Storage\n bucket. Messages are batched and written as objects based on size, duration,\n or message count thresholds.\n\n Mutually exclusive with push_config and bigquery_config.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubsubscription.v1.GcpPubSubSubscriptionCloudStorageConfig",
+      "fields": [
+        {
+          "name": "Bucket",
+          "jsonName": "bucket",
+          "protoField": "bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Cloud Storage bucket to write messages to (without \"gs://\" prefix).\n The bucket must already exist.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "GcpGcsBucket",
+          "referenceFieldPath": "status.outputs.bucket_id"
+        },
+        {
+          "name": "FilenamePrefix",
+          "jsonName": "filenamePrefix",
+          "protoField": "filename_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Prefix for Cloud Storage filenames.",
+          "required": false
+        },
+        {
+          "name": "FilenameSuffix",
+          "jsonName": "filenameSuffix",
+          "protoField": "filename_suffix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Suffix for Cloud Storage filenames. Must not end in \"/\".",
+          "required": false
+        },
+        {
+          "name": "FilenameDatetimeFormat",
+          "jsonName": "filenameDatetimeFormat",
+          "protoField": "filename_datetime_format",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Format string for datetime in Cloud Storage filenames.",
+          "required": false
+        },
+        {
+          "name": "MaxBytes",
+          "jsonName": "maxBytes",
+          "protoField": "max_bytes",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Maximum bytes per Cloud Storage file before a new file is created.\n Range: 1024 (1 KB) to 10737418240 (10 GiB).",
+          "required": false
+        },
+        {
+          "name": "MaxDuration",
+          "jsonName": "maxDuration",
+          "protoField": "max_duration",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Maximum duration before a new Cloud Storage file is created.\n Format: duration string (e.g., \"300s\").\n Range: 60s (1 minute) to 600s (10 minutes). Default: 300s (5 minutes).\n Must not exceed the subscription's ack_deadline_seconds.",
+          "required": false
+        },
+        {
+          "name": "MaxMessages",
+          "jsonName": "maxMessages",
+          "protoField": "max_messages",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Maximum number of messages per Cloud Storage file. Minimum: 1000.",
+          "required": false
+        },
+        {
+          "name": "AvroConfig",
+          "jsonName": "avroConfig",
+          "protoField": "avro_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpPubSubSubscriptionCloudStorageConfigAvroConfig"
+          },
+          "description": "Avro format configuration. When set, messages are written in Avro format.\n If not set, messages are written in their raw format.",
+          "required": false
+        },
+        {
+          "name": "ServiceAccountEmail",
+          "jsonName": "serviceAccountEmail",
+          "protoField": "service_account_email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account to use for writing to Cloud Storage. Defaults to the Pub/Sub\n service agent if not specified.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubSubscriptionCloudStorageConfigAvroConfig",
+      "description": "GcpPubSubSubscriptionCloudStorageConfigAvroConfig configures Avro format\n for Cloud Storage delivery.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubsubscription.v1.GcpPubSubSubscriptionCloudStorageConfigAvroConfig",
+      "fields": [
+        {
+          "name": "UseTopicSchema",
+          "jsonName": "useTopicSchema",
+          "protoField": "use_topic_schema",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, serialize output using the topic schema.",
+          "required": false
+        },
+        {
+          "name": "WriteMetadata",
+          "jsonName": "writeMetadata",
+          "protoField": "write_metadata",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, include subscription name, messageId, publishTime, attributes,\n and orderingKey as additional fields in the Avro output.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubSubscriptionDeadLetterPolicy",
+      "description": "GcpPubSubSubscriptionDeadLetterPolicy configures dead-letter handling for\n messages that cannot be processed after repeated delivery attempts. Messages\n exceeding the maximum delivery attempts are forwarded to the dead-letter topic.\n\n The Pub/Sub service account (service-{project_number}@gcp-sa-pubsub.iam.gserviceaccount.com)\n must have Subscriber permissions on this subscription and Publisher permissions\n on the dead-letter topic.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubsubscription.v1.GcpPubSubSubscriptionDeadLetterPolicy",
+      "fields": [
+        {
+          "name": "DeadLetterTopic",
+          "jsonName": "deadLetterTopic",
+          "protoField": "dead_letter_topic",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The topic to which dead-letter messages are published.\n Format: projects/{project}/topics/{topic}",
+          "required": false,
+          "referenceKind": "GcpPubSubTopic",
+          "referenceFieldPath": "status.outputs.topic_id"
+        },
+        {
+          "name": "MaxDeliveryAttempts",
+          "jsonName": "maxDeliveryAttempts",
+          "protoField": "max_delivery_attempts",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of delivery attempts before a message is dead-lettered.\n A delivery attempt is counted as 1 + (NACKs + ack deadline exceeded events).\n Range: 5 to 100. Defaults to 5 when set to 0.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubSubscriptionExpirationPolicy",
+      "description": "GcpPubSubSubscriptionExpirationPolicy configures when an inactive subscription\n expires and is automatically deleted. A subscription is considered active when\n any connected subscriber is successfully consuming messages or issuing operations.\n\n If not set, GCP applies a default TTL of 31 days. Set ttl to an empty string\n (\"\") to create a subscription that never expires.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubsubscription.v1.GcpPubSubSubscriptionExpirationPolicy",
+      "fields": [
+        {
+          "name": "Ttl",
+          "jsonName": "ttl",
+          "protoField": "ttl",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Duration after which the subscription expires if inactive.\n Format: duration string (e.g., \"2592000s\" for 30 days).\n Minimum: 86400s (1 day). Set to \"\" for a subscription that never expires.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubSubscriptionPushConfig",
+      "description": "GcpPubSubSubscriptionPushConfig configures push delivery to an HTTPS endpoint.\n Pub/Sub sends each message as an HTTP POST request to the configured endpoint.\n\n Mutually exclusive with bigquery_config and cloud_storage_config.\n If none of the three delivery configs are set, the subscription uses pull delivery.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubsubscription.v1.GcpPubSubSubscriptionPushConfig",
+      "fields": [
+        {
+          "name": "PushEndpoint",
+          "jsonName": "pushEndpoint",
+          "protoField": "push_endpoint",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URL to which Pub/Sub pushes messages. Must use HTTPS.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Attributes",
+          "jsonName": "attributes",
+          "protoField": "attributes",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Endpoint configuration attributes. The supported attribute is \"x-goog-version\"\n which controls the push message format (\"v1beta1\" or \"v1\").",
+          "required": false
+        },
+        {
+          "name": "OidcToken",
+          "jsonName": "oidcToken",
+          "protoField": "oidc_token",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpPubSubSubscriptionPushConfigOidcToken"
+          },
+          "description": "OIDC token configuration for authenticating push requests.",
+          "required": false
+        },
+        {
+          "name": "NoWrapper",
+          "jsonName": "noWrapper",
+          "protoField": "no_wrapper",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpPubSubSubscriptionPushConfigNoWrapper"
+          },
+          "description": "When set, the message payload is sent unwrapped (no Pub/Sub envelope).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubSubscriptionPushConfigNoWrapper",
+      "description": "GcpPubSubSubscriptionPushConfigNoWrapper configures unwrapped payload delivery.\n When set, the raw message data is sent as the HTTP body without the standard\n Pub/Sub message envelope. Useful for webhook integrations that expect\n application-specific payloads.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubsubscription.v1.GcpPubSubSubscriptionPushConfigNoWrapper",
+      "fields": [
+        {
+          "name": "WriteMetadata",
+          "jsonName": "writeMetadata",
+          "protoField": "write_metadata",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, Pub/Sub message metadata is written as HTTP headers\n (x-goog-pubsub-\u003ckey\u003e:\u003cvalue\u003e) and message attributes as plain headers.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubSubscriptionPushConfigOidcToken",
+      "description": "GcpPubSubSubscriptionPushConfigOidcToken configures OIDC-based authentication\n for push deliveries. Pub/Sub generates a signed JWT and attaches it as an\n Authorization header in each HTTP request to the push endpoint.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubsubscription.v1.GcpPubSubSubscriptionPushConfigOidcToken",
+      "fields": [
+        {
+          "name": "ServiceAccountEmail",
+          "jsonName": "serviceAccountEmail",
+          "protoField": "service_account_email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account email used to generate the OIDC token.\n The caller must have iam.serviceAccounts.actAs permission on this account.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Audience",
+          "jsonName": "audience",
+          "protoField": "audience",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Audience claim for the OIDC token. Identifies the intended recipient.\n Defaults to the push endpoint URL if not specified.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpPubSubSubscriptionRetryPolicy",
+      "description": "GcpPubSubSubscriptionRetryPolicy configures how Pub/Sub retries message\n delivery after a NACK or acknowledgement deadline exceeded event. If not set,\n messages are retried as soon as possible.",
+      "protoType": "org.openmcf.provider.gcp.gcppubsubsubscription.v1.GcpPubSubSubscriptionRetryPolicy",
+      "fields": [
+        {
+          "name": "MinimumBackoff",
+          "jsonName": "minimumBackoff",
+          "protoField": "minimum_backoff",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Minimum delay between consecutive delivery attempts of a given message.\n Format: duration string (e.g., \"10s\").\n Range: 0s to 600s. Defaults to 10s.",
+          "required": false
+        },
+        {
+          "name": "MaximumBackoff",
+          "jsonName": "maximumBackoff",
+          "protoField": "maximum_backoff",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Maximum delay between consecutive delivery attempts of a given message.\n Format: duration string (e.g., \"600s\").\n Range: 0s to 600s. Defaults to 600s.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

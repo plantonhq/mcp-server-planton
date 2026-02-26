@@ -1,0 +1,67 @@
+{
+  "name": "OpenStackFloatingIpAssociate",
+  "kind": "OpenStackFloatingIpAssociate",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackFloatingIpAssociate is a Kubernetes Resource Model (KRM) style\n resource for associating an OpenStack Neutron floating IP with a port.\n\n This is a \"join\" resource that connects two independently managed resources:\n   - A floating IP (allocated via OpenStackFloatingIp)\n   - A port (created via OpenStackNetworkPort)\n\n In InfraCharts, this component appears as a visible DAG node with dependency\n edges to both the floating IP and the port, making the association relationship\n explicit and transparent.\n\n Use this component when:\n   - The floating IP and port are managed as separate InfraChart components\n   - You need DAG visibility of the association relationship\n   - The floating IP allocation is decoupled from its use\n\n Use OpenStackFloatingIp.spec.port_id instead when:\n   - Allocation and association happen together in a single manifest\n   - DAG visibility of the association is not needed",
+  "protoPackage": "org.openmcf.provider.openstack.openstackfloatingipassociate.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackfloatingipassociate/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackfloatingipassociate/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackFloatingIpAssociateSpec",
+    "fields": [
+      {
+        "name": "FloatingIp",
+        "jsonName": "floatingIp",
+        "protoField": "floating_ip",
+        "type": {
+          "kind": "string"
+        },
+        "description": "floating_ip is the floating IP address (or ID) to associate.\n This targets the *address* output of an OpenStackFloatingIp resource\n (e.g., \"203.0.113.42\"), not its UUID. The Terraform provider accepts\n either an IP address or a floating IP UUID for this field.\n Can reference an OpenStackFloatingIp resource's output or be a literal address.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackFloatingIp",
+        "referenceFieldPath": "status.outputs.address"
+      },
+      {
+        "name": "PortId",
+        "jsonName": "portId",
+        "protoField": "port_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "port_id is the ID of the port to associate the floating IP with.\n The port must have at least one fixed IP address.\n Can reference an OpenStackNetworkPort resource's output or be a literal port UUID.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackNetworkPort",
+        "referenceFieldPath": "status.outputs.port_id"
+      },
+      {
+        "name": "FixedIp",
+        "jsonName": "fixedIp",
+        "protoField": "fixed_ip",
+        "type": {
+          "kind": "string"
+        },
+        "description": "fixed_ip specifies which fixed IP address on the port to map the floating\n IP to. Only relevant when the port has multiple fixed IP addresses.\n If omitted and the port has a single IP, that IP is used automatically.\n If omitted and the port has multiple IPs, OpenStack picks the first one.",
+        "required": false
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this association.\n If omitted, the region from the OpenStack provider config is used.\n ForceNew: changing the region recreates the association.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  }
+}

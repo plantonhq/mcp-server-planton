@@ -1,0 +1,143 @@
+{
+  "name": "OciRedisCluster",
+  "kind": "OciRedisCluster",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciRedisCluster is the top-level resource representing an OCI Cache\n (Redis) cluster -- a fully managed, Redis-compatible in-memory caching\n service supporting sharded and non-sharded topologies.",
+  "protoPackage": "org.openmcf.provider.oci.ocirediscluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocirediscluster/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocirediscluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciRedisClusterSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the Redis cluster will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable name shown in the OCI Console.\n Falls back to metadata.name if not provided.",
+        "required": false
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the subnet where the Redis cluster will be placed.\n Changing this forces recreation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciSubnet",
+        "referenceFieldPath": "status.outputs.subnetId"
+      },
+      {
+        "name": "NodeCount",
+        "jsonName": "nodeCount",
+        "protoField": "node_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of nodes in the cluster. For non-sharded clusters this is the\n total node count (1 primary + N-1 replicas). For sharded clusters\n this is the number of nodes per shard. Updatable.",
+        "required": false,
+        "validation": {
+          "min": 1
+        }
+      },
+      {
+        "name": "NodeMemoryInGbs",
+        "jsonName": "nodeMemoryInGbs",
+        "protoField": "node_memory_in_gbs",
+        "type": {
+          "kind": "float"
+        },
+        "description": "Memory allocated to each node in gigabytes. Determines the total\n cache capacity. Updatable. Common values: 2, 4, 8, 16, 32.",
+        "required": false
+      },
+      {
+        "name": "SoftwareVersion",
+        "jsonName": "softwareVersion",
+        "protoField": "software_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCI Cache engine version (e.g. \"V7.0.5\", \"V7.1.1\").\n Available versions depend on the region. Updatable.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ClusterMode",
+        "jsonName": "clusterMode",
+        "protoField": "cluster_mode",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ocirediscluster.v1.ClusterMode",
+          "enumValues": [
+            "nonsharded",
+            "sharded"
+          ]
+        },
+        "description": "Cluster topology mode. Changing this forces recreation.\n When unset, OCI defaults to NONSHARDED.",
+        "required": false
+      },
+      {
+        "name": "ShardCount",
+        "jsonName": "shardCount",
+        "protoField": "shard_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of shards in the cluster. Only applicable when cluster_mode\n is sharded. Each shard has node_count nodes. Updatable.",
+        "required": false
+      },
+      {
+        "name": "NsgIds",
+        "jsonName": "nsgIds",
+        "protoField": "nsg_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "OCIDs of network security groups controlling access to the cluster.",
+        "required": false,
+        "referenceKind": "OciSecurityGroup",
+        "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+      },
+      {
+        "name": "ConfigSetId",
+        "jsonName": "configSetId",
+        "protoField": "config_set_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of an OCI Cache Config Set providing custom Redis configuration\n parameters (e.g. maxmemory-policy, timeout). When omitted, the\n default configuration is used.",
+        "required": false
+      }
+    ]
+  }
+}

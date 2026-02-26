@@ -1,0 +1,204 @@
+{
+  "name": "AwsSecurityGroup",
+  "kind": "AwsSecurityGroup",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-security-group",
+  "protoPackage": "org.openmcf.provider.aws.awssecuritygroup.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awssecuritygroup/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awssecuritygroup/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsSecurityGroupSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "vpc_id is the ID of the VPC where this Security Group will be created.\n Example: \"vpc-12345abcde\"\n This field is required because every Security Group must belong to one VPC.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description provides a short explanation of this Security Group’s purpose.\n This field is required by AWS and cannot be modified once created without a replacement.\n Example: \"Allows inbound HTTP and SSH for web tier\"",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Ingress",
+        "jsonName": "ingress",
+        "protoField": "ingress",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "SecurityGroupRule"
+          }
+        },
+        "description": "ingress_rules define the inbound traffic rules for this Security Group.\n If empty, inbound traffic is fully restricted (deny all).",
+        "required": false
+      },
+      {
+        "name": "Egress",
+        "jsonName": "egress",
+        "protoField": "egress",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "SecurityGroupRule"
+          }
+        },
+        "description": "egress_rules define the outbound traffic rules for this Security Group.\n If empty, AWS defaults to allow all outbound traffic unless configured otherwise.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "SecurityGroupRule",
+      "description": "SecurityGroupRule represents a single inbound or outbound rule in the Security Group.\n For ingress, fill in sources (cidrs or source_security_group_ids).\n For egress, fill in destinations (cidrs or destination_security_group_ids).",
+      "protoType": "org.openmcf.provider.aws.awssecuritygroup.v1.SecurityGroupRule",
+      "fields": [
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "protocol indicates the protocol for the rule.\n Common values: \"tcp\", \"udp\", \"icmp\", or \"-1\" (all protocols).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "FromPort",
+          "jsonName": "fromPort",
+          "protoField": "from_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "from_port is the starting port in the range.\n For single-port rules, from_port == to_port.\n Use 0 when specifying all ports (with protocol = -1) or for ICMP types.",
+          "required": false
+        },
+        {
+          "name": "ToPort",
+          "jsonName": "toPort",
+          "protoField": "to_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "to_port is the ending port in the range.\n For single-port rules, to_port == from_port.\n Use 0 when specifying all ports (with protocol = -1) or for ICMP codes.",
+          "required": false
+        },
+        {
+          "name": "Ipv4Cidrs",
+          "jsonName": "ipv4Cidrs",
+          "protoField": "ipv4_cidrs",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "ipv4_cidrs is the list of IPv4 CIDR blocks allowed (ingress) or targeted (egress).\n Examples: \"10.0.0.0/16\", \"0.0.0.0/0\"\n If empty, no IPv4 CIDRs are included in this rule.",
+          "required": false
+        },
+        {
+          "name": "Ipv6Cidrs",
+          "jsonName": "ipv6Cidrs",
+          "protoField": "ipv6_cidrs",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "ipv6_cidrs is the list of IPv6 CIDR blocks allowed or targeted.\n Example: \"::/0\"\n If empty, no IPv6 CIDRs are included in this rule.",
+          "required": false
+        },
+        {
+          "name": "SourceSecurityGroupIds",
+          "jsonName": "sourceSecurityGroupIds",
+          "protoField": "source_security_group_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "source_security_group_ids is the list of Security Group IDs that can send traffic (for ingress).\n Typically used for internal traffic between resources. Can reference other AwsSecurityGroup resources.",
+          "required": false,
+          "referenceKind": "AwsSecurityGroup",
+          "referenceFieldPath": "status.outputs.security_group_id"
+        },
+        {
+          "name": "DestinationSecurityGroupIds",
+          "jsonName": "destinationSecurityGroupIds",
+          "protoField": "destination_security_group_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "destination_security_group_ids is the list of Security Group IDs that receive traffic (for egress).\n Useful for restricting outbound traffic to specific groups. Can reference other AwsSecurityGroup resources.",
+          "required": false,
+          "referenceKind": "AwsSecurityGroup",
+          "referenceFieldPath": "status.outputs.security_group_id"
+        },
+        {
+          "name": "SelfReference",
+          "jsonName": "selfReference",
+          "protoField": "self_reference",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "self_reference indicates whether to allow traffic from/to the same Security Group.\n This is equivalent to referencing the group’s own ID.",
+          "required": false
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "rule_description is an optional explanation of this specific rule,\n aiding in clarity and maintenance. Max 255 chars recommended.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

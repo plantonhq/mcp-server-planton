@@ -1,0 +1,601 @@
+{
+  "name": "AwsOpenSearchDomain",
+  "kind": "AwsOpenSearchDomain",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-opensearch-domain",
+  "protoPackage": "org.openmcf.provider.aws.awsopensearchdomain.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsopensearchdomain/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsopensearchdomain/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsOpenSearchDomainSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "EngineVersion",
+        "jsonName": "engineVersion",
+        "protoField": "engine_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OpenSearch or Elasticsearch engine version. Format: \"OpenSearch_X.Y\" (e.g.,\n \"OpenSearch_2.11\") or \"Elasticsearch_X.Y\" (e.g., \"Elasticsearch_7.10\").\n Changing to an incompatible version forces domain recreation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ClusterConfig",
+        "jsonName": "clusterConfig",
+        "protoField": "cluster_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsOpenSearchDomainClusterConfig"
+        },
+        "description": "Cluster topology: data nodes, dedicated masters, zone awareness, warm/cold storage.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "EbsOptions",
+        "jsonName": "ebsOptions",
+        "protoField": "ebs_options",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsOpenSearchDomainEbsOptions"
+        },
+        "description": "EBS volume configuration for data node storage. Required for most instance types\n (all except certain storage-optimized types that use instance storage).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "EncryptAtRestEnabled",
+        "jsonName": "encryptAtRestEnabled",
+        "protoField": "encrypt_at_rest_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable encryption at rest for indices and automated snapshots. Uses the\n AWS-managed `aws/es` key unless `kms_key_id` is provided.\n ForceNew when disabling on older engine versions.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed KMS key ARN or ID for at-rest encryption. ForceNew — the\n KMS key cannot be changed after domain creation.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "NodeToNodeEncryptionEnabled",
+        "jsonName": "nodeToNodeEncryptionEnabled",
+        "protoField": "node_to_node_encryption_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable TLS encryption for all traffic between nodes in the cluster.\n Strongly recommended for production.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "VpcOptions",
+        "jsonName": "vpcOptions",
+        "protoField": "vpc_options",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsOpenSearchDomainVpcOptions"
+        },
+        "description": "VPC placement configuration. When provided, the domain is deployed into VPC\n subnets and is not publicly accessible. ForceNew — adding or removing VPC\n options destroys and recreates the domain.",
+        "required": false
+      },
+      {
+        "name": "DomainEndpointOptions",
+        "jsonName": "domainEndpointOptions",
+        "protoField": "domain_endpoint_options",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsOpenSearchDomainEndpointOptions"
+        },
+        "description": "HTTPS enforcement, TLS policy, and custom endpoint configuration.",
+        "required": false
+      },
+      {
+        "name": "AdvancedSecurityOptions",
+        "jsonName": "advancedSecurityOptions",
+        "protoField": "advanced_security_options",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsOpenSearchDomainAdvancedSecurityOptions"
+        },
+        "description": "Advanced security options enable fine-grained access control: internal user\n database, IAM-based authentication, and role-based index-level permissions.\n Once enabled, FGAC cannot be disabled (ForceNew).",
+        "required": false
+      },
+      {
+        "name": "LogPublishingOptions",
+        "jsonName": "logPublishingOptions",
+        "protoField": "log_publishing_options",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsOpenSearchDomainLogPublishingOption"
+          }
+        },
+        "description": "Publish domain logs to CloudWatch Logs for monitoring and troubleshooting.\n Up to 4 configurations — one per log type (INDEX_SLOW_LOGS, SEARCH_SLOW_LOGS,\n ES_APPLICATION_LOGS, AUDIT_LOGS).",
+        "required": false
+      },
+      {
+        "name": "AccessPolicies",
+        "jsonName": "accessPolicies",
+        "protoField": "access_policies",
+        "type": {
+          "kind": "object"
+        },
+        "description": "IAM-based access policy for the domain. Serialized to JSON by the IaC modules.\n Controls who can perform actions on the domain and its indices.\n For VPC domains, this works in conjunction with security groups.\n For public domains, this is the primary access control mechanism (unless FGAC is enabled).",
+        "required": false
+      },
+      {
+        "name": "AutoTuneEnabled",
+        "jsonName": "autoTuneEnabled",
+        "protoField": "auto_tune_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable AWS Auto-Tune to automatically optimize JVM heap size, disk I/O,\n and other performance settings based on cluster metrics.",
+        "required": false
+      },
+      {
+        "name": "AutoSoftwareUpdateEnabled",
+        "jsonName": "autoSoftwareUpdateEnabled",
+        "protoField": "auto_software_update_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable automatic service software updates. When true, AWS applies mandatory\n and optional service software updates during the off-peak window.",
+        "required": false
+      },
+      {
+        "name": "IpAddressType",
+        "jsonName": "ipAddressType",
+        "protoField": "ip_address_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IP address type for the domain. \"ipv4\" (default) or \"dualstack\" (IPv4 + IPv6).\n Changing from \"dualstack\" to \"ipv4\" forces domain recreation.",
+        "required": false
+      },
+      {
+        "name": "AdvancedOptions",
+        "jsonName": "advancedOptions",
+        "protoField": "advanced_options",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Low-level key-value configuration options. Common options:\n - \"rest.action.multi.allow_explicit_index\": \"true\" (default)\n - \"indices.fielddata.cache.size\": percentage of heap\n - \"indices.query.bool.max_clause_count\": max boolean clauses\n Values must be strings.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsOpenSearchDomainAdvancedSecurityOptions",
+      "description": "AwsOpenSearchDomainAdvancedSecurityOptions configures fine-grained access control\n (FGAC) for the domain. FGAC enables internal user database authentication,\n IAM-based authentication, and role-based index-level permissions.\n\n Once enabled, FGAC cannot be disabled without recreating the domain.",
+      "protoType": "org.openmcf.provider.aws.awsopensearchdomain.v1.AwsOpenSearchDomainAdvancedSecurityOptions",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable fine-grained access control. ForceNew if disabling (cannot disable\n once enabled without domain recreation).",
+          "required": false
+        },
+        {
+          "name": "InternalUserDatabaseEnabled",
+          "jsonName": "internalUserDatabaseEnabled",
+          "protoField": "internal_user_database_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable the internal user database. When true, you can create users and roles\n directly in OpenSearch Dashboards. When false, use IAM or SAML for authentication.",
+          "required": false
+        },
+        {
+          "name": "MasterUserArn",
+          "jsonName": "masterUserArn",
+          "protoField": "master_user_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM entity ARN (user or role) designated as the master user. The master user\n has full access to the cluster, indices, and OpenSearch Dashboards.\n Mutually exclusive with master_user_name/master_user_password.",
+          "required": false
+        },
+        {
+          "name": "MasterUserName",
+          "jsonName": "masterUserName",
+          "protoField": "master_user_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Username for the internal user database master user.\n Mutually exclusive with master_user_arn.",
+          "required": false
+        },
+        {
+          "name": "MasterUserPassword",
+          "jsonName": "masterUserPassword",
+          "protoField": "master_user_password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Password for the internal user database master user. Must be at least 8\n characters with uppercase, lowercase, digit, and special character.\n Mutually exclusive with master_user_arn.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsOpenSearchDomainClusterConfig",
+      "description": "AwsOpenSearchDomainClusterConfig defines the cluster topology including data\n nodes, dedicated master nodes, zone awareness, and UltraWarm/cold storage tiers.",
+      "protoType": "org.openmcf.provider.aws.awsopensearchdomain.v1.AwsOpenSearchDomainClusterConfig",
+      "fields": [
+        {
+          "name": "InstanceType",
+          "jsonName": "instanceType",
+          "protoField": "instance_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Instance type for data nodes. Uses the `.search` suffix.\n Examples: \"t3.small.search\" (dev), \"r6g.large.search\" (production),\n \"r6g.2xlarge.search\" (high-memory workloads).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "InstanceCount",
+          "jsonName": "instanceCount",
+          "protoField": "instance_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of data node instances. Default: 1.\n For zone-aware deployments, use a multiple of the availability zone count.",
+          "required": false,
+          "default": "1",
+          "oneofGroup": "_instance_count"
+        },
+        {
+          "name": "DedicatedMasterEnabled",
+          "jsonName": "dedicatedMasterEnabled",
+          "protoField": "dedicated_master_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable dedicated master nodes for cluster stability. Dedicated masters handle\n cluster management tasks (shard allocation, index state management) without\n competing with data node workloads. Recommended for production.",
+          "required": false
+        },
+        {
+          "name": "DedicatedMasterType",
+          "jsonName": "dedicatedMasterType",
+          "protoField": "dedicated_master_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Instance type for dedicated master nodes. Does not need EBS storage.\n Example: \"r6g.large.search\". Only used when `dedicated_master_enabled` is true.",
+          "required": false
+        },
+        {
+          "name": "DedicatedMasterCount",
+          "jsonName": "dedicatedMasterCount",
+          "protoField": "dedicated_master_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of dedicated master nodes. AWS recommends 3 for production (provides\n quorum for split-brain protection). Only used when `dedicated_master_enabled` is true.",
+          "required": false
+        },
+        {
+          "name": "ZoneAwarenessEnabled",
+          "jsonName": "zoneAwarenessEnabled",
+          "protoField": "zone_awareness_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable zone awareness to distribute data nodes and replicas across multiple\n Availability Zones for resilience against AZ-level failures.",
+          "required": false
+        },
+        {
+          "name": "AvailabilityZoneCount",
+          "jsonName": "availabilityZoneCount",
+          "protoField": "availability_zone_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of Availability Zones. Must be 2 or 3.\n Only used when `zone_awareness_enabled` is true.",
+          "required": false
+        },
+        {
+          "name": "WarmEnabled",
+          "jsonName": "warmEnabled",
+          "protoField": "warm_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable UltraWarm storage tier for infrequently accessed, read-only data.\n UltraWarm uses S3-backed storage at lower cost per GB than hot storage.",
+          "required": false
+        },
+        {
+          "name": "WarmType",
+          "jsonName": "warmType",
+          "protoField": "warm_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Instance type for UltraWarm nodes. Examples: \"ultrawarm1.medium.search\",\n \"ultrawarm1.large.search\". Only used when `warm_enabled` is true.",
+          "required": false
+        },
+        {
+          "name": "WarmCount",
+          "jsonName": "warmCount",
+          "protoField": "warm_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of UltraWarm nodes. Range: 2-150.\n Only used when `warm_enabled` is true.",
+          "required": false
+        },
+        {
+          "name": "ColdStorageEnabled",
+          "jsonName": "coldStorageEnabled",
+          "protoField": "cold_storage_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable cold storage backed by S3. Requires UltraWarm to be enabled.\n Cold storage provides the lowest-cost tier for data that is rarely queried.",
+          "required": false
+        },
+        {
+          "name": "MultiAzWithStandbyEnabled",
+          "jsonName": "multiAzWithStandbyEnabled",
+          "protoField": "multi_az_with_standby_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Multi-AZ with Standby for 99.99% availability SLA. Deploys standby\n nodes in a different AZ that take over automatically during AZ failures.\n Requires 3 AZs and at least 3 data nodes.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsOpenSearchDomainEbsOptions",
+      "description": "AwsOpenSearchDomainEbsOptions defines EBS volume configuration for data node storage.",
+      "protoType": "org.openmcf.provider.aws.awsopensearchdomain.v1.AwsOpenSearchDomainEbsOptions",
+      "fields": [
+        {
+          "name": "EbsEnabled",
+          "jsonName": "ebsEnabled",
+          "protoField": "ebs_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether EBS volumes are attached to data nodes. Required for most instance\n types. Only storage-optimized instances (e.g., i3) use instance storage.",
+          "required": false
+        },
+        {
+          "name": "VolumeType",
+          "jsonName": "volumeType",
+          "protoField": "volume_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "EBS volume type. \"gp3\" (recommended), \"gp2\", \"io1\", or \"standard\".\n gp3 provides predictable performance with configurable IOPS and throughput.",
+          "required": false
+        },
+        {
+          "name": "VolumeSize",
+          "jsonName": "volumeSize",
+          "protoField": "volume_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Size of each EBS volume in GB. The total storage is volume_size * instance_count.",
+          "required": false
+        },
+        {
+          "name": "Iops",
+          "jsonName": "iops",
+          "protoField": "iops",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Provisioned IOPS for the volume. Only valid for \"gp3\" and \"io1\" volume types.\n gp3 baseline: 3000 IOPS. io1: specify based on workload.",
+          "required": false
+        },
+        {
+          "name": "Throughput",
+          "jsonName": "throughput",
+          "protoField": "throughput",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Provisioned throughput in MiB/s. Only valid for \"gp3\" volume type.\n Minimum: 125 MiB/s. gp3 baseline: 125 MiB/s.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsOpenSearchDomainEndpointOptions",
+      "description": "AwsOpenSearchDomainEndpointOptions configures the domain's HTTPS behavior,\n TLS policy, and optional custom endpoint.",
+      "protoType": "org.openmcf.provider.aws.awsopensearchdomain.v1.AwsOpenSearchDomainEndpointOptions",
+      "fields": [
+        {
+          "name": "EnforceHttps",
+          "jsonName": "enforceHttps",
+          "protoField": "enforce_https",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Require HTTPS for all traffic to the domain endpoint. Default: true.\n Strongly recommended for all environments.",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_enforce_https"
+        },
+        {
+          "name": "TlsSecurityPolicy",
+          "jsonName": "tlsSecurityPolicy",
+          "protoField": "tls_security_policy",
+          "type": {
+            "kind": "string"
+          },
+          "description": "TLS security policy for the HTTPS endpoint. Controls the minimum TLS version\n and cipher suites. Example: \"Policy-Min-TLS-1-2-PFS-2023-10\" (recommended).\n Leave empty for the provider default.",
+          "required": false
+        },
+        {
+          "name": "CustomEndpointEnabled",
+          "jsonName": "customEndpointEnabled",
+          "protoField": "custom_endpoint_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable a custom domain endpoint (e.g., \"search.example.com\") instead of the\n AWS-generated endpoint.",
+          "required": false
+        },
+        {
+          "name": "CustomEndpoint",
+          "jsonName": "customEndpoint",
+          "protoField": "custom_endpoint",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The fully qualified domain name for the custom endpoint.\n Only used when `custom_endpoint_enabled` is true.",
+          "required": false
+        },
+        {
+          "name": "CustomEndpointCertificateArn",
+          "jsonName": "customEndpointCertificateArn",
+          "protoField": "custom_endpoint_certificate_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ACM certificate ARN for the custom endpoint. Must be a valid certificate\n covering the custom_endpoint FQDN.\n Only used when `custom_endpoint_enabled` is true.",
+          "required": false,
+          "referenceKind": "AwsCertManagerCert",
+          "referenceFieldPath": "status.outputs.certificate_arn"
+        }
+      ]
+    },
+    {
+      "name": "AwsOpenSearchDomainLogPublishingOption",
+      "description": "AwsOpenSearchDomainLogPublishingOption configures delivery of a specific log type\n to a CloudWatch Logs log group for monitoring, troubleshooting, and auditing.",
+      "protoType": "org.openmcf.provider.aws.awsopensearchdomain.v1.AwsOpenSearchDomainLogPublishingOption",
+      "fields": [
+        {
+          "name": "LogType",
+          "jsonName": "logType",
+          "protoField": "log_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Type of log to publish. Values:\n - \"INDEX_SLOW_LOGS\" — indexing operations exceeding the slow log threshold\n - \"SEARCH_SLOW_LOGS\" — search queries exceeding the slow log threshold\n - \"ES_APPLICATION_LOGS\" — OpenSearch application and error logs\n - \"AUDIT_LOGS\" — fine-grained access control audit trail (requires FGAC enabled)",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "CloudwatchLogGroupArn",
+          "jsonName": "cloudwatchLogGroupArn",
+          "protoField": "cloudwatch_log_group_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "CloudWatch Logs log group ARN where logs are published.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsCloudwatchLogGroup",
+          "referenceFieldPath": "status.outputs.log_group_arn"
+        },
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether this log publishing option is active. Default: true.\n Set to false to temporarily disable publishing without removing the configuration.",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_enabled"
+        }
+      ]
+    },
+    {
+      "name": "AwsOpenSearchDomainVpcOptions",
+      "description": "AwsOpenSearchDomainVpcOptions defines VPC placement for the domain.\n When configured, the domain is not publicly accessible and instead uses\n VPC endpoints for traffic. VPC configuration is ForceNew.",
+      "protoType": "org.openmcf.provider.aws.awsopensearchdomain.v1.AwsOpenSearchDomainVpcOptions",
+      "fields": [
+        {
+          "name": "SubnetIds",
+          "jsonName": "subnetIds",
+          "protoField": "subnet_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Subnet IDs where OpenSearch deploys ENIs. For zone-aware domains, provide\n subnets in 2 or 3 AZs matching the cluster's availability_zone_count.",
+          "required": false,
+          "referenceKind": "AwsVpc",
+          "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+        },
+        {
+          "name": "SecurityGroupIds",
+          "jsonName": "securityGroupIds",
+          "protoField": "security_group_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Security group IDs controlling inbound/outbound traffic to the domain.\n Must allow HTTPS (port 443) from clients that need to access OpenSearch.",
+          "required": false,
+          "referenceKind": "AwsSecurityGroup",
+          "referenceFieldPath": "status.outputs.security_group_id"
+        }
+      ]
+    }
+  ]
+}

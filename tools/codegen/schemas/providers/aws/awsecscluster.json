@@ -1,0 +1,230 @@
+{
+  "name": "AwsEcsCluster",
+  "kind": "AwsEcsCluster",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsEcsCluster represents a containerized application deployed on AWS ECS.\n This resource manages ECS services that can run on either Fargate or EC2.",
+  "protoPackage": "org.openmcf.provider.aws.awsecscluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsecscluster/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsecscluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsEcsClusterSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "EnableContainerInsights",
+        "jsonName": "enableContainerInsights",
+        "protoField": "enable_container_insights",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "enable_container_insights determines whether to enable CloudWatch\n Container Insights for this cluster. This is highly recommended\n for production monitoring, though it incurs CloudWatch costs.\n If omitted, it is recommended to be \"true\".",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "CapacityProviders",
+        "jsonName": "capacityProviders",
+        "protoField": "capacity_providers",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "capacity_providers is a list of capacity providers attached\n to this cluster. For a Fargate-only cluster, typically [\"FARGATE\"]\n or [\"FARGATE\", \"FARGATE_SPOT\"] for cost-optimized Spot usage.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "DefaultCapacityProviderStrategy",
+        "jsonName": "defaultCapacityProviderStrategy",
+        "protoField": "default_capacity_provider_strategy",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "CapacityProviderStrategy"
+          }
+        },
+        "description": "default_capacity_provider_strategy defines the base/weight\n distribution for tasks across capacity providers. This is the\n primary cost-optimization lever for Fargate workloads.\n Example: FARGATE (base: 1, weight: 1) + FARGATE_SPOT (weight: 4)\n results in 20% on-demand, 80% Spot for scaled tasks.",
+        "required": false
+      },
+      {
+        "name": "ExecuteCommandConfiguration",
+        "jsonName": "executeCommandConfiguration",
+        "protoField": "execute_command_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "ExecConfiguration"
+        },
+        "description": "execute_command_configuration defines cluster-level auditing\n settings for ECS Exec. This controls logging and encryption\n for exec sessions. If not specified, exec is disabled.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "CapacityProviderStrategy",
+      "description": "CapacityProviderStrategy defines the base/weight model for\n distributing tasks across capacity providers, enabling production\n cost optimization patterns (e.g., guaranteed on-demand base + Spot scaling).",
+      "protoType": "org.openmcf.provider.aws.awsecscluster.v1.CapacityProviderStrategy",
+      "fields": [
+        {
+          "name": "CapacityProvider",
+          "jsonName": "capacityProvider",
+          "protoField": "capacity_provider",
+          "type": {
+            "kind": "string"
+          },
+          "description": "capacity_provider is the name of the capacity provider\n (e.g., \"FARGATE\" or \"FARGATE_SPOT\").",
+          "required": false,
+          "validation": {
+            "enum": [
+              "FARGATE",
+              "FARGATE_SPOT"
+            ]
+          }
+        },
+        {
+          "name": "Base",
+          "jsonName": "base",
+          "protoField": "base",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "base is the minimum number of tasks to run on this provider.\n Typically used with FARGATE to guarantee stability.\n Must be 0 or greater.",
+          "required": false
+        },
+        {
+          "name": "Weight",
+          "jsonName": "weight",
+          "protoField": "weight",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "weight is the relative weight for scaling tasks beyond the base.\n Example: FARGATE (weight: 1) + FARGATE_SPOT (weight: 4)\n results in 20% on-demand, 80% Spot for scaled tasks.\n Must be greater than 0 if this strategy is used.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ExecConfiguration",
+      "description": "ExecConfiguration defines cluster-level auditing for ECS Exec,\n controlling how exec session commands and output are logged.",
+      "protoType": "org.openmcf.provider.aws.awsecscluster.v1.ExecConfiguration",
+      "fields": [
+        {
+          "name": "Logging",
+          "jsonName": "logging",
+          "protoField": "logging",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.aws.awsecscluster.v1.Logging",
+            "enumValues": [
+              "DEFAULT",
+              "NONE",
+              "OVERRIDE"
+            ]
+          },
+          "description": "logging controls the logging behavior for Exec sessions.\n UNSPECIFIED (default) means exec is disabled.\n DEFAULT enables exec with AWS-managed logging.\n NONE enables exec but disables audit logging.\n OVERRIDE uses custom log_configuration.",
+          "required": false
+        },
+        {
+          "name": "LogConfiguration",
+          "jsonName": "logConfiguration",
+          "protoField": "log_configuration",
+          "type": {
+            "kind": "message",
+            "messageType": "ExecLogConfiguration"
+          },
+          "description": "log_configuration specifies custom destinations for Exec audit logs.\n Only used if logging is OVERRIDE.",
+          "required": false
+        },
+        {
+          "name": "KmsKeyId",
+          "jsonName": "kmsKeyId",
+          "protoField": "kms_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "kms_key_id is an optional KMS key ID for encrypting exec session data.\n Applies to both CloudWatch Logs and S3 if specified.\n Can reference an AwsKmsKey resource.",
+          "required": false,
+          "referenceKind": "AwsKmsKey",
+          "referenceFieldPath": "status.outputs.key_arn"
+        }
+      ]
+    },
+    {
+      "name": "ExecLogConfiguration",
+      "description": "ExecLogConfiguration specifies custom destinations for Exec audit logs,\n enabling compliance and security monitoring of container exec sessions.",
+      "protoType": "org.openmcf.provider.aws.awsecscluster.v1.ExecLogConfiguration",
+      "fields": [
+        {
+          "name": "CloudWatchLogGroupName",
+          "jsonName": "cloudWatchLogGroupName",
+          "protoField": "cloud_watch_log_group_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "cloud_watch_log_group_name is the CloudWatch log group to send logs to.\n If specified, exec session logs will be sent to this log group.",
+          "required": false
+        },
+        {
+          "name": "CloudWatchEncryptionEnabled",
+          "jsonName": "cloudWatchEncryptionEnabled",
+          "protoField": "cloud_watch_encryption_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "cloud_watch_encryption_enabled controls whether CloudWatch logs are encrypted.\n If true, uses the kms_key_id from ExecConfiguration.",
+          "required": false
+        },
+        {
+          "name": "S3BucketName",
+          "jsonName": "s3BucketName",
+          "protoField": "s3_bucket_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "s3_bucket_name is the S3 bucket to send logs to.\n If specified, exec session logs will be stored in this bucket.",
+          "required": false
+        },
+        {
+          "name": "S3KeyPrefix",
+          "jsonName": "s3KeyPrefix",
+          "protoField": "s3_key_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "s3_key_prefix is the S3 key prefix for log files.\n Used to organize logs within the S3 bucket.",
+          "required": false
+        },
+        {
+          "name": "S3EncryptionEnabled",
+          "jsonName": "s3EncryptionEnabled",
+          "protoField": "s3_encryption_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "s3_encryption_enabled controls whether S3 logs are encrypted.\n If true, uses the kms_key_id from ExecConfiguration.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

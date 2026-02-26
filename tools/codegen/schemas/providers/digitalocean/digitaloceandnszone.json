@@ -1,0 +1,176 @@
+{
+  "name": "DigitalOceanDnsZone",
+  "kind": "DigitalOceanDnsZone",
+  "cloudProvider": "digitalocean",
+  "apiVersion": "digital-ocean.openmcf.org/v1",
+  "description": "digital-ocean-dns-zone",
+  "protoPackage": "org.openmcf.provider.digitalocean.digitaloceandnszone.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/digitalocean/digitaloceandnszone/v1/api.proto",
+    "spec": "org/openmcf/provider/digitalocean/digitaloceandnszone/v1/spec.proto"
+  },
+  "spec": {
+    "name": "DigitalOceanDnsZoneSpec",
+    "fields": [
+      {
+        "name": "DomainName",
+        "jsonName": "domainName",
+        "protoField": "domain_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The domain name for the DNS zone.\n Must be a valid fully-qualified domain name (e.g., \"example.com\").",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^(?:[A-Za-z0-9-]+\\.)+[A-Za-z]{2,}$"
+        }
+      },
+      {
+        "name": "Records",
+        "jsonName": "records",
+        "protoField": "records",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "DigitalOceanDnsZoneRecord"
+          }
+        },
+        "description": "A list of DNS records to create within the zone (optional).\n Each record includes its type, name, value(s), and TTL.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "DigitalOceanDnsZoneRecord",
+      "description": "DnsRecord represents a DNS record entry to be created in the zone.",
+      "protoType": "org.openmcf.provider.digitalocean.digitaloceandnszone.v1.DigitalOceanDnsZoneRecord",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The host/name for the DNS record, relative to the zone.\n For root records, use \"@\" to denote the zone itself.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Values",
+          "jsonName": "values",
+          "protoField": "values",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "The value or values for the DNS record.\n - For A/AAAA: one or more IP address(es).\n - For CNAME: the target domain name.\n - For TXT: the text data (if multiple strings, they will be concatenated by DNS).\n - For MX: the mail server domain name (priority is specified separately in the priority field).\n - For SRV: the target server (priority, weight, and port are specified separately).\n - For CAA: the certificate authority domain (flags and tag are specified separately).\n Each value can be a literal or a reference to another resource's output.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minItems": 1
+          }
+        },
+        {
+          "name": "TtlSeconds",
+          "jsonName": "ttlSeconds",
+          "protoField": "ttl_seconds",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "The time-to-live for this DNS record, in seconds.\n Determines how long resolvers cache the record. Defaults to 3600 seconds (1 hour) if not set.",
+          "required": false,
+          "recommendedDefault": "3600"
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.networking.enums.dnsrecordtype.DnsRecordType",
+            "enumValues": [
+              "A",
+              "AAAA",
+              "ALIAS",
+              "CNAME",
+              "MX",
+              "NS",
+              "PTR",
+              "SOA",
+              "SRV",
+              "TXT",
+              "CAA"
+            ]
+          },
+          "description": "The type of the DNS record.\n This field is required and must be one of the supported record types.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "Priority for MX and SRV records.\n - For MX records: Lower values indicate higher priority (e.g., 1 is higher priority than 10).\n - For SRV records: Used in conjunction with weight for load distribution.\n - Ignored for other record types.\n Defaults to 0 if not specified.",
+          "required": false,
+          "recommendedDefault": "0"
+        },
+        {
+          "name": "Weight",
+          "jsonName": "weight",
+          "protoField": "weight",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "Weight for SRV records.\n Specifies the relative weight for records with the same priority.\n Higher weights are chosen more often.\n Ignored for non-SRV record types.\n Defaults to 0 if not specified.",
+          "required": false,
+          "recommendedDefault": "0"
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "Port for SRV records.\n Specifies the TCP or UDP port on which the service is available.\n Required for SRV records, ignored for other types.\n Defaults to 0 if not specified.",
+          "required": false,
+          "recommendedDefault": "0"
+        },
+        {
+          "name": "Flags",
+          "jsonName": "flags",
+          "protoField": "flags",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "Flags for CAA records.\n - 0: Non-critical (default) - If a CA doesn't understand the tag, it can ignore it.\n - 128: Critical - If a CA doesn't understand the tag, it must refuse to issue.\n Ignored for non-CAA record types.\n Defaults to 0 if not specified.",
+          "required": false,
+          "recommendedDefault": "0"
+        },
+        {
+          "name": "Tag",
+          "jsonName": "tag",
+          "protoField": "tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Tag for CAA records.\n Specifies the property being authorized:\n - \"issue\": Authorizes a CA to issue certificates for the domain.\n - \"issuewild\": Authorizes a CA to issue wildcard certificates.\n - \"iodef\": Specifies a URL to which a CA may report policy violations.\n Required for CAA records, ignored for other types.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "name": "GcpDnsRecord",
+  "kind": "GcpDnsRecord",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "GcpDnsRecord is a Kubernetes Resource Model (KRM) style resource for managing\n individual DNS records within a Google Cloud DNS Managed Zone.\n\n This component provides declarative management of DNS records including:\n - A, AAAA, CNAME, MX, TXT, SRV, NS, PTR, CAA, and SOA record types\n - TTL configuration\n - Round-robin support with multiple values\n - Wildcard records",
+  "protoPackage": "org.openmcf.provider.gcp.gcpdnsrecord.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpdnsrecord/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpdnsrecord/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpDnsRecordSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The ID of the GCP project where the Managed Zone exists.\n This is used to locate the DNS zone where the record will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "ManagedZone",
+        "jsonName": "managedZone",
+        "protoField": "managed_zone",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Managed Zone where this DNS record will be created.\n This can be a direct value or a reference to a GcpDnsZone resource's output.\n Example: \"example-zone\" (the zone name, not the DNS name).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpDnsZone",
+        "referenceFieldPath": "status.outputs.zone_name"
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.gcp.gcpdnsrecord.v1.RecordType",
+          "enumValues": [
+            "A",
+            "AAAA",
+            "CNAME",
+            "MX",
+            "TXT",
+            "SRV",
+            "NS",
+            "PTR",
+            "CAA",
+            "SOA"
+          ]
+        },
+        "description": "The DNS record type to create.\n Supported types: A, AAAA, CNAME, MX, TXT, SRV, NS, PTR, CAA, SOA.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The fully qualified domain name for this record.\n Must end with a trailing dot to indicate FQDN.\n Example: \"www.example.com.\" or \"api.example.com.\"",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Values",
+        "jsonName": "values",
+        "protoField": "values",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "The values/targets for the DNS record.\n For A records: IPv4 addresses (e.g., \"192.0.2.1\")\n For AAAA records: IPv6 addresses (e.g., \"2001:db8::1\")\n For CNAME records: target hostname with trailing dot (e.g., \"target.example.com.\")\n For MX records: mail server with priority (priority handled separately)\n For TXT records: text values (e.g., \"v=spf1 include:_spf.google.com ~all\")\n Multiple values create a round-robin record set.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "TtlSeconds",
+        "jsonName": "ttlSeconds",
+        "protoField": "ttl_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Time to live (TTL) for the DNS record in seconds.\n Determines how long resolvers should cache this record.\n Common values: 60 (1 min), 300 (5 min), 3600 (1 hour), 86400 (1 day).\n Default: 300 seconds (5 minutes).",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 86400
+        },
+        "default": "300",
+        "oneofGroup": "_ttl_seconds"
+      }
+    ]
+  }
+}

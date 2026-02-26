@@ -1,0 +1,159 @@
+{
+  "name": "CloudflareLoadBalancer",
+  "kind": "CloudflareLoadBalancer",
+  "cloudProvider": "cloudflare",
+  "apiVersion": "cloudflare.openmcf.org/v1",
+  "description": "cloudflare-load-balancer",
+  "protoPackage": "org.openmcf.provider.cloudflare.cloudflareloadbalancer.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/cloudflare/cloudflareloadbalancer/v1/api.proto",
+    "spec": "org/openmcf/provider/cloudflare/cloudflareloadbalancer/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CloudflareLoadBalancerSpec",
+    "fields": [
+      {
+        "name": "Hostname",
+        "jsonName": "hostname",
+        "protoField": "hostname",
+        "type": {
+          "kind": "string"
+        },
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ZoneId",
+        "jsonName": "zoneId",
+        "protoField": "zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Foreign key reference to a Cloudflare DNS zone that contains the hostname.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "CloudflareDnsZone",
+        "referenceFieldPath": "status.outputs.zone_id"
+      },
+      {
+        "name": "Origins",
+        "jsonName": "origins",
+        "protoField": "origins",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "CloudflareLoadBalancerOrigin"
+          }
+        },
+        "description": "List of origin servers behind this load balancer. At least one origin is required.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Proxied",
+        "jsonName": "proxied",
+        "protoField": "proxied",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether Cloudflare's proxy is enabled for this hostname (orange cloud). Defaults to true.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "HealthProbePath",
+        "jsonName": "healthProbePath",
+        "protoField": "health_probe_path",
+        "type": {
+          "kind": "string"
+        },
+        "description": "HTTP path to use for health monitoring of origins. Defaults to \"/\".",
+        "required": false,
+        "recommendedDefault": "/"
+      },
+      {
+        "name": "SessionAffinity",
+        "jsonName": "sessionAffinity",
+        "protoField": "session_affinity",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.cloudflare.cloudflareloadbalancer.v1.CloudflareLoadBalancerSessionAffinity",
+          "enumValues": [
+            "cookie"
+          ]
+        },
+        "description": "Session affinity setting (e.g., \"cookie\" to bind clients to an origin). Defaults to none.",
+        "required": false
+      },
+      {
+        "name": "SteeringPolicy",
+        "jsonName": "steeringPolicy",
+        "protoField": "steering_policy",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.cloudflare.cloudflareloadbalancer.v1.CloudflareLoadBalancerSteeringPolicy",
+          "enumValues": [
+            "geo",
+            "random"
+          ]
+        },
+        "description": "Traffic steering policy. \"off\" for static/failover (default), \"geo\" for geo-routing, \"random\" for weighted distribution.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "CloudflareLoadBalancerOrigin",
+      "description": "Definition of an origin server in the Cloudflare load balancer.",
+      "protoType": "org.openmcf.provider.cloudflare.cloudflareloadbalancer.v1.CloudflareLoadBalancerOrigin",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "A name to identify the origin.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Address",
+          "jsonName": "address",
+          "protoField": "address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The origin address (IP or DNS hostname) reachable via HTTP(S).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Weight",
+          "jsonName": "weight",
+          "protoField": "weight",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Weight for this origin (relative traffic share). Defaults to 1.",
+          "required": false,
+          "recommendedDefault": "1"
+        }
+      ]
+    }
+  ]
+}

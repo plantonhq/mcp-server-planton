@@ -1,0 +1,472 @@
+{
+  "name": "OciObjectStorageBucket",
+  "kind": "OciObjectStorageBucket",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciObjectStorageBucket is the top-level resource representing an OCI\n Object Storage bucket with optional retention rules, lifecycle policies,\n and cross-region replication.",
+  "protoPackage": "org.openmcf.provider.oci.ociobjectstoragebucket.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ociobjectstoragebucket/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ociobjectstoragebucket/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciObjectStorageBucketSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the bucket will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Object Storage namespace for the tenancy. This is a unique identifier\n assigned to each tenancy (e.g. \"axe1234abc\"). Retrieve it via\n `oci os ns get` or from the OCI Console.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Bucket name. Must be unique within the namespace. Valid characters:\n uppercase/lowercase letters, numbers, hyphens, underscores, periods.\n Changing this forces recreation.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "AccessType",
+        "jsonName": "accessType",
+        "protoField": "access_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ociobjectstoragebucket.v1.AccessType",
+          "enumValues": [
+            "no_public_access",
+            "object_read",
+            "object_read_without_list"
+          ]
+        },
+        "description": "Type of public access enabled on the bucket.\n When unspecified, defaults to no_public_access.",
+        "required": false
+      },
+      {
+        "name": "StorageTier",
+        "jsonName": "storageTier",
+        "protoField": "storage_tier",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ociobjectstoragebucket.v1.StorageTier",
+          "enumValues": [
+            "standard",
+            "archive"
+          ]
+        },
+        "description": "Storage tier for the bucket. Immutable after creation.\n When unspecified, defaults to standard.",
+        "required": false
+      },
+      {
+        "name": "Versioning",
+        "jsonName": "versioning",
+        "protoField": "versioning",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ociobjectstoragebucket.v1.Versioning",
+          "enumValues": [
+            "enabled",
+            "disabled",
+            "suspended"
+          ]
+        },
+        "description": "Versioning status. Objects in a version-enabled bucket are protected\n from overwrites and deletions by maintaining version history.\n On create: enabled or disabled. On update: enabled or suspended.",
+        "required": false
+      },
+      {
+        "name": "AutoTiering",
+        "jsonName": "autoTiering",
+        "protoField": "auto_tiering",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ociobjectstoragebucket.v1.AutoTiering",
+          "enumValues": [
+            "auto_tiering_disabled",
+            "infrequent_access"
+          ]
+        },
+        "description": "Auto-tiering automatically transitions objects between Standard\n and InfrequentAccess tiers based on access patterns.",
+        "required": false
+      },
+      {
+        "name": "ObjectEventsEnabled",
+        "jsonName": "objectEventsEnabled",
+        "protoField": "object_events_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, events are emitted for object state changes in this bucket\n via the OCI Events service.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of a KMS master encryption key for server-side encryption.\n When unset, Oracle-managed keys are used.",
+        "required": false
+      },
+      {
+        "name": "Metadata",
+        "jsonName": "metadata",
+        "protoField": "metadata",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "User-defined metadata as key-value pairs. Keys must be lowercase.\n Total size limit is 4KB.",
+        "required": false
+      },
+      {
+        "name": "RetentionRules",
+        "jsonName": "retentionRules",
+        "protoField": "retention_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "RetentionRule"
+          }
+        },
+        "description": "Retention rules enforce minimum retention periods on objects.\n A maximum of 100 rules are supported per bucket. Rules take\n effect within approximately 30 seconds.",
+        "required": false
+      },
+      {
+        "name": "LifecycleRules",
+        "jsonName": "lifecycleRules",
+        "protoField": "lifecycle_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "LifecycleRule"
+          }
+        },
+        "description": "Lifecycle rules automate object transitions and deletions based\n on age. Managed as a single lifecycle policy resource on the bucket.",
+        "required": false
+      },
+      {
+        "name": "ReplicationPolicies",
+        "jsonName": "replicationPolicies",
+        "protoField": "replication_policies",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ReplicationPolicy"
+          }
+        },
+        "description": "Cross-region replication policies. Each policy replicates objects\n to a destination bucket in another OCI region. Destination buckets\n must exist before creating the policy. All fields are immutable\n after creation.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "Duration",
+      "description": "Duration defines a time period for retention and lifecycle rules.",
+      "protoType": "org.openmcf.provider.oci.ociobjectstoragebucket.v1.OciObjectStorageBucketSpec.Duration",
+      "fields": [
+        {
+          "name": "TimeAmount",
+          "jsonName": "timeAmount",
+          "protoField": "time_amount",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Time amount, interpreted in units defined by time_unit.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "TimeUnit",
+          "jsonName": "timeUnit",
+          "protoField": "time_unit",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociobjectstoragebucket.v1.TimeUnit",
+            "enumValues": [
+              "days",
+              "years"
+            ]
+          },
+          "description": "Unit of time for time_amount.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "LifecycleRule",
+      "description": "LifecycleRule defines an automatic action on objects based on age.",
+      "protoType": "org.openmcf.provider.oci.ociobjectstoragebucket.v1.OciObjectStorageBucketSpec.LifecycleRule",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Rule name. Must be unique within the lifecycle policy.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociobjectstoragebucket.v1.LifecycleAction",
+            "enumValues": [
+              "lifecycle_archive",
+              "lifecycle_infrequent_access",
+              "lifecycle_delete",
+              "lifecycle_abort"
+            ]
+          },
+          "description": "Action to perform on matching objects.",
+          "required": false
+        },
+        {
+          "name": "IsEnabled",
+          "jsonName": "isEnabled",
+          "protoField": "is_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether this rule is currently active.",
+          "required": false
+        },
+        {
+          "name": "TimeAmount",
+          "jsonName": "timeAmount",
+          "protoField": "time_amount",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Age threshold. Objects older than this are acted upon.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "TimeUnit",
+          "jsonName": "timeUnit",
+          "protoField": "time_unit",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociobjectstoragebucket.v1.TimeUnit",
+            "enumValues": [
+              "days",
+              "years"
+            ]
+          },
+          "description": "Unit for time_amount.",
+          "required": false
+        },
+        {
+          "name": "Target",
+          "jsonName": "target",
+          "protoField": "target",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Target object type. Valid values: \"objects\" (default),\n \"multipart-uploads\", \"previous-object-versions\".\n Uses plain strings because the values contain hyphens.",
+          "required": false,
+          "validation": {
+            "enum": [
+              "objects",
+              "multipart-uploads",
+              "previous-object-versions",
+              ""
+            ]
+          }
+        },
+        {
+          "name": "ObjectNameFilter",
+          "jsonName": "objectNameFilter",
+          "protoField": "object_name_filter",
+          "type": {
+            "kind": "message",
+            "messageType": "ObjectNameFilter"
+          },
+          "description": "Filter to narrow which objects the rule applies to.\n Not valid when target is \"multipart-uploads\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ObjectNameFilter",
+      "description": "ObjectNameFilter selects objects by name pattern for lifecycle rules.\n Exclusion patterns take precedence over inclusion patterns.",
+      "protoType": "org.openmcf.provider.oci.ociobjectstoragebucket.v1.OciObjectStorageBucketSpec.ObjectNameFilter",
+      "fields": [
+        {
+          "name": "InclusionPatterns",
+          "jsonName": "inclusionPatterns",
+          "protoField": "inclusion_patterns",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Glob patterns to include. An empty list includes all objects.",
+          "required": false
+        },
+        {
+          "name": "InclusionPrefixes",
+          "jsonName": "inclusionPrefixes",
+          "protoField": "inclusion_prefixes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Object name prefixes to include. Kept for backward compatibility;\n prefer inclusion_patterns.",
+          "required": false
+        },
+        {
+          "name": "ExclusionPatterns",
+          "jsonName": "exclusionPatterns",
+          "protoField": "exclusion_patterns",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Glob patterns to exclude. Takes precedence over inclusions.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ReplicationPolicy",
+      "description": "ReplicationPolicy defines cross-region asynchronous replication\n to a destination bucket. All fields are immutable after creation.",
+      "protoType": "org.openmcf.provider.oci.ociobjectstoragebucket.v1.OciObjectStorageBucketSpec.ReplicationPolicy",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Policy name.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DestinationBucketName",
+          "jsonName": "destinationBucketName",
+          "protoField": "destination_bucket_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the destination bucket. Must already exist in the\n destination region.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DestinationRegionName",
+          "jsonName": "destinationRegionName",
+          "protoField": "destination_region_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCI region identifier for the destination (e.g. \"us-ashburn-1\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "RetentionRule",
+      "description": "RetentionRule enforces a minimum retention period on objects.",
+      "protoType": "org.openmcf.provider.oci.ociobjectstoragebucket.v1.OciObjectStorageBucketSpec.RetentionRule",
+      "fields": [
+        {
+          "name": "DisplayName",
+          "jsonName": "displayName",
+          "protoField": "display_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "User-specified name for the retention rule. Must be unique\n within the bucket. Changing this forces recreation.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Duration",
+          "jsonName": "duration",
+          "protoField": "duration",
+          "type": {
+            "kind": "message",
+            "messageType": "Duration"
+          },
+          "description": "Retention duration. When omitted, the rule applies indefinitely.",
+          "required": false
+        },
+        {
+          "name": "TimeRuleLocked",
+          "jsonName": "timeRuleLocked",
+          "protoField": "time_rule_locked",
+          "type": {
+            "kind": "string"
+          },
+          "description": "RFC 3339 datetime after which this rule becomes locked.\n Once locked, the rule can only be deleted by deleting the bucket,\n and only duration increases are allowed.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

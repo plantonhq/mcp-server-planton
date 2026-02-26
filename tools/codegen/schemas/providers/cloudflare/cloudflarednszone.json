@@ -1,0 +1,192 @@
+{
+  "name": "CloudflareDnsZone",
+  "kind": "CloudflareDnsZone",
+  "cloudProvider": "cloudflare",
+  "apiVersion": "cloudflare.openmcf.org/v1",
+  "description": "cloudflare-dns-zone",
+  "protoPackage": "org.openmcf.provider.cloudflare.cloudflarednszone.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/cloudflare/cloudflarednszone/v1/api.proto",
+    "spec": "org/openmcf/provider/cloudflare/cloudflarednszone/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CloudflareDnsZoneSpec",
+    "fields": [
+      {
+        "name": "ZoneName",
+        "jsonName": "zoneName",
+        "protoField": "zone_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The fully qualified domain name of the DNS zone (e.g., \"example.com\").",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "AccountId",
+        "jsonName": "accountId",
+        "protoField": "account_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Cloudflare account identifier under which to create the zone.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Plan",
+        "jsonName": "plan",
+        "protoField": "plan",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.cloudflare.cloudflarednszone.v1.Plan",
+          "enumValues": [
+            "PRO",
+            "BUSINESS",
+            "ENTERPRISE"
+          ]
+        },
+        "description": "The subscription plan for the zone (e.g., free, pro, business, enterprise).\n Defaults to the Free plan if unspecified.",
+        "required": false
+      },
+      {
+        "name": "Paused",
+        "jsonName": "paused",
+        "protoField": "paused",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Indicates if the zone is created in a paused state (DNS-only mode with no security or performance features).\n If true, the zone will not receive Cloudflare's proxy/CDN services. Defaults to false.",
+        "required": false
+      },
+      {
+        "name": "DefaultProxied",
+        "jsonName": "defaultProxied",
+        "protoField": "default_proxied",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "If true, new DNS records in this zone will default to being proxied (orange-cloud) through Cloudflare.\n Defaults to false.",
+        "required": false
+      },
+      {
+        "name": "Records",
+        "jsonName": "records",
+        "protoField": "records",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "CloudflareDnsZoneRecord"
+          }
+        },
+        "description": "DNS records to create in this zone.\n This allows managing DNS records as part of the zone configuration.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "CloudflareDnsZoneRecord",
+      "description": "CloudflareDnsZoneRecord defines the configuration for a DNS record within a Cloudflare zone.\n This message supports creating individual DNS records with common record types.",
+      "protoType": "org.openmcf.provider.cloudflare.cloudflarednszone.v1.CloudflareDnsZoneRecord",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the DNS record (e.g., \"www\", \"api\", \"@\" for root).\n Use \"@\" to create a record at the zone apex (root domain).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.cloudflare.cloudflarednszone.v1.RecordType",
+            "enumValues": [
+              "A",
+              "AAAA",
+              "CNAME",
+              "MX",
+              "TXT",
+              "SRV",
+              "NS",
+              "CAA"
+            ]
+          },
+          "description": "The type of DNS record to create.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The value/target of the DNS record.\n For A records: IPv4 address (e.g., \"192.0.2.1\")\n For AAAA records: IPv6 address (e.g., \"2001:db8::1\")\n For CNAME records: target hostname (e.g., \"example.com\")\n For MX records: mail server hostname (e.g., \"mail.example.com\")\n For TXT records: text value (e.g., \"v=spf1 include:_spf.google.com ~all\")",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Proxied",
+          "jsonName": "proxied",
+          "protoField": "proxied",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the record is proxied through Cloudflare (orange cloud).\n When true: traffic flows through Cloudflare's CDN/WAF (hides origin IP).\n When false: DNS-only resolution (grey cloud, reveals origin IP).\n Only applicable to A, AAAA, and CNAME records.\n Defaults to false.",
+          "required": false
+        },
+        {
+          "name": "Ttl",
+          "jsonName": "ttl",
+          "protoField": "ttl",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Time to live (TTL) for the DNS record in seconds.\n Set to 1 for automatic TTL (recommended for proxied records).\n Valid values: 1 (auto), or 60-86400 seconds.\n Defaults to 1 (automatic).",
+          "required": false
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Priority for MX and SRV records.\n Lower values indicate higher priority.\n Required for MX records, optional for SRV records.\n Range: 0-65535.",
+          "required": false
+        },
+        {
+          "name": "Comment",
+          "jsonName": "comment",
+          "protoField": "comment",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional comment/note for the DNS record.\n Useful for documenting the purpose of the record.\n Maximum 100 characters.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

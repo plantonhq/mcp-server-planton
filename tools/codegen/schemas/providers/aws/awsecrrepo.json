@@ -1,0 +1,160 @@
+{
+  "name": "AwsEcrRepo",
+  "kind": "AwsEcrRepo",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-ecr-repo",
+  "protoPackage": "org.openmcf.provider.aws.awsecrrepo.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsecrrepo/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsecrrepo/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsEcrRepoSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "RepositoryName",
+        "jsonName": "repositoryName",
+        "protoField": "repository_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "repositoryName is the name of the ECR repository. Must be unique within\n the AWS account and region. Commonly includes the microservice or project name.\n Example: \"github.com/team-blue/my-microservice\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 256
+        }
+      },
+      {
+        "name": "ImageImmutable",
+        "jsonName": "imageImmutable",
+        "protoField": "image_immutable",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "indicates whether image tags can be overwritten (MUTABLE) or not (IMMUTABLE).",
+        "required": false
+      },
+      {
+        "name": "EncryptionType",
+        "jsonName": "encryptionType",
+        "protoField": "encryption_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "encryptionType determines how ECR encrypts images at rest. Default is AES256,\n using AWS-managed encryption. Use KMS to specify your own KMS key for compliance.\n EncryptionType determines how images are encrypted at rest in ECR.\n By default, AWS uses AES-256 (service-managed keys). Choose KMS to use\n a customer-managed key (CMK).",
+        "required": false,
+        "validation": {
+          "enum": [
+            "AES256",
+            "KMS"
+          ]
+        },
+        "default": "AES256",
+        "oneofGroup": "_encryption_type"
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "kmsKeyId is the ARN or ID of a KMS key used when encryption_type = KMS.\n If omitted, AWS uses the default service-managed key for ECR.\n Ignored if encryption_type = AES256.\n Can reference an AwsKmsKey resource.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "ForceDelete",
+        "jsonName": "forceDelete",
+        "protoField": "force_delete",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "forceDelete, if true, allows deleting the repository even when it contains\n images (all images get removed on delete). By default, it is false, preventing\n accidental data loss.",
+        "required": false
+      },
+      {
+        "name": "ScanOnPush",
+        "jsonName": "scanOnPush",
+        "protoField": "scan_on_push",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "scanOnPush enables automatic image scanning when images are pushed to the repository.\n This is a production security essential - enables shift-left vulnerability detection.\n Defaults to true for security best practices.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_scan_on_push"
+      },
+      {
+        "name": "LifecyclePolicy",
+        "jsonName": "lifecyclePolicy",
+        "protoField": "lifecycle_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsEcrRepoLifecyclePolicy"
+        },
+        "description": "lifecyclePolicyRules defines automated image lifecycle management rules for cost control.\n This is essential for production to prevent uncontrolled storage costs.\n If not specified, no lifecycle policy is applied (not recommended for production).",
+        "required": false,
+        "oneofGroup": "_lifecycle_policy"
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsEcrRepoLifecyclePolicy",
+      "description": "AwsEcrRepoLifecyclePolicy defines lifecycle rules for automatic image expiration.\n This is critical for cost control in active CI/CD environments that generate many images.",
+      "protoType": "org.openmcf.provider.aws.awsecrrepo.v1.AwsEcrRepoLifecyclePolicy",
+      "fields": [
+        {
+          "name": "ExpireUntaggedAfterDays",
+          "jsonName": "expireUntaggedAfterDays",
+          "protoField": "expire_untagged_after_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "expireUntaggedAfterDays removes untagged images after the specified number of days.\n Untagged images are typically intermediate build layers or failed builds.\n Recommended: 1-14 days. Default: 14 days if not specified.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 365
+          },
+          "default": "14",
+          "oneofGroup": "_expire_untagged_after_days"
+        },
+        {
+          "name": "MaxImageCount",
+          "jsonName": "maxImageCount",
+          "protoField": "max_image_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "maxImageCount keeps only the most recent N images, expiring all older ones.\n This prevents unbounded growth from CI/CD pipelines creating many tagged images.\n Recommended: 30-100 depending on deployment frequency. Default: 30 if not specified.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 1000
+          },
+          "default": "30",
+          "oneofGroup": "_max_image_count"
+        }
+      ]
+    }
+  ]
+}

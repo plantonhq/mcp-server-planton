@@ -1,4 +1,4 @@
-.PHONY: build install test lint fmt fmt-check release docker-build docker-run clean help
+.PHONY: build install test lint fmt fmt-check release docker-build docker-run clean help codegen-schemas
 
 # Default target
 .DEFAULT_GOAL := help
@@ -117,6 +117,12 @@ endif
 	@git push origin $(version)
 	@echo "Release version $(version) created and pushed"
 	@echo "GitHub Actions will now build and publish the release"
+
+## codegen-schemas: Generate JSON schemas from OpenMCF provider protos (Stage 1)
+codegen-schemas:
+	@echo "Generating provider schemas..."
+	@go run ./tools/codegen/proto2schema/ --all
+	@echo "Schema generation complete"
 
 ## help: Show this help message
 help:

@@ -1,0 +1,830 @@
+{
+  "name": "GcpCloudComposerEnvironment",
+  "kind": "GcpCloudComposerEnvironment",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-cloud-composer-environment",
+  "protoPackage": "org.openmcf.provider.gcp.gcpcloudcomposerenvironment.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpcloudcomposerenvironment/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpcloudcomposerenvironment/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpCloudComposerEnvironmentSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project in which to create the Cloud Composer environment.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP region for the Composer environment (e.g., \"us-central1\").",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "EnvironmentName",
+        "jsonName": "environmentName",
+        "protoField": "environment_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Composer environment resource in GCP.\n Must be lowercase letters, numbers, and hyphens; start with a letter;\n end with a letter or number; 1-64 characters.\n Optional: when empty, defaults to metadata.name.",
+        "required": false,
+        "validation": {
+          "pattern": "^([a-z]([a-z0-9-]{0,62}[a-z0-9])?)?$"
+        }
+      },
+      {
+        "name": "NodeConfig",
+        "jsonName": "nodeConfig",
+        "protoField": "node_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudComposerNodeConfig"
+        },
+        "description": "Networking and node configuration for the Composer environment.",
+        "required": false
+      },
+      {
+        "name": "SoftwareConfig",
+        "jsonName": "softwareConfig",
+        "protoField": "software_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudComposerSoftwareConfig"
+        },
+        "description": "Airflow software configuration including image version, packages,\n and configuration overrides.",
+        "required": false
+      },
+      {
+        "name": "PrivateEnvironmentConfig",
+        "jsonName": "privateEnvironmentConfig",
+        "protoField": "private_environment_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudComposerPrivateEnvironmentConfig"
+        },
+        "description": "Private networking configuration for Composer 2.x environments using\n VPC peering or Private Service Connect. Not applicable to Composer 3\n which uses enable_private_environment and composer_network_attachment instead.",
+        "required": false
+      },
+      {
+        "name": "WorkloadsConfig",
+        "jsonName": "workloadsConfig",
+        "protoField": "workloads_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudComposerWorkloadsConfig"
+        },
+        "description": "Workload resource allocation for Airflow components (scheduler, worker,\n web server, triggerer, DAG processor). Applies to Composer 2.x and 3.",
+        "required": false
+      },
+      {
+        "name": "EnvironmentSize",
+        "jsonName": "environmentSize",
+        "protoField": "environment_size",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Size of the Composer environment. Controls the managed infrastructure\n capacity. Only applicable to Composer 2.x and 3.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "",
+            "ENVIRONMENT_SIZE_SMALL",
+            "ENVIRONMENT_SIZE_MEDIUM",
+            "ENVIRONMENT_SIZE_LARGE"
+          ]
+        }
+      },
+      {
+        "name": "ResilienceMode",
+        "jsonName": "resilienceMode",
+        "protoField": "resilience_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Resilience mode for the Composer environment. HIGH_RESILIENCE provides\n multi-zone redundancy for increased availability. Applies to Composer 2.1.15+.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "",
+            "STANDARD_RESILIENCE",
+            "HIGH_RESILIENCE"
+          ]
+        }
+      },
+      {
+        "name": "KmsKeyName",
+        "jsonName": "kmsKeyName",
+        "protoField": "kms_key_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed encryption key for the Composer environment.\n All Composer-managed resources (GKE nodes, Cloud SQL, Cloud Storage) are\n encrypted with this key.",
+        "required": false,
+        "referenceKind": "GcpKmsKey",
+        "referenceFieldPath": "status.outputs.key_id"
+      },
+      {
+        "name": "MaintenanceWindow",
+        "jsonName": "maintenanceWindow",
+        "protoField": "maintenance_window",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudComposerMaintenanceWindow"
+        },
+        "description": "Maintenance window configuration for the Composer environment.\n Defines when GCP may perform maintenance operations on the environment.",
+        "required": false
+      },
+      {
+        "name": "RecoveryConfig",
+        "jsonName": "recoveryConfig",
+        "protoField": "recovery_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudComposerRecoveryConfig"
+        },
+        "description": "Recovery configuration with scheduled snapshots for disaster recovery.",
+        "required": false
+      },
+      {
+        "name": "WebServerNetworkAccessControl",
+        "jsonName": "webServerNetworkAccessControl",
+        "protoField": "web_server_network_access_control",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudComposerWebServerAccessControl"
+        },
+        "description": "Network-level access restrictions for the Airflow web server UI.\n When configured, only requests from the specified IP ranges are allowed.",
+        "required": false
+      },
+      {
+        "name": "EnablePrivateEnvironment",
+        "jsonName": "enablePrivateEnvironment",
+        "protoField": "enable_private_environment",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable private environment for Composer 3 environments. When true, the\n environment does not have a public IP endpoint for the web server.\n Only applicable to Composer 3.",
+        "required": false
+      },
+      {
+        "name": "EnablePrivateBuildsOnly",
+        "jsonName": "enablePrivateBuildsOnly",
+        "protoField": "enable_private_builds_only",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable private builds only for Composer 3 environments. When true,\n only builds using private connectivity are allowed for Python packages.\n Only applicable to Composer 3.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpCloudComposerAllowedIpRange",
+      "description": "GcpCloudComposerAllowedIpRange defines a single IP range allowed to access\n the Airflow web server.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcomposerenvironment.v1.GcpCloudComposerAllowedIpRange",
+      "fields": [
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP address or CIDR range (e.g., \"10.0.0.0/8\", \"203.0.113.0/24\").",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional human-readable description of this IP range.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudComposerMaintenanceWindow",
+      "description": "GcpCloudComposerMaintenanceWindow defines when GCP may perform scheduled\n maintenance on the Cloud Composer environment.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcomposerenvironment.v1.GcpCloudComposerMaintenanceWindow",
+      "fields": [
+        {
+          "name": "StartTime",
+          "jsonName": "startTime",
+          "protoField": "start_time",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Start time of the maintenance window in RFC3339 format.\n Example: \"2026-01-01T00:00:00Z\"",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "EndTime",
+          "jsonName": "endTime",
+          "protoField": "end_time",
+          "type": {
+            "kind": "string"
+          },
+          "description": "End time of the maintenance window in RFC3339 format.\n Must be after start_time. The window duration must be at least 12 hours.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Recurrence",
+          "jsonName": "recurrence",
+          "protoField": "recurrence",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Recurrence specification in RFC5545 RRULE format.\n Examples: \"FREQ=WEEKLY;BYDAY=TU,WE,TH\" or \"FREQ=DAILY\".",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudComposerNodeConfig",
+      "description": "GcpCloudComposerNodeConfig defines networking and compute settings for the\n underlying Kubernetes nodes that run Airflow components.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcomposerenvironment.v1.GcpCloudComposerNodeConfig",
+      "fields": [
+        {
+          "name": "Network",
+          "jsonName": "network",
+          "protoField": "network",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VPC network for the Composer environment.\n Used for Composer 2.x with VPC peering networking.\n Not applicable when composer_network_attachment is set (Composer 3 PSC).",
+          "required": false,
+          "referenceKind": "GcpVpc",
+          "referenceFieldPath": "status.outputs.network_self_link"
+        },
+        {
+          "name": "Subnetwork",
+          "jsonName": "subnetwork",
+          "protoField": "subnetwork",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VPC subnetwork for the Composer environment.\n Used for Composer 2.x with VPC peering networking.",
+          "required": false,
+          "referenceKind": "GcpSubnetwork",
+          "referenceFieldPath": "status.outputs.subnetwork_self_link"
+        },
+        {
+          "name": "ServiceAccount",
+          "jsonName": "serviceAccount",
+          "protoField": "service_account",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Service account used by the Composer environment's GKE nodes.\n If empty, the default Compute Engine service account is used.",
+          "required": false,
+          "referenceKind": "GcpServiceAccount",
+          "referenceFieldPath": "status.outputs.email"
+        },
+        {
+          "name": "Tags",
+          "jsonName": "tags",
+          "protoField": "tags",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Network tags applied to Composer environment GKE nodes.\n Used for firewall rule targeting.",
+          "required": false
+        },
+        {
+          "name": "ComposerNetworkAttachment",
+          "jsonName": "composerNetworkAttachment",
+          "protoField": "composer_network_attachment",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PSC Network Attachment for Composer 3 networking.\n Format: projects/{project}/regions/{region}/networkAttachments/{name}\n Mutually exclusive with network/subnetwork (VPC peering).",
+          "required": false
+        },
+        {
+          "name": "ComposerInternalIpv4CidrBlock",
+          "jsonName": "composerInternalIpv4CidrBlock",
+          "protoField": "composer_internal_ipv4_cidr_block",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IPv4 CIDR block for Composer 3 internal components.\n Must be a /20 range. Only applicable when using Composer 3.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudComposerPrivateEnvironmentConfig",
+      "description": "GcpCloudComposerPrivateEnvironmentConfig configures private networking\n for Composer 2.x environments. Composer 3 uses enable_private_environment\n and composer_network_attachment on the top-level spec instead.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcomposerenvironment.v1.GcpCloudComposerPrivateEnvironmentConfig",
+      "fields": [
+        {
+          "name": "EnablePrivateEndpoint",
+          "jsonName": "enablePrivateEndpoint",
+          "protoField": "enable_private_endpoint",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to deny access to the public Airflow web server endpoint.\n When true, the web server is only accessible via private IP.",
+          "required": false
+        },
+        {
+          "name": "ConnectionType",
+          "jsonName": "connectionType",
+          "protoField": "connection_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Connection type for the Composer 2.x private environment.",
+          "required": false,
+          "validation": {
+            "enum": [
+              "",
+              "VPC_PEERING",
+              "PRIVATE_SERVICE_CONNECT"
+            ]
+          }
+        },
+        {
+          "name": "MasterIpv4CidrBlock",
+          "jsonName": "masterIpv4CidrBlock",
+          "protoField": "master_ipv4_cidr_block",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP range for the GKE master network in CIDR notation.\n Default: 172.16.0.0/28.",
+          "required": false
+        },
+        {
+          "name": "CloudSqlIpv4CidrBlock",
+          "jsonName": "cloudSqlIpv4CidrBlock",
+          "protoField": "cloud_sql_ipv4_cidr_block",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP range for the Cloud SQL instance in CIDR notation.",
+          "required": false
+        },
+        {
+          "name": "CloudComposerNetworkIpv4CidrBlock",
+          "jsonName": "cloudComposerNetworkIpv4CidrBlock",
+          "protoField": "cloud_composer_network_ipv4_cidr_block",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP range for Cloud Composer internal components in CIDR notation.\n Applies to Composer 2.x and newer.",
+          "required": false
+        },
+        {
+          "name": "CloudComposerConnectionSubnetwork",
+          "jsonName": "cloudComposerConnectionSubnetwork",
+          "protoField": "cloud_composer_connection_subnetwork",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PSC connection subnetwork for Composer 2.x with Private Service Connect.",
+          "required": false
+        },
+        {
+          "name": "EnablePrivatelyUsedPublicIps",
+          "jsonName": "enablePrivatelyUsedPublicIps",
+          "protoField": "enable_privately_used_public_ips",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to allow public IPs from non-RFC1918 ranges for IP allocation\n in the environment.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudComposerRecoveryConfig",
+      "description": "GcpCloudComposerRecoveryConfig defines disaster recovery settings for the\n Cloud Composer environment using scheduled snapshots.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcomposerenvironment.v1.GcpCloudComposerRecoveryConfig",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether scheduled snapshots are enabled.",
+          "required": false
+        },
+        {
+          "name": "SnapshotLocation",
+          "jsonName": "snapshotLocation",
+          "protoField": "snapshot_location",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Cloud Storage location for snapshots (GCS bucket folder URI).\n Example: \"gs://my-bucket/composer-snapshots\"",
+          "required": false
+        },
+        {
+          "name": "SnapshotCreationSchedule",
+          "jsonName": "snapshotCreationSchedule",
+          "protoField": "snapshot_creation_schedule",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Cron schedule for snapshot creation in Unix-cron format.\n Example: \"0 4 * * *\" (daily at 4 AM).",
+          "required": false
+        },
+        {
+          "name": "TimeZone",
+          "jsonName": "timeZone",
+          "protoField": "time_zone",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Time zone for the cron schedule (e.g., \"America/Los_Angeles\", \"UTC\").",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudComposerSoftwareConfig",
+      "description": "GcpCloudComposerSoftwareConfig defines the Airflow software configuration\n including the Composer/Airflow version, Python packages, and configuration\n overrides.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcomposerenvironment.v1.GcpCloudComposerSoftwareConfig",
+      "fields": [
+        {
+          "name": "ImageVersion",
+          "jsonName": "imageVersion",
+          "protoField": "image_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Composer and Airflow image version.\n Format: \"composer-A.B.C-airflow-X.Y.Z\" (e.g., \"composer-2.9.7-airflow-2.9.3\").\n If empty, the latest stable version is used.",
+          "required": false
+        },
+        {
+          "name": "AirflowConfigOverrides",
+          "jsonName": "airflowConfigOverrides",
+          "protoField": "airflow_config_overrides",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Airflow configuration property overrides.\n Keys are section-key pairs (e.g., \"core-dags_are_paused_at_creation\": \"True\").\n Values that conflict with managed Composer settings are rejected.",
+          "required": false
+        },
+        {
+          "name": "PypiPackages",
+          "jsonName": "pypiPackages",
+          "protoField": "pypi_packages",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Custom PyPI packages to install in the environment.\n Keys are package names, values are version specifiers or empty strings.\n Example: {\"numpy\": \"\u003e=1.21\", \"requests\": \"\"}",
+          "required": false
+        },
+        {
+          "name": "EnvVariables",
+          "jsonName": "envVariables",
+          "protoField": "env_variables",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Additional environment variables available to all Airflow components.\n Variable names starting with \"AIRFLOW__\" are reserved by Airflow and\n should not be set here.",
+          "required": false
+        },
+        {
+          "name": "WebServerPluginsMode",
+          "jsonName": "webServerPluginsMode",
+          "protoField": "web_server_plugins_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Web server plugins mode for Composer 3 environments.\n When DISABLED, custom Airflow UI plugins are not loaded.\n Only applicable to Composer 3.",
+          "required": false,
+          "validation": {
+            "enum": [
+              "",
+              "ENABLED",
+              "DISABLED"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudComposerTriggererResource",
+      "description": "GcpCloudComposerTriggererResource defines resource allocation for the\n Airflow triggerer. The triggerer monitors deferred tasks and only has\n CPU, memory, and replica count (no persistent storage).",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcomposerenvironment.v1.GcpCloudComposerTriggererResource",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "double"
+          },
+          "description": "CPU allocation per triggerer in vCPUs.",
+          "required": false
+        },
+        {
+          "name": "MemoryGb",
+          "jsonName": "memoryGb",
+          "protoField": "memory_gb",
+          "type": {
+            "kind": "double"
+          },
+          "description": "Memory allocation per triggerer in GB.",
+          "required": false
+        },
+        {
+          "name": "Count",
+          "jsonName": "count",
+          "protoField": "count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of triggerer replicas. Set to 0 to disable the triggerer.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudComposerWebServerAccessControl",
+      "description": "GcpCloudComposerWebServerAccessControl defines IP-based access restrictions\n for the Airflow web server UI.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcomposerenvironment.v1.GcpCloudComposerWebServerAccessControl",
+      "fields": [
+        {
+          "name": "AllowedIpRanges",
+          "jsonName": "allowedIpRanges",
+          "protoField": "allowed_ip_ranges",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpCloudComposerAllowedIpRange"
+            }
+          },
+          "description": "Allowed IP ranges that can access the Airflow web server.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudComposerWebServerResource",
+      "description": "GcpCloudComposerWebServerResource defines CPU, memory, and storage\n allocation for the Airflow web server. The web server does not have a\n configurable replica count (always 1).",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcomposerenvironment.v1.GcpCloudComposerWebServerResource",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "double"
+          },
+          "description": "CPU allocation in vCPUs.",
+          "required": false
+        },
+        {
+          "name": "MemoryGb",
+          "jsonName": "memoryGb",
+          "protoField": "memory_gb",
+          "type": {
+            "kind": "double"
+          },
+          "description": "Memory allocation in GB.",
+          "required": false
+        },
+        {
+          "name": "StorageGb",
+          "jsonName": "storageGb",
+          "protoField": "storage_gb",
+          "type": {
+            "kind": "double"
+          },
+          "description": "Storage allocation in GB.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudComposerWorkerResource",
+      "description": "GcpCloudComposerWorkerResource defines resource allocation for Airflow workers\n with autoscaling bounds.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcomposerenvironment.v1.GcpCloudComposerWorkerResource",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "double"
+          },
+          "description": "CPU allocation per worker in vCPUs.",
+          "required": false
+        },
+        {
+          "name": "MemoryGb",
+          "jsonName": "memoryGb",
+          "protoField": "memory_gb",
+          "type": {
+            "kind": "double"
+          },
+          "description": "Memory allocation per worker in GB.",
+          "required": false
+        },
+        {
+          "name": "StorageGb",
+          "jsonName": "storageGb",
+          "protoField": "storage_gb",
+          "type": {
+            "kind": "double"
+          },
+          "description": "Storage allocation per worker in GB.",
+          "required": false
+        },
+        {
+          "name": "MinCount",
+          "jsonName": "minCount",
+          "protoField": "min_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of workers. Must be \u003e= 0.",
+          "required": false
+        },
+        {
+          "name": "MaxCount",
+          "jsonName": "maxCount",
+          "protoField": "max_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of workers. Must be \u003e= min_count.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudComposerWorkloadResource",
+      "description": "GcpCloudComposerWorkloadResource defines CPU, memory, and storage allocation\n for a standard Airflow workload component with an optional replica count.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcomposerenvironment.v1.GcpCloudComposerWorkloadResource",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "double"
+          },
+          "description": "CPU allocation in vCPUs (e.g., 0.5, 1.0, 2.0).",
+          "required": false
+        },
+        {
+          "name": "MemoryGb",
+          "jsonName": "memoryGb",
+          "protoField": "memory_gb",
+          "type": {
+            "kind": "double"
+          },
+          "description": "Memory allocation in GB (e.g., 1.0, 2.0, 4.0).",
+          "required": false
+        },
+        {
+          "name": "StorageGb",
+          "jsonName": "storageGb",
+          "protoField": "storage_gb",
+          "type": {
+            "kind": "double"
+          },
+          "description": "Storage allocation in GB (e.g., 1.0, 5.0, 10.0).",
+          "required": false
+        },
+        {
+          "name": "Count",
+          "jsonName": "count",
+          "protoField": "count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of replicas for this component.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudComposerWorkloadsConfig",
+      "description": "GcpCloudComposerWorkloadsConfig defines resource allocation for individual\n Airflow components. Each component runs as a separate workload in the\n underlying GKE cluster.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudcomposerenvironment.v1.GcpCloudComposerWorkloadsConfig",
+      "fields": [
+        {
+          "name": "Scheduler",
+          "jsonName": "scheduler",
+          "protoField": "scheduler",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudComposerWorkloadResource"
+          },
+          "description": "Resource allocation for the Airflow scheduler.\n The scheduler parses DAGs, manages task scheduling, and triggers task instances.",
+          "required": false
+        },
+        {
+          "name": "WebServer",
+          "jsonName": "webServer",
+          "protoField": "web_server",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudComposerWebServerResource"
+          },
+          "description": "Resource allocation for the Airflow web server (UI).",
+          "required": false
+        },
+        {
+          "name": "Worker",
+          "jsonName": "worker",
+          "protoField": "worker",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudComposerWorkerResource"
+          },
+          "description": "Resource allocation for Airflow workers.\n Workers execute the actual tasks defined in DAGs.",
+          "required": false
+        },
+        {
+          "name": "Triggerer",
+          "jsonName": "triggerer",
+          "protoField": "triggerer",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudComposerTriggererResource"
+          },
+          "description": "Resource allocation for the Airflow triggerer.\n The triggerer monitors deferred tasks and resumes them when conditions are met.\n Critical for deferrable operators in Airflow 2.x+.",
+          "required": false
+        },
+        {
+          "name": "DagProcessor",
+          "jsonName": "dagProcessor",
+          "protoField": "dag_processor",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudComposerWorkloadResource"
+          },
+          "description": "Resource allocation for the DAG processor.\n The DAG processor parses DAG files independently of the scheduler.\n Only applicable to Composer 3.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

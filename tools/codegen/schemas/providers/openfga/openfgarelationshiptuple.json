@@ -1,0 +1,204 @@
+{
+  "name": "OpenFgaRelationshipTuple",
+  "kind": "OpenFgaRelationshipTuple",
+  "cloudProvider": "openfga",
+  "apiVersion": "openfga.openmcf.org/v1",
+  "description": "OpenFgaRelationshipTuple is a deployment component that creates a relationship tuple in OpenFGA.\n\n A relationship tuple is the fundamental unit of authorization data in OpenFGA. It represents\n a relationship between a user (or userset) and an object through a specific relation. When\n combined with an authorization model, tuples determine access decisions.\n\n Key concepts:\n - User: The subject being granted access (user:anne, group:engineering#member, user:*)\n - Relation: The type of relationship (viewer, editor, owner, member, admin)\n - Object: The resource being accessed (document:budget, folder:reports)\n - Condition: Optional dynamic rules evaluated at check time\n\n IMPORTANT: Relationship tuples are immutable. Changing any field creates a new tuple and\n deletes the old one (Terraform handles this automatically).\n\n IMPORTANT: OpenFGA only has a Terraform provider - there is no Pulumi provider available.\n This component must be deployed using Terraform/Tofu as the provisioner.\n The Pulumi module is a pass-through placeholder that does not create resources.\n\n Use cases:\n - Grant a user access to a specific document\n - Add a user to a group or organization\n - Create hierarchical relationships (folder contains document)\n - Implement role-based access with conditions\n\n Example manifest:\n ```yaml\n apiVersion: openfga.openmcf.org/v1\n kind: OpenFgaRelationshipTuple\n metadata:\n   name: anne-views-budget\n   org: my-organization\n   env: production\n spec:\n   storeId: \"01HXYZ...\"\n   user: \"user:anne\"\n   relation: \"viewer\"\n   object: \"document:budget-2024\"\n ```",
+  "protoPackage": "org.openmcf.provider.openfga.openfgarelationshiptuple.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openfga/openfgarelationshiptuple/v1/api.proto",
+    "spec": "org/openmcf/provider/openfga/openfgarelationshiptuple/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenFgaRelationshipTupleSpec",
+    "fields": [
+      {
+        "name": "StoreId",
+        "jsonName": "storeId",
+        "protoField": "store_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "store_id is the unique identifier of the OpenFGA store this tuple belongs to.\n\n This can be either:\n - A direct value: {value: \"01HXYZ...\"}\n - A reference to an OpenFgaStore: {value_from: {name: \"my-store\"}}\n\n When using references, the store ID is automatically resolved from the\n OpenFgaStore's status.outputs.id field.\n\n Note: The store_id is immutable - changing it requires replacing the tuple.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenFgaStore",
+        "referenceFieldPath": "status.outputs.id"
+      },
+      {
+        "name": "AuthorizationModelId",
+        "jsonName": "authorizationModelId",
+        "protoField": "authorization_model_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "authorization_model_id is the unique identifier of the authorization model this tuple\n is associated with.\n\n This can be either:\n - A direct value: {value: \"01HXYZ...\"}\n - A reference to an OpenFgaAuthorizationModel: {value_from: {name: \"my-model\"}}\n\n When using references, the model ID is automatically resolved from the\n OpenFgaAuthorizationModel's status.outputs.id field.\n\n This field is optional. If not specified, the tuple will be associated with the\n latest authorization model in the store at the time of creation.\n\n When specified, the tuple is validated against this specific model version. This is\n useful for ensuring tuples are compatible with a known model version in production.\n\n Note: The authorization_model_id is immutable - changing it requires replacing the tuple.",
+        "required": false,
+        "referenceKind": "OpenFgaAuthorizationModel",
+        "referenceFieldPath": "status.outputs.id"
+      },
+      {
+        "name": "User",
+        "jsonName": "user",
+        "protoField": "user",
+        "type": {
+          "kind": "message",
+          "messageType": "OpenFgaRelationshipTupleUser"
+        },
+        "description": "user is the subject of the relationship tuple - who is being granted access.\n\n The user is specified as a structured object with:\n - type: The user type defined in the authorization model (e.g., \"user\", \"group\")\n - id: The user identifier (e.g., \"anne\", \"engineering\", \"*\" for wildcard)\n - relation: Optional, for usersets (e.g., \"member\" to create \"group:engineering#member\")\n\n The IaC module combines these into the OpenFGA format:\n - Without relation: \"type:id\" (e.g., \"user:anne\")\n - With relation: \"type:id#relation\" (e.g., \"group:engineering#member\")\n\n Note: The user is immutable - changing it requires replacing the tuple.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Relation",
+        "jsonName": "relation",
+        "protoField": "relation",
+        "type": {
+          "kind": "string"
+        },
+        "description": "relation is the relationship type between the user and object.\n\n The relation must be defined in the authorization model for the object type.\n Common relations include: viewer, editor, owner, member, admin, parent.\n\n Note: The relation is immutable - changing it requires replacing the tuple.\n\n Examples: \"viewer\", \"editor\", \"owner\", \"member\", \"admin\"",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Object",
+        "jsonName": "object",
+        "protoField": "object",
+        "type": {
+          "kind": "message",
+          "messageType": "OpenFgaRelationshipTupleObject"
+        },
+        "description": "object is the resource the user is being granted access to.\n\n The object is specified as a structured object with:\n - type: The object type defined in the authorization model (e.g., \"document\", \"folder\")\n - id: The object identifier (e.g., \"budget-2024\", \"reports\")\n\n The IaC module combines these into the OpenFGA format: \"type:id\"\n (e.g., \"document:budget-2024\")\n\n Note: The object is immutable - changing it requires replacing the tuple.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Condition",
+        "jsonName": "condition",
+        "protoField": "condition",
+        "type": {
+          "kind": "message",
+          "messageType": "OpenFgaRelationshipTupleCondition"
+        },
+        "description": "condition optionally specifies a condition that must be satisfied for this tuple\n to be considered during access checks.\n\n Conditions enable dynamic access control based on runtime context. The condition\n must be defined in the authorization model, and the context must provide values\n for the condition's required parameters.\n\n This field is optional. If not specified, the tuple is always considered.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "OpenFgaRelationshipTupleCondition",
+      "description": "OpenFgaRelationshipTupleCondition defines an optional condition for a relationship tuple.\n\n Conditions allow dynamic access decisions based on context provided at check time.\n For example, you might have a condition that only allows access during business hours\n or from specific IP ranges.\n\n Reference:\n - OpenFGA Conditions: https://openfga.dev/docs/modeling/conditions",
+      "protoType": "org.openmcf.provider.openfga.openfgarelationshiptuple.v1.OpenFgaRelationshipTupleCondition",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is the name of the condition as defined in the authorization model.\n\n The condition must be declared in the authorization model's conditions section\n before it can be used in tuples.\n\n Example: \"in_allowed_ip_range\", \"during_business_hours\"",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ContextJson",
+          "jsonName": "contextJson",
+          "protoField": "context_json",
+          "type": {
+            "kind": "string"
+          },
+          "description": "context_json is the partial context provided with the tuple, in JSON format.\n\n This context is merged with the context provided at check time. The combined\n context is then evaluated against the condition defined in the authorization model.\n\n The JSON must be a valid object with keys matching the condition's expected parameters.\n\n Example: {\"allowed_ips\": [\"192.168.1.0/24\", \"10.0.0.0/8\"]}",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "OpenFgaRelationshipTupleObject",
+      "description": "OpenFgaRelationshipTupleObject defines the object (resource) of a relationship tuple.\n\n In OpenFGA, objects are represented as \"type:id\". This structured message\n makes it easier to specify objects without manually constructing the\n colon-separated format.\n\n Examples:\n - {type: \"document\", id: {value: \"budget-2024\"}} → \"document:budget-2024\"\n - {type: \"folder\", id: {value: \"reports\"}} → \"folder:reports\"\n - {type: \"project\", id: {value_from: {name: \"my-project\"}}} → \"project:\u003cresolved-id\u003e\"",
+      "protoType": "org.openmcf.provider.openfga.openfgarelationshiptuple.v1.OpenFgaRelationshipTupleObject",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "type is the object type as defined in the authorization model.\n\n This must match a type defined in the authorization model.\n\n Examples: \"document\", \"folder\", \"project\", \"organization\", \"team\"",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Id",
+          "jsonName": "id",
+          "protoField": "id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "id is the unique identifier of the object.\n\n This can be either:\n - A direct value: {value: \"budget-2024\"}\n - A reference to another resource: {value_from: {name: \"my-resource\"}}\n\n When using references, the ID is automatically resolved from the referenced\n resource's field (default: metadata.id).\n\n Examples: {value: \"budget-2024\"}, {value: \"reports\"}, {value_from: {name: \"my-project\"}}",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "OpenFgaRelationshipTupleUser",
+      "description": "OpenFgaRelationshipTupleUser defines the user (subject) of a relationship tuple.\n\n In OpenFGA, users are represented as \"type:id\" or \"type:id#relation\" for usersets.\n This structured message makes it easier to specify users without manually\n constructing the colon-separated format.\n\n Examples:\n - Simple user: {type: \"user\", id: {value: \"anne\"}} → \"user:anne\"\n - Wildcard: {type: \"user\", id: {value: \"*\"}} → \"user:*\"\n - Reference: {type: \"user\", id: {value_from: {name: \"my-user\"}}} → \"user:\u003cresolved-id\u003e\"\n - Userset: {type: \"group\", id: {value: \"engineering\"}, relation: \"member\"} → \"group:engineering#member\"",
+      "protoType": "org.openmcf.provider.openfga.openfgarelationshiptuple.v1.OpenFgaRelationshipTupleUser",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "type is the user type as defined in the authorization model.\n\n This must match a type defined in the authorization model that is allowed\n as a subject for the target relation.\n\n Examples: \"user\", \"group\", \"team\", \"service\", \"application\"",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Id",
+          "jsonName": "id",
+          "protoField": "id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "id is the unique identifier of the user.\n\n This can be either:\n - A direct value: {value: \"anne\"}\n - A reference to another resource: {value_from: {name: \"my-resource\"}}\n\n When using references, the ID is automatically resolved from the referenced\n resource's field (default: metadata.id).\n\n Use {value: \"*\"} for wildcard access (all users of this type).\n\n Examples: {value: \"anne\"}, {value: \"1234\"}, {value: \"*\"}, {value_from: {name: \"my-user\"}}",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Relation",
+          "jsonName": "relation",
+          "protoField": "relation",
+          "type": {
+            "kind": "string"
+          },
+          "description": "relation is optional, used to create usersets (type:id#relation format).\n\n When specified, the user represents \"all entities that have this relation\n to the specified object\". For example, \"all members of the engineering group\".\n\n When omitted, the user is a direct reference to \"type:id\".\n When specified, the user becomes \"type:id#relation\".\n\n Examples: \"member\", \"admin\", \"owner\"",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

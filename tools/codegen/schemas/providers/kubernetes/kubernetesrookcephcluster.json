@@ -1,0 +1,1433 @@
+{
+  "name": "KubernetesRookCephCluster",
+  "kind": "KubernetesRookCephCluster",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "KubernetesRookCephCluster is the top-level resource representing a Rook Ceph storage cluster on Kubernetes.\n The Rook Ceph Operator must be installed before deploying this resource.\n This component creates a CephCluster with optional block pools, filesystems, and object stores\n for providing distributed storage services including block, file, and object storage.",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetesrookcephcluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetesrookcephcluster/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetesrookcephcluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesRookCephClusterSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "Target Kubernetes Cluster where the Ceph cluster will be deployed.",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes Namespace where the Ceph cluster will be installed.\n This namespace should match or be different from the operator namespace depending on your multi-tenancy requirements.\n Default: rook-ceph",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "CreateNamespace",
+        "jsonName": "createNamespace",
+        "protoField": "create_namespace",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Flag to indicate if the namespace should be created if it does not exist.\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_create_namespace"
+      },
+      {
+        "name": "OperatorNamespace",
+        "jsonName": "operatorNamespace",
+        "protoField": "operator_namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Namespace where the Rook Ceph Operator is installed.\n Default: rook-ceph",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        },
+        "default": "rook-ceph",
+        "oneofGroup": "_operator_namespace"
+      },
+      {
+        "name": "HelmChartVersion",
+        "jsonName": "helmChartVersion",
+        "protoField": "helm_chart_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The version of the Rook Ceph Cluster Helm chart to deploy.\n https://github.com/rook/rook/releases\n Default: v1.16.6",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        },
+        "default": "v1.16.6",
+        "oneofGroup": "_helm_chart_version"
+      },
+      {
+        "name": "CephImage",
+        "jsonName": "cephImage",
+        "protoField": "ceph_image",
+        "type": {
+          "kind": "message",
+          "messageType": "CephImageSpec"
+        },
+        "description": "Ceph container image configuration.",
+        "required": false
+      },
+      {
+        "name": "Cluster",
+        "jsonName": "cluster",
+        "protoField": "cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "CephClusterConfig"
+        },
+        "description": "Core Ceph cluster configuration.",
+        "required": false
+      },
+      {
+        "name": "BlockPools",
+        "jsonName": "blockPools",
+        "protoField": "block_pools",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "CephBlockPoolSpec"
+          }
+        },
+        "description": "Block storage pool configuration.\n Block pools provide RBD (RADOS Block Device) storage for persistent volumes.",
+        "required": false
+      },
+      {
+        "name": "Filesystems",
+        "jsonName": "filesystems",
+        "protoField": "filesystems",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "CephFilesystemSpec"
+          }
+        },
+        "description": "Filesystem configuration for CephFS.\n CephFS provides POSIX-compliant shared filesystem storage.",
+        "required": false
+      },
+      {
+        "name": "ObjectStores",
+        "jsonName": "objectStores",
+        "protoField": "object_stores",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "CephObjectStoreSpec"
+          }
+        },
+        "description": "Object store configuration for S3-compatible storage.\n Object stores provide Ceph RADOS Gateway (RGW) for S3/Swift API access.",
+        "required": false
+      },
+      {
+        "name": "EnableToolbox",
+        "jsonName": "enableToolbox",
+        "protoField": "enable_toolbox",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable the Ceph toolbox deployment for debugging.\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_enable_toolbox"
+      },
+      {
+        "name": "EnableMonitoring",
+        "jsonName": "enableMonitoring",
+        "protoField": "enable_monitoring",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable Prometheus monitoring integration.\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_enable_monitoring"
+      },
+      {
+        "name": "EnableDashboard",
+        "jsonName": "enableDashboard",
+        "protoField": "enable_dashboard",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable Ceph dashboard for web-based cluster management.\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_enable_dashboard"
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "CephBlockPoolSpec",
+      "description": "CephBlockPoolSpec defines a Ceph block storage pool configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesrookcephcluster.v1.CephBlockPoolSpec",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the block pool.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "FailureDomain",
+          "jsonName": "failureDomain",
+          "protoField": "failure_domain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Failure domain for data placement (host, rack, zone, etc).\n Default: host",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          },
+          "default": "host",
+          "oneofGroup": "_failure_domain"
+        },
+        {
+          "name": "ReplicatedSize",
+          "jsonName": "replicatedSize",
+          "protoField": "replicated_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of data replicas.\n Default: 3",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 7
+          },
+          "default": "3",
+          "oneofGroup": "_replicated_size"
+        },
+        {
+          "name": "StorageClass",
+          "jsonName": "storageClass",
+          "protoField": "storage_class",
+          "type": {
+            "kind": "message",
+            "messageType": "CephStorageClassSpec"
+          },
+          "description": "StorageClass configuration for this pool.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CephClusterConfig",
+      "description": "CephClusterConfig defines the core Ceph cluster settings.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesrookcephcluster.v1.CephClusterConfig",
+      "fields": [
+        {
+          "name": "DataDirHostPath",
+          "jsonName": "dataDirHostPath",
+          "protoField": "data_dir_host_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The path on the host where Ceph configuration files will be persisted.\n Must be unique if running multiple Ceph clusters.\n Default: /var/lib/rook",
+          "required": false,
+          "validation": {
+            "pattern": "^/.*"
+          },
+          "default": "/var/lib/rook",
+          "oneofGroup": "_data_dir_host_path"
+        },
+        {
+          "name": "Mon",
+          "jsonName": "mon",
+          "protoField": "mon",
+          "type": {
+            "kind": "message",
+            "messageType": "CephMonSpec"
+          },
+          "description": "Monitor (MON) daemon configuration.",
+          "required": false
+        },
+        {
+          "name": "Mgr",
+          "jsonName": "mgr",
+          "protoField": "mgr",
+          "type": {
+            "kind": "message",
+            "messageType": "CephMgrSpec"
+          },
+          "description": "Manager (MGR) daemon configuration.",
+          "required": false
+        },
+        {
+          "name": "Storage",
+          "jsonName": "storage",
+          "protoField": "storage",
+          "type": {
+            "kind": "message",
+            "messageType": "CephStorageSpec"
+          },
+          "description": "Storage configuration for OSDs (Object Storage Daemons).",
+          "required": false
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "CephResourcesSpec"
+          },
+          "description": "Resource requests and limits for Ceph daemons.",
+          "required": false
+        },
+        {
+          "name": "Network",
+          "jsonName": "network",
+          "protoField": "network",
+          "type": {
+            "kind": "message",
+            "messageType": "CephNetworkSpec"
+          },
+          "description": "Network configuration for the Ceph cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CephFilesystemSpec",
+      "description": "CephFilesystemSpec defines a CephFS filesystem configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesrookcephcluster.v1.CephFilesystemSpec",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the filesystem.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "MetadataPoolReplicatedSize",
+          "jsonName": "metadataPoolReplicatedSize",
+          "protoField": "metadata_pool_replicated_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Metadata pool replication size.\n Default: 3",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 7
+          },
+          "default": "3",
+          "oneofGroup": "_metadata_pool_replicated_size"
+        },
+        {
+          "name": "DataPoolReplicatedSize",
+          "jsonName": "dataPoolReplicatedSize",
+          "protoField": "data_pool_replicated_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Data pool replication size.\n Default: 3",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 7
+          },
+          "default": "3",
+          "oneofGroup": "_data_pool_replicated_size"
+        },
+        {
+          "name": "FailureDomain",
+          "jsonName": "failureDomain",
+          "protoField": "failure_domain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Failure domain for data placement.\n Default: host",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          },
+          "default": "host",
+          "oneofGroup": "_failure_domain"
+        },
+        {
+          "name": "ActiveMdsCount",
+          "jsonName": "activeMdsCount",
+          "protoField": "active_mds_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of active MDS (Metadata Server) daemons.\n Default: 1",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 10
+          },
+          "default": "1",
+          "oneofGroup": "_active_mds_count"
+        },
+        {
+          "name": "ActiveStandby",
+          "jsonName": "activeStandby",
+          "protoField": "active_standby",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable active-standby MDS for high availability.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_active_standby"
+        },
+        {
+          "name": "MdsResources",
+          "jsonName": "mdsResources",
+          "protoField": "mds_resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "Resource allocation for MDS daemons.",
+          "required": false
+        },
+        {
+          "name": "StorageClass",
+          "jsonName": "storageClass",
+          "protoField": "storage_class",
+          "type": {
+            "kind": "message",
+            "messageType": "CephStorageClassSpec"
+          },
+          "description": "StorageClass configuration for this filesystem.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CephImageSpec",
+      "description": "CephImageSpec defines the Ceph container image configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesrookcephcluster.v1.CephImageSpec",
+      "fields": [
+        {
+          "name": "Repository",
+          "jsonName": "repository",
+          "protoField": "repository",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Container image repository.\n Default: quay.io/ceph/ceph",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          },
+          "default": "quay.io/ceph/ceph",
+          "oneofGroup": "_repository"
+        },
+        {
+          "name": "Tag",
+          "jsonName": "tag",
+          "protoField": "tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Container image tag.\n Default: v19.2.3",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          },
+          "default": "v19.2.3",
+          "oneofGroup": "_tag"
+        },
+        {
+          "name": "AllowUnsupported",
+          "jsonName": "allowUnsupported",
+          "protoField": "allow_unsupported",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Allow unsupported Ceph versions. Not recommended for production.\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_allow_unsupported"
+        }
+      ]
+    },
+    {
+      "name": "CephMgrSpec",
+      "description": "CephMgrSpec defines the Ceph Manager daemon configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesrookcephcluster.v1.CephMgrSpec",
+      "fields": [
+        {
+          "name": "Count",
+          "jsonName": "count",
+          "protoField": "count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of manager daemons to run. Use 2 for high availability.\n Default: 2",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 5
+          },
+          "default": "2",
+          "oneofGroup": "_count"
+        },
+        {
+          "name": "AllowMultiplePerNode",
+          "jsonName": "allowMultiplePerNode",
+          "protoField": "allow_multiple_per_node",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Allow multiple managers on the same node.\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_allow_multiple_per_node"
+        }
+      ]
+    },
+    {
+      "name": "CephMonSpec",
+      "description": "CephMonSpec defines the Ceph Monitor daemon configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesrookcephcluster.v1.CephMonSpec",
+      "fields": [
+        {
+          "name": "Count",
+          "jsonName": "count",
+          "protoField": "count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of monitor daemons to run. Recommended: 3 for high availability.\n Must be an odd number for proper quorum (1, 3, 5).\n Default: 3",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 9
+          },
+          "default": "3",
+          "oneofGroup": "_count"
+        },
+        {
+          "name": "AllowMultiplePerNode",
+          "jsonName": "allowMultiplePerNode",
+          "protoField": "allow_multiple_per_node",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Allow multiple monitors on the same node. Not recommended for production.\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_allow_multiple_per_node"
+        }
+      ]
+    },
+    {
+      "name": "CephNetworkSpec",
+      "description": "CephNetworkSpec defines network configuration for the Ceph cluster.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesrookcephcluster.v1.CephNetworkSpec",
+      "fields": [
+        {
+          "name": "EnableEncryption",
+          "jsonName": "enableEncryption",
+          "protoField": "enable_encryption",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable encryption for data in transit between Ceph daemons.\n Requires kernel 5.11+ for full functionality.\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_enable_encryption"
+        },
+        {
+          "name": "EnableCompression",
+          "jsonName": "enableCompression",
+          "protoField": "enable_compression",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable compression for data in transit.\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_enable_compression"
+        },
+        {
+          "name": "RequireMsgr2",
+          "jsonName": "requireMsgr2",
+          "protoField": "require_msgr2",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Require msgr2 protocol (disable legacy msgr v1).\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_require_msgr2"
+        }
+      ]
+    },
+    {
+      "name": "CephObjectStoreSpec",
+      "description": "CephObjectStoreSpec defines a Ceph object store (RGW) configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesrookcephcluster.v1.CephObjectStoreSpec",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the object store.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "MetadataPoolReplicatedSize",
+          "jsonName": "metadataPoolReplicatedSize",
+          "protoField": "metadata_pool_replicated_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Metadata pool replication size.\n Default: 3",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 7
+          },
+          "default": "3",
+          "oneofGroup": "_metadata_pool_replicated_size"
+        },
+        {
+          "name": "DataPoolErasureDataChunks",
+          "jsonName": "dataPoolErasureDataChunks",
+          "protoField": "data_pool_erasure_data_chunks",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of erasure coding data chunks for the data pool.\n Default: 2",
+          "required": false,
+          "validation": {
+            "min": 2,
+            "max": 16
+          },
+          "default": "2",
+          "oneofGroup": "_data_pool_erasure_data_chunks"
+        },
+        {
+          "name": "DataPoolErasureCodingChunks",
+          "jsonName": "dataPoolErasureCodingChunks",
+          "protoField": "data_pool_erasure_coding_chunks",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of erasure coding parity chunks for the data pool.\n Default: 1",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 8
+          },
+          "default": "1",
+          "oneofGroup": "_data_pool_erasure_coding_chunks"
+        },
+        {
+          "name": "FailureDomain",
+          "jsonName": "failureDomain",
+          "protoField": "failure_domain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Failure domain for data placement.\n Default: host",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          },
+          "default": "host",
+          "oneofGroup": "_failure_domain"
+        },
+        {
+          "name": "PreservePoolsOnDelete",
+          "jsonName": "preservePoolsOnDelete",
+          "protoField": "preserve_pools_on_delete",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Preserve pools when the object store is deleted.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_preserve_pools_on_delete"
+        },
+        {
+          "name": "GatewayPort",
+          "jsonName": "gatewayPort",
+          "protoField": "gateway_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Gateway (RGW) port.\n Default: 80",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          },
+          "default": "80",
+          "oneofGroup": "_gateway_port"
+        },
+        {
+          "name": "GatewayInstances",
+          "jsonName": "gatewayInstances",
+          "protoField": "gateway_instances",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of gateway instances.\n Default: 1",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 10
+          },
+          "default": "1",
+          "oneofGroup": "_gateway_instances"
+        },
+        {
+          "name": "GatewayResources",
+          "jsonName": "gatewayResources",
+          "protoField": "gateway_resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "Resource allocation for gateway pods.",
+          "required": false
+        },
+        {
+          "name": "StorageClass",
+          "jsonName": "storageClass",
+          "protoField": "storage_class",
+          "type": {
+            "kind": "message",
+            "messageType": "CephStorageClassSpec"
+          },
+          "description": "StorageClass configuration for object bucket claims.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CephResourcesSpec",
+      "description": "CephResourcesSpec defines resource allocations for Ceph daemon pods.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesrookcephcluster.v1.CephResourcesSpec",
+      "fields": [
+        {
+          "name": "Mon",
+          "jsonName": "mon",
+          "protoField": "mon",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "Resource allocation for Monitor daemons.",
+          "required": false
+        },
+        {
+          "name": "Mgr",
+          "jsonName": "mgr",
+          "protoField": "mgr",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "Resource allocation for Manager daemons.",
+          "required": false
+        },
+        {
+          "name": "Osd",
+          "jsonName": "osd",
+          "protoField": "osd",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "Resource allocation for OSD daemons.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CephStorageClassSpec",
+      "description": "CephStorageClassSpec defines Kubernetes StorageClass configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesrookcephcluster.v1.CephStorageClassSpec",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable creation of a StorageClass for this pool.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_enabled"
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the StorageClass.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "IsDefault",
+          "jsonName": "isDefault",
+          "protoField": "is_default",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Set as the default StorageClass in the cluster.\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_is_default"
+        },
+        {
+          "name": "ReclaimPolicy",
+          "jsonName": "reclaimPolicy",
+          "protoField": "reclaim_policy",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Reclaim policy for volumes (Delete or Retain).\n Default: Delete",
+          "required": false,
+          "validation": {
+            "enum": [
+              "Delete",
+              "Retain"
+            ]
+          },
+          "default": "Delete",
+          "oneofGroup": "_reclaim_policy"
+        },
+        {
+          "name": "AllowVolumeExpansion",
+          "jsonName": "allowVolumeExpansion",
+          "protoField": "allow_volume_expansion",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Allow volume expansion after creation.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_allow_volume_expansion"
+        },
+        {
+          "name": "VolumeBindingMode",
+          "jsonName": "volumeBindingMode",
+          "protoField": "volume_binding_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Volume binding mode (Immediate or WaitForFirstConsumer).\n Default: Immediate",
+          "required": false,
+          "validation": {
+            "enum": [
+              "Immediate",
+              "WaitForFirstConsumer"
+            ]
+          },
+          "default": "Immediate",
+          "oneofGroup": "_volume_binding_mode"
+        }
+      ]
+    },
+    {
+      "name": "CephStorageNodeSpec",
+      "description": "CephStorageNodeSpec defines storage configuration for a specific node.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesrookcephcluster.v1.CephStorageNodeSpec",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Node name matching kubernetes.io/hostname label.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Devices",
+          "jsonName": "devices",
+          "protoField": "devices",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Specific devices to use on this node.",
+          "required": false
+        },
+        {
+          "name": "DeviceFilter",
+          "jsonName": "deviceFilter",
+          "protoField": "device_filter",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Device filter pattern for this node.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CephStorageSpec",
+      "description": "CephStorageSpec defines how Ceph discovers and uses storage devices.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesrookcephcluster.v1.CephStorageSpec",
+      "fields": [
+        {
+          "name": "UseAllNodes",
+          "jsonName": "useAllNodes",
+          "protoField": "use_all_nodes",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Use all nodes in the cluster for storage.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_use_all_nodes"
+        },
+        {
+          "name": "UseAllDevices",
+          "jsonName": "useAllDevices",
+          "protoField": "use_all_devices",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Use all devices on each node for storage.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_use_all_devices"
+        },
+        {
+          "name": "DeviceFilter",
+          "jsonName": "deviceFilter",
+          "protoField": "device_filter",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Filter devices by name pattern (regex).\n Example: \"^sd[a-z]$\" to match sda, sdb, etc.",
+          "required": false
+        },
+        {
+          "name": "Nodes",
+          "jsonName": "nodes",
+          "protoField": "nodes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "CephStorageNodeSpec"
+            }
+          },
+          "description": "Specific nodes and their storage configuration.\n Only used when use_all_nodes is false.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ContainerResources",
+      "description": "**ContainerResources** specifies the CPU and memory resources for a container.\n It allows you to define resource limits and requests to manage resource allocation and ensure optimal performance.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerResources",
+      "fields": [
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource limits for the container.\n Specify the maximum amount of CPU and memory that the container can use.",
+          "required": false
+        },
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource requests for the container.\n Specify the minimum amount of CPU and memory that the container is guaranteed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CpuMemory",
+      "description": "**CpuMemory** defines CPU and memory resource quantities for a container.\n It is used to specify the limits and requests for CPU and memory resources.",
+      "protoType": "org.openmcf.provider.kubernetes.CpuMemory",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

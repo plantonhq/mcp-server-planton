@@ -1,0 +1,393 @@
+{
+  "name": "ScalewayRdbInstance",
+  "kind": "ScalewayRdbInstance",
+  "cloudProvider": "scaleway",
+  "apiVersion": "scaleway.openmcf.org/v1",
+  "description": "scaleway-rdb-instance",
+  "protoPackage": "org.openmcf.provider.scaleway.scalewayrdbinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/scaleway/scalewayrdbinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/scaleway/scalewayrdbinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ScalewayRdbInstanceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Scaleway region where the instance will be created.\n Examples: \"fr-par\", \"nl-ams\", \"pl-waw\"\n\n Determines which availability zones are used for HA replicas.\n\n This field is required and cannot be changed after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Engine",
+        "jsonName": "engine",
+        "protoField": "engine",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Database engine and major version.\n\n Format: \"{Engine}-{MajorVersion}\" (case-sensitive).\n Examples:\n   - \"PostgreSQL-16\" -- PostgreSQL version 16\n   - \"PostgreSQL-15\" -- PostgreSQL version 15\n   - \"MySQL-8\"       -- MySQL version 8\n\n The engine determines which SQL dialect, extensions, and features\n are available. The major version determines the feature set and\n upgrade path.\n\n IMPORTANT: Cannot be changed after creation. Changing the engine\n requires creating a new instance and migrating data.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^(PostgreSQL|MySQL)-[0-9]+$"
+        }
+      },
+      {
+        "name": "NodeType",
+        "jsonName": "nodeType",
+        "protoField": "node_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Node type determining CPU, RAM, and baseline performance.\n\n Development types:\n   - \"DB-DEV-S\"  -- 2 vCPU, 2 GB RAM. Cheapest, for development only.\n   - \"DB-DEV-M\"  -- 4 vCPU, 4 GB RAM.\n\n General-purpose types:\n   - \"db-gp-xs\"  -- 4 vCPU, 16 GB RAM. Entry production.\n   - \"db-gp-s\"   -- 8 vCPU, 32 GB RAM.\n   - \"db-gp-m\"   -- 16 vCPU, 64 GB RAM.\n\n Node type can be changed after creation (vertical scaling).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "PrivateNetworkId",
+        "jsonName": "privateNetworkId",
+        "protoField": "private_network_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Private Network to attach the instance to.\n\n When set, the instance receives a private endpoint reachable only\n from resources on the same Private Network. This is the recommended\n topology for production: applications connect via private IPs,\n and the public endpoint can be locked down with ACL rules.\n\n IPAM (automatic IP assignment) is used by default when a Private\n Network is attached.\n\n In infra charts, this is typically wired via valueFrom:\n\n   privateNetworkId:\n     valueFrom:\n       kind: ScalewayPrivateNetwork\n       name: app-network\n       fieldPath: status.outputs.private_network_id\n\n Optional. If omitted, the instance is accessible only via its\n public endpoint (restricted by ACL rules).",
+        "required": false,
+        "referenceKind": "ScalewayPrivateNetwork",
+        "referenceFieldPath": "status.outputs.private_network_id"
+      },
+      {
+        "name": "IsHaCluster",
+        "jsonName": "isHaCluster",
+        "protoField": "is_ha_cluster",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to deploy a multi-node HA cluster with automatic failover.\n\n When true, Scaleway provisions a standby replica that automatically\n takes over if the primary fails. Provides zero-downtime failover\n but doubles the cost.\n\n Recommended for production workloads. For dev/test, leave false.\n\n Default: false.",
+        "required": false
+      },
+      {
+        "name": "VolumeType",
+        "jsonName": "volumeType",
+        "protoField": "volume_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Volume type for database storage.\n\n Options:\n   - \"lssd\" (default) -- Local SSD. Lowest latency, highest IOPS.\n     Limited by the node type's local disk capacity.\n   - \"bssd\" -- Block SSD (5K IOPS). Scalable beyond local disk.\n     Good balance of performance and flexibility.\n   - \"sbs_15k\" -- Block SSD (15K IOPS). Highest throughput for\n     I/O-intensive workloads.\n\n IMPORTANT: Cannot be changed after creation. Changing volume type\n requires creating a new instance and migrating data.",
+        "required": false,
+        "recommendedDefault": "lssd"
+      },
+      {
+        "name": "VolumeSizeInGb",
+        "jsonName": "volumeSizeInGb",
+        "protoField": "volume_size_in_gb",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Volume size in GB.\n\n If 0 or omitted, uses the default size for the node type. The size\n determines how much data the database can store.\n\n Can only be increased after creation, never decreased. Plan ahead\n for data growth.",
+        "required": false
+      },
+      {
+        "name": "DisableBackup",
+        "jsonName": "disableBackup",
+        "protoField": "disable_backup",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to disable automated backups.\n\n Default: false (backups enabled). Set to true for dev/test\n instances where backup cost is unnecessary.\n\n When backups are enabled, Scaleway takes automated snapshots at\n the configured frequency and retains them for the configured period.",
+        "required": false
+      },
+      {
+        "name": "BackupScheduleFrequencyHours",
+        "jsonName": "backupScheduleFrequencyHours",
+        "protoField": "backup_schedule_frequency_hours",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Hours between automated backups.\n\n Range: 1 to 24. If 0 or omitted, uses Scaleway's default (24 hours).\n Lower values provide finer recovery point objectives (RPO) but\n increase storage cost.",
+        "required": false
+      },
+      {
+        "name": "BackupScheduleRetentionDays",
+        "jsonName": "backupScheduleRetentionDays",
+        "protoField": "backup_schedule_retention_days",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Days to retain automated backups.\n\n Range: 1 to 365. If 0 or omitted, uses Scaleway's default (7 days).\n Longer retention provides more recovery options but increases\n storage cost.",
+        "required": false
+      },
+      {
+        "name": "EncryptionAtRest",
+        "jsonName": "encryptionAtRest",
+        "protoField": "encryption_at_rest",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable encryption at rest for the database storage.\n\n When true, all data written to disk is encrypted. Provides\n defense-in-depth for compliance-sensitive workloads. Minimal\n performance impact on modern hardware.",
+        "required": false
+      },
+      {
+        "name": "AclRules",
+        "jsonName": "aclRules",
+        "protoField": "acl_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ScalewayRdbAclRule"
+          }
+        },
+        "description": "Network access control rules.\n\n Each rule allows a CIDR range to connect to the database's public\n endpoint. Rules replace the instance's entire ACL (Scaleway's ACL\n is a single resource per instance that replaces all rules atomically).\n\n If empty, no ACL resource is created and Scaleway's default applies\n (all IPs allowed on the public endpoint). For production instances,\n always specify ACL rules to restrict access.\n\n When using Private Network connectivity, ACL rules control the\n public endpoint only -- private network access is always allowed.",
+        "required": false
+      },
+      {
+        "name": "AdminUser",
+        "jsonName": "adminUser",
+        "protoField": "admin_user",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Username for the initial admin user created with the instance.\n\n This user has full administrative privileges on the database engine\n (superuser-like). It is created as part of the instance provisioning\n and cannot be removed through this resource.\n\n Must be different from any user in the `users` list.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "maxLength": 63
+        }
+      },
+      {
+        "name": "AdminPassword",
+        "jsonName": "adminPassword",
+        "protoField": "admin_password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Password for the initial admin user.\n\n Must meet minimum complexity requirements. For production, use a\n strong, randomly generated password and manage it through your\n organization's secrets workflow.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 8
+        }
+      },
+      {
+        "name": "Databases",
+        "jsonName": "databases",
+        "protoField": "databases",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ScalewayRdbDatabase"
+          }
+        },
+        "description": "Logical databases to create on the instance.\n\n Each entry creates a `scaleway_rdb_database` resource. Databases\n are where application data is stored. Users connect to a specific\n database and are granted privileges on it.\n\n Optional. If empty, only the engine's default database exists\n (e.g., \"postgres\" for PostgreSQL, \"mysql\" for MySQL). The admin\n user can create additional databases manually.\n\n Reserved names (rejected by Scaleway): postgres, mysql, sys,\n information_schema, performance_schema, rdb, template0, template1.",
+        "required": false
+      },
+      {
+        "name": "Users",
+        "jsonName": "users",
+        "protoField": "users",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ScalewayRdbUser"
+          }
+        },
+        "description": "Additional database users to create on the instance.\n\n Each entry creates a `scaleway_rdb_user` resource. Each user's\n privileges (if specified) create `scaleway_rdb_privilege` resources\n linking the user to specific databases with specific permission\n levels.\n\n The admin user (specified above) always exists and has full access.\n Users listed here are typically application-level accounts with\n restricted permissions (e.g., a web app user with \"readwrite\" on\n the application database).\n\n Optional. If empty, only the admin user exists.",
+        "required": false
+      },
+      {
+        "name": "Settings",
+        "jsonName": "settings",
+        "protoField": "settings",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Engine-specific runtime settings.\n\n Key-value pairs passed to the database engine's configuration.\n Applied on both creation and updates. Keys are engine-specific.\n\n PostgreSQL examples:\n   - \"work_mem\" = \"64MB\"\n   - \"max_connections\" = \"200\"\n   - \"effective_cache_size\" = \"4GB\"\n\n MySQL examples:\n   - \"max_connections\" = \"200\"\n   - \"innodb_buffer_pool_size\" = \"4G\"\n\n Optional. If empty, Scaleway uses engine defaults optimized for\n the node type.",
+        "required": false
+      },
+      {
+        "name": "InitSettings",
+        "jsonName": "initSettings",
+        "protoField": "init_settings",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Engine-specific init settings applied only during instance creation.\n\n These settings cannot be changed after the instance is created.\n Use for configuration that must be set at init time.\n\n MySQL example:\n   - \"lower_case_table_names\" = \"1\"\n\n Optional. Most users don't need init settings.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ScalewayRdbAclRule",
+      "description": "ScalewayRdbAclRule defines a network access control rule for the\n RDB instance's public endpoint.\n\n Each rule allows connections from a specific CIDR range. The complete\n set of rules defines who can reach the database over the public internet.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayrdbinstance.v1.ScalewayRdbAclRule",
+      "fields": [
+        {
+          "name": "Ip",
+          "jsonName": "ip",
+          "protoField": "ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "CIDR range to allow.\n\n Examples:\n   - \"10.0.0.0/24\" -- Allow a /24 subnet\n   - \"1.2.3.4/32\"  -- Allow a single IP\n   - \"0.0.0.0/0\"   -- Allow all IPs (NOT recommended for production)",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description for this rule.\n\n Helps operators understand the purpose of each ACL entry.\n Examples: \"Office IP\", \"VPN egress\", \"CI/CD pipeline\"",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ScalewayRdbDatabase",
+      "description": "ScalewayRdbDatabase defines a logical database to create on the\n RDB instance.\n\n Each database is a separate namespace for tables, indexes, and data.\n Applications typically connect to a specific database and are granted\n privileges on it via the user's privileges field.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayrdbinstance.v1.ScalewayRdbDatabase",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Database name.\n\n Must be 1-63 characters, consisting of alphanumeric characters,\n underscores, or dashes. Must start with a letter.\n\n Reserved names are rejected by Scaleway: postgres, mysql, sys,\n information_schema, performance_schema, rdb, template0, template1.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "maxLength": 63
+          }
+        }
+      ]
+    },
+    {
+      "name": "ScalewayRdbUser",
+      "description": "ScalewayRdbUser defines an additional database user.\n\n Users are authentication principals that connect to the database.\n Each user has a name and password and can optionally be granted\n specific permissions on specific databases via the privileges field.\n\n The initial admin user (defined in the spec's admin_user field) is\n separate and always has full access. Users defined here are typically\n application-level accounts with restricted permissions.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayrdbinstance.v1.ScalewayRdbUser",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Username.\n\n Must be unique within the instance and different from the admin_user\n specified in the spec. 1-63 characters.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "maxLength": 63
+          }
+        },
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Password for this user.\n\n Must meet minimum complexity requirements. For production, use a\n strong, randomly generated password.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 8
+          }
+        },
+        {
+          "name": "IsAdmin",
+          "jsonName": "isAdmin",
+          "protoField": "is_admin",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether this user has admin privileges on the database engine.\n\n Admin users have superuser-like access to all databases. Use\n sparingly -- most application users should be non-admin with\n specific per-database privileges.\n\n Default: false.",
+          "required": false
+        },
+        {
+          "name": "Privileges",
+          "jsonName": "privileges",
+          "protoField": "privileges",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "ScalewayRdbUserPrivilege"
+            }
+          },
+          "description": "Per-database permission grants for this user.\n\n Each entry creates a `scaleway_rdb_privilege` resource linking\n this user to a specific database with a specific permission level.\n\n If empty, the user exists but has no database access until\n privileges are granted (via this field or manually).\n\n The database_name can reference a database in the `databases` list\n or an engine-default database (e.g., \"postgres\"). The Scaleway API\n validates that the database exists.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ScalewayRdbUserPrivilege",
+      "description": "ScalewayRdbUserPrivilege grants a user a specific permission level\n on a specific database.\n\n This maps directly to a `scaleway_rdb_privilege` Terraform resource\n (or `databases.Privilege` in Pulumi).",
+      "protoType": "org.openmcf.provider.scaleway.scalewayrdbinstance.v1.ScalewayRdbUserPrivilege",
+      "fields": [
+        {
+          "name": "DatabaseName",
+          "jsonName": "databaseName",
+          "protoField": "database_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the database to grant access to.\n\n Must be the name of a database that exists on the instance -- either\n one defined in the `databases` list or an engine-default database.\n The Scaleway API validates existence at apply time.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Permission",
+          "jsonName": "permission",
+          "protoField": "permission",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Permission level for this user on this database.\n\n Options:\n   - \"readonly\"  -- SELECT only. For read-only application accounts\n                    or reporting services.\n   - \"readwrite\" -- SELECT, INSERT, UPDATE, DELETE. For typical\n                    application accounts.\n   - \"all\"       -- Full access including DDL (CREATE, ALTER, DROP).\n                    For migration tools or admin accounts.\n   - \"none\"      -- Explicitly revoke access. Useful for overriding\n                    inherited permissions.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "readonly",
+              "readwrite",
+              "all",
+              "none"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

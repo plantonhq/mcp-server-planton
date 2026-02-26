@@ -1,0 +1,324 @@
+{
+  "name": "AwsEventBridgeRule",
+  "kind": "AwsEventBridgeRule",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsEventBridgeRule is the Kubernetes-style resource envelope for an AWS\n EventBridge rule with bundled targets.",
+  "protoPackage": "org.openmcf.provider.aws.awseventbridgerule.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awseventbridgerule/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awseventbridgerule/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsEventBridgeRuleSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "EventBusName",
+        "jsonName": "eventBusName",
+        "protoField": "event_bus_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the event bus to attach this rule to. Defaults to \"default\" (the\n built-in AWS event bus) when not specified. Can reference an\n AwsEventBridgeBus resource via `valueFrom`.\n\n Changing this field forces rule replacement (delete + recreate).",
+        "required": false,
+        "referenceKind": "AwsEventBridgeBus",
+        "referenceFieldPath": "status.outputs.bus_name"
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the rule. Maximum 512 characters.",
+        "required": false,
+        "validation": {
+          "maxLength": 512
+        }
+      },
+      {
+        "name": "EventPattern",
+        "jsonName": "eventPattern",
+        "protoField": "event_pattern",
+        "type": {
+          "kind": "object"
+        },
+        "description": "JSON event pattern that this rule matches against. Events that match the\n pattern are routed to the rule's targets. Expressed as a structured object\n in YAML — the IaC module serializes it to JSON.\n\n Mutually exclusive with `schedule_expression`.\n\n Example patterns:\n   source: [\"aws.ec2\"]\n   detail-type: [\"EC2 Instance State-change Notification\"]\n   detail:\n     state: [\"running\", \"stopped\"]",
+        "required": false
+      },
+      {
+        "name": "ScheduleExpression",
+        "jsonName": "scheduleExpression",
+        "protoField": "schedule_expression",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Schedule expression for time-based rule triggering. Supports cron and rate\n expressions.\n\n Mutually exclusive with `event_pattern`.\n\n Examples:\n   \"rate(5 minutes)\"        — fire every 5 minutes\n   \"rate(1 hour)\"           — fire every hour\n   \"cron(0 12 * * ? *)\"     — fire at noon UTC every day\n   \"cron(0/15 * * * ? *)\"   — fire every 15 minutes",
+        "required": false,
+        "validation": {
+          "maxLength": 256
+        }
+      },
+      {
+        "name": "State",
+        "jsonName": "state",
+        "protoField": "state",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Rule state. Controls whether the rule is actively matching events.\n Valid values: \"ENABLED\", \"DISABLED\". Defaults to \"ENABLED\" in the IaC\n module when not set.",
+        "required": false
+      },
+      {
+        "name": "Targets",
+        "jsonName": "targets",
+        "protoField": "targets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsEventBridgeTarget"
+          }
+        },
+        "description": "Targets to invoke when the rule matches an event. At least one target is\n required. Each target specifies a destination (Lambda, SQS, SNS, Step\n Functions, etc.) and optional input transformation, retry policy, and\n dead letter queue configuration.\n\n AWS limits: maximum 5 targets per rule.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsEventBridgeInputTransformer",
+      "description": "AwsEventBridgeInputTransformer reshapes event data before delivering it to\n the target. Useful for extracting specific fields, reformatting event data,\n or adding static context.\n\n The transformer works in two steps:\n 1. `input_paths` extracts values from the event using JSONPath expressions\n 2. `input_template` assembles the final input using the extracted values",
+      "protoType": "org.openmcf.provider.aws.awseventbridgerule.v1.AwsEventBridgeInputTransformer",
+      "fields": [
+        {
+          "name": "InputPaths",
+          "jsonName": "inputPaths",
+          "protoField": "input_paths",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Map of variable names to JSONPath expressions that extract values from\n the matched event. Keys become variables available in `input_template`.\n Maximum 100 entries. Keys must not start with \"AWS\".\n\n Example:\n   instance: \"$.detail.instance-id\"\n   state: \"$.detail.state\"",
+          "required": false
+        },
+        {
+          "name": "InputTemplate",
+          "jsonName": "inputTemplate",
+          "protoField": "input_template",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Template that produces the final input for the target. References\n variables from `input_paths` using angle brackets: \u003cvariable\u003e.\n Maximum 8192 characters.\n\n Example: \"Instance \u003cinstance\u003e transitioned to \u003cstate\u003e\"",
+          "required": true,
+          "validation": {
+            "required": true,
+            "maxLength": 8192
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsEventBridgeTarget",
+      "description": "AwsEventBridgeTarget defines a target to invoke when the rule matches an\n event. Targets are the downstream consumers of matched events — Lambda\n functions, SQS queues, SNS topics, Step Functions state machines, and more.\n\n Each target can independently configure:\n - Input transformation (constant input, JSONPath extraction, or template)\n - Retry policy (max age and retry attempts)\n - Dead letter queue (for events that fail delivery)",
+      "protoType": "org.openmcf.provider.aws.awseventbridgerule.v1.AwsEventBridgeTarget",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "User-assigned name for this target. Used as the Pulumi resource name\n and as the `target_id` in EventBridge. Must be unique within the rule's\n targets. Maximum 64 characters, alphanumeric plus hyphen, underscore,\n and period.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "maxLength": 64,
+            "pattern": "^[0-9A-Za-z_.-]+$"
+          }
+        },
+        {
+          "name": "Arn",
+          "jsonName": "arn",
+          "protoField": "arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of the target resource. This is the AWS resource that processes\n matched events. Common targets include Lambda functions, SQS queues,\n SNS topics, Step Functions state machines, and CloudWatch Log Groups.\n\n No `default_kind` is set because the target resource type varies\n (Lambda, SQS, SNS, etc.). Use `valueFrom` to reference specific\n OpenMCF resources.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "RoleArn",
+          "jsonName": "roleArn",
+          "protoField": "role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM role ARN for EventBridge to assume when invoking this target.\n Required for targets where EventBridge needs to assume a role:\n Step Functions, ECS, Kinesis, Batch, CodeBuild, CodePipeline, and\n cross-account event buses.\n\n Not needed for targets that use resource-based policies:\n Lambda (function policy), SQS (queue policy), SNS (topic policy).",
+          "required": false,
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        },
+        {
+          "name": "Input",
+          "jsonName": "input",
+          "protoField": "input",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Constant JSON input to pass to the target instead of the matched event.\n Maximum 8192 characters. Mutually exclusive with `input_path` and\n `input_transformer`.",
+          "required": false,
+          "validation": {
+            "maxLength": 8192
+          }
+        },
+        {
+          "name": "InputPath",
+          "jsonName": "inputPath",
+          "protoField": "input_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "JSONPath expression to extract a portion of the matched event and pass\n to the target. Maximum 256 characters. Mutually exclusive with `input`\n and `input_transformer`.\n\n Example: \"$.detail\" extracts the detail object from the event.",
+          "required": false,
+          "validation": {
+            "maxLength": 256
+          }
+        },
+        {
+          "name": "InputTransformer",
+          "jsonName": "inputTransformer",
+          "protoField": "input_transformer",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsEventBridgeInputTransformer"
+          },
+          "description": "Input transformer to reshape the matched event before passing to the\n target. Mutually exclusive with `input` and `input_path`.",
+          "required": false
+        },
+        {
+          "name": "DeadLetterConfig",
+          "jsonName": "deadLetterConfig",
+          "protoField": "dead_letter_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsEventBridgeTargetDeadLetterConfig"
+          },
+          "description": "Dead letter queue for events that fail delivery to this target. When\n EventBridge cannot deliver an event after all retry attempts, the event\n is routed to the specified SQS queue for investigation.",
+          "required": false
+        },
+        {
+          "name": "RetryPolicy",
+          "jsonName": "retryPolicy",
+          "protoField": "retry_policy",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsEventBridgeTargetRetryPolicy"
+          },
+          "description": "Retry policy controlling how EventBridge retries failed deliveries to\n this target. When not set, EventBridge uses the default policy: retry\n for 24 hours with up to 185 attempts using exponential backoff.",
+          "required": false
+        },
+        {
+          "name": "SqsConfig",
+          "jsonName": "sqsConfig",
+          "protoField": "sqs_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsEventBridgeTargetSqsConfig"
+          },
+          "description": "SQS-specific configuration. Required when targeting a FIFO SQS queue\n to specify the message group ID.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsEventBridgeTargetDeadLetterConfig",
+      "description": "AwsEventBridgeTargetDeadLetterConfig configures a dead letter queue for\n events that fail delivery to the target after all retry attempts.",
+      "protoType": "org.openmcf.provider.aws.awseventbridgerule.v1.AwsEventBridgeTargetDeadLetterConfig",
+      "fields": [
+        {
+          "name": "Arn",
+          "jsonName": "arn",
+          "protoField": "arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of the SQS queue to use as the dead letter queue. The queue must\n exist in the same AWS account and region as the rule.\n\n Accepts a direct ARN or a reference to an AwsSqsQueue resource.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsSqsQueue",
+          "referenceFieldPath": "status.outputs.queue_arn"
+        }
+      ]
+    },
+    {
+      "name": "AwsEventBridgeTargetRetryPolicy",
+      "description": "AwsEventBridgeTargetRetryPolicy controls how EventBridge retries failed\n event deliveries to a target.",
+      "protoType": "org.openmcf.provider.aws.awseventbridgerule.v1.AwsEventBridgeTargetRetryPolicy",
+      "fields": [
+        {
+          "name": "MaximumEventAgeInSeconds",
+          "jsonName": "maximumEventAgeInSeconds",
+          "protoField": "maximum_event_age_in_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum time in seconds that EventBridge keeps retrying delivery.\n Range: 60 to 86400 (1 minute to 24 hours). Default: 86400 (24 hours).",
+          "required": false
+        },
+        {
+          "name": "MaximumRetryAttempts",
+          "jsonName": "maximumRetryAttempts",
+          "protoField": "maximum_retry_attempts",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of retry attempts. Range: 0 to 185. Default: 185.\n Set to 0 to disable retries (event goes to DLQ immediately on failure).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsEventBridgeTargetSqsConfig",
+      "description": "AwsEventBridgeTargetSqsConfig provides SQS-specific configuration for\n targets pointing to SQS queues.",
+      "protoType": "org.openmcf.provider.aws.awseventbridgerule.v1.AwsEventBridgeTargetSqsConfig",
+      "fields": [
+        {
+          "name": "MessageGroupId",
+          "jsonName": "messageGroupId",
+          "protoField": "message_group_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Message group ID for FIFO SQS queues. Required when the target is a\n FIFO queue to ensure proper message ordering and deduplication.\n Ignored for standard queues.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

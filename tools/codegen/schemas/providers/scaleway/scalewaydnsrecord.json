@@ -1,0 +1,116 @@
+{
+  "name": "ScalewayDnsRecord",
+  "kind": "ScalewayDnsRecord",
+  "cloudProvider": "scaleway",
+  "apiVersion": "scaleway.openmcf.org/v1",
+  "description": "ScalewayDnsRecord is a Kubernetes Resource Model (KRM) style resource\n for managing individual DNS records within a Scaleway DNS zone.\n\n This is the **standalone** DNS record kind -- the DAG-friendly\n counterpart to ScalewayDnsZone's inline records. Use this kind when\n record values come from other infrastructure resources (A records\n pointing to a Load Balancer IP, CNAMEs to a Kapsule cluster endpoint)\n so that infra charts can express explicit dependency edges.\n\n Maps to a single `scaleway_domain_record` Terraform resource.",
+  "protoPackage": "org.openmcf.provider.scaleway.scalewaydnsrecord.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/scaleway/scalewaydnsrecord/v1/api.proto",
+    "spec": "org/openmcf/provider/scaleway/scalewaydnsrecord/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ScalewayDnsRecordSpec",
+    "fields": [
+      {
+        "name": "ZoneName",
+        "jsonName": "zoneName",
+        "protoField": "zone_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The DNS zone name where this record will be created.\n\n This can be a direct value (e.g., \"example.com\" or\n \"staging.example.com\") or a reference to a ScalewayDnsZone\n resource's output. The zone must already exist in Scaleway.\n\n Examples:\n   Direct: { value: \"example.com\" }\n   Reference: { value_from: { kind: ScalewayDnsZone, name: \"my-zone\" } }",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "ScalewayDnsZone",
+        "referenceFieldPath": "status.outputs.zone_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Record name relative to the zone.\n\n Use empty string for the zone apex (root record). Scaleway\n normalizes \"@\" and empty string to the zone root.\n\n Cannot be changed after creation (ForceNew in Terraform). Changing\n the name requires recreating the record resource.\n\n Examples:\n   \"\" -\u003e zone apex (e.g., example.com)\n   \"www\" -\u003e www.example.com\n   \"api\" -\u003e api.example.com\n   \"_dmarc\" -\u003e _dmarc.example.com\n   \"_25._tcp.mail\" -\u003e for TLSA records",
+        "required": false
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.scaleway.scalewaydnsrecord.v1.RecordType",
+          "enumValues": [
+            "A",
+            "AAAA",
+            "ALIAS",
+            "CAA",
+            "CNAME",
+            "DNAME",
+            "MX",
+            "NS",
+            "PTR",
+            "SOA",
+            "SRV",
+            "TXT",
+            "TLSA"
+          ]
+        },
+        "description": "DNS record type.\n\n All Scaleway-supported record types and their data formats:\n   A: IPv4 address (e.g., \"192.0.2.1\")\n   AAAA: IPv6 address (e.g., \"2001:db8::1\")\n   ALIAS: target hostname (e.g., \"www.example.com.\")\n   CAA: flags tag value (e.g., '0 issue \"letsencrypt.org\"')\n   CNAME: target hostname with trailing dot (e.g., \"target.example.com.\")\n   DNAME: delegation target (e.g., \"other.example.com.\")\n   MX: mail server with trailing dot (e.g., \"mail.example.com.\")\n   NS: nameserver with trailing dot (e.g., \"ns1.example.com.\")\n   PTR: pointer target (e.g., \"host.example.com.\")\n   SOA: SOA parameters\n   SRV: \"weight port target\" (e.g., \"10 5060 sipserver.example.com.\")\n   TXT: text data (e.g., \"v=spf1 include:_spf.google.com ~all\")\n   TLSA: \"usage selector matching-type cert-data\" (DANE)\n\n Cannot be changed after creation (ForceNew in Terraform). Changing\n the type requires recreating the record resource.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Data",
+        "jsonName": "data",
+        "protoField": "data",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Record data/value.\n\n This can be a direct value or a reference to another resource's\n output via StringValueOrRef. This is the primary mechanism for\n cross-resource wiring in infra charts.\n\n No default_kind is specified because record values can reference\n many different resource types (Load Balancer IPs, Instance public\n IPs, Kapsule cluster endpoints, etc.).\n\n Format depends on record type -- see the `type` field documentation\n for data format examples per type.\n\n Examples:\n   Literal A record: { value: \"192.0.2.1\" }\n   Reference to LB IP: { value_from: { kind: ScalewayLoadBalancer, ... } }\n   Reference to Kapsule DNS: { value_from: { kind: ScalewayKapsuleCluster, ... } }",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Ttl",
+        "jsonName": "ttl",
+        "protoField": "ttl",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Time to live in seconds.\n\n Determines how long DNS resolvers cache this record before\n querying Scaleway's nameservers again.\n\n Common TTL values:\n   300 (5 min) -- during migrations or cutover events\n   3600 (1 hour) -- default for most records\n   86400 (24 hours) -- static records that rarely change\n\n Defaults to 3600 (1 hour) if not specified.",
+        "required": false,
+        "recommendedDefault": "3600"
+      },
+      {
+        "name": "Priority",
+        "jsonName": "priority",
+        "protoField": "priority",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Priority for MX and SRV records.\n\n Lower values indicate higher priority. For MX records, this\n determines mail delivery preference (e.g., 1 = primary, 10 = backup).\n\n Ignored for record types other than MX and SRV.\n Defaults to 0 if not specified.",
+        "required": false
+      },
+      {
+        "name": "KeepEmptyZone",
+        "jsonName": "keepEmptyZone",
+        "protoField": "keep_empty_zone",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Keep the DNS zone alive when this record is the last one being\n destroyed.\n\n When false (Scaleway default), destroying the last record in a zone\n also deletes the zone itself. When true, the zone persists even\n when empty.\n\n Recommended to set to true when zones are managed by separate\n ScalewayDnsZone resources (the common pattern), to prevent\n accidental zone deletion.",
+        "required": false,
+        "recommendedDefault": "true"
+      }
+    ]
+  }
+}

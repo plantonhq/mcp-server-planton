@@ -1,0 +1,267 @@
+{
+  "name": "GcpGkeNodePool",
+  "kind": "GcpGkeNodePool",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-gke-node-pool",
+  "protoPackage": "org.openmcf.provider.gcp.gcpgkenodepool.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpgkenodepool/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpgkenodepool/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpGkeNodePoolSpec",
+    "fields": [
+      {
+        "name": "ClusterProjectId",
+        "jsonName": "clusterProjectId",
+        "protoField": "cluster_project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to the parent GKE cluster (by name).\n Must refer to an existing GcpGkeCluster resource in the same environment.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpGkeCluster",
+        "referenceFieldPath": "spec.project_id"
+      },
+      {
+        "name": "ClusterName",
+        "jsonName": "clusterName",
+        "protoField": "cluster_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to the parent GKE cluster (by name).\n Must refer to an existing GcpGkeCluster resource in the same environment.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpGkeCluster",
+        "referenceFieldPath": "metadata.name"
+      },
+      {
+        "name": "ClusterLocation",
+        "jsonName": "clusterLocation",
+        "protoField": "cluster_location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Location of the parent GKE cluster (region or zone).\n Must refer to an existing GcpGkeCluster resource in the same environment.\n Example: \"us-central1\" (regional) or \"us-central1-a\" (zonal)",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpGkeCluster",
+        "referenceFieldPath": "spec.location"
+      },
+      {
+        "name": "MachineType",
+        "jsonName": "machineType",
+        "protoField": "machine_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Machine type for node VMs (e.g., \"e2-medium\", \"n1-standard-4\").\n If unspecified, defaults to \"e2-medium\" (2 vCPU, 4 GB RAM).",
+        "required": false,
+        "default": "e2-medium",
+        "oneofGroup": "_machine_type"
+      },
+      {
+        "name": "DiskSizeGb",
+        "jsonName": "diskSizeGb",
+        "protoField": "disk_size_gb",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Size of boot disk (GB) for each node. Min 10 GB. Defaults to 100 GB if unset.\n Default 100 implied if not provided (handled in provisioning code or via options.default if supported).",
+        "required": false
+      },
+      {
+        "name": "DiskType",
+        "jsonName": "diskType",
+        "protoField": "disk_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Type of boot disk: \"pd-standard\", \"pd-ssd\", or \"pd-balanced\".\n Defaults to \"pd-standard\" for unspecified.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "pd-standard",
+            "pd-ssd",
+            "pd-balanced"
+          ]
+        },
+        "default": "pd-standard",
+        "oneofGroup": "_disk_type"
+      },
+      {
+        "name": "ImageType",
+        "jsonName": "imageType",
+        "protoField": "image_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Node image type (OS image). Default is \"COS_CONTAINERD\" (Container-Optimized OS with containerd).",
+        "required": false,
+        "default": "COS_CONTAINERD",
+        "oneofGroup": "_image_type"
+      },
+      {
+        "name": "ServiceAccount",
+        "jsonName": "serviceAccount",
+        "protoField": "service_account",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Service account email for nodes. If not provided, the GKE default node service account is used.",
+        "required": false
+      },
+      {
+        "name": "Management",
+        "jsonName": "management",
+        "protoField": "management",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpGkeClusterNodePoolNodeManagement"
+        },
+        "description": "Auto-upgrade and Auto-repair settings for node management.",
+        "required": false
+      },
+      {
+        "name": "Spot",
+        "jsonName": "spot",
+        "protoField": "spot",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to use Spot (preemptible) VMs for this node pool.",
+        "required": false
+      },
+      {
+        "name": "NodeLabels",
+        "jsonName": "nodeLabels",
+        "protoField": "node_labels",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Kubernetes labels to apply to all nodes in this pool.",
+        "required": false
+      },
+      {
+        "name": "NodeCount",
+        "jsonName": "nodeCount",
+        "protoField": "node_count",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Fixed number of nodes (no autoscaling).",
+        "required": false,
+        "oneofGroup": "node_pool_size"
+      },
+      {
+        "name": "Autoscaling",
+        "jsonName": "autoscaling",
+        "protoField": "autoscaling",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpGkeNodePoolAutoscaling"
+        },
+        "description": "Autoscaling config for this node pool.",
+        "required": false,
+        "oneofGroup": "node_pool_size"
+      },
+      {
+        "name": "NodePoolName",
+        "jsonName": "nodePoolName",
+        "protoField": "node_pool_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the node pool to create in the GKE cluster.\n Must be 1-40 characters, lowercase letters, numbers, or hyphens.\n Must start with a lowercase letter and end with a lowercase letter or number.\n Example: \"default-pool\", \"high-memory-pool\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z]([a-z0-9-]{0,38}[a-z0-9])?$"
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpGkeClusterNodePoolNodeManagement",
+      "description": "Node management settings for auto-upgrade/repair.",
+      "protoType": "org.openmcf.provider.gcp.gcpgkenodepool.v1.GcpGkeClusterNodePoolNodeManagement",
+      "fields": [
+        {
+          "name": "DisableAutoUpgrade",
+          "jsonName": "disableAutoUpgrade",
+          "protoField": "disable_auto_upgrade",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to enable automatic upgrades for nodes in this pool.",
+          "required": false
+        },
+        {
+          "name": "DisableAutoRepair",
+          "jsonName": "disableAutoRepair",
+          "protoField": "disable_auto_repair",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to enable automatic repair of unhealthy nodes in this pool.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpGkeNodePoolAutoscaling",
+      "description": "Nested message for autoscaler settings.",
+      "protoType": "org.openmcf.provider.gcp.gcpgkenodepool.v1.GcpGkeNodePoolAutoscaling",
+      "fields": [
+        {
+          "name": "MinNodes",
+          "jsonName": "minNodes",
+          "protoField": "min_nodes",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "Minimum nodes (per zone) when autoscaling. 0 allows scale-to-zero.",
+          "required": false
+        },
+        {
+          "name": "MaxNodes",
+          "jsonName": "maxNodes",
+          "protoField": "max_nodes",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "Maximum nodes (per zone) when autoscaling.",
+          "required": false
+        },
+        {
+          "name": "LocationPolicy",
+          "jsonName": "locationPolicy",
+          "protoField": "location_policy",
+          "type": {
+            "kind": "string"
+          },
+          "description": "(Optional) Location policy for scaling (\"BALANCED\" or \"ANY\").",
+          "required": false,
+          "default": "BALANCED",
+          "oneofGroup": "_location_policy"
+        }
+      ]
+    }
+  ]
+}

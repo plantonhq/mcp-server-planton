@@ -1,0 +1,829 @@
+{
+  "name": "AliCloudFunction",
+  "kind": "AliCloudFunction",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-function",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudfunction.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudfunction/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudfunction/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudFunctionSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the function will be created.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "FunctionName",
+        "jsonName": "functionName",
+        "protoField": "function_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Function name. Must be unique within the region and account.\n This field is immutable after creation (ForceNew in the provider).\n 1-128 characters, starting with a letter or underscore.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      {
+        "name": "Handler",
+        "jsonName": "handler",
+        "protoField": "handler",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Entry point for function invocation.\n Format depends on runtime: \"index.handler\" (Node.js/Python),\n \"com.example.Main::handleRequest\" (Java), \"main\" (Go).\n Required for all runtimes including custom-container (provider enforces it).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Runtime",
+        "jsonName": "runtime",
+        "protoField": "runtime",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Runtime environment for the function code.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the function's purpose.",
+        "required": false
+      },
+      {
+        "name": "Cpu",
+        "jsonName": "cpu",
+        "protoField": "cpu",
+        "type": {
+          "kind": "double"
+        },
+        "description": "vCPU allocation for each function instance. Range: 0.05-16.\n Provider computes a default based on memory_size when omitted.",
+        "required": false,
+        "oneofGroup": "_cpu"
+      },
+      {
+        "name": "MemorySize",
+        "jsonName": "memorySize",
+        "protoField": "memory_size",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Memory allocation in MB for each function instance. Range: 64-32768.\n Provider computes a default when omitted.",
+        "required": false,
+        "oneofGroup": "_memory_size"
+      },
+      {
+        "name": "Timeout",
+        "jsonName": "timeout",
+        "protoField": "timeout",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum execution time in seconds before the function is terminated.\n Range: 1-86400 (24 hours).",
+        "required": false,
+        "oneofGroup": "_timeout"
+      },
+      {
+        "name": "DiskSize",
+        "jsonName": "diskSize",
+        "protoField": "disk_size",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Temporary disk size in MB available to the function instance.\n Minimum: 512 MB. Provider computes a default when omitted.",
+        "required": false,
+        "oneofGroup": "_disk_size"
+      },
+      {
+        "name": "InstanceConcurrency",
+        "jsonName": "instanceConcurrency",
+        "protoField": "instance_concurrency",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum number of concurrent requests a single instance can handle.\n Range: 1-200. Higher values improve throughput but require the function\n code to be safe for concurrent execution.",
+        "required": false,
+        "oneofGroup": "_instance_concurrency"
+      },
+      {
+        "name": "Code",
+        "jsonName": "code",
+        "protoField": "code",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudFunctionCode"
+        },
+        "description": "Code package for the function. Not required when runtime is\n \"custom-container\" (the container image is specified in\n custom_container_config instead).",
+        "required": false
+      },
+      {
+        "name": "Role",
+        "jsonName": "role",
+        "protoField": "role",
+        "type": {
+          "kind": "string"
+        },
+        "description": "RAM role ARN that the function assumes during execution.\n The role must trust the FC service principal (fc.aliyuncs.com).",
+        "required": false,
+        "referenceKind": "AliCloudRamRole",
+        "referenceFieldPath": "status.outputs.arn"
+      },
+      {
+        "name": "InternetAccess",
+        "jsonName": "internetAccess",
+        "protoField": "internet_access",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the function can access the public internet.\n When false, outbound internet access is blocked even if the function\n is not in a VPC.",
+        "required": false,
+        "oneofGroup": "_internet_access"
+      },
+      {
+        "name": "VpcConfig",
+        "jsonName": "vpcConfig",
+        "protoField": "vpc_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudFunctionVpcConfig"
+        },
+        "description": "VPC configuration for functions that need to access VPC-internal\n resources (databases, caches, NAS). When set, the function runs inside\n the specified VPC and can reach private endpoints.",
+        "required": false
+      },
+      {
+        "name": "LogConfig",
+        "jsonName": "logConfig",
+        "protoField": "log_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudFunctionLogConfig"
+        },
+        "description": "Log Service (SLS) configuration for function invocation logs.",
+        "required": false
+      },
+      {
+        "name": "CustomContainerConfig",
+        "jsonName": "customContainerConfig",
+        "protoField": "custom_container_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudFunctionCustomContainerConfig"
+        },
+        "description": "Configuration for custom container runtimes (runtime=\"custom-container\").\n Specifies the container image, entrypoint, and health check.",
+        "required": false
+      },
+      {
+        "name": "CustomRuntimeConfig",
+        "jsonName": "customRuntimeConfig",
+        "protoField": "custom_runtime_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudFunctionCustomRuntimeConfig"
+        },
+        "description": "Configuration for custom runtimes (runtime=\"custom.*\").\n Specifies the bootstrap command, arguments, listening port, and health check.",
+        "required": false
+      },
+      {
+        "name": "InstanceLifecycleConfig",
+        "jsonName": "instanceLifecycleConfig",
+        "protoField": "instance_lifecycle_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudFunctionInstanceLifecycleConfig"
+        },
+        "description": "Lifecycle hooks for function instances. The initializer runs once when\n an instance is created (warm-up logic), and pre_stop runs before an\n instance is reclaimed (cleanup logic).",
+        "required": false
+      },
+      {
+        "name": "NasConfig",
+        "jsonName": "nasConfig",
+        "protoField": "nas_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudFunctionNasConfig"
+        },
+        "description": "NAS file system mount configuration. Requires vpc_config to be set\n (NAS mount targets are VPC-internal).",
+        "required": false
+      },
+      {
+        "name": "GpuConfig",
+        "jsonName": "gpuConfig",
+        "protoField": "gpu_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudFunctionGpuConfig"
+        },
+        "description": "GPU configuration for AI/ML inference workloads.",
+        "required": false
+      },
+      {
+        "name": "Layers",
+        "jsonName": "layers",
+        "protoField": "layers",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Layer ARNs to attach to the function. Layers provide shared libraries\n and dependencies without bundling them in the function code package.\n Maximum: 5 layers.",
+        "required": false
+      },
+      {
+        "name": "EnvironmentVariables",
+        "jsonName": "environmentVariables",
+        "protoField": "environment_variables",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Environment variables passed to the function at runtime.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the function resource.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudFunctionCode",
+      "description": "AliCloudFunctionCode defines the code package for a function.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudfunction.v1.AliCloudFunctionCode",
+      "fields": [
+        {
+          "name": "OssBucketName",
+          "jsonName": "ossBucketName",
+          "protoField": "oss_bucket_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OSS bucket name where the function code ZIP package is stored.",
+          "required": false
+        },
+        {
+          "name": "OssObjectName",
+          "jsonName": "ossObjectName",
+          "protoField": "oss_object_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OSS object key for the function code ZIP package.",
+          "required": false
+        },
+        {
+          "name": "ZipFile",
+          "jsonName": "zipFile",
+          "protoField": "zip_file",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Base64-encoded function code ZIP package. Convenient for small functions\n or testing. Mutually exclusive with oss_bucket_name/oss_object_name in\n practice (the provider accepts both but only one source is meaningful).",
+          "required": false
+        },
+        {
+          "name": "Checksum",
+          "jsonName": "checksum",
+          "protoField": "checksum",
+          "type": {
+            "kind": "string"
+          },
+          "description": "CRC-64 checksum of the code package for integrity verification.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudFunctionCustomContainerConfig",
+      "description": "AliCloudFunctionCustomContainerConfig configures a custom container\n runtime (runtime=\"custom-container\").",
+      "protoType": "org.openmcf.provider.alicloud.alicloudfunction.v1.AliCloudFunctionCustomContainerConfig",
+      "fields": [
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Container image URI. Required when this config is set.\n Example: \"registry.cn-hangzhou.aliyuncs.com/my-ns/my-func:v1\"",
+          "required": false
+        },
+        {
+          "name": "Entrypoint",
+          "jsonName": "entrypoint",
+          "protoField": "entrypoint",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Container entrypoint override (ENTRYPOINT in Dockerfile terms).",
+          "required": false
+        },
+        {
+          "name": "Command",
+          "jsonName": "command",
+          "protoField": "command",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Container command override (CMD in Dockerfile terms).",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port the container listens on for HTTP requests.",
+          "required": false,
+          "oneofGroup": "_port"
+        },
+        {
+          "name": "HealthCheckConfig",
+          "jsonName": "healthCheckConfig",
+          "protoField": "health_check_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudFunctionHealthCheckConfig"
+          },
+          "description": "Health check configuration for the container.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudFunctionCustomRuntimeConfig",
+      "description": "AliCloudFunctionCustomRuntimeConfig configures a custom runtime\n (runtime=\"custom.*\"). The function starts a long-running HTTP server\n and FC forwards invocations to it.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudfunction.v1.AliCloudFunctionCustomRuntimeConfig",
+      "fields": [
+        {
+          "name": "Command",
+          "jsonName": "command",
+          "protoField": "command",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Bootstrap command to start the custom runtime server.",
+          "required": false
+        },
+        {
+          "name": "Args",
+          "jsonName": "args",
+          "protoField": "args",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Arguments passed to the bootstrap command.",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port the custom runtime listens on. Range: 0-65535.",
+          "required": false,
+          "oneofGroup": "_port"
+        },
+        {
+          "name": "HealthCheckConfig",
+          "jsonName": "healthCheckConfig",
+          "protoField": "health_check_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudFunctionHealthCheckConfig"
+          },
+          "description": "Health check configuration for the custom runtime.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudFunctionGpuConfig",
+      "description": "AliCloudFunctionGpuConfig enables GPU acceleration for AI/ML inference.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudfunction.v1.AliCloudFunctionGpuConfig",
+      "fields": [
+        {
+          "name": "GpuMemorySize",
+          "jsonName": "gpuMemorySize",
+          "protoField": "gpu_memory_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "GPU memory in MB allocated to each function instance.",
+          "required": false
+        },
+        {
+          "name": "GpuType",
+          "jsonName": "gpuType",
+          "protoField": "gpu_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "GPU hardware type.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudFunctionHealthCheckConfig",
+      "description": "AliCloudFunctionHealthCheckConfig defines an HTTP health check used by\n both custom container and custom runtime configurations to verify that\n the function instance is ready to serve traffic.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudfunction.v1.AliCloudFunctionHealthCheckConfig",
+      "fields": [
+        {
+          "name": "InitialDelaySeconds",
+          "jsonName": "initialDelaySeconds",
+          "protoField": "initial_delay_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Seconds to wait after instance start before the first health check.\n Range: 0-120.",
+          "required": false,
+          "oneofGroup": "_initial_delay_seconds"
+        },
+        {
+          "name": "TimeoutSeconds",
+          "jsonName": "timeoutSeconds",
+          "protoField": "timeout_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Seconds to wait for a health check response before marking it failed.\n Range: 0-3.",
+          "required": false,
+          "oneofGroup": "_timeout_seconds"
+        },
+        {
+          "name": "HttpGetUrl",
+          "jsonName": "httpGetUrl",
+          "protoField": "http_get_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP GET URL path for the health check (e.g., \"/healthz\").",
+          "required": false
+        },
+        {
+          "name": "PeriodSeconds",
+          "jsonName": "periodSeconds",
+          "protoField": "period_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Seconds between consecutive health checks. Range: 0-120.",
+          "required": false,
+          "oneofGroup": "_period_seconds"
+        },
+        {
+          "name": "FailureThreshold",
+          "jsonName": "failureThreshold",
+          "protoField": "failure_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive failures before the instance is marked unhealthy.\n Range: 1-120.",
+          "required": false,
+          "oneofGroup": "_failure_threshold"
+        },
+        {
+          "name": "SuccessThreshold",
+          "jsonName": "successThreshold",
+          "protoField": "success_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive successes before the instance is marked healthy.\n Range: 1-120.",
+          "required": false,
+          "oneofGroup": "_success_threshold"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudFunctionInstanceLifecycleConfig",
+      "description": "AliCloudFunctionInstanceLifecycleConfig defines initializer and pre-stop\n hooks that run at instance creation and destruction.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudfunction.v1.AliCloudFunctionInstanceLifecycleConfig",
+      "fields": [
+        {
+          "name": "Initializer",
+          "jsonName": "initializer",
+          "protoField": "initializer",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudFunctionLifecycleHook"
+          },
+          "description": "Initializer hook. Runs once when a new instance is created, before it\n receives any invocations. Use for warm-up tasks (loading models,\n opening DB connections).",
+          "required": false
+        },
+        {
+          "name": "PreStop",
+          "jsonName": "preStop",
+          "protoField": "pre_stop",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudFunctionLifecycleHook"
+          },
+          "description": "Pre-stop hook. Runs before an idle instance is reclaimed. Use for\n cleanup tasks (flushing buffers, closing connections).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudFunctionLifecycleHook",
+      "description": "AliCloudFunctionLifecycleHook defines a single lifecycle hook with a\n handler entry point and a timeout.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudfunction.v1.AliCloudFunctionLifecycleHook",
+      "fields": [
+        {
+          "name": "Handler",
+          "jsonName": "handler",
+          "protoField": "handler",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Entry point for the hook (e.g., \"index.initializer\").",
+          "required": false
+        },
+        {
+          "name": "Timeout",
+          "jsonName": "timeout",
+          "protoField": "timeout",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum execution time in seconds for the hook.\n Initializer: 0-600. Pre-stop: 0-900.",
+          "required": false,
+          "oneofGroup": "_timeout"
+        },
+        {
+          "name": "Command",
+          "jsonName": "command",
+          "protoField": "command",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Bootstrap command for the hook (FC v3 supports command-based hooks\n in addition to handler-based hooks).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudFunctionLogConfig",
+      "description": "AliCloudFunctionLogConfig configures function invocation logging to\n Simple Log Service (SLS).",
+      "protoType": "org.openmcf.provider.alicloud.alicloudfunction.v1.AliCloudFunctionLogConfig",
+      "fields": [
+        {
+          "name": "Project",
+          "jsonName": "project",
+          "protoField": "project",
+          "type": {
+            "kind": "string"
+          },
+          "description": "SLS project name. References AliCloudLogProject.",
+          "required": false,
+          "referenceKind": "AliCloudLogProject",
+          "referenceFieldPath": "status.outputs.project_name"
+        },
+        {
+          "name": "Logstore",
+          "jsonName": "logstore",
+          "protoField": "logstore",
+          "type": {
+            "kind": "string"
+          },
+          "description": "SLS logstore name within the project.",
+          "required": false
+        },
+        {
+          "name": "LogBeginRule",
+          "jsonName": "logBeginRule",
+          "protoField": "log_begin_rule",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Log begin rule for parsing log boundaries.\n \"None\" disables log splitting. \"DefaultRegex\" uses the default regex.",
+          "required": false,
+          "oneofGroup": "_log_begin_rule"
+        },
+        {
+          "name": "EnableInstanceMetrics",
+          "jsonName": "enableInstanceMetrics",
+          "protoField": "enable_instance_metrics",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable per-instance resource usage metrics (CPU, memory).",
+          "required": false,
+          "oneofGroup": "_enable_instance_metrics"
+        },
+        {
+          "name": "EnableRequestMetrics",
+          "jsonName": "enableRequestMetrics",
+          "protoField": "enable_request_metrics",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable per-request latency and status metrics.",
+          "required": false,
+          "oneofGroup": "_enable_request_metrics"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudFunctionNasConfig",
+      "description": "AliCloudFunctionNasConfig mounts a NAS file system into the function\n instance. Requires vpc_config to be set because NAS mount targets are\n VPC-internal.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudfunction.v1.AliCloudFunctionNasConfig",
+      "fields": [
+        {
+          "name": "UserId",
+          "jsonName": "userId",
+          "protoField": "user_id",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "POSIX user ID for file access. Typically 0 (root) or a custom UID.",
+          "required": false,
+          "oneofGroup": "_user_id"
+        },
+        {
+          "name": "GroupId",
+          "jsonName": "groupId",
+          "protoField": "group_id",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "POSIX group ID for file access.",
+          "required": false,
+          "oneofGroup": "_group_id"
+        },
+        {
+          "name": "MountPoints",
+          "jsonName": "mountPoints",
+          "protoField": "mount_points",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AliCloudFunctionNasMountPoint"
+            }
+          },
+          "description": "NAS mount points to attach to the function instance.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudFunctionNasMountPoint",
+      "description": "AliCloudFunctionNasMountPoint defines a single NAS mount.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudfunction.v1.AliCloudFunctionNasMountPoint",
+      "fields": [
+        {
+          "name": "ServerAddr",
+          "jsonName": "serverAddr",
+          "protoField": "server_addr",
+          "type": {
+            "kind": "string"
+          },
+          "description": "NAS mount target address.\n Format: \"{file-system-id}-{mount-target-id}.{region}.nas.aliyuncs.com:/{path}\"",
+          "required": false
+        },
+        {
+          "name": "MountDir",
+          "jsonName": "mountDir",
+          "protoField": "mount_dir",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Directory inside the function instance where the NAS path is mounted.\n Must start with \"/mnt/\" (e.g., \"/mnt/data\").",
+          "required": false
+        },
+        {
+          "name": "EnableTls",
+          "jsonName": "enableTls",
+          "protoField": "enable_tls",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable TLS encryption for NAS traffic.",
+          "required": false,
+          "oneofGroup": "_enable_tls"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudFunctionVpcConfig",
+      "description": "AliCloudFunctionVpcConfig places the function inside a VPC so it can\n reach private resources (databases, caches, NAS mount targets).",
+      "protoType": "org.openmcf.provider.alicloud.alicloudfunction.v1.AliCloudFunctionVpcConfig",
+      "fields": [
+        {
+          "name": "VpcId",
+          "jsonName": "vpcId",
+          "protoField": "vpc_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VPC ID. Computed by the provider from the VSwitch when omitted in TF,\n but required in the OpenMCF model for explicit cross-component wiring.",
+          "required": false,
+          "referenceKind": "AliCloudVpc",
+          "referenceFieldPath": "status.outputs.vpc_id"
+        },
+        {
+          "name": "VswitchIds",
+          "jsonName": "vswitchIds",
+          "protoField": "vswitch_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "VSwitch IDs to place the function's ENIs in. Multiple VSwitches across\n availability zones improve resilience.",
+          "required": false
+        },
+        {
+          "name": "SecurityGroupId",
+          "jsonName": "securityGroupId",
+          "protoField": "security_group_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Security group ID applied to the function's ENIs.",
+          "required": false,
+          "referenceKind": "AliCloudSecurityGroup",
+          "referenceFieldPath": "status.outputs.security_group_id"
+        }
+      ]
+    }
+  ]
+}

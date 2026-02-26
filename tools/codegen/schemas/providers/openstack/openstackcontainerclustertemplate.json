@@ -1,0 +1,213 @@
+{
+  "name": "OpenStackContainerClusterTemplate",
+  "kind": "OpenStackContainerClusterTemplate",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackContainerClusterTemplate is a Kubernetes Resource Model (KRM) style resource\n for managing Magnum cluster templates in OpenStack.\n\n A cluster template is a reusable blueprint that defines the base image, network\n topology, node flavors, and container orchestration engine for Kubernetes clusters.\n Templates are referenced by OpenStackContainerCluster resources to create clusters.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackcontainerclustertemplate.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackcontainerclustertemplate/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackcontainerclustertemplate/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackContainerClusterTemplateSpec",
+    "fields": [
+      {
+        "name": "Coe",
+        "jsonName": "coe",
+        "protoField": "coe",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The Container Orchestration Engine for the cluster.\n Magnum supports \"kubernetes\" (actively maintained), \"swarm\" (deprecated),\n and \"mesos\" (abandoned). In practice, \"kubernetes\" is the only production choice.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Image",
+        "jsonName": "image",
+        "protoField": "image",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The base OS image for cluster nodes.\n Can be a literal image name/UUID or a reference to an OpenStackImage resource.\n Example literal: \"fedora-coreos-39\" (pre-existing image)\n Example value_from: reference to an OpenStackImage component\n\n FK: OpenStackImage.status.outputs.image_id",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackImage",
+        "referenceFieldPath": "status.outputs.image_id"
+      },
+      {
+        "name": "Keypair",
+        "jsonName": "keypair",
+        "protoField": "keypair",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The SSH keypair for node access.\n Can be a literal keypair name or a reference to an OpenStackKeypair resource.\n\n FK: OpenStackKeypair.status.outputs.name",
+        "required": false,
+        "referenceKind": "OpenStackKeypair",
+        "referenceFieldPath": "status.outputs.name"
+      },
+      {
+        "name": "ExternalNetwork",
+        "jsonName": "externalNetwork",
+        "protoField": "external_network",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The external (provider) network for outbound connectivity.\n Typically the pre-existing public network in the OpenStack deployment.\n Can be a literal network ID/name or a reference to an OpenStackNetwork resource.\n\n FK: OpenStackNetwork.status.outputs.network_id",
+        "required": false,
+        "referenceKind": "OpenStackNetwork",
+        "referenceFieldPath": "status.outputs.network_id"
+      },
+      {
+        "name": "FixedNetwork",
+        "jsonName": "fixedNetwork",
+        "protoField": "fixed_network",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The fixed (tenant) network for cluster nodes.\n Can be a literal network ID/name or a reference to an OpenStackNetwork resource.\n\n FK: OpenStackNetwork.status.outputs.network_id",
+        "required": false,
+        "referenceKind": "OpenStackNetwork",
+        "referenceFieldPath": "status.outputs.network_id"
+      },
+      {
+        "name": "FixedSubnet",
+        "jsonName": "fixedSubnet",
+        "protoField": "fixed_subnet",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The fixed subnet for cluster nodes.\n Can be a literal subnet ID/name or a reference to an OpenStackSubnet resource.\n\n FK: OpenStackSubnet.status.outputs.subnet_id",
+        "required": false,
+        "referenceKind": "OpenStackSubnet",
+        "referenceFieldPath": "status.outputs.subnet_id"
+      },
+      {
+        "name": "NetworkDriver",
+        "jsonName": "networkDriver",
+        "protoField": "network_driver",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The network driver for the container network.\n Common values: \"flannel\", \"calico\".\n If omitted, Magnum uses its deployment default.",
+        "required": false
+      },
+      {
+        "name": "VolumeDriver",
+        "jsonName": "volumeDriver",
+        "protoField": "volume_driver",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The volume driver for container volumes.\n Common values: \"cinder\".\n If omitted, Magnum uses its deployment default.",
+        "required": false
+      },
+      {
+        "name": "DnsNameserver",
+        "jsonName": "dnsNameserver",
+        "protoField": "dns_nameserver",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The DNS nameserver address for cluster nodes.\n Example: \"8.8.8.8\"",
+        "required": false
+      },
+      {
+        "name": "DockerVolumeSize",
+        "jsonName": "dockerVolumeSize",
+        "protoField": "docker_volume_size",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Optional) The size (in GB) of the Docker volume for each node.\n Only set if \u003e 0. If omitted, Magnum uses its deployment default.",
+        "required": false,
+        "oneofGroup": "_docker_volume_size"
+      },
+      {
+        "name": "Flavor",
+        "jsonName": "flavor",
+        "protoField": "flavor",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The Nova flavor for worker nodes.\n Example: \"m1.medium\", \"m1.xlarge\"",
+        "required": false
+      },
+      {
+        "name": "MasterFlavor",
+        "jsonName": "masterFlavor",
+        "protoField": "master_flavor",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The Nova flavor for master nodes.\n Example: \"m1.large\"",
+        "required": false
+      },
+      {
+        "name": "FloatingIpEnabled",
+        "jsonName": "floatingIpEnabled",
+        "protoField": "floating_ip_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "(Optional) Whether to create a floating IP for every cluster node.\n Required for external access to nodes when using a private network.",
+        "required": false,
+        "oneofGroup": "_floating_ip_enabled"
+      },
+      {
+        "name": "MasterLbEnabled",
+        "jsonName": "masterLbEnabled",
+        "protoField": "master_lb_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "(Optional) Whether to create a load balancer for master nodes.\n Critical for HA Kubernetes clusters with multiple masters.",
+        "required": false,
+        "oneofGroup": "_master_lb_enabled"
+      },
+      {
+        "name": "TlsDisabled",
+        "jsonName": "tlsDisabled",
+        "protoField": "tls_disabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "(Optional) Whether to disable TLS for the cluster API.\n Only set to true for testing environments. Production clusters should use TLS.",
+        "required": false,
+        "oneofGroup": "_tls_disabled"
+      },
+      {
+        "name": "Labels",
+        "jsonName": "labels",
+        "protoField": "labels",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "(Optional) Key-value labels for the cluster template.\n Magnum uses labels to configure Kubernetes-specific settings:\n   - \"kube_tag\": Kubernetes version (e.g., \"v1.28.4\")\n   - \"cloud_provider_tag\": Cloud controller manager version\n   - \"container_runtime\": Container runtime (e.g., \"containerd\")\n   - \"ingress_controller\": Ingress controller type",
+        "required": false
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Override the region from the provider config.\n ForceNew: changing this requires recreating the template.",
+        "required": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,264 @@
+{
+  "name": "AwsTransitGateway",
+  "kind": "AwsTransitGateway",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsTransitGateway represents a managed AWS Transit Gateway deployed via\n OpenMCF. This resource provisions a regional networking hub with one or\n more VPC attachments, enabling hub-and-spoke or full-mesh connectivity\n between VPCs.",
+  "protoPackage": "org.openmcf.provider.aws.awstransitgateway.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awstransitgateway/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awstransitgateway/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsTransitGatewaySpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description for the Transit Gateway. Appears in the AWS\n console and CLI output.",
+        "required": false
+      },
+      {
+        "name": "AmazonSideAsn",
+        "jsonName": "amazonSideAsn",
+        "protoField": "amazon_side_asn",
+        "type": {
+          "kind": "int64"
+        },
+        "description": "Private Autonomous System Number (ASN) for the Amazon side of BGP\n sessions. Used when connecting VPNs or Direct Connect gateways.\n\n Valid ranges: 64512-65534 (16-bit private) or 4200000000-4294967294\n (32-bit private). Default: 64512.",
+        "required": false,
+        "recommendedDefault": "64512"
+      },
+      {
+        "name": "DefaultRouteTableAssociation",
+        "jsonName": "defaultRouteTableAssociation",
+        "protoField": "default_route_table_association",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Automatically associate new attachments with the default route table.\n When enabled (default), every new VPC attachment is associated with the\n TGW's default route table without manual intervention.\n\n Disable this for hub-and-spoke topologies where you manage route table\n associations explicitly via separate resources.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "DefaultRouteTablePropagation",
+        "jsonName": "defaultRouteTablePropagation",
+        "protoField": "default_route_table_propagation",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Automatically propagate routes from new attachments to the default route\n table. When enabled (default), every attached VPC's CIDR blocks are\n propagated, creating a full-mesh connectivity pattern.\n\n Disable this for isolated routing domains where not all VPCs should\n reach each other.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "DnsSupport",
+        "jsonName": "dnsSupport",
+        "protoField": "dns_support",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable DNS resolution for instances in attached VPCs. When enabled,\n queries to public DNS hostnames of instances in other attached VPCs\n resolve to their private IP addresses.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "VpnEcmpSupport",
+        "jsonName": "vpnEcmpSupport",
+        "protoField": "vpn_ecmp_support",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable Equal Cost Multi-Path (ECMP) routing for VPN connections. When\n enabled and multiple VPN tunnels advertise the same routes, traffic is\n distributed across all tunnels for higher aggregate throughput.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "AutoAcceptSharedAttachments",
+        "jsonName": "autoAcceptSharedAttachments",
+        "protoField": "auto_accept_shared_attachments",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Automatically accept cross-account attachment requests shared via AWS\n Resource Access Manager (RAM). When disabled (default), shared\n attachments require manual acceptance.",
+        "required": false
+      },
+      {
+        "name": "SecurityGroupReferencingSupport",
+        "jsonName": "securityGroupReferencingSupport",
+        "protoField": "security_group_referencing_support",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable cross-VPC security group referencing. When enabled, security\n group rules in one VPC can reference security groups in another VPC\n connected through this Transit Gateway, simplifying firewall management\n across VPCs.",
+        "required": false
+      },
+      {
+        "name": "MulticastSupport",
+        "jsonName": "multicastSupport",
+        "protoField": "multicast_support",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable multicast traffic routing through the Transit Gateway. This is\n a ForceNew field in the underlying provider -- changing it requires\n replacing the entire Transit Gateway. Only enable if you have a clear\n multicast use case (e.g., financial market data, media streaming).",
+        "required": false
+      },
+      {
+        "name": "TransitGatewayCidrBlocks",
+        "jsonName": "transitGatewayCidrBlocks",
+        "protoField": "transit_gateway_cidr_blocks",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "CIDR blocks to associate with the Transit Gateway. Used for advanced\n features like TGW Connect (SD-WAN/third-party appliance integration)\n and GRE-based attachments.\n\n Most deployments do not need TGW CIDR blocks. Leave empty unless you\n are using TGW Connect or need the TGW itself to have routable addresses.\n\n Maximum 5 blocks. Supports both IPv4 (/24 or larger) and IPv6 (/64 or\n larger).",
+        "required": false
+      },
+      {
+        "name": "VpcAttachments",
+        "jsonName": "vpcAttachments",
+        "protoField": "vpc_attachments",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsTransitGatewayVpcAttachment"
+          }
+        },
+        "description": "VPC attachments that connect VPCs to this Transit Gateway. At least one\n attachment is required -- a Transit Gateway without attachments serves\n no purpose.\n\n Each attachment corresponds to one `aws_ec2_transit_gateway_vpc_attachment`\n resource. Modifications to one attachment do not affect others.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 1
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsTransitGatewayVpcAttachment",
+      "description": "AwsTransitGatewayVpcAttachment defines a VPC attachment to the Transit\n Gateway. Each attachment connects one VPC to the TGW through one or more\n subnets (one per Availability Zone recommended).\n\n Underlying resource: `aws_ec2_transit_gateway_vpc_attachment`. Both\n `vpc_id` and the TGW ID are ForceNew -- changing the VPC requires\n replacing the attachment. Subnets can be updated in place.",
+      "protoType": "org.openmcf.provider.aws.awstransitgateway.v1.AwsTransitGatewayVpcAttachment",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "User-assigned name for this attachment. Used as the key in the\n vpc_attachment_ids output map, allowing downstream resources to\n reference specific attachment IDs via valueFrom.\n\n Must be unique within the TGW's attachments. Lowercase alphanumeric\n and hyphens only, starting with a letter (max 63 characters).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "VpcId",
+          "jsonName": "vpcId",
+          "protoField": "vpc_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VPC ID to attach to the Transit Gateway. References an AwsVpc resource's\n vpc_id output. This field is ForceNew: changing it replaces the\n attachment.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsVpc",
+          "referenceFieldPath": "status.outputs.vpc_id"
+        },
+        {
+          "name": "SubnetIds",
+          "jsonName": "subnetIds",
+          "protoField": "subnet_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Subnet IDs in the VPC to use for the attachment. The TGW creates an\n elastic network interface in each specified subnet. Provide one subnet\n per Availability Zone for high availability.\n\n At least one subnet is required. All subnets must belong to the VPC\n specified in vpc_id.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minItems": 1
+          },
+          "referenceKind": "AwsVpc"
+        },
+        {
+          "name": "DnsSupport",
+          "jsonName": "dnsSupport",
+          "protoField": "dns_support",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable DNS resolution for this attachment. When enabled, DNS queries\n from the attached VPC to public hostnames of instances in other\n attached VPCs resolve to private IPs. Overrides the TGW-level setting.",
+          "required": false,
+          "recommendedDefault": "true"
+        },
+        {
+          "name": "Ipv6Support",
+          "jsonName": "ipv6Support",
+          "protoField": "ipv6_support",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable IPv6 support for this attachment. When enabled, the TGW routes\n IPv6 traffic between this VPC and other attached VPCs/connections.",
+          "required": false
+        },
+        {
+          "name": "ApplianceModeSupport",
+          "jsonName": "applianceModeSupport",
+          "protoField": "appliance_mode_support",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable appliance mode for this attachment. Required when routing\n traffic through a virtual appliance (firewall, IDS/IPS) hosted in\n the attached VPC. Appliance mode ensures return traffic is routed\n to the same Availability Zone as the original flow, maintaining\n symmetric routing for stateful inspection.\n\n Only enable for shared-services VPCs running inspection appliances.",
+          "required": false
+        },
+        {
+          "name": "DefaultRouteTableAssociation",
+          "jsonName": "defaultRouteTableAssociation",
+          "protoField": "default_route_table_association",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Associate this attachment with the TGW's default route table. When\n true (default), the attachment is automatically associated. Set to\n false for custom route table management.",
+          "required": false,
+          "recommendedDefault": "true"
+        },
+        {
+          "name": "DefaultRouteTablePropagation",
+          "jsonName": "defaultRouteTablePropagation",
+          "protoField": "default_route_table_propagation",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Propagate this attachment's routes to the TGW's default route table.\n When true (default), the VPC's CIDR blocks are automatically\n propagated. Set to false for isolated routing.",
+          "required": false,
+          "recommendedDefault": "true"
+        }
+      ]
+    }
+  ]
+}

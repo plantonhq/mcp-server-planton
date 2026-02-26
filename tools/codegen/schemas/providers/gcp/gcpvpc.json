@@ -1,0 +1,117 @@
+{
+  "name": "GcpVpc",
+  "kind": "GcpVpc",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-vpc",
+  "protoPackage": "org.openmcf.provider.gcp.gcpvpc.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpvpc/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpvpc/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpVpcSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The GCP project ID in which to create this VPC network.\n Example: \"my-prod-project-123\"",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "AutoCreateSubnetworks",
+        "jsonName": "autoCreateSubnetworks",
+        "protoField": "auto_create_subnetworks",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to use auto subnet mode (true) or custom subnet mode (false).\n **Default:** false (custom mode). Auto mode is not recommended for production:contentReference[oaicite:4]{index=4}.",
+        "required": false
+      },
+      {
+        "name": "RoutingMode",
+        "jsonName": "routingMode",
+        "protoField": "routing_mode",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.gcp.gcpvpc.v1.GcpVpcRoutingMode",
+          "enumValues": [
+            "GLOBAL"
+          ]
+        },
+        "description": "Dynamic routing mode for the VPC's Cloud Routers: REGIONAL or GLOBAL.\n **Default:** REGIONAL (Cloud Router adverts routes only in one region):contentReference[oaicite:5]{index=5}.\n Use GLOBAL only for multi-region routing needs.",
+        "required": false,
+        "default": "REGIONAL",
+        "oneofGroup": "_routing_mode"
+      },
+      {
+        "name": "NetworkName",
+        "jsonName": "networkName",
+        "protoField": "network_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the VPC network to create in GCP.\n Must be 1-63 characters, lowercase letters, numbers, or hyphens.\n Must start with a lowercase letter and end with a lowercase letter or number.\n Example: \"my-vpc-network\", \"prod-network\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "PrivateServicesAccess",
+        "jsonName": "privateServicesAccess",
+        "protoField": "private_services_access",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpVpcPrivateServicesAccess"
+        },
+        "description": "Private Services Access configuration for connecting to Google managed services\n (Cloud SQL, Memorystore, Filestore, etc.) via private IP.\n PREREQUISITE: Enable servicenetworking.googleapis.com via GcpProject before using this.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpVpcPrivateServicesAccess",
+      "description": "Private Services Access configuration for Google managed services (Cloud SQL, Memorystore, etc.).\n This creates VPC peering with Google's service network, enabling private IP connectivity.\n PREREQUISITE: servicenetworking.googleapis.com must be enabled on the project via GcpProject.",
+      "protoType": "org.openmcf.provider.gcp.gcpvpc.v1.GcpVpcPrivateServicesAccess",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Private Services Access (VPC peering with Google's service network).\n When enabled, Google managed services can be assigned private IPs from this VPC.",
+          "required": false
+        },
+        {
+          "name": "IpRangePrefixLength",
+          "jsonName": "ipRangePrefixLength",
+          "protoField": "ip_range_prefix_length",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "IP range prefix length for private services allocation.\n Determines how many IPs are reserved for Google managed services.\n Default: 16 (/16 = 65,536 IPs). Valid range: 8-24.\n Use smaller prefix (more IPs) if running many managed service instances.",
+          "required": false,
+          "validation": {
+            "min": 8,
+            "max": 24
+          },
+          "default": "16"
+        }
+      ]
+    }
+  ]
+}
