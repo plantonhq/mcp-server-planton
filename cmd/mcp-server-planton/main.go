@@ -1,90 +1,62 @@
+// Command mcp-server-planton is the Model Context Protocol server for the
+// Planton Cloud platform.
+//
+// It exposes a set of tools that let MCP-capable AI clients (Cursor,
+// Claude Desktop, Windsurf, etc.) create, update, read, and delete cloud
+// resources managed by the Planton backend.
+//
+// # Usage
+//
+//	mcp-server-planton stdio       Start in stdio mode (stdin/stdout JSON-RPC)
+//	mcp-server-planton http        Start in HTTP mode (Streamable HTTP)
+//	mcp-server-planton both        Start both transports simultaneously
+//
+// When no subcommand is given, the transport is read from the
+// PLANTON_MCP_TRANSPORT environment variable (default: "stdio").
+//
+// # Configuration
+//
+// All settings are read from environment variables — see the config package
+// for the full list.
 package main
 
 import (
-	"log"
+	"context"
+	"fmt"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
-	"github.com/plantoncloud/mcp-server-planton/internal/config"
-	"github.com/plantoncloud/mcp-server-planton/internal/mcp"
+	"github.com/plantoncloud/mcp-server-planton/pkg/mcpserver"
 )
 
+var validTransports = map[string]bool{
+	"stdio": true,
+	"http":  true,
+	"both":  true,
+}
+
 func main() {
-	// Set up logging
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
-	// Load configuration from environment
-	cfg, err := config.LoadFromEnv()
+	cfg, err := mcpserver.DefaultConfig()
 	if err != nil {
-		log.Fatalf("Configuration error: %v", err)
+		fmt.Fprintf(os.Stderr, "configuration error: %v\n", err)
+		os.Exit(1)
 	}
 
-	// Create MCP server
-	server := mcp.NewServer(cfg)
-
-	// Handle OS signals for graceful shutdown
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-
-	// Start server(s) based on transport configuration
-	var wg sync.WaitGroup
-	errChan := make(chan error, 2)
-
-	switch cfg.Transport {
-	case config.TransportStdio:
-		// STDIO only mode
-		log.Println("Starting in STDIO-only mode")
-		if err := server.Serve(); err != nil {
-			log.Fatalf("STDIO server error: %v", err)
+	if len(os.Args) > 1 {
+		sub := os.Args[1]
+		if !validTransports[sub] {
+			fmt.Fprintf(os.Stderr, "unknown subcommand %q (expected stdio, http, or both)\n", sub)
+			os.Exit(1)
 		}
-
-	case config.TransportHTTP:
-		// HTTP only mode
-		log.Println("Starting in HTTP-only mode")
-		httpOpts := mcp.DefaultHTTPOptions(cfg)
-		if err := server.ServeHTTP(httpOpts); err != nil {
-			log.Fatalf("HTTP server error: %v", err)
-		}
-
-	case config.TransportBoth:
-		// Both transports - run HTTP in goroutine, STDIO in main
-		log.Println("Starting in dual transport mode (STDIO + HTTP)")
-
-		// Start HTTP server in background
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			httpOpts := mcp.DefaultHTTPOptions(cfg)
-			if err := server.ServeHTTP(httpOpts); err != nil {
-				errChan <- err
-			}
-		}()
-
-		// Start STDIO server in background (for dual mode)
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			if err := server.Serve(); err != nil {
-				errChan <- err
-			}
-		}()
-
-		// Wait for shutdown signal or error
-		select {
-		case <-sigChan:
-			log.Println("Shutdown signal received, stopping servers...")
-		case err := <-errChan:
-			log.Printf("Server error: %v", err)
-		}
-
-		// Wait for both servers to stop
-		wg.Wait()
-
-	default:
-		log.Fatalf("Invalid transport mode: %s", cfg.Transport)
+		cfg.Transport = sub
 	}
 
-	log.Println("MCP server stopped")
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
+	if err := mcpserver.Run(ctx, cfg); err != nil {
+		fmt.Fprintf(os.Stderr, "fatal: %v\n", err)
+		os.Exit(1)
+	}
 }
