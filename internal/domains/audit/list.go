@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
+	apiresourceversionv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/audit/apiresourceversion/v1"
 	"github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/apiresource/apiresourcekind"
 	"github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/rpc"
-	apiresourceversionv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/audit/apiresourceversion/v1"
 	"google.golang.org/grpc"
 )
 

@@ -114,11 +114,11 @@ func GetEnvironmentGraphHandler(serverAddress string) func(context.Context, *mcp
 // GetServiceGraphToolInput defines the parameters for the
 // get_service_graph tool.
 type GetServiceGraphToolInput struct {
-	ServiceID        string   `json:"service_id"                  jsonschema:"required,Service identifier. Service IDs appear as node IDs in organization graph results."`
-	Envs             []string `json:"envs,omitempty"              jsonschema:"Environment slugs to restrict results to. When omitted all environments are included."`
-	IncludeUpstream  bool     `json:"include_upstream,omitempty"  jsonschema:"When true the graph includes upstream dependencies — resources the service depends on."`
-	IncludeDownstream bool    `json:"include_downstream,omitempty" jsonschema:"When true the graph includes downstream dependents — resources that depend on the service."`
-	MaxDepth         int32    `json:"max_depth,omitempty"         jsonschema:"Maximum depth for dependency traversal. 0 or omitted means unlimited."`
+	ServiceID         string   `json:"service_id"                  jsonschema:"required,Service identifier. Service IDs appear as node IDs in organization graph results."`
+	Envs              []string `json:"envs,omitempty"              jsonschema:"Environment slugs to restrict results to. When omitted all environments are included."`
+	IncludeUpstream   bool     `json:"include_upstream,omitempty"  jsonschema:"When true the graph includes upstream dependencies — resources the service depends on."`
+	IncludeDownstream bool     `json:"include_downstream,omitempty" jsonschema:"When true the graph includes downstream dependents — resources that depend on the service."`
+	MaxDepth          int32    `json:"max_depth,omitempty"         jsonschema:"Maximum depth for dependency traversal. 0 or omitted means unlimited."`
 }
 
 // GetServiceGraphTool returns the MCP tool definition for get_service_graph.
@@ -140,11 +140,11 @@ func GetServiceGraphHandler(serverAddress string) func(context.Context, *mcp.Cal
 			return nil, nil, fmt.Errorf("'service_id' is required")
 		}
 		text, err := GetServiceGraph(ctx, serverAddress, ServiceGraphInput{
-			ServiceID:        input.ServiceID,
-			Envs:             input.Envs,
-			IncludeUpstream:  input.IncludeUpstream,
+			ServiceID:         input.ServiceID,
+			Envs:              input.Envs,
+			IncludeUpstream:   input.IncludeUpstream,
 			IncludeDownstream: input.IncludeDownstream,
-			MaxDepth:         input.MaxDepth,
+			MaxDepth:          input.MaxDepth,
 		})
 		if err != nil {
 			return nil, nil, err
@@ -160,10 +160,10 @@ func GetServiceGraphHandler(serverAddress string) func(context.Context, *mcp.Cal
 // GetCloudResourceGraphToolInput defines the parameters for the
 // get_cloud_resource_graph tool.
 type GetCloudResourceGraphToolInput struct {
-	CloudResourceID  string `json:"cloud_resource_id"            jsonschema:"required,Cloud resource ID to retrieve the graph for. Use get_cloud_resource to look up the ID if needed."`
-	IncludeUpstream  bool   `json:"include_upstream,omitempty"   jsonschema:"When true the graph includes upstream dependencies — resources this cloud resource depends on."`
-	IncludeDownstream bool  `json:"include_downstream,omitempty" jsonschema:"When true the graph includes downstream dependents — resources that depend on this cloud resource."`
-	MaxDepth         int32  `json:"max_depth,omitempty"          jsonschema:"Maximum depth for dependency traversal. 0 or omitted means unlimited."`
+	CloudResourceID   string `json:"cloud_resource_id"            jsonschema:"required,Cloud resource ID to retrieve the graph for. Use get_cloud_resource to look up the ID if needed."`
+	IncludeUpstream   bool   `json:"include_upstream,omitempty"   jsonschema:"When true the graph includes upstream dependencies — resources this cloud resource depends on."`
+	IncludeDownstream bool   `json:"include_downstream,omitempty" jsonschema:"When true the graph includes downstream dependents — resources that depend on this cloud resource."`
+	MaxDepth          int32  `json:"max_depth,omitempty"          jsonschema:"Maximum depth for dependency traversal. 0 or omitted means unlimited."`
 }
 
 // GetCloudResourceGraphTool returns the MCP tool definition for get_cloud_resource_graph.
@@ -186,10 +186,10 @@ func GetCloudResourceGraphHandler(serverAddress string) func(context.Context, *m
 			return nil, nil, fmt.Errorf("'cloud_resource_id' is required")
 		}
 		text, err := GetCloudResourceGraph(ctx, serverAddress, CloudResourceGraphInput{
-			CloudResourceID:  input.CloudResourceID,
-			IncludeUpstream:  input.IncludeUpstream,
+			CloudResourceID:   input.CloudResourceID,
+			IncludeUpstream:   input.IncludeUpstream,
 			IncludeDownstream: input.IncludeDownstream,
-			MaxDepth:         input.MaxDepth,
+			MaxDepth:          input.MaxDepth,
 		})
 		if err != nil {
 			return nil, nil, err

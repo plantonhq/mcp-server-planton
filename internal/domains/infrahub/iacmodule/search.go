@@ -19,13 +19,13 @@ const (
 
 // SearchInput holds the validated parameters for searching IaC modules.
 type SearchInput struct {
-	Org          string
-	SearchText   string
-	Kind         string
-	Provisioner  string
-	Provider     string
-	PageNum      int32
-	PageSize     int32
+	Org         string
+	SearchText  string
+	Kind        string
+	Provisioner string
+	Provider    string
+	PageNum     int32
+	PageSize    int32
 }
 
 // Search queries IaC modules via the InfraHubSearchQueryController.
@@ -84,13 +84,13 @@ func Search(ctx context.Context, serverAddress string, input SearchInput) (strin
 
 			if input.Org != "" {
 				resp, err := client.SearchIacModulesByOrgContext(ctx, &infrahubsearch.SearchIacModulesByOrgContextInput{
-					Org:                         input.Org,
-					SearchText:                  input.SearchText,
-					PageInfo:                    pageInfo,
-					CloudResourceKind:           kind,
-					Provisioners:                provisioners,
-					Providers:                   providers,
-					IsIncludeOfficial:           true,
+					Org:                          input.Org,
+					SearchText:                   input.SearchText,
+					PageInfo:                     pageInfo,
+					CloudResourceKind:            kind,
+					Provisioners:                 provisioners,
+					Providers:                    providers,
+					IsIncludeOfficial:            true,
 					IsIncludeOrganizationModules: true,
 				})
 				if err != nil {

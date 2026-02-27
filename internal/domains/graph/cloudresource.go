@@ -12,10 +12,10 @@ import (
 // CloudResourceGraphInput holds the validated parameters for querying a
 // cloud-resource-centric subgraph.
 type CloudResourceGraphInput struct {
-	CloudResourceID  string
-	IncludeUpstream  bool
+	CloudResourceID   string
+	IncludeUpstream   bool
 	IncludeDownstream bool
-	MaxDepth         int32
+	MaxDepth          int32
 }
 
 // GetCloudResourceGraph retrieves a cloud-resource-centric subgraph including
@@ -26,10 +26,10 @@ func GetCloudResourceGraph(ctx context.Context, serverAddress string, input Clou
 		func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
 			client := graphv1.NewGraphQueryControllerClient(conn)
 			resp, err := client.GetCloudResourceGraph(ctx, &graphv1.GetCloudResourceGraphInput{
-				CloudResourceId:  input.CloudResourceID,
-				IncludeUpstream:  input.IncludeUpstream,
+				CloudResourceId:   input.CloudResourceID,
+				IncludeUpstream:   input.IncludeUpstream,
 				IncludeDownstream: input.IncludeDownstream,
-				MaxDepth:         input.MaxDepth,
+				MaxDepth:          input.MaxDepth,
 			})
 			if err != nil {
 				return "", domains.RPCError(err, fmt.Sprintf("cloud resource graph for %q", input.CloudResourceID))

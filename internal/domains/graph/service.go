@@ -12,11 +12,11 @@ import (
 // ServiceGraphInput holds the validated parameters for querying a
 // service-centric subgraph.
 type ServiceGraphInput struct {
-	ServiceID        string
-	Envs             []string
-	IncludeUpstream  bool
+	ServiceID         string
+	Envs              []string
+	IncludeUpstream   bool
 	IncludeDownstream bool
-	MaxDepth         int32
+	MaxDepth          int32
 }
 
 // GetServiceGraph retrieves a service-centric subgraph including its cloud
@@ -27,11 +27,11 @@ func GetServiceGraph(ctx context.Context, serverAddress string, input ServiceGra
 		func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
 			client := graphv1.NewGraphQueryControllerClient(conn)
 			resp, err := client.GetServiceGraph(ctx, &graphv1.GetServiceGraphInput{
-				ServiceId:        input.ServiceID,
-				Envs:             input.Envs,
-				IncludeUpstream:  input.IncludeUpstream,
+				ServiceId:         input.ServiceID,
+				Envs:              input.Envs,
+				IncludeUpstream:   input.IncludeUpstream,
 				IncludeDownstream: input.IncludeDownstream,
-				MaxDepth:         input.MaxDepth,
+				MaxDepth:          input.MaxDepth,
 			})
 			if err != nil {
 				return "", domains.RPCError(err, fmt.Sprintf("service graph for %q", input.ServiceID))
