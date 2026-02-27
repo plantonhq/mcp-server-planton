@@ -36,7 +36,7 @@ func Apply(ctx context.Context, serverAddress string, cr *cloudresourcev1.CloudR
 //   - kindStr: the PascalCase kind string (e.g. "AwsEksCluster")
 //   - normalizedObject: the spec-validated structpb.Struct from the generated parser
 func buildCloudResource(cloudObject map[string]any, kindStr string, normalizedObject *structpb.Struct) (*cloudresourcev1.CloudResource, error) {
-	kind, err := resolveKind(kindStr)
+	kind, err := domains.ResolveKind(kindStr)
 	if err != nil {
 		return nil, err
 	}

@@ -87,7 +87,7 @@ func resolveResourceID(ctx context.Context, conn *grpc.ClientConn, id ResourceId
 		return id.ID, nil
 	}
 
-	kind, err := resolveKind(id.Kind)
+	kind, err := domains.ResolveKind(id.Kind)
 	if err != nil {
 		return "", err
 	}
@@ -109,4 +109,39 @@ func resolveResourceID(ctx context.Context, conn *grpc.ClientConn, id ResourceId
 		return "", fmt.Errorf("resolved %s but it has no ID — this indicates a backend issue", desc)
 	}
 	return resourceID, nil
+}
+
+// resolveResource resolves a ResourceIdentifier to the full CloudResource proto.
+// If the identifier carries an ID, it is fetched via Get. If it carries the
+// slug-path fields, it is fetched via GetByOrgByEnvByKindBySlug.
+//
+// This is used by operations that require the full resource object (e.g. destroy)
+// rather than just the resource ID.
+func resolveResource(ctx context.Context, conn *grpc.ClientConn, id ResourceIdentifier) (*cloudresourcev1.CloudResource, error) {
+	desc := describeIdentifier(id)
+	client := cloudresourcev1.NewCloudResourceQueryControllerClient(conn)
+
+	if id.ID != "" {
+		cr, err := client.Get(ctx, &cloudresourcev1.CloudResourceId{Value: id.ID})
+		if err != nil {
+			return nil, domains.RPCError(err, desc)
+		}
+		return cr, nil
+	}
+
+	kind, err := domains.ResolveKind(id.Kind)
+	if err != nil {
+		return nil, err
+	}
+
+	cr, err := client.GetByOrgByEnvByKindBySlug(ctx, &cloudresourcev1.CloudResourceByOrgByEnvByKindBySlugRequest{
+		Org:               id.Org,
+		Env:               id.Env,
+		CloudResourceKind: kind,
+		Slug:              id.Slug,
+	})
+	if err != nil {
+		return nil, domains.RPCError(err, desc)
+	}
+	return cr, nil
 }

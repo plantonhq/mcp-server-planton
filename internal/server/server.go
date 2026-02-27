@@ -13,7 +13,11 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/plantonhq/mcp-server-planton/internal/auth"
 	"github.com/plantonhq/mcp-server-planton/internal/config"
-	"github.com/plantonhq/mcp-server-planton/internal/domains/cloudresource"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/cloudresource"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/preset"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/stackjob"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/environment"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/organization"
 )
 
 // Server wraps an mcp.Server with Planton-specific configuration.
@@ -48,11 +52,46 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, cloudresource.ApplyTool(), cloudresource.ApplyHandler(serverAddress))
 	mcp.AddTool(srv, cloudresource.GetTool(), cloudresource.GetHandler(serverAddress))
 	mcp.AddTool(srv, cloudresource.DeleteTool(), cloudresource.DeleteHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.ListTool(), cloudresource.ListHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.DestroyTool(), cloudresource.DestroyHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.CheckSlugAvailabilityTool(), cloudresource.CheckSlugAvailabilityHandler(serverAddress))
 
-	slog.Info("tools registered", "count", 3, "tools", []string{
+	mcp.AddTool(srv, stackjob.GetTool(), stackjob.GetHandler(serverAddress))
+	mcp.AddTool(srv, stackjob.GetLatestTool(), stackjob.GetLatestHandler(serverAddress))
+	mcp.AddTool(srv, stackjob.ListTool(), stackjob.ListHandler(serverAddress))
+
+	mcp.AddTool(srv, organization.ListTool(), organization.ListHandler(serverAddress))
+
+	mcp.AddTool(srv, environment.ListTool(), environment.ListHandler(serverAddress))
+
+	mcp.AddTool(srv, preset.SearchTool(), preset.SearchHandler(serverAddress))
+	mcp.AddTool(srv, preset.GetTool(), preset.GetHandler(serverAddress))
+
+	mcp.AddTool(srv, cloudresource.ListLocksTool(), cloudresource.ListLocksHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.RemoveLocksTool(), cloudresource.RemoveLocksHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.RenameTool(), cloudresource.RenameHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.GetEnvVarMapTool(), cloudresource.GetEnvVarMapHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.ResolveValueReferencesTool(), cloudresource.ResolveValueReferencesHandler(serverAddress))
+
+	slog.Info("tools registered", "count", 18, "tools", []string{
 		"apply_cloud_resource",
 		"get_cloud_resource",
 		"delete_cloud_resource",
+		"list_cloud_resources",
+		"destroy_cloud_resource",
+		"check_slug_availability",
+		"get_stack_job",
+		"get_latest_stack_job",
+		"list_stack_jobs",
+		"list_organizations",
+		"list_environments",
+		"search_cloud_object_presets",
+		"get_cloud_object_preset",
+		"list_cloud_resource_locks",
+		"remove_cloud_resource_locks",
+		"rename_cloud_resource",
+		"get_env_var_map",
+		"resolve_value_references",
 	})
 }
 
