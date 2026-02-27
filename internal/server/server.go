@@ -16,6 +16,7 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/domains/cloudresource"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/environment"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/organization"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/preset"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/stackjob"
 )
 
@@ -53,6 +54,7 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, cloudresource.DeleteTool(), cloudresource.DeleteHandler(serverAddress))
 	mcp.AddTool(srv, cloudresource.ListTool(), cloudresource.ListHandler(serverAddress))
 	mcp.AddTool(srv, cloudresource.DestroyTool(), cloudresource.DestroyHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.CheckSlugAvailabilityTool(), cloudresource.CheckSlugAvailabilityHandler(serverAddress))
 
 	mcp.AddTool(srv, stackjob.GetTool(), stackjob.GetHandler(serverAddress))
 	mcp.AddTool(srv, stackjob.GetLatestTool(), stackjob.GetLatestHandler(serverAddress))
@@ -62,17 +64,23 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 
 	mcp.AddTool(srv, environment.ListTool(), environment.ListHandler(serverAddress))
 
-	slog.Info("tools registered", "count", 10, "tools", []string{
+	mcp.AddTool(srv, preset.SearchTool(), preset.SearchHandler(serverAddress))
+	mcp.AddTool(srv, preset.GetTool(), preset.GetHandler(serverAddress))
+
+	slog.Info("tools registered", "count", 13, "tools", []string{
 		"apply_cloud_resource",
 		"get_cloud_resource",
 		"delete_cloud_resource",
 		"list_cloud_resources",
 		"destroy_cloud_resource",
+		"check_slug_availability",
 		"get_stack_job",
 		"get_latest_stack_job",
 		"list_stack_jobs",
 		"list_organizations",
 		"list_environments",
+		"search_cloud_object_presets",
+		"get_cloud_object_preset",
 	})
 }
 

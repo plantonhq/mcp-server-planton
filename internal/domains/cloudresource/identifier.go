@@ -87,7 +87,7 @@ func resolveResourceID(ctx context.Context, conn *grpc.ClientConn, id ResourceId
 		return id.ID, nil
 	}
 
-	kind, err := resolveKind(id.Kind)
+	kind, err := domains.ResolveKind(id.Kind)
 	if err != nil {
 		return "", err
 	}
@@ -129,7 +129,7 @@ func resolveResource(ctx context.Context, conn *grpc.ClientConn, id ResourceIden
 		return cr, nil
 	}
 
-	kind, err := resolveKind(id.Kind)
+	kind, err := domains.ResolveKind(id.Kind)
 	if err != nil {
 		return nil, err
 	}

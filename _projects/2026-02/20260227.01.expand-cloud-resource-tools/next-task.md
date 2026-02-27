@@ -21,7 +21,7 @@ Drop this file into your conversation to quickly resume work on this project.
 **Description**: Expand the MCP server's cloud resource tool surface from the current 3 tools (apply, get, delete) to 18 tools covering the full lifecycle: listing/search, infrastructure destroy, stack job observability, org/env discovery, slug validation, presets, locks, rename, env var maps, and cross-resource reference resolution.
 **Goal**: Give AI agents full autonomous capability over cloud resource lifecycle — from discovering their operating context (orgs, environments) through CRUD operations to observing provisioning outcomes (stack jobs) and managing operational concerns (locks, presets, references).
 **Tech Stack**: Go/gRPC/MCP
-**Components**: internal/domains/cloudresource/, internal/domains/stackjob/, internal/domains/organization/, internal/domains/environment/, internal/domains/preset/ (planned), internal/server/server.go
+**Components**: internal/domains/cloudresource/, internal/domains/stackjob/, internal/domains/organization/, internal/domains/environment/, internal/domains/preset/, internal/server/server.go
 
 ## Essential Files to Review
 
@@ -80,9 +80,44 @@ When starting a new session:
 ## Current Status
 
 **Created**: 2026-02-27
-**Current Task**: Phase 6D — Agent Quality-of-Life
-**Status**: Phase 6C complete, ready to begin Phase 6D
+**Current Task**: Phase 6E — Advanced Operations
+**Status**: Phase 6D complete, ready to begin Phase 6E
 **Last Session**: 2026-02-27
+
+### Session Progress (2026-02-27, Session 4)
+
+**Phase 6D: Agent Quality-of-Life — DONE**
+
+Implemented 3 new tools (`check_slug_availability`, `search_cloud_object_presets`, `get_cloud_object_preset`) and a new domain package (`preset/`), expanding the MCP server from 10 to 13 tools. Also performed a cross-cutting refactor to extract `resolveKind` to the shared `domains` package.
+
+**Files created:**
+- `internal/domains/kind.go` — Shared `ResolveKind` function extracted from duplicated copies across domains
+- `internal/domains/kind_test.go` — Tests for `ResolveKind` (known, unknown, empty)
+- `internal/domains/cloudresource/slug.go` — `CheckSlugAvailability` domain function calling `CloudResourceQueryController.CheckSlugAvailability`
+- `internal/domains/preset/tools.go` — Package doc comment (proto provenance for both `InfraHubSearchQueryController` and `CloudObjectPresetQueryController`), input structs, tool defs, handlers for search + get
+- `internal/domains/preset/search.go` — `Search` domain function with org/official branching logic, kind resolution
+- `internal/domains/preset/get.go` — `Get` domain function calling `CloudObjectPresetQueryController.Get` via `ApiResourceId`
+
+**Files modified:**
+- `internal/domains/cloudresource/tools.go` — Added `CheckSlugAvailabilityInput`, `CheckSlugAvailabilityTool()`, `CheckSlugAvailabilityHandler()`, updated package doc comment (5 → 6 tools)
+- `internal/domains/cloudresource/kind.go` — Removed local `resolveKind`, updated `resolveKinds` to use `domains.ResolveKind`
+- `internal/domains/cloudresource/kind_test.go` — Removed `TestResolveKind_*` tests (moved to `domains/kind_test.go`)
+- `internal/domains/cloudresource/apply.go` — `resolveKind` → `domains.ResolveKind`
+- `internal/domains/cloudresource/get.go` — `resolveKind` → `domains.ResolveKind`
+- `internal/domains/cloudresource/identifier.go` — `resolveKind` → `domains.ResolveKind` (2 call sites)
+- `internal/domains/stackjob/enum.go` — Removed local `resolveKind` and unused `cloudresourcekind` import
+- `internal/domains/stackjob/enum_test.go` — Removed `TestResolveKind_*` tests (moved to `domains/kind_test.go`)
+- `internal/domains/stackjob/list.go` — `resolveKind` → `domains.ResolveKind`
+- `internal/server/server.go` — Imported `preset` package, registered 3 new tools (count 10 → 13)
+
+**Design decisions made:**
+- Extracted `resolveKind` to shared `domains.ResolveKind` — 3-way duplication threshold crossed; `resolveKind` depends only on the `cloudresourcekind` proto package (leaf dependency), not on any domain; moving to `domains` doesn't create cross-domain coupling
+- Preset search branching: when `org` is provided, both `IsIncludeOfficial` and `IsIncludeOrganizationPresets` set to `true` — agent always gets the most useful result set without needing to understand internal flags
+- `providers` filter not exposed — `kind` already implies provider; deferred to Hardening if needed
+- Pagination not exposed on preset search — preset datasets are small (1-5 per kind); no `PageInfo` sent
+- Proto surprise documented: `CloudResourceSlugAvailabilityCheckResponse` only has `is_available: bool`, not the `existing_resource_id` claimed in T01_2 revised plan
+
+**Verification:** `go build ./...` and `go test ./...` both pass. Zero linter errors.
 
 ### Session Progress (2026-02-27, Session 3)
 
@@ -178,23 +213,25 @@ Implemented 2 new tools (`list_cloud_resources`, `destroy_cloud_resource`), expa
 - ✅ Phase 6A: Complete the Resource Lifecycle (2 tools, 3 → 5) — 2026-02-27
 - ✅ Phase 6B: Stack Job Observability (3 tools, 5 → 8) — 2026-02-27
 - ✅ Phase 6C: Context Discovery (2 tools, 8 → 10) — 2026-02-27
-- 🔵 Next: **Phase 6D: Agent Quality-of-Life** (3 tools: `check_slug_availability`, `search_cloud_object_presets`, `get_cloud_object_preset`)
-- ⬜ Phase 6E: Advanced Operations (locks, rename, envvarmap, references)
+- ✅ Phase 6D: Agent Quality-of-Life (3 tools, 10 → 13) — 2026-02-27
+  - Also: extracted `resolveKind` to shared `domains` package
+- 🔵 Next: **Phase 6E: Advanced Operations** (5 tools: `list_cloud_resource_locks`, `remove_cloud_resource_locks`, `rename_cloud_resource`, `get_env_var_map`, `resolve_value_references`)
 - ⬜ Hardening: Unit tests, README update, docs, potential `get.go` refactor
 
 ## Next Steps
 
-1. **Phase 6D: Agent Quality-of-Life** (3 tools, new `preset/` domain)
-   - `check_slug_availability` — CloudResourceQueryController.checkSlugAvailability
-   - `search_cloud_object_presets` — CloudObjectPresetSearchQueryController (search service)
-   - `get_cloud_object_preset` — CloudObjectPresetQueryController.get
-2. Phase 6E: Advanced Operations (locks, rename, envvarmap, references)
-3. Hardening: Unit tests, README update, docs, potential `get.go` refactor
+1. **Phase 6E: Advanced Operations** (5 tools, all in existing `cloudresource/` domain)
+   - `list_cloud_resource_locks` — CloudResourceLockController.listLocks
+   - `remove_cloud_resource_locks` — CloudResourceLockController.removeLocks
+   - `rename_cloud_resource` — CloudResourceCommandController.rename
+   - `get_env_var_map` — CloudResourceQueryController.getEnvVarMap
+   - `resolve_value_references` — CloudResourceQueryController.resolveValueFromReferences
+2. Hardening: Unit tests, README update, docs, potential `get.go` refactor
 
 ## Quick Commands
 
 After loading context:
-- "Start Phase 6D" - Begin agent quality-of-life tools
+- "Start Phase 6E" - Begin advanced operations tools
 - "Show project status" - Get overview of progress
 - "Create checkpoint" - Save current progress
 - "Review guidelines" - Check established patterns

@@ -3,13 +3,14 @@
 // CloudResourceQueryController, and CloudResourceSearchQueryController RPCs
 // on the Planton backend.
 //
-// Five tools are exposed:
+// Six tools are exposed:
 //   - apply_cloud_resource: create or update (accepts opaque cloud_object map;
 //     typed validation via generated parsers in gen/cloudresource/)
 //   - get_cloud_resource: retrieve by ID or by (kind, org, env, slug)
 //   - delete_cloud_resource: remove by ID or by (kind, org, env, slug)
 //   - list_cloud_resources: query the search index for resources in an org
 //   - destroy_cloud_resource: tear down cloud infrastructure (keeps record)
+//   - check_slug_availability: verify slug uniqueness within (org, env, kind)
 package cloudresource
 
 import (
@@ -267,6 +268,59 @@ func DestroyHandler(serverAddress string) func(context.Context, *mcp.CallToolReq
 		}
 
 		text, err := Destroy(ctx, serverAddress, id)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// check_slug_availability
+// ---------------------------------------------------------------------------
+
+// CheckSlugAvailabilityInput defines the parameters for the
+// check_slug_availability tool. All four fields are required — slugs are
+// unique within the composite key (org, env, kind).
+type CheckSlugAvailabilityInput struct {
+	Org  string `json:"org"  jsonschema:"required,Organization identifier. Use list_organizations to discover available organizations."`
+	Env  string `json:"env"  jsonschema:"required,Environment identifier. Use list_environments to discover available environments."`
+	Kind string `json:"kind" jsonschema:"required,PascalCase cloud resource kind (e.g. AwsEksCluster). Read cloud-resource-kinds://catalog for valid kinds."`
+	Slug string `json:"slug" jsonschema:"required,The slug to check for availability."`
+}
+
+// CheckSlugAvailabilityTool returns the MCP tool definition for check_slug_availability.
+func CheckSlugAvailabilityTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "check_slug_availability",
+		Description: "Check whether a cloud resource slug is available within the scoped " +
+			"composite key (org, env, kind). Slugs must be unique within this scope. " +
+			"Use this before apply_cloud_resource to verify that the desired slug is not already taken.",
+	}
+}
+
+// CheckSlugAvailabilityHandler returns the typed tool handler for check_slug_availability.
+func CheckSlugAvailabilityHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *CheckSlugAvailabilityInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *CheckSlugAvailabilityInput) (*mcp.CallToolResult, any, error) {
+		if input.Org == "" {
+			return nil, nil, fmt.Errorf("'org' is required")
+		}
+		if input.Env == "" {
+			return nil, nil, fmt.Errorf("'env' is required")
+		}
+		if input.Kind == "" {
+			return nil, nil, fmt.Errorf("'kind' is required")
+		}
+		if input.Slug == "" {
+			return nil, nil, fmt.Errorf("'slug' is required")
+		}
+
+		kind, err := domains.ResolveKind(input.Kind)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		text, err := CheckSlugAvailability(ctx, serverAddress, input.Org, input.Env, kind, input.Slug)
 		if err != nil {
 			return nil, nil, err
 		}

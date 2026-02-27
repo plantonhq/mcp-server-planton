@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/plantonhq/openmcf/apis/org/openmcf/shared/cloudresourcekind"
 	stackjobv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/infrahub/stackjob/v1"
 	"github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/workflow"
 )
@@ -44,18 +43,6 @@ func resolveExecutionResult(s string) (workflow.WorkflowExecutionResult, error) 
 			s, joinEnumValues(workflow.WorkflowExecutionResult_value, "workflow_execution_result_unspecified"))
 	}
 	return workflow.WorkflowExecutionResult(v), nil
-}
-
-// resolveKind maps a PascalCase kind string (e.g. "AwsEksCluster") to the
-// corresponding CloudResourceKind enum value. This duplicates the one-liner
-// from cloudresource/kind.go intentionally — the stackjob domain must not
-// depend on the cloudresource domain.
-func resolveKind(kindStr string) (cloudresourcekind.CloudResourceKind, error) {
-	v, ok := cloudresourcekind.CloudResourceKind_value[kindStr]
-	if !ok {
-		return 0, fmt.Errorf("unknown cloud resource kind %q — read cloud-resource-kinds://catalog for all valid kinds", kindStr)
-	}
-	return cloudresourcekind.CloudResourceKind(v), nil
 }
 
 // joinEnumValues returns a sorted, comma-separated list of the map's keys,

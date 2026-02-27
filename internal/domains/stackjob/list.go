@@ -44,7 +44,7 @@ func List(ctx context.Context, serverAddress string, input ListInput) (string, e
 	}
 
 	if input.CloudResourceKind != "" {
-		k, err := resolveKind(input.CloudResourceKind)
+		k, err := domains.ResolveKind(input.CloudResourceKind)
 		if err != nil {
 			return "", err
 		}

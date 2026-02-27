@@ -8,6 +8,7 @@ Plans created for this project. Each plan documents a specific implementation ef
 |------|--------|---------|-----------|-------------|
 | `phase-6a-implementation.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Phase 6A: list_cloud_resources and destroy_cloud_resource |
 | `phase-6c-context-discovery.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Phase 6C: list_organizations and list_environments |
+| `phase-6d-agent-quality-of-life.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Phase 6D: check_slug_availability, search/get presets, resolveKind extraction |
 
 ### Status Legend
 
@@ -28,6 +29,12 @@ Plans created for this project. Each plan documents a specific implementation ef
 - **Tools added**: `list_organizations`, `list_environments`
 - **Architecture decision**: Flat domain packages (documented in plan)
 - **Server expansion**: 8 → 10 tools
+
+### phase-6d-agent-quality-of-life.md
+- **Objective**: Add slug validation and preset discovery tools, extract shared resolveKind
+- **Tools added**: `check_slug_availability`, `search_cloud_object_presets`, `get_cloud_object_preset`
+- **Architecture decision**: Extracted `resolveKind` to shared `domains` package, eliminating 3-way duplication
+- **Server expansion**: 10 → 13 tools
 
 ---
 

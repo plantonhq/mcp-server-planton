@@ -116,26 +116,3 @@ func TestResolveExecutionResult_Empty(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// resolveKind (duplicated from cloudresource domain)
-// ---------------------------------------------------------------------------
-
-func TestResolveKind_Valid(t *testing.T) {
-	got, err := resolveKind("AwsVpc")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if got == 0 {
-		t.Fatal("expected non-zero enum value for AwsVpc")
-	}
-}
-
-func TestResolveKind_Unknown(t *testing.T) {
-	_, err := resolveKind("CompletelyFakeKind")
-	if err == nil {
-		t.Fatal("expected error for unknown kind")
-	}
-	if !strings.Contains(err.Error(), "unknown cloud resource kind") {
-		t.Fatalf("expected 'unknown cloud resource kind' in error, got: %v", err)
-	}
-}

@@ -30,7 +30,7 @@ func Get(ctx context.Context, serverAddress string, id ResourceIdentifier) (stri
 				return domains.MarshalJSON(cr)
 			}
 
-			kind, err := resolveKind(id.Kind)
+			kind, err := domains.ResolveKind(id.Kind)
 			if err != nil {
 				return "", err
 			}

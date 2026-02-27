@@ -3,6 +3,7 @@ package cloudresource
 import (
 	"fmt"
 
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"github.com/plantonhq/openmcf/apis/org/openmcf/shared/cloudresourcekind"
 )
 
@@ -20,16 +21,6 @@ func extractKindFromCloudObject(co map[string]any) (string, error) {
 	return s, nil
 }
 
-// resolveKind maps a PascalCase kind string (e.g. "AwsEksCluster") to the
-// corresponding CloudResourceKind enum value from the openmcf proto stubs.
-func resolveKind(kindStr string) (cloudresourcekind.CloudResourceKind, error) {
-	v, ok := cloudresourcekind.CloudResourceKind_value[kindStr]
-	if !ok {
-		return 0, fmt.Errorf("unknown cloud resource kind %q — read cloud-resource-kinds://catalog for all valid kinds", kindStr)
-	}
-	return cloudresourcekind.CloudResourceKind(v), nil
-}
-
 // resolveKinds maps a slice of PascalCase kind strings to their corresponding
 // CloudResourceKind enum values. Returns an error on the first unknown kind.
 // A nil or empty input returns a nil slice (no filtering).
@@ -39,7 +30,7 @@ func resolveKinds(kindStrs []string) ([]cloudresourcekind.CloudResourceKind, err
 	}
 	kinds := make([]cloudresourcekind.CloudResourceKind, len(kindStrs))
 	for i, s := range kindStrs {
-		k, err := resolveKind(s)
+		k, err := domains.ResolveKind(s)
 		if err != nil {
 			return nil, err
 		}
