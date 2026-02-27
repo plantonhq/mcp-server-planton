@@ -21,7 +21,7 @@
 
 ## Current Status
 
-**Current Task**: Phase 1B (InfraProject tools)
+**Current Task**: Phase 1C (InfraPipeline tools)
 **Status**: Not started — ready to plan
 
 **Current step:**
@@ -34,7 +34,11 @@
   - 3 new tools: `list_infra_charts`, `get_infra_chart`, `build_infra_chart`
   - Server expanded from 18 to 21 tools
   - Build, tests, vet all pass clean
-- 🔵 Next: **Phase 1B: InfraProject tools** (6 tools: search, get, apply, delete, slug check, undeploy)
+- ✅ **Phase 1B: InfraProject tools** (2026-02-27)
+  - 6 new tools: `search_infra_projects`, `get_infra_project`, `apply_infra_project`, `delete_infra_project`, `check_infra_project_slug`, `undeploy_infra_project`
+  - Server expanded from 21 to 27 tools
+  - Build, vet, tests all pass clean
+- 🔵 Next: **Phase 1C: InfraPipeline tools** (5 tools: list, get, get latest, run, cancel)
 
 ---
 
@@ -116,30 +120,85 @@
 
 ---
 
+### ✅ COMPLETED: Phase 1B — InfraProject Tools (2026-02-27)
+
+**Added 6 MCP tools for infra project lifecycle management, expanding the server from 21 to 27 tools.**
+
+**What was delivered:**
+
+1. **`search_infra_projects`** - Free-text search via `InfraHubSearchQueryController.SearchInfraProjects`
+   - `internal/domains/infrahub/infraproject/search.go` - Org-scoped search with env/text/pagination filters
+   - 1-based page numbers in tool API, converted to 0-based for proto
+
+2. **`get_infra_project`** - Dual identification (ID or org+slug) via `InfraProjectQueryController`
+   - `internal/domains/infrahub/infraproject/get.go` - Get + GetByOrgBySlug with resolveProject/resolveProjectID helpers
+
+3. **`apply_infra_project`** - Create/update via `InfraProjectCommandController.Apply`
+   - `internal/domains/infrahub/infraproject/apply.go` - Full JSON passthrough using protojson.Unmarshal
+   - Supports both infra_chart and git_repo source types
+
+4. **`delete_infra_project`** - Remove record via `InfraProjectCommandController.Delete`
+   - `internal/domains/infrahub/infraproject/delete.go` - Resolves ID then calls Delete with ApiResourceDeleteInput
+
+5. **`check_infra_project_slug`** - Slug availability via `InfraProjectQueryController.CheckSlugAvailability`
+   - `internal/domains/infrahub/infraproject/slug.go` - Org-scoped only (simpler than CloudResource)
+
+6. **`undeploy_infra_project`** - Tear down infra via `InfraProjectCommandController.Undeploy`
+   - `internal/domains/infrahub/infraproject/undeploy.go` - Keeps record, triggers undeploy pipeline
+
+7. **Tool definitions and handlers**
+   - `internal/domains/infrahub/infraproject/tools.go` - 6 input structs, 6 tool defs, 6 handlers, shared validateIdentification()
+
+8. **Server registration**
+   - `internal/server/server.go` - Import + 6 `mcp.AddTool` calls, count 21→27
+   - `internal/domains/infrahub/doc.go` - Updated subpackage list
+
+**Key Decisions Made:**
+- DD-1: Simpler identification pattern (ID or org+slug) vs CloudResource's 4-field slug path — InfraProject slugs are org-scoped only
+- DD-2: Apply accepts full InfraProject JSON via protojson.Unmarshal — honest passthrough, supports both source types
+- DD-3: Purge RPC intentionally excluded — compound destructive operation; agents can undeploy then delete with review checkpoint
+- DD-4: Search over Find — SearchInfraProjects (free-text + org + env + pagination) is strictly more powerful than Find (pagination-only)
+
+**Files Created:**
+- `internal/domains/infrahub/infraproject/tools.go`
+- `internal/domains/infrahub/infraproject/search.go`
+- `internal/domains/infrahub/infraproject/get.go`
+- `internal/domains/infrahub/infraproject/apply.go`
+- `internal/domains/infrahub/infraproject/delete.go`
+- `internal/domains/infrahub/infraproject/slug.go`
+- `internal/domains/infrahub/infraproject/undeploy.go`
+
+**Files Modified:**
+- `internal/server/server.go` - Tool registration + count
+- `internal/domains/infrahub/doc.go` - Subpackage docs
+
+**Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
+
+---
+
 ## Objectives for Next Conversations
 
-### Option A (Recommended): Phase 1B — InfraProject (6 tools)
+### Option A (Recommended): Phase 1C — InfraPipeline (5 tools)
 
-The natural continuation. InfraProject tools give agents full project lifecycle management.
+The natural continuation. Completes the Phase 1 trifecta (Chart + Project + Pipeline) giving agents full composition-to-deployment observability.
 
 | Tool | Backend RPC | Purpose |
 |------|-------------|---------|
-| `search_infra_projects` | `InfraHubSearchQueryController.searchInfraProjects` | Search projects by org, env, text |
-| `get_infra_project` | `InfraProjectQueryController.get` / `getByOrgBySlug` | Retrieve full project |
-| `apply_infra_project` | `InfraProjectCommandController.apply` | Create or update |
-| `delete_infra_project` | `InfraProjectCommandController.delete` | Remove project |
-| `check_infra_project_slug` | `InfraProjectQueryController.checkSlugAvailability` | Slug uniqueness check |
-| `undeploy_infra_project` | `InfraProjectCommandController.undeploy` | Tear down all deployed resources |
+| `list_infra_pipelines` | `InfraPipelineQueryController.listByFilters` | List pipelines by project, status |
+| `get_infra_pipeline` | `InfraPipelineQueryController.get` | Full pipeline status and details |
+| `get_latest_infra_pipeline` | `InfraPipelineQueryController.getLastInfraPipelineByInfraProjectId` | Last pipeline for a project |
+| `run_infra_pipeline` | `InfraPipelineCommandController.runInfraProjectChartSourcePipeline` | Trigger pipeline run |
+| `cancel_infra_pipeline` | `InfraPipelineCommandController.cancel` | Cancel a running pipeline |
 
-Files to create: `internal/domains/infrahub/infraproject/` (tools.go, search.go, get.go, apply.go, delete.go, slug.go, undeploy.go)
+Files to create: `internal/domains/infrahub/infrapipeline/` (tools.go, list.go, get.go, latest.go, run.go, cancel.go)
 
-### Option B: Phase 1C — InfraPipeline (5 tools)
+### Option B: Phase 2A — Graph / Dependency Intelligence (4 tools)
 
-Pipeline observability and control (list, get, get latest, run, cancel).
+The "wow factor" differentiator — impact analysis, dependency graphs, org topology.
 
-### Option C: Phase 1B + 1C combined
+### Option C: Phase 1C + Phase 2A combined
 
-If scope allows, tackle both InfraProject and InfraPipeline in one session.
+If scope allows, tackle both Pipeline and Graph in one session (9 tools, reaching 36 total).
 
 ---
 
@@ -171,6 +230,7 @@ _projects/2026-02/20260227.02.expand-infrahub-mcp-tools/design-decisions/
 Existing domain implementations to use as reference:
 - `internal/domains/infrahub/cloudresource/` — full CRUD + search (11 tools)
 - `internal/domains/infrahub/infrachart/` — list + get + two-step build (3 tools)
+- `internal/domains/infrahub/infraproject/` — full lifecycle: search, get, apply, delete, slug, undeploy (6 tools)
 - `internal/domains/infrahub/stackjob/` — read-only query tools (3 tools)
 - `internal/domains/infrahub/preset/` — search + get pair (2 tools)
 

@@ -15,6 +15,7 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/config"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/cloudresource"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infrachart"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infraproject"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/preset"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/stackjob"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/environment"
@@ -72,13 +73,20 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, infrachart.GetTool(), infrachart.GetHandler(serverAddress))
 	mcp.AddTool(srv, infrachart.BuildTool(), infrachart.BuildHandler(serverAddress))
 
+	mcp.AddTool(srv, infraproject.SearchTool(), infraproject.SearchHandler(serverAddress))
+	mcp.AddTool(srv, infraproject.GetTool(), infraproject.GetHandler(serverAddress))
+	mcp.AddTool(srv, infraproject.ApplyTool(), infraproject.ApplyHandler(serverAddress))
+	mcp.AddTool(srv, infraproject.DeleteTool(), infraproject.DeleteHandler(serverAddress))
+	mcp.AddTool(srv, infraproject.CheckSlugTool(), infraproject.CheckSlugHandler(serverAddress))
+	mcp.AddTool(srv, infraproject.UndeployTool(), infraproject.UndeployHandler(serverAddress))
+
 	mcp.AddTool(srv, cloudresource.ListLocksTool(), cloudresource.ListLocksHandler(serverAddress))
 	mcp.AddTool(srv, cloudresource.RemoveLocksTool(), cloudresource.RemoveLocksHandler(serverAddress))
 	mcp.AddTool(srv, cloudresource.RenameTool(), cloudresource.RenameHandler(serverAddress))
 	mcp.AddTool(srv, cloudresource.GetEnvVarMapTool(), cloudresource.GetEnvVarMapHandler(serverAddress))
 	mcp.AddTool(srv, cloudresource.ResolveValueReferencesTool(), cloudresource.ResolveValueReferencesHandler(serverAddress))
 
-	slog.Info("tools registered", "count", 21, "tools", []string{
+	slog.Info("tools registered", "count", 27, "tools", []string{
 		"apply_cloud_resource",
 		"get_cloud_resource",
 		"delete_cloud_resource",
@@ -95,6 +103,12 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 		"list_infra_charts",
 		"get_infra_chart",
 		"build_infra_chart",
+		"search_infra_projects",
+		"get_infra_project",
+		"apply_infra_project",
+		"delete_infra_project",
+		"check_infra_project_slug",
+		"undeploy_infra_project",
 		"list_cloud_resource_locks",
 		"remove_cloud_resource_locks",
 		"rename_cloud_resource",

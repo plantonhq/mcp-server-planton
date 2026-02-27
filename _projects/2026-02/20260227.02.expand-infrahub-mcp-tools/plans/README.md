@@ -8,6 +8,7 @@ Plans created for the InfraHub MCP Tools Expansion project. Each plan documents 
 |------|--------|---------|-----------|-------------|
 | `phase-0-gen-restructure.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Move gen/cloudresource/ to gen/infrahub/cloudresource/ |
 | `phase-1a-infrachart-tools.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Add list, get, build tools for InfraChart domain |
+| `phase-1b-infraproject-tools.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Add search, get, apply, delete, slug, undeploy tools for InfraProject domain |
 
 ### Status Legend
 
@@ -29,6 +30,12 @@ Plans created for the InfraHub MCP Tools Expansion project. Each plan documents 
 - **Phases**: Single phase
 - **Current Phase**: Complete
 - **Key Decisions**: `list_` naming over `search_`, simplified build input with chart_id + params map
+
+### phase-1b-infraproject-tools.md
+- **Objective**: Add 6 MCP tools for InfraProject lifecycle management (search, get, apply, delete, slug check, undeploy)
+- **Phases**: Single phase
+- **Current Phase**: Complete
+- **Key Decisions**: Simpler identification (org+slug vs 4-field), full JSON passthrough for apply, Purge excluded, Search over Find
 
 ---
 
