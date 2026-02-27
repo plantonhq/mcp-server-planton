@@ -21,8 +21,8 @@
 
 ## Current Status
 
-**Current Task**: Phase 3C (Catalog)
-**Status**: Ready to pick next phase
+**Current Task**: All phases complete
+**Status**: PROJECT COMPLETE
 
 **Current step:**
 - ✅ **Phase 0: Restructure Generated Code** (2026-02-27)
@@ -67,7 +67,15 @@
   - `resume_stack_job` added during proto analysis — approval gate dead-end argument (same as infrapipeline gate tools)
   - Uses two gRPC services: `StackJobCommandController` (rerun, cancel, resume) + `StackJobEssentialsQueryController` (check)
   - Build, vet, tests all pass clean
-- 🔵 Next: **Phase 3C: Catalog** (3 tools)
+- ✅ **Phase 3C: Catalog / Deployment Component & IaC Module** (2026-02-28)
+  - 4 new tools (expanded from planned 3): `search_deployment_components`, `get_deployment_component`, `search_iac_modules`, `get_iac_module`
+  - Server expanded from 59 to 63 tools
+  - `get_deployment_component` added during proto analysis — `DeploymentComponentQueryController` has Get + GetByCloudResourceKind RPCs
+  - IaC module search follows preset dual-RPC dispatch pattern (org-context vs. official)
+  - Lifted `joinEnumValues` to shared `domains.JoinEnumValues` — eliminated 3 duplicates
+  - Added shared `ResolveProvider` and `ResolveProvisioner` enum helpers
+  - Build, vet, tests all pass clean
+  - **ALL PHASES COMPLETE — Project finished**
 
 ---
 
@@ -485,15 +493,86 @@
 
 ---
 
-## Objectives for Next Conversations
+### ✅ COMPLETED: Phase 3C — Catalog / Deployment Component & IaC Module (2026-02-28)
 
-### Option A (Recommended): Phase 3C — Deployment Component & IaC Module Catalog (3 tools)
+**Added 4 MCP tools for deployment component and IaC module catalog discovery, expanding the server from 59 to 63 tools. Also lifted shared enum helpers to reduce tech debt. Completes the entire master plan.**
 
-Browse cloud resource types and IaC modules. Would bring the server to 62 tools. Last phase in the master plan.
+**What was delivered:**
 
-### Option B: Cleanup / Consolidation
+1. **`search_deployment_components`** — Browse deployment component catalog via `SearchDeploymentComponentsByFilter`
+   - `internal/domains/infrahub/deploymentcomponent/search.go` — Public endpoint with optional provider filter
+   - Pagination: 1-based tool API, 0-based proto
 
-Refactor duplicated `joinEnumValues` helper, add more comprehensive tests, or address any technical debt accumulated across the 9 phases.
+2. **`get_deployment_component`** — Get full component details by ID or by CloudResourceKind
+   - `internal/domains/infrahub/deploymentcomponent/get.go` — Dual identification: Get + GetByCloudResourceKind
+   - Kind resolution via `domains.ResolveKind`
+
+3. **`search_iac_modules`** — Search IaC modules (org-context or official)
+   - `internal/domains/infrahub/iacmodule/search.go` — Dispatches to org-context or official RPC based on `org` presence
+   - Follows preset/search.go dual-RPC pattern exactly
+   - Rich filters: kind, provisioner, provider, search text, pagination
+
+4. **`get_iac_module`** — Get full IaC module details by ID
+   - `internal/domains/infrahub/iacmodule/get.go` — Standard get-by-ID pattern
+
+5. **Shared enum helper debt reduction**
+   - `internal/domains/enum.go` — Exported `JoinEnumValues` (lifted from 3 duplicates)
+   - `internal/domains/provider.go` — `ResolveProvider` + `ResolveProvisioner` (new)
+   - Updated `audit/enum.go`, `graph/enum.go`, `stackjob/enum.go` to use shared version
+
+6. **Server registration**
+   - `internal/server/server.go` — 2 imports + 4 `mcp.AddTool` calls, count 59→63
+
+**Key Decisions Made:**
+- DD-1: Added `get_deployment_component` (not in original plan) — `DeploymentComponentQueryController` discovered during proto analysis with valuable `GetByCloudResourceKind` RPC
+- DD-2: Expanded from planned 3 to 4 tools
+- DD-3: `FindDeploymentComponentIacModulesByOrgContext` NOT exposed as separate tool — subsumed by `search_iac_modules` with `kind` filter (richer filtering)
+- DD-4: IaC module search follows preset dual-RPC dispatch pattern (org-context + official)
+- DD-5: Lifted `joinEnumValues` to shared package — eliminated 3 duplicates, added `ResolveProvider`/`ResolveProvisioner`
+
+**Files Created:**
+- `internal/domains/enum.go` — Shared JoinEnumValues
+- `internal/domains/provider.go` — ResolveProvider + ResolveProvisioner
+- `internal/domains/infrahub/deploymentcomponent/tools.go`
+- `internal/domains/infrahub/deploymentcomponent/search.go`
+- `internal/domains/infrahub/deploymentcomponent/get.go`
+- `internal/domains/infrahub/iacmodule/tools.go`
+- `internal/domains/infrahub/iacmodule/search.go`
+- `internal/domains/infrahub/iacmodule/get.go`
+
+**Files Modified:**
+- `internal/server/server.go` — Tool registration + count 59→63
+- `internal/domains/infrahub/doc.go` — Subpackage list expanded
+- `internal/domains/audit/enum.go` — Local joinEnumValues → domains.JoinEnumValues
+- `internal/domains/graph/enum.go` — Same
+- `internal/domains/infrahub/stackjob/enum.go` — Same
+
+**Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
+
+---
+
+## Project Complete
+
+All 10 phases (Phase 0 through Phase 3C) have been delivered. The MCP server expanded from **18 tools to 63 tools** across **13 domain packages** and **5 bounded contexts**.
+
+### Final Statistics
+
+| Metric | Value |
+|---|---|
+| Starting tools | 18 |
+| Final tools | 63 |
+| New tools added | 45 |
+| Phases executed | 10 (0, 1A, 1B, 1C, 2A, 2B, 3A, 3B, 3C) |
+| Domain packages | 13 (cloudresource, infrachart, infraproject, infrapipeline, stackjob, preset, deploymentcomponent, iacmodule, graph, variable, secret, secretversion, audit) |
+| Bounded contexts | 5 (infrahub, graph, configmanager, audit, resourcemanager) |
+| Design decisions | 2 (AD-01 exclude credentials, AD-02 restructure gen code) |
+
+### Future Work (Optional)
+
+- Add comprehensive integration tests for new domains
+- Explore streaming RPC support for pipeline logs/status
+- Consider read-only `list_credentials` for discoverability (per AD-01)
+- Explore MCP resource templates for additional discovery surfaces
 
 ---
 
@@ -534,6 +613,8 @@ Existing domain implementations to use as reference:
 - `internal/domains/configmanager/secret/` — secret metadata CRUD (4 tools, scope-aware identification)
 - `internal/domains/configmanager/secretversion/` — version create + list (2 tools, write-only security boundary)
 - `internal/domains/audit/` — resource version history + change tracking (3 tools, third non-infrahub bounded context, dynamic ApiResourceKind resolver)
+- `internal/domains/infrahub/deploymentcomponent/` — deployment component catalog (2 tools, search + get by ID/kind)
+- `internal/domains/infrahub/iacmodule/` — IaC module catalog (2 tools, dual-RPC search + get)
 
 ---
 

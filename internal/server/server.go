@@ -19,6 +19,8 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/variable"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/graph"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/cloudresource"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/deploymentcomponent"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/iacmodule"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infrachart"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infrapipeline"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infraproject"
@@ -130,7 +132,13 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, audit.GetTool(), audit.GetHandler(serverAddress))
 	mcp.AddTool(srv, audit.CountTool(), audit.CountHandler(serverAddress))
 
-	slog.Info("tools registered", "count", 59, "tools", []string{
+	mcp.AddTool(srv, deploymentcomponent.SearchTool(), deploymentcomponent.SearchHandler(serverAddress))
+	mcp.AddTool(srv, deploymentcomponent.GetTool(), deploymentcomponent.GetHandler(serverAddress))
+
+	mcp.AddTool(srv, iacmodule.SearchTool(), iacmodule.SearchHandler(serverAddress))
+	mcp.AddTool(srv, iacmodule.GetTool(), iacmodule.GetHandler(serverAddress))
+
+	slog.Info("tools registered", "count", 63, "tools", []string{
 		"apply_cloud_resource",
 		"get_cloud_resource",
 		"delete_cloud_resource",
@@ -190,6 +198,10 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 		"list_resource_versions",
 		"get_resource_version",
 		"get_resource_version_count",
+		"search_deployment_components",
+		"get_deployment_component",
+		"search_iac_modules",
+		"get_iac_module",
 	})
 }
 
