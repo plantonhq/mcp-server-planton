@@ -80,9 +80,35 @@ When starting a new session:
 ## Current Status
 
 **Created**: 2026-02-27
-**Current Task**: Hardening
-**Status**: All 5 feature phases (6A–6E) complete. 18 tools implemented. Ready for Hardening.
+**Current Task**: Hardening (docs complete, H4 refactor pending)
+**Status**: All 5 feature phases (6A–6E) and documentation hardening complete. 18 tools implemented and documented.
 **Last Session**: 2026-02-27
+
+### Session Progress (2026-02-27, Session 6)
+
+**Hardening: Documentation and Tool Description Review — DONE**
+
+Completed the documentation hardening pass (H2 + H5 + surprise H3):
+
+**What was delivered:**
+
+1. **Tool description normalization** — "Planton platform" → "Planton Cloud" across 9 descriptions, added cross-tool references for agent workflow, added org discovery hints to `org` jsonschema tags
+2. **README.md update** — Intro paragraph expanded, tool table from 3 to 18 tools across 4 grouped sections
+3. **docs/tools.md rewrite** — 229 → ~470 lines, 15 new tool sections, Resource Identification Pattern section, expanded Agent Cheat Sheet with 6 decision guides
+4. **docs/development.md update** — Project structure and test files table updated with all new domain packages
+
+**Surprise discovery:** `docs/tools.md` was the most important update but wasn't in the original Hardening plan. Added to scope.
+
+**Files modified:**
+- `internal/domains/cloudresource/tools.go` — description string normalization (+29 lines)
+- `internal/domains/stackjob/tools.go` — description string normalization (+4 lines)
+- `README.md` — intro paragraph + tool table expansion (+42 lines)
+- `docs/tools.md` — full rewrite from 3 to 18 tools (+456 lines)
+- `docs/development.md` — project structure + test table (+14 lines)
+
+**Verification:** `go build ./...` and `go test ./...` both pass. Zero linter errors.
+
+---
 
 ### Session Progress (2026-02-27, Session 5)
 
@@ -245,16 +271,17 @@ Implemented 2 new tools (`list_cloud_resources`, `destroy_cloud_resource`), expa
   - Also: extracted `resolveKind` to shared `domains` package
 - ✅ Phase 6E: Advanced Operations (5 tools, 13 → 18) — 2026-02-27
   - Proto surprises: `get_env_var_map` takes YAML not ID+manifest; `resolve_value_references` resolves ALL refs not specific ones
-- 🔵 Next: **Hardening** — Unit tests, README update, docs, potential `get.go` refactor
+- ✅ Hardening: Documentation and Tool Description Review — 2026-02-27
+  - Normalized tool descriptions, expanded README/tools.md/development.md
+  - Surprise: docs/tools.md was the most important update (not in original plan)
+- 🔵 Next: **Remaining Hardening** — H4 (`get.go` refactor) or project close-out
 
 ## Next Steps
 
-1. **Hardening** (no new tools — polish and documentation)
-   - Unit tests for domain logic worth testing
-   - Update `README.md` tool table (3 → 18 tools)
-   - Update `docs/development.md` with new domain packages
-   - Consider refactoring `get.go` to use `resolveResource` (deferred since Phase 6A)
-   - End-to-end review of all 18 tool descriptions for agent clarity
+1. **H4: `get.go` refactor** (optional, low priority)
+   - Refactor `get.go` to use `resolveResource` instead of its current inline logic (deferred since Phase 6A)
+   - Code-quality improvement only — no user-facing behavior change
+2. **Project close-out** — if H4 is skipped, the project is complete
 
 ## Quick Commands
 
