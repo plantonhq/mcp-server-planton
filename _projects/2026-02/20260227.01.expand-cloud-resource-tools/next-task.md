@@ -21,7 +21,7 @@ Drop this file into your conversation to quickly resume work on this project.
 **Description**: Expand the MCP server's cloud resource tool surface from the current 3 tools (apply, get, delete) to 18 tools covering the full lifecycle: listing/search, infrastructure destroy, stack job observability, org/env discovery, slug validation, presets, locks, rename, env var maps, and cross-resource reference resolution.
 **Goal**: Give AI agents full autonomous capability over cloud resource lifecycle — from discovering their operating context (orgs, environments) through CRUD operations to observing provisioning outcomes (stack jobs) and managing operational concerns (locks, presets, references).
 **Tech Stack**: Go/gRPC/MCP
-**Components**: internal/domains/cloudresource/, internal/domains/stackjob/, internal/domains/organization/, internal/domains/environment/, internal/domains/preset/, internal/server/server.go
+**Components**: internal/domains/infrahub/cloudresource/, internal/domains/infrahub/stackjob/, internal/domains/infrahub/preset/, internal/domains/resourcemanager/organization/, internal/domains/resourcemanager/environment/, internal/server/server.go
 
 ## Essential Files to Review
 
@@ -81,8 +81,39 @@ When starting a new session:
 
 **Created**: 2026-02-27
 **Current Task**: None — project complete
-**Status**: COMPLETE. All 5 feature phases (6A–6E), documentation hardening, and code-quality hardening (H4) complete. 18 tools implemented, documented, and structurally consistent.
+**Status**: COMPLETE. All 5 feature phases (6A–6E), documentation hardening, code-quality hardening (H4), and domain bounded-context refactor complete. 18 tools implemented, documented, and structurally consistent.
 **Last Session**: 2026-02-27
+
+### Session Progress (2026-02-27, Session 8)
+
+**Domain Bounded-Context Refactor — DONE**
+
+Restructured `internal/domains/` from a flat layout to one level of bounded-context grouping that mirrors the Planton API's top-level domain taxonomy. The 5 domain packages were moved into two parent directories: `infrahub/` (cloudresource, stackjob, preset) and `resourcemanager/` (environment, organization).
+
+**What was delivered:**
+
+1. **Directory restructure** — `git mv` of 35 files across 5 domain packages into bounded-context parents, preserving full git rename tracking
+2. **Package documentation** — `doc.go` files for `infrahub` and `resourcemanager` grouping packages, documenting bounded context provenance (which Planton API domain each maps to)
+3. **Import path updates** — 5 import paths updated in `internal/server/server.go`
+4. **Documentation updates** — Test file table and project structure diagram in `docs/development.md` updated to reflect new paths
+
+**Key Decisions Made:**
+- One level of grouping only (matching API top-level domains) — deeper nesting rejected as over-engineering for a thin adapter layer
+- Shared utilities (`conn.go`, `marshal.go`, `rpcerr.go`, `toolresult.go`, `kind.go`) stay at `internal/domains/` root — they are cross-cutting infrastructure
+- Historical documentation (`_changelog/`, `_projects/`, `.cursor/plans/`) left as-is — rewriting history is wrong
+- Tool names unchanged — the grouping is internal code organization, not consumer-facing
+
+**Files created:**
+- `internal/domains/infrahub/doc.go`
+- `internal/domains/resourcemanager/doc.go`
+
+**Files modified:**
+- `internal/server/server.go` — 5 import paths
+- `docs/development.md` — test table paths + project structure diagram
+
+**Verification:** `go build ./...`, `go vet ./...`, and `go test ./...` all pass. Zero errors.
+
+---
 
 ### Session Progress (2026-02-27, Session 7)
 
@@ -294,6 +325,9 @@ Implemented 2 new tools (`list_cloud_resources`, `destroy_cloud_resource`), expa
   - Surprise: docs/tools.md was the most important update (not in original plan)
 - ✅ Hardening H4: `get.go` Refactor — 2026-02-27
   - Eliminated duplicated dual-path logic, `Get()` now delegates to `resolveResource`
+- ✅ Domain Bounded-Context Refactor — 2026-02-27
+  - Restructured `internal/domains/` into `infrahub/` and `resourcemanager/` bounded contexts
+  - Aligns MCP server domain layout with Planton API top-level taxonomy
 - ✅ **PROJECT COMPLETE** — 2026-02-27
 
 ## Final Summary

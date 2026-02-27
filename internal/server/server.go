@@ -13,11 +13,11 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/plantonhq/mcp-server-planton/internal/auth"
 	"github.com/plantonhq/mcp-server-planton/internal/config"
-	"github.com/plantonhq/mcp-server-planton/internal/domains/cloudresource"
-	"github.com/plantonhq/mcp-server-planton/internal/domains/environment"
-	"github.com/plantonhq/mcp-server-planton/internal/domains/organization"
-	"github.com/plantonhq/mcp-server-planton/internal/domains/preset"
-	"github.com/plantonhq/mcp-server-planton/internal/domains/stackjob"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/cloudresource"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/preset"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/stackjob"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/environment"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/organization"
 )
 
 // Server wraps an mcp.Server with Planton-specific configuration.

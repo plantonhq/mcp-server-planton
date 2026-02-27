@@ -11,6 +11,7 @@ Plans created for the **20260227.01.expand-cloud-resource-tools** project. Each 
 | `phase-6d-agent-quality-of-life.plan.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | check_slug_availability + preset tools (10 → 13 tools) |
 | `phase-6e-advanced-operations.plan.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | locks, rename, env var map, value refs (13 → 18 tools) |
 | `h4-get-go-refactor-close-out.plan.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Refactor get.go to use resolveResource, project close-out |
+| `domain-bounded-context-refactor.plan.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Restructure domains/ into infrahub/ and resourcemanager/ bounded contexts |
 
 ### Status Legend
 
