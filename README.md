@@ -161,45 +161,29 @@ configuration flag.
 
 ## Tools & Resources
 
-18 tools cover the full cloud resource lifecycle:
+63 tools span the full Planton Cloud product surface:
 
-**Cloud Resource Lifecycle**
+**Cloud Resource Lifecycle** — create, update, delete, destroy, lock management, env var extraction (11 tools)
 
-| Tool | What It Does |
-|------|--------------|
-| `apply_cloud_resource` | Create or update a resource (idempotent — same semantics as `kubectl apply`) |
-| `get_cloud_resource` | Retrieve a resource by ID or by `(kind, org, env, slug)` |
-| `delete_cloud_resource` | Delete a resource record (does not tear down infrastructure) |
-| `list_cloud_resources` | List resources in an org, with optional environment/kind/text filters |
-| `destroy_cloud_resource` | Tear down cloud infrastructure (Terraform/Pulumi destroy) while keeping the record |
-| `check_slug_availability` | Verify a slug is available within `(org, env, kind)` before creating |
-| `rename_cloud_resource` | Change a resource's display name (slug is immutable) |
-| `list_cloud_resource_locks` | Show lock status, holder, and wait queue for a resource |
-| `remove_cloud_resource_locks` | Force-clear stuck locks on a resource |
-| `get_env_var_map` | Extract environment variables and secrets from a resource manifest |
-| `resolve_value_references` | Resolve all valueFrom references in a resource's spec |
+**Stack Jobs** — observe provisioning outcomes, retry failures, cancel or approve jobs, pre-validate prerequisites (7 tools)
 
-**Stack Job Observability**
+**InfraChart Templates** — browse and preview reusable infrastructure chart templates (3 tools)
 
-| Tool | What It Does |
-|------|--------------|
-| `get_stack_job` | Retrieve a stack job by ID |
-| `get_latest_stack_job` | Get the most recent stack job for a resource (primary polling tool after apply/destroy) |
-| `list_stack_jobs` | List stack jobs with filters (org, env, kind, status, result) |
+**InfraProject Lifecycle** — create and manage infrastructure projects sourced from charts or Git repos (6 tools)
 
-**Context Discovery**
+**InfraPipeline Monitoring & Control** — track deployment pipelines, trigger runs, resolve manual gates (7 tools)
 
-| Tool | What It Does |
-|------|--------------|
-| `list_organizations` | List organizations the caller belongs to |
-| `list_environments` | List environments the caller can access within an organization |
+**Dependency Graph** — explore resource topology, trace dependencies and dependents, analyze blast radius (7 tools)
 
-**Presets**
+**Config Manager** — manage plaintext variables and encrypted secrets with full version history (11 tools)
 
-| Tool | What It Does |
-|------|--------------|
-| `search_cloud_object_presets` | Search for preset templates (official and org-scoped) |
-| `get_cloud_object_preset` | Get full preset content by ID, for use as a template with `apply_cloud_resource` |
+**Audit & Version History** — paginated change history and unified diffs for any platform resource (3 tools)
+
+**Context Discovery** — discover organizations and environments (2 tools)
+
+**Presets** — find and retrieve pre-configured cloud resource templates (2 tools)
+
+**Catalog** — browse deployable component types and the IaC modules that provision them (4 tools)
 
 Two read-only MCP resources drive schema discovery before any tool call:
 

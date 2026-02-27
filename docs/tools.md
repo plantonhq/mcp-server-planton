@@ -34,6 +34,87 @@ MCP Server. For installation and configuration, see the
 | [`get_latest_stack_job`](#get_latest_stack_job) | Read | Get the most recent stack job for a resource |
 | [`list_stack_jobs`](#list_stack_jobs) | Read | List stack jobs with filters |
 
+**Stack Job Commands**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`rerun_stack_job`](#rerun_stack_job) | Write | Retry a failed or completed stack job |
+| [`cancel_stack_job`](#cancel_stack_job) | Write | Cancel a running stack job |
+| [`resume_stack_job`](#resume_stack_job) | Write | Approve a stack job awaiting approval |
+| [`check_stack_job_essentials`](#check_stack_job_essentials) | Read | Pre-validate deployment prerequisites |
+
+**InfraChart Templates**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`list_infra_charts`](#list_infra_charts) | Read | List reusable infrastructure chart templates |
+| [`get_infra_chart`](#get_infra_chart) | Read | Get full chart content (templates, params, values) |
+| [`build_infra_chart`](#build_infra_chart) | Read | Preview rendered output with parameter overrides |
+
+**InfraProject Lifecycle**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`search_infra_projects`](#search_infra_projects) | Read | Search infrastructure projects in an org |
+| [`get_infra_project`](#get_infra_project) | Read | Retrieve a project by ID or org+slug |
+| [`apply_infra_project`](#apply_infra_project) | Write | Create or update an infra project (idempotent) |
+| [`delete_infra_project`](#delete_infra_project) | Write | Remove the project record |
+| [`check_infra_project_slug`](#check_infra_project_slug) | Read | Check slug availability within an org |
+| [`undeploy_infra_project`](#undeploy_infra_project) | Write | Tear down deployed resources, keep the record |
+
+**InfraPipeline Monitoring & Control**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`list_infra_pipelines`](#list_infra_pipelines) | Read | List deployment pipelines in an org |
+| [`get_infra_pipeline`](#get_infra_pipeline) | Read | Get full pipeline details and status |
+| [`get_latest_infra_pipeline`](#get_latest_infra_pipeline) | Read | Most recent pipeline for a project |
+| [`run_infra_pipeline`](#run_infra_pipeline) | Write | Trigger a new pipeline run |
+| [`cancel_infra_pipeline`](#cancel_infra_pipeline) | Write | Cancel a running pipeline |
+| [`resolve_infra_pipeline_env_gate`](#resolve_infra_pipeline_env_gate) | Write | Approve or reject a manual gate for an environment |
+| [`resolve_infra_pipeline_node_gate`](#resolve_infra_pipeline_node_gate) | Write | Approve or reject a manual gate for a DAG node |
+
+**Dependency Graph**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`get_organization_graph`](#get_organization_graph) | Read | Full resource topology for an org |
+| [`get_environment_graph`](#get_environment_graph) | Read | Resource graph scoped to an environment |
+| [`get_service_graph`](#get_service_graph) | Read | Service-centric graph showing all related resources |
+| [`get_cloud_resource_graph`](#get_cloud_resource_graph) | Read | Graph centered on a specific cloud resource |
+| [`get_dependencies`](#get_dependencies) | Read | What does a resource depend on? (upstream) |
+| [`get_dependents`](#get_dependents) | Read | What depends on a resource? (downstream) |
+| [`get_impact_analysis`](#get_impact_analysis) | Read | Blast radius for a delete or update operation |
+
+**Config Manager — Variables**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`list_variables`](#list_variables) | Read | List config variables in an org |
+| [`get_variable`](#get_variable) | Read | Get a variable by ID or org+scope+slug |
+| [`apply_variable`](#apply_variable) | Write | Create or update a config variable (idempotent) |
+| [`delete_variable`](#delete_variable) | Write | Permanently delete a variable |
+| [`resolve_variable`](#resolve_variable) | Read | Look up a variable's current value by slug |
+
+**Config Manager — Secrets**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`list_secrets`](#list_secrets) | Read | List secrets in an org (metadata only, no values) |
+| [`get_secret`](#get_secret) | Read | Get secret metadata by ID or org+scope+slug |
+| [`apply_secret`](#apply_secret) | Write | Create or update secret metadata (idempotent) |
+| [`delete_secret`](#delete_secret) | Write | Permanently delete a secret and all its versions |
+| [`create_secret_version`](#create_secret_version) | Write | Store a new encrypted key-value version |
+| [`list_secret_versions`](#list_secret_versions) | Read | List version history for a secret (no values) |
+
+**Audit & Version History**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`list_resource_versions`](#list_resource_versions) | Read | Paginated change history for any platform resource |
+| [`get_resource_version`](#get_resource_version) | Read | Full version details with unified diff |
+| [`get_resource_version_count`](#get_resource_version_count) | Read | Count of versions for a resource |
+
 **Context Discovery**
 
 | Tool | Operation | Description |
@@ -47,6 +128,15 @@ MCP Server. For installation and configuration, see the
 |------|-----------|-------------|
 | [`search_cloud_object_presets`](#search_cloud_object_presets) | Read | Search for preset templates |
 | [`get_cloud_object_preset`](#get_cloud_object_preset) | Read | Get full preset content by ID |
+
+**Catalog**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`search_deployment_components`](#search_deployment_components) | Read | Browse the cloud resource type catalog |
+| [`get_deployment_component`](#get_deployment_component) | Read | Get full component details by ID or kind |
+| [`search_iac_modules`](#search_iac_modules) | Read | Find IaC modules by kind, provisioner, or provider |
+| [`get_iac_module`](#get_iac_module) | Read | Get full IaC module details by ID |
 
 ### MCP Resources
 
@@ -483,6 +573,835 @@ as needed.
 
 ---
 
+## Stack Job Command Tools
+
+These tools complete the stack job lifecycle. Use the observability tools
+above to monitor, and these command tools to take action.
+
+### rerun_stack_job
+
+Retry a previously executed stack job without re-triggering an apply. Useful
+after a transient failure (network timeout, provider outage) when the cloud
+resource spec has not changed. The new run uses the same parameters as the
+original. Returns the updated stack job. Use
+[`get_stack_job`](#get_stack_job) to monitor progress.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | **yes** | string | The stack job ID to re-run. |
+
+---
+
+### cancel_stack_job
+
+Gracefully cancel a running stack job. The currently executing IaC operation
+completes fully before cancellation takes effect — remaining operations are
+skipped and marked as cancelled. There is no automatic rollback of completed
+operations. The resource lock is released after cancellation, allowing queued
+jobs to proceed.
+
+> **Note:** The job must be in `running` status.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | **yes** | string | The stack job ID to cancel. |
+
+---
+
+### resume_stack_job
+
+Approve and resume a stack job in `awaiting_approval` status. Stack jobs enter
+this state when a flow control policy requires manual approval before IaC
+execution proceeds. This tool unblocks the job. To reject instead, use
+[`cancel_stack_job`](#cancel_stack_job). Returns the updated stack job.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | **yes** | string | The stack job ID to approve and resume. |
+
+---
+
+### check_stack_job_essentials
+
+Pre-validate that all prerequisites for running a stack job are in place for a
+given cloud resource kind and organization. Returns four preflight checks:
+
+| Check | What it verifies |
+|-------|-----------------|
+| `iac_module` | An IaC module is resolved for this resource kind |
+| `backend_credential` | A state backend is configured for the org |
+| `flow_control` | An approval policy is resolved |
+| `provider_credential` | Cloud provider credentials are available |
+
+Use before `apply_cloud_resource` to catch missing configuration early rather
+than discovering failures mid-deployment.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `cloud_resource_kind` | **yes** | string | PascalCase cloud resource kind (e.g. `AwsEksCluster`). Read `cloud-resource-kinds://catalog` for valid kinds. |
+| `org` | **yes** | string | Organization identifier. |
+| `env` | no | string | Environment name. Provide when the resource will be deployed to a specific environment. |
+
+---
+
+## InfraChart Tools
+
+Infra charts are reusable infrastructure-as-code templates that define cloud
+resource compositions. The typical workflow is: list charts → get the one you
+want → build (preview) with your parameter values → create an infra project.
+
+### list_infra_charts
+
+List available infra chart templates. All parameters are optional — an empty
+call returns the first page of all charts.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | no | string | Organization identifier. Scopes results to charts available in this org. |
+| `env` | no | string | Environment identifier. |
+| `page_num` | no | integer | Page number (1-based). Defaults to 1. |
+| `page_size` | no | integer | Results per page. Defaults to 20. |
+
+---
+
+### get_infra_chart
+
+Retrieve the full details of an infra chart. Returns template YAML files,
+`values.yaml`, parameter definitions, description, and web links. Use
+[`build_infra_chart`](#build_infra_chart) to preview rendered output before
+creating a project.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | **yes** | string | The infra chart ID from `list_infra_charts` results. |
+
+---
+
+### build_infra_chart
+
+Preview the rendered output of a chart without persisting anything. Fetches
+the chart by ID, merges your parameter overrides with the chart defaults, and
+returns the rendered YAML and cloud resource DAG. Use this to validate
+parameter choices before creating an infra project.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `chart_id` | **yes** | string | The infra chart ID to build. |
+| `params` | no | object | Parameter overrides as a name-to-value map. Keys must match parameter names visible in `get_infra_chart` output. Omitted params keep chart defaults. |
+
+---
+
+## InfraProject Tools
+
+Infra projects are deployable infrastructure compositions sourced from infra
+charts or Git repositories. They represent a concrete instantiation of a chart
+with specific parameter values applied to a target org.
+
+### InfraProject identification
+
+`get_infra_project`, `delete_infra_project`, and `undeploy_infra_project` each
+accept two identification paths:
+
+- **By ID**: provide `id` alone.
+- **By org + slug**: provide both `org` and `slug` together.
+
+### search_infra_projects
+
+Search infra projects within an organization. Returns lightweight records with
+project IDs and metadata. Use
+[`get_infra_project`](#get_infra_project) to retrieve full details.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. |
+| `env` | no | string | Environment slug. When provided, filters to chart-sourced projects deployed to this environment. |
+| `search_text` | no | string | Free-text search query. |
+| `page_num` | no | integer | Page number (1-based). Defaults to 1. |
+| `page_size` | no | integer | Results per page. Defaults to 20. |
+
+---
+
+### get_infra_project
+
+Retrieve the full details of an infra project by its ID or by org+slug.
+Returns metadata, spec (source type, chart or Git config, parameters), and
+status (rendered YAML, cloud resource DAG, pipeline ID). The output can be
+modified and passed directly to
+[`apply_infra_project`](#apply_infra_project).
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Infra project ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Project slug. Required with `org` when `id` is not provided. |
+
+---
+
+### apply_infra_project
+
+Create or update an infra project. The operation is idempotent. For new
+projects, provide `metadata` (name, org) and `spec` (source type with chart or
+Git config). For updates, retrieve the project with
+[`get_infra_project`](#get_infra_project), modify the desired fields, and pass
+the result here. Returns the applied project.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `infra_project` | **yes** | object | Full InfraProject resource as a JSON object. Must include `metadata` (with `name` and `org`) and `spec`. The output of `get_infra_project` can be passed directly. |
+
+---
+
+### delete_infra_project
+
+Remove an infra project record. This removes the database record only — it
+does **not** tear down deployed cloud resources. Use
+[`undeploy_infra_project`](#undeploy_infra_project) first to tear down
+infrastructure.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Infra project ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Project slug. Required with `org` when `id` is not provided. |
+
+---
+
+### check_infra_project_slug
+
+Check whether an infra project slug is available within an organization.
+Returns `true` if no project with the given slug exists. Use before
+[`apply_infra_project`](#apply_infra_project) to avoid slug conflicts.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. |
+| `slug` | **yes** | string | The slug to check for availability. |
+
+---
+
+### undeploy_infra_project
+
+Tear down all cloud resources deployed by an infra project while keeping the
+project record. Triggers an undeploy pipeline that destroys the
+infrastructure. The project record is preserved and can be redeployed later
+via [`apply_infra_project`](#apply_infra_project).
+
+> **WARNING:** This destroys real cloud infrastructure.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Infra project ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Project slug. Required with `org` when `id` is not provided. |
+
+---
+
+## InfraPipeline Tools
+
+Infra pipelines represent deployment runs triggered by apply or run operations
+on infra projects. Use these tools to monitor and control the pipeline
+lifecycle.
+
+### list_infra_pipelines
+
+List infra pipelines within an organization. Optionally filter by infra
+project ID.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. |
+| `infra_project_id` | no | string | Filter to pipelines for a specific infra project. |
+| `page_num` | no | integer | Page number (1-based). Defaults to 1. |
+| `page_size` | no | integer | Results per page. Defaults to 20. |
+
+---
+
+### get_infra_pipeline
+
+Retrieve the full details of an infra pipeline. Returns status, environment
+stages, DAG nodes, timestamps, and any errors.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | **yes** | string | The infra pipeline ID. |
+
+---
+
+### get_latest_infra_pipeline
+
+Retrieve the most recent infra pipeline for a project. This is the primary
+tool to check whether an
+[`apply_infra_project`](#apply_infra_project) or
+[`run_infra_pipeline`](#run_infra_pipeline) call completed successfully.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `infra_project_id` | **yes** | string | The infra project ID to look up the most recent pipeline for. |
+
+---
+
+### run_infra_pipeline
+
+Trigger a new deployment pipeline run for an infra project. For chart-sourced
+projects, omit `commit_sha`. For git-repo sourced projects, provide
+`commit_sha` to deploy a specific commit. Returns the new pipeline ID. Use
+[`get_infra_pipeline`](#get_infra_pipeline) to monitor progress.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `infra_project_id` | **yes** | string | The infra project ID. |
+| `commit_sha` | no | string | Git commit SHA to deploy. Required for git-repo sourced projects. Omit for chart-sourced projects. |
+
+---
+
+### cancel_infra_pipeline
+
+Cancel a running infra pipeline. Returns the updated pipeline with its final
+status.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | **yes** | string | The infra pipeline ID to cancel. |
+
+---
+
+### resolve_infra_pipeline_env_gate
+
+Approve or reject a manual gate for an entire deployment environment within a
+pipeline. Manual gates pause pipeline execution until explicitly resolved. Use
+[`get_infra_pipeline`](#get_infra_pipeline) to inspect which environments have
+pending gates.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `infra_pipeline_id` | **yes** | string | The infra pipeline ID. |
+| `env` | **yes** | string | Environment name where the gate is pending (e.g. `staging`, `production`). |
+| `decision` | **yes** | string | `approve` or `reject`. |
+
+---
+
+### resolve_infra_pipeline_node_gate
+
+Approve or reject a manual gate for a specific DAG node within a pipeline.
+DAG nodes represent individual cloud resources in the deployment graph. Use
+[`get_infra_pipeline`](#get_infra_pipeline) to inspect which nodes have
+pending gates.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `infra_pipeline_id` | **yes** | string | The infra pipeline ID. |
+| `env` | **yes** | string | Environment name where the node exists. |
+| `node_id` | **yes** | string | Node identifier in the format `CloudResourceKind/slug` (e.g. `KubernetesOpenFga/fga-gcp-dev`). Visible in `get_infra_pipeline` output. |
+| `decision` | **yes** | string | `approve` or `reject`. |
+
+---
+
+## Dependency Graph Tools
+
+The graph tools expose the resource topology of your organization. Use them to
+understand relationships between resources, plan deployment order, and assess
+the impact of changes before making them.
+
+### get_organization_graph
+
+Retrieve the complete resource topology for an organization. Returns all nodes
+(organizations, environments, services, cloud resources, credentials, infra
+projects) and their relationships. Use this as the starting point for
+understanding an infrastructure landscape. Use
+[`get_cloud_resource_graph`](#get_cloud_resource_graph) or
+[`get_service_graph`](#get_service_graph) to drill into specific resources.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. |
+| `envs` | no | string[] | Environment slugs to restrict the graph to. When omitted, all environments are included. |
+| `node_types` | no | string[] | Node types to include. Valid values: `organization`, `environment`, `service`, `cloud_resource`, `credential`, `infra_project`. When omitted, all types are included. |
+| `include_topological_order` | no | boolean | When `true`, includes a topological ordering of node IDs (roots first). Useful for determining deployment order. |
+| `max_depth` | no | integer | Maximum traversal depth. `0` or omitted means unlimited. |
+
+---
+
+### get_environment_graph
+
+Retrieve the resource graph scoped to a specific environment. Returns the
+environment node, its parent organization, and all resources deployed in the
+environment with their relationships.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `env_id` | **yes** | string | Environment identifier. Use `list_environments` to discover available IDs. |
+| `node_types` | no | string[] | Node types to include. Same valid values as `get_organization_graph`. |
+| `include_topological_order` | no | boolean | When `true`, includes topological ordering of node IDs. |
+
+---
+
+### get_service_graph
+
+Retrieve a service-centric subgraph showing the service and all related
+resources. Returns the service node, its cloud resource deployments per
+environment, and optionally upstream dependencies and downstream dependents.
+Service IDs are discoverable from
+[`get_organization_graph`](#get_organization_graph) results.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `service_id` | **yes** | string | Service identifier. |
+| `envs` | no | string[] | Environment slugs to restrict results to. |
+| `include_upstream` | no | boolean | Include upstream dependencies (what the service depends on). |
+| `include_downstream` | no | boolean | Include downstream dependents (what depends on the service). |
+| `max_depth` | no | integer | Maximum traversal depth. `0` or omitted means unlimited. |
+
+---
+
+### get_cloud_resource_graph
+
+Retrieve a cloud-resource-centric subgraph. Returns the resource node,
+services deployed as it, credentials it uses, and connected nodes. Enable
+`include_upstream` and `include_downstream` to traverse beyond immediate
+neighbors.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `cloud_resource_id` | **yes** | string | Cloud resource ID. Use `get_cloud_resource` to look up the ID if needed. |
+| `include_upstream` | no | boolean | Include upstream dependencies (what this resource depends on). |
+| `include_downstream` | no | boolean | Include downstream dependents (what depends on this resource). |
+| `max_depth` | no | integer | Maximum traversal depth. `0` or omitted means unlimited. |
+
+---
+
+### get_dependencies
+
+Find all resources that a given resource depends on (upstream traversal). For
+example, an EKS cluster might depend on a VPC and an IAM credential. Useful
+for understanding deployment prerequisites. Use
+[`get_dependents`](#get_dependents) for the reverse direction.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `resource_id` | **yes** | string | Resource ID to find dependencies for. Accepts any resource type. |
+| `max_depth` | no | integer | Maximum traversal depth. `0` or omitted means unlimited. |
+| `relationship_types` | no | string[] | Relationship types to include. Valid values: `belongs_to_org`, `belongs_to_env`, `deployed_as`, `uses_credential`, `depends_on`, `runs_on`, `managed_by`, `uses`, `service_depends_on`, `owned_by`. When omitted, all types are included. |
+
+---
+
+### get_dependents
+
+Find all resources that depend on a given resource (downstream traversal). For
+example, a VPC might have EKS clusters and RDS instances depending on it. Use
+before deleting or modifying a resource to understand what might be affected.
+For a full blast-radius report with counts and type breakdown, use
+[`get_impact_analysis`](#get_impact_analysis) instead.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `resource_id` | **yes** | string | Resource ID to find dependents for. Accepts any resource type. |
+| `max_depth` | no | integer | Maximum traversal depth. `0` or omitted means unlimited. |
+| `relationship_types` | no | string[] | Relationship types to include. Same valid values as `get_dependencies`. |
+
+---
+
+### get_impact_analysis
+
+Analyze the impact of modifying or deleting a resource. Returns directly
+affected resources, transitively affected resources, total affected count, and
+a breakdown by type. Use before destructive operations to understand the blast
+radius.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `resource_id` | **yes** | string | Resource ID to analyze. Accepts any resource type. |
+| `change_type` | no | string | `delete` or `update`. When omitted, general impact analysis is returned. |
+
+---
+
+## Config Manager Tools
+
+Config Manager stores plaintext configuration variables and encrypted secrets.
+Both are scoped to either an organization (shared across all environments) or
+a specific environment.
+
+### Variables
+
+#### list_variables
+
+List configuration variables in an organization. Optionally filter by
+environment.
+
+##### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. |
+| `env` | no | string | Environment slug to filter by. When omitted, all variables in the org are returned. |
+| `page_num` | no | integer | Page number (1-based). Defaults to 1. |
+| `page_size` | no | integer | Results per page. Defaults to 20. |
+
+---
+
+#### get_variable
+
+Retrieve the full details of a configuration variable by its ID or by
+org+scope+slug. Variables are uniquely identified within `(org, scope, slug)`.
+
+##### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Variable ID. Provide this alone, or provide all of `org`, `scope`, and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `scope` and `slug` when `id` is not provided. |
+| `scope` | conditional | string | `organization` or `environment`. Required with `org` and `slug` when `id` is not provided. |
+| `slug` | conditional | string | Variable slug. Required with `org` and `scope` when `id` is not provided. |
+
+---
+
+#### apply_variable
+
+Create or update a configuration variable. The operation is idempotent — if a
+variable with the same `(org, scope, slug)` exists it is updated, otherwise it
+is created. When `scope` is `environment`, `env` is required. Returns the
+applied variable.
+
+##### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `name` | **yes** | string | Display name. Also used to derive the slug on first create. |
+| `org` | **yes** | string | Organization identifier. |
+| `scope` | **yes** | string | `organization` (shared across all environments) or `environment` (scoped to one env). |
+| `env` | conditional | string | Environment slug. Required when `scope` is `environment`. |
+| `value` | **yes** | string | The plaintext variable value. |
+| `description` | no | string | Human-readable description. |
+
+---
+
+#### delete_variable
+
+Permanently delete a configuration variable.
+
+##### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Variable ID. Provide this alone, or provide all of `org`, `scope`, and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `scope` and `slug` when `id` is not provided. |
+| `scope` | conditional | string | `organization` or `environment`. Required with `org` and `slug` when `id` is not provided. |
+| `slug` | conditional | string | Variable slug. Required with `org` and `scope` when `id` is not provided. |
+
+---
+
+#### resolve_variable
+
+Look up a variable's current value by slug. Returns only the plain string
+value — no metadata or wrapper. Faster than
+[`get_variable`](#get_variable) when you only need the value.
+
+##### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. |
+| `scope` | **yes** | string | `organization` or `environment`. |
+| `slug` | **yes** | string | Variable slug within the org and scope. |
+
+---
+
+### Secrets
+
+Secrets are metadata containers for encrypted key-value pairs. The tools here
+manage secret metadata only — actual values are managed through secret
+versions.
+
+> **Security boundary:** Agents can write secret values via
+> `create_secret_version` but cannot read them back. This is intentional.
+
+#### list_secrets
+
+List secrets in an organization. Only metadata is returned — no values are
+exposed.
+
+##### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. |
+| `env` | no | string | Environment slug to filter by. |
+| `page_num` | no | integer | Page number (1-based). Defaults to 1. |
+| `page_size` | no | integer | Results per page. Defaults to 20. |
+
+---
+
+#### get_secret
+
+Retrieve secret metadata by its ID or by org+scope+slug. Returns spec (scope,
+description, backend) and audit status. No secret values are returned.
+
+##### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Secret ID. Provide this alone, or provide all of `org`, `scope`, and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `scope` and `slug` when `id` is not provided. |
+| `scope` | conditional | string | `organization` or `environment`. Required with `org` and `slug` when `id` is not provided. |
+| `slug` | conditional | string | Secret slug. Required with `org` and `scope` when `id` is not provided. |
+
+---
+
+#### apply_secret
+
+Create or update a secret's metadata. This manages the secret record only —
+use [`create_secret_version`](#create_secret_version) to store actual values.
+When `scope` is `environment`, `env` is required. The `backend` cannot be
+changed after creation.
+
+##### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `name` | **yes** | string | Display name. Also used to derive the slug on first create. |
+| `org` | **yes** | string | Organization identifier. |
+| `scope` | **yes** | string | `organization` (shared) or `environment` (scoped to one env). |
+| `env` | conditional | string | Environment slug. Required when `scope` is `environment`. |
+| `description` | no | string | Human-readable description. |
+| `backend` | no | string | Slug of the SecretBackend resource to use for encryption. When omitted, the org's default backend is used. Cannot be changed after creation. |
+
+---
+
+#### delete_secret
+
+Delete a secret and **all its versions**. This permanently destroys the
+encrypted data stored in the backend and cannot be undone.
+
+> **WARNING:** Use `list_secret_versions` first to understand what will be
+> destroyed.
+
+##### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Secret ID. Provide this alone, or provide all of `org`, `scope`, and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `scope` and `slug` when `id` is not provided. |
+| `scope` | conditional | string | `organization` or `environment`. Required with `org` and `slug` when `id` is not provided. |
+| `slug` | conditional | string | Secret slug. Required with `org` and `scope` when `id` is not provided. |
+
+---
+
+#### create_secret_version
+
+Store a new version of encrypted key-value data for a secret. Each call
+creates an immutable version — previous versions are preserved. The data is
+encrypted via envelope encryption and stored in the secret's configured
+backend. Use [`apply_secret`](#apply_secret) first to create the parent secret
+if it does not exist.
+
+##### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `secret_id` | **yes** | string | The parent secret's ID. Use `get_secret` or `list_secrets` to find it. |
+| `data` | **yes** | object | Key-value pairs to store. Values are encrypted. Example: `{"DB_PASSWORD": "s3cret", "API_KEY": "abc123"}`. |
+
+---
+
+#### list_secret_versions
+
+List all versions of a secret. Returns version metadata only (timestamps,
+backend version ID) — encrypted data is never returned. Use to understand
+version history or to verify that
+[`create_secret_version`](#create_secret_version) succeeded.
+
+##### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `secret_id` | **yes** | string | The parent secret's ID. |
+
+---
+
+## Audit Tools
+
+The audit tools provide version history for any platform resource — cloud
+resources, infra projects, variables, secrets, and more.
+
+### list_resource_versions
+
+List the version history for a platform resource. Returns a paginated list of
+version entries with metadata, event type, and timestamps. Use
+[`get_resource_version`](#get_resource_version) with a version ID to retrieve
+full details and diffs.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `resource_id` | **yes** | string | The resource ID to retrieve history for. |
+| `kind` | **yes** | string | Platform resource kind. Common values: `cloud_resource`, `infra_project`, `infra_chart`, `infra_pipeline`, `variable`, `secret`, `environment`, `organization`, `service`, `stack_job`. |
+| `page_num` | no | integer | Page number (1-based). Defaults to 1. |
+| `page_size` | no | integer | Results per page. Defaults to 20. |
+
+---
+
+### get_resource_version
+
+Retrieve a specific resource version with full change details. Returns the
+original and new state as YAML, a unified diff, the event type (`create`,
+`update`, `delete`), linked stack job ID, and cloud object version details
+when applicable. The `context_size` parameter controls how many surrounding
+lines appear in the diff, analogous to `git diff -U<n>`.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `version_id` | **yes** | string | The resource version ID from `list_resource_versions` results. |
+| `context_size` | no | integer | Surrounding diff lines. Defaults to 3. |
+
+---
+
+### get_resource_version_count
+
+Get the count of versions for a resource without transferring any version
+data. Use to quickly check whether a resource has change history, or to
+estimate pagination before calling
+[`list_resource_versions`](#list_resource_versions).
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `resource_id` | **yes** | string | The resource ID to count versions for. |
+| `kind` | **yes** | string | Platform resource kind. Same valid values as `list_resource_versions`. |
+
+---
+
+## Catalog Tools
+
+The catalog tools let you browse the types of cloud resources available on the
+platform and the IaC modules that provision them.
+
+### search_deployment_components
+
+Browse the deployment component catalog. Deployment components represent the
+types of cloud resources that can be provisioned (e.g. `AwsEksCluster`,
+`GcpCloudRunService`, `ConfluentKafkaCluster`). Use
+[`get_deployment_component`](#get_deployment_component) for full details.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `search_text` | no | string | Free-text search query. |
+| `provider` | no | string | Cloud provider to filter by (e.g. `aws`, `gcp`, `azure`, `confluent`, `snowflake`). |
+| `page_num` | no | integer | Page number (1-based). Defaults to 1. |
+| `page_size` | no | integer | Results per page. Defaults to 20. |
+
+---
+
+### get_deployment_component
+
+Retrieve the full details of a deployment component by its ID or by cloud
+resource kind. A deployment component defines a type of cloud resource
+including its supported IaC modules, provider, and configuration schema.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Component ID. Provide this alone, or provide `kind` alone. |
+| `kind` | conditional | string | PascalCase cloud resource kind (e.g. `AwsEksCluster`). Provide this alone, or provide `id` alone. |
+
+---
+
+### search_iac_modules
+
+Search for IaC (Infrastructure as Code) modules. IaC modules are the
+provisioning implementations that deploy cloud resources — each targets a
+specific kind and IaC provisioner (Terraform, Pulumi, or OpenTofu). When `org`
+is provided, results include both official platform modules and
+organization-specific modules. Use the `kind` filter to find modules that can
+provision a specific deployment component (e.g. `kind=AwsEksCluster` returns
+all modules capable of deploying EKS clusters).
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | no | string | Organization identifier. When provided, includes org-specific modules. |
+| `search_text` | no | string | Free-text search query. |
+| `kind` | no | string | PascalCase cloud resource kind to filter by. Returns only modules that can provision this type. |
+| `provisioner` | no | string | IaC provisioner: `terraform`, `pulumi`, or `tofu`. |
+| `provider` | no | string | Cloud provider (e.g. `aws`, `gcp`, `azure`). |
+| `page_num` | no | integer | Page number (1-based). Defaults to 1. |
+| `page_size` | no | integer | Results per page. Defaults to 20. |
+
+---
+
+### get_iac_module
+
+Retrieve the full details of an IaC module. Returns metadata, provisioner
+type, cloud resource kind, Git repository URL, version, and parameter schema.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | **yes** | string | The IaC module ID from `search_iac_modules` results. |
+
+---
+
 ## MCP Resources
 
 MCP resources are read-only and accessed via `resources/read` — they are not
@@ -631,4 +1550,70 @@ Resource stuck / can't apply?
     }
   }
 }
+```
+
+### Pre-flight check before deploying
+
+```
+Want to verify prerequisites before apply_cloud_resource?
+  →  check_stack_job_essentials (cloud_resource_kind, org)
+     Checks: iac_module, backend_credential, flow_control, provider_credential
+```
+
+### Stack job stuck or failed
+
+```
+Job failed?        →  rerun_stack_job (id)
+Job running?       →  cancel_stack_job (id)
+Awaiting approval? →  resume_stack_job (id)  or  cancel_stack_job (id) to reject
+```
+
+### Working with infra charts and projects
+
+```
+Find a chart template:
+  1. list_infra_charts (org)              →  browse available templates
+  2. get_infra_chart (id)                 →  see params and template YAML
+  3. build_infra_chart (chart_id, params) →  preview rendered output (no-op)
+  4. apply_infra_project (infra_project)  →  create the project from the chart
+  5. get_latest_infra_pipeline (infra_project_id)  →  monitor deployment
+
+Manage an existing project:
+  get_infra_project (id or org+slug)      →  retrieve current state
+  apply_infra_project (modified object)   →  update
+  undeploy_infra_project (id or org+slug) →  tear down infra, keep record
+  delete_infra_project (id or org+slug)   →  remove record (undeploy first)
+```
+
+### Understanding resource relationships
+
+```
+What does this resource depend on?     →  get_dependencies (resource_id)
+What depends on this resource?         →  get_dependents (resource_id)
+What breaks if I delete/change this?   →  get_impact_analysis (resource_id, change_type)
+Full org topology:                     →  get_organization_graph (org)
+Just one environment:                  →  get_environment_graph (env_id)
+```
+
+### Config variables and secrets
+
+```
+Variables (plaintext):
+  list_variables (org)                   →  see all variables
+  resolve_variable (org, scope, slug)    →  quick value lookup
+  apply_variable (name, org, scope, value)  →  create or update
+
+Secrets (encrypted):
+  list_secrets (org)                     →  see metadata only, never values
+  apply_secret (name, org, scope)        →  create the secret container
+  create_secret_version (secret_id, data) →  store encrypted key-value pairs
+  list_secret_versions (secret_id)       →  see version history
+```
+
+### Auditing changes
+
+```
+How many times was this changed?  →  get_resource_version_count (resource_id, kind)
+Full change history:              →  list_resource_versions (resource_id, kind)
+What exactly changed in v3?       →  get_resource_version (version_id)
 ```
