@@ -6,24 +6,24 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// resolveOperationType
+// operationTypeResolver
 // ---------------------------------------------------------------------------
 
-func TestResolveOperationType_ValidValues(t *testing.T) {
+func TestOperationTypeResolver_ValidValues(t *testing.T) {
 	valid := []string{"init", "refresh", "update_preview", "update", "destroy_preview", "destroy"}
 	for _, v := range valid {
-		got, err := resolveOperationType(v)
+		got, err := operationTypeResolver.Resolve(v)
 		if err != nil {
-			t.Errorf("resolveOperationType(%q) unexpected error: %v", v, err)
+			t.Errorf("operationTypeResolver.Resolve(%q) unexpected error: %v", v, err)
 		}
 		if got == 0 {
-			t.Errorf("resolveOperationType(%q) returned unspecified (0)", v)
+			t.Errorf("operationTypeResolver.Resolve(%q) returned unspecified (0)", v)
 		}
 	}
 }
 
-func TestResolveOperationType_Unknown(t *testing.T) {
-	_, err := resolveOperationType("bogus")
+func TestOperationTypeResolver_Unknown(t *testing.T) {
+	_, err := operationTypeResolver.Resolve("bogus")
 	if err == nil {
 		t.Fatal("expected error for unknown operation type")
 	}
@@ -35,32 +35,32 @@ func TestResolveOperationType_Unknown(t *testing.T) {
 	}
 }
 
-func TestResolveOperationType_Empty(t *testing.T) {
-	_, err := resolveOperationType("")
+func TestOperationTypeResolver_Empty(t *testing.T) {
+	_, err := operationTypeResolver.Resolve("")
 	if err == nil {
 		t.Fatal("expected error for empty string")
 	}
 }
 
 // ---------------------------------------------------------------------------
-// resolveExecutionStatus
+// executionStatusResolver
 // ---------------------------------------------------------------------------
 
-func TestResolveExecutionStatus_ValidValues(t *testing.T) {
+func TestExecutionStatusResolver_ValidValues(t *testing.T) {
 	valid := []string{"queued", "running", "completed", "awaiting_approval"}
 	for _, v := range valid {
-		got, err := resolveExecutionStatus(v)
+		got, err := executionStatusResolver.Resolve(v)
 		if err != nil {
-			t.Errorf("resolveExecutionStatus(%q) unexpected error: %v", v, err)
+			t.Errorf("executionStatusResolver.Resolve(%q) unexpected error: %v", v, err)
 		}
 		if got == 0 {
-			t.Errorf("resolveExecutionStatus(%q) returned unspecified (0)", v)
+			t.Errorf("executionStatusResolver.Resolve(%q) returned unspecified (0)", v)
 		}
 	}
 }
 
-func TestResolveExecutionStatus_Unknown(t *testing.T) {
-	_, err := resolveExecutionStatus("bogus")
+func TestExecutionStatusResolver_Unknown(t *testing.T) {
+	_, err := executionStatusResolver.Resolve("bogus")
 	if err == nil {
 		t.Fatal("expected error for unknown execution status")
 	}
@@ -72,32 +72,32 @@ func TestResolveExecutionStatus_Unknown(t *testing.T) {
 	}
 }
 
-func TestResolveExecutionStatus_Empty(t *testing.T) {
-	_, err := resolveExecutionStatus("")
+func TestExecutionStatusResolver_Empty(t *testing.T) {
+	_, err := executionStatusResolver.Resolve("")
 	if err == nil {
 		t.Fatal("expected error for empty string")
 	}
 }
 
 // ---------------------------------------------------------------------------
-// resolveExecutionResult
+// executionResultResolver
 // ---------------------------------------------------------------------------
 
-func TestResolveExecutionResult_ValidValues(t *testing.T) {
+func TestExecutionResultResolver_ValidValues(t *testing.T) {
 	valid := []string{"tbd", "succeeded", "failed", "cancelled", "skipped", "discovered"}
 	for _, v := range valid {
-		got, err := resolveExecutionResult(v)
+		got, err := executionResultResolver.Resolve(v)
 		if err != nil {
-			t.Errorf("resolveExecutionResult(%q) unexpected error: %v", v, err)
+			t.Errorf("executionResultResolver.Resolve(%q) unexpected error: %v", v, err)
 		}
 		if got == 0 {
-			t.Errorf("resolveExecutionResult(%q) returned unspecified (0)", v)
+			t.Errorf("executionResultResolver.Resolve(%q) returned unspecified (0)", v)
 		}
 	}
 }
 
-func TestResolveExecutionResult_Unknown(t *testing.T) {
-	_, err := resolveExecutionResult("bogus")
+func TestExecutionResultResolver_Unknown(t *testing.T) {
+	_, err := executionResultResolver.Resolve("bogus")
 	if err == nil {
 		t.Fatal("expected error for unknown execution result")
 	}
@@ -109,8 +109,8 @@ func TestResolveExecutionResult_Unknown(t *testing.T) {
 	}
 }
 
-func TestResolveExecutionResult_Empty(t *testing.T) {
-	_, err := resolveExecutionResult("")
+func TestExecutionResultResolver_Empty(t *testing.T) {
+	_, err := executionResultResolver.Resolve("")
 	if err == nil {
 		t.Fatal("expected error for empty string")
 	}

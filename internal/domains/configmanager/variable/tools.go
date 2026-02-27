@@ -98,7 +98,7 @@ func GetHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest
 		var scope variablev1.VariableSpec_Scope
 		if input.Scope != "" {
 			var err error
-			scope, err = resolveScope(input.Scope)
+			scope, err = scopeResolver.Resolve(input.Scope)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -149,7 +149,7 @@ func ApplyHandler(serverAddress string) func(context.Context, *mcp.CallToolReque
 		if input.Scope == "" {
 			return nil, nil, fmt.Errorf("'scope' is required")
 		}
-		scope, err := resolveScope(input.Scope)
+		scope, err := scopeResolver.Resolve(input.Scope)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -208,7 +208,7 @@ func DeleteHandler(serverAddress string) func(context.Context, *mcp.CallToolRequ
 		var scope variablev1.VariableSpec_Scope
 		if input.Scope != "" {
 			var err error
-			scope, err = resolveScope(input.Scope)
+			scope, err = scopeResolver.Resolve(input.Scope)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -252,7 +252,7 @@ func ResolveHandler(serverAddress string) func(context.Context, *mcp.CallToolReq
 		if input.Scope == "" {
 			return nil, nil, fmt.Errorf("'scope' is required")
 		}
-		scope, err := resolveScope(input.Scope)
+		scope, err := scopeResolver.Resolve(input.Scope)
 		if err != nil {
 			return nil, nil, err
 		}

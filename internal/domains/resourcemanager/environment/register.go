@@ -1,0 +1,8 @@
+package environment
+
+import "github.com/modelcontextprotocol/go-sdk/mcp"
+
+// Register adds all environment tools to the MCP server.
+func Register(srv *mcp.Server, serverAddress string) {
+	mcp.AddTool(srv, ListTool(), ListHandler(serverAddress))
+}

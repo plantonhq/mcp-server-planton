@@ -43,7 +43,7 @@ func GetOrganizationGraphHandler(serverAddress string) func(context.Context, *mc
 		if input.Org == "" {
 			return nil, nil, fmt.Errorf("'org' is required")
 		}
-		nodeTypes, err := resolveNodeTypes(input.NodeTypes)
+		nodeTypes, err := nodeTypeResolver.ResolveSlice(input.NodeTypes)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -91,7 +91,7 @@ func GetEnvironmentGraphHandler(serverAddress string) func(context.Context, *mcp
 		if input.EnvID == "" {
 			return nil, nil, fmt.Errorf("'env_id' is required")
 		}
-		nodeTypes, err := resolveNodeTypes(input.NodeTypes)
+		nodeTypes, err := nodeTypeResolver.ResolveSlice(input.NodeTypes)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -227,7 +227,7 @@ func GetDependenciesHandler(serverAddress string) func(context.Context, *mcp.Cal
 		if input.ResourceID == "" {
 			return nil, nil, fmt.Errorf("'resource_id' is required")
 		}
-		relTypes, err := resolveRelationshipTypes(input.RelationshipTypes)
+		relTypes, err := relationshipTypeResolver.ResolveSlice(input.RelationshipTypes)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -272,7 +272,7 @@ func GetDependentsHandler(serverAddress string) func(context.Context, *mcp.CallT
 		if input.ResourceID == "" {
 			return nil, nil, fmt.Errorf("'resource_id' is required")
 		}
-		relTypes, err := resolveRelationshipTypes(input.RelationshipTypes)
+		relTypes, err := relationshipTypeResolver.ResolveSlice(input.RelationshipTypes)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -320,7 +320,7 @@ func GetImpactAnalysisHandler(serverAddress string) func(context.Context, *mcp.C
 		var changeType graphv1.GetImpactAnalysisInput_ChangeType
 		if input.ChangeType != "" {
 			var err error
-			changeType, err = resolveChangeType(input.ChangeType)
+			changeType, err = changeTypeResolver.Resolve(input.ChangeType)
 			if err != nil {
 				return nil, nil, err
 			}
