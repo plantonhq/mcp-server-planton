@@ -13,6 +13,9 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/plantonhq/mcp-server-planton/internal/auth"
 	"github.com/plantonhq/mcp-server-planton/internal/config"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secret"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secretversion"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/variable"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/graph"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/cloudresource"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infrachart"
@@ -104,7 +107,21 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, graph.GetDependentsTool(), graph.GetDependentsHandler(serverAddress))
 	mcp.AddTool(srv, graph.GetImpactAnalysisTool(), graph.GetImpactAnalysisHandler(serverAddress))
 
-	slog.Info("tools registered", "count", 41, "tools", []string{
+	mcp.AddTool(srv, variable.ListTool(), variable.ListHandler(serverAddress))
+	mcp.AddTool(srv, variable.GetTool(), variable.GetHandler(serverAddress))
+	mcp.AddTool(srv, variable.ApplyTool(), variable.ApplyHandler(serverAddress))
+	mcp.AddTool(srv, variable.DeleteTool(), variable.DeleteHandler(serverAddress))
+	mcp.AddTool(srv, variable.ResolveTool(), variable.ResolveHandler(serverAddress))
+
+	mcp.AddTool(srv, secret.ListTool(), secret.ListHandler(serverAddress))
+	mcp.AddTool(srv, secret.GetTool(), secret.GetHandler(serverAddress))
+	mcp.AddTool(srv, secret.ApplyTool(), secret.ApplyHandler(serverAddress))
+	mcp.AddTool(srv, secret.DeleteTool(), secret.DeleteHandler(serverAddress))
+
+	mcp.AddTool(srv, secretversion.CreateTool(), secretversion.CreateHandler(serverAddress))
+	mcp.AddTool(srv, secretversion.ListTool(), secretversion.ListHandler(serverAddress))
+
+	slog.Info("tools registered", "count", 52, "tools", []string{
 		"apply_cloud_resource",
 		"get_cloud_resource",
 		"delete_cloud_resource",
@@ -146,6 +163,17 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 		"get_dependencies",
 		"get_dependents",
 		"get_impact_analysis",
+		"list_variables",
+		"get_variable",
+		"apply_variable",
+		"delete_variable",
+		"resolve_variable",
+		"list_secrets",
+		"get_secret",
+		"apply_secret",
+		"delete_secret",
+		"create_secret_version",
+		"list_secret_versions",
 	})
 }
 

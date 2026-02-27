@@ -21,8 +21,8 @@
 
 ## Current Status
 
-**Current Task**: Phase 2B (ConfigManager / Variables & Secrets)
-**Status**: Not started — ready to plan
+**Current Task**: Phase 3A/3B/3C (Audit, StackJob Commands, or Catalog)
+**Status**: Ready to pick next phase
 
 **Current step:**
 - ✅ **Phase 0: Restructure Generated Code** (2026-02-27)
@@ -48,7 +48,14 @@
   - Server expanded from 34 to 41 tools
   - First domain outside infrahub bounded context (`internal/domains/graph/`)
   - Build, vet, tests all pass clean
-- 🔵 Next: **Phase 2B: ConfigManager / Variables & Secrets** (5 tools) or choose from other objectives
+- ✅ **Phase 2B: ConfigManager / Variables & Secrets** (2026-02-28)
+  - 11 new tools (expanded from planned 5): `list_variables`, `get_variable`, `apply_variable`, `delete_variable`, `resolve_variable`, `list_secrets`, `get_secret`, `apply_secret`, `delete_secret`, `create_secret_version`, `list_secret_versions`
+  - Server expanded from 41 to 52 tools
+  - Second domain outside infrahub bounded context (`internal/domains/configmanager/`)
+  - Three sub-packages: variable/ (5 tools), secret/ (4 tools), secretversion/ (2 tools)
+  - Build, vet, tests all pass clean
+  - Phase 2 pair complete (Graph + ConfigManager)
+- 🔵 Next: **Phase 3A: Audit / Version History** (3 tools) or choose from other objectives
 
 ---
 
@@ -308,33 +315,81 @@
 
 ---
 
+### ✅ COMPLETED: Phase 2B — ConfigManager / Variables & Secrets (2026-02-28)
+
+**Added 11 MCP tools for configuration lifecycle management across 3 sub-domains, expanding the server from 41 to 52 tools. Second domain outside infrahub bounded context. Completes Phase 2 pair (Graph + ConfigManager).**
+
+**What was delivered:**
+
+1. **Variable tools (5)** — `internal/domains/configmanager/variable/`
+   - `list_variables` — Paginated listing via `VariableQueryController.Find` with `ApiResourceKind_variable` (130)
+   - `get_variable` — Dual identification (ID or org+scope+slug) via Get/GetByOrgByScopeBySlug
+   - `apply_variable` — Create/update with explicit params (name, org, scope, env, description, value)
+   - `delete_variable` — Resolve ID then Delete via `ApiResourceDeleteInput`
+   - `resolve_variable` — Quick value lookup returning plain string via `VariableQueryController.Resolve`
+   - `enum.go` — `resolveScope` for `VariableSpec_Scope` (organization, environment)
+
+2. **Secret tools (4)** — `internal/domains/configmanager/secret/`
+   - `list_secrets` — Paginated listing via `SecretQueryController.Find` with `ApiResourceKind_secret` (38)
+   - `get_secret` — Dual identification (ID or org+scope+slug) — metadata only, no values
+   - `apply_secret` — Create/update with explicit params (name, org, scope, env, description, backend)
+   - `delete_secret` — Destructive: removes secret AND all versions permanently
+   - `enum.go` — `resolveScope` for `SecretSpec_Scope`
+
+3. **SecretVersion tools (2)** — `internal/domains/configmanager/secretversion/`
+   - `create_secret_version` — Store encrypted key-value pairs via `SecretVersionCommandController.Create`
+   - `list_secret_versions` — List version metadata via `SecretVersionQueryController.ListBySecret` (no data field)
+
+4. **Domain documentation** — `internal/domains/configmanager/doc.go`
+
+5. **Server registration** — `internal/server/server.go` — 3 imports + 11 `mcp.AddTool` calls, count 41→52
+
+**Key Decisions Made:**
+- DD-1: Expanded from planned 5 to 11 tools — proto analysis revealed 6 gRPC services with ~20 RPCs; 11 tools cover complete lifecycle
+- DD-2: Write-only secret values — `create_secret_version` included, `get_secret_version`/`get_latest_secret_version` excluded (security boundary per AD-01 logic)
+- DD-3: Explicit parameters for apply tools — Variable and Secret have simple schemas; better agent UX than JSON passthrough
+- DD-4: Exclude `refresh_variable` — specialized operation, low initial demand
+- DD-5: `delete_secret` includes destructive WARNING — same pattern as `destroy_cloud_resource`
+
+**Files Created:**
+- `internal/domains/configmanager/doc.go`
+- `internal/domains/configmanager/variable/tools.go`
+- `internal/domains/configmanager/variable/enum.go`
+- `internal/domains/configmanager/variable/list.go`
+- `internal/domains/configmanager/variable/get.go`
+- `internal/domains/configmanager/variable/apply.go`
+- `internal/domains/configmanager/variable/delete.go`
+- `internal/domains/configmanager/variable/resolve.go`
+- `internal/domains/configmanager/secret/tools.go`
+- `internal/domains/configmanager/secret/enum.go`
+- `internal/domains/configmanager/secret/list.go`
+- `internal/domains/configmanager/secret/get.go`
+- `internal/domains/configmanager/secret/apply.go`
+- `internal/domains/configmanager/secret/delete.go`
+- `internal/domains/configmanager/secretversion/tools.go`
+- `internal/domains/configmanager/secretversion/create.go`
+- `internal/domains/configmanager/secretversion/list.go`
+
+**Files Modified:**
+- `internal/server/server.go` - Tool registration + count 41→52
+
+**Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
+
+---
+
 ## Objectives for Next Conversations
 
-### Option A (Recommended): Phase 2B — ConfigManager / Variables & Secrets (5 tools)
+### Option A (Recommended): Phase 3A — Audit / Version History (3 tools)
 
-Configuration lifecycle — variables and secret metadata management. Would bring the server to 46 tools.
+Resource version history and change tracking. Would bring the server to 55 tools.
 
-| Tool | Backend RPC | Purpose |
-|------|-------------|---------|
-| `list_variables` | `VariableQueryController.find` or list | List config variables in org/env |
-| `apply_variable` | `VariableCommandController.apply` | Create or update a variable |
-| `get_secret` | `SecretQueryController.get` | Retrieve secret metadata (not values) |
-| `apply_secret` | `SecretCommandController.apply` | Create or update secret metadata |
-| `create_secret_version` | `SecretVersionCommandController.create` | Set a new secret value |
+### Option B: Phase 3B — StackJob Commands / Lifecycle Control (3 tools)
 
-Files to create: `internal/domains/configmanager/variable/`, `internal/domains/configmanager/secret/`, `internal/domains/configmanager/secretversion/`
+Retry, cancel, and pre-validate stack jobs. Would bring the server to 55 tools.
 
-### Option B: Phase 3A — Audit / Version History (3 tools)
+### Option C: Phase 3C — Deployment Component & IaC Module Catalog (3 tools)
 
-Resource version history and change tracking. Would bring the server to 44 tools.
-
-### Option C: Phase 3B — StackJob Commands / Lifecycle Control (3 tools)
-
-Retry, cancel, and pre-validate stack jobs. Would bring the server to 44 tools.
-
-### Option D: Phase 3C — Deployment Component & IaC Module Catalog (3 tools)
-
-Browse cloud resource types and IaC modules. Would bring the server to 44 tools.
+Browse cloud resource types and IaC modules. Would bring the server to 55 tools.
 
 ---
 
@@ -371,6 +426,9 @@ Existing domain implementations to use as reference:
 - `internal/domains/infrahub/stackjob/` — read-only query tools (3 tools)
 - `internal/domains/infrahub/preset/` — search + get pair (2 tools)
 - `internal/domains/graph/` — dependency intelligence + impact analysis (7 tools, first non-infrahub bounded context)
+- `internal/domains/configmanager/variable/` — variable CRUD + resolve (5 tools, scope-aware identification)
+- `internal/domains/configmanager/secret/` — secret metadata CRUD (4 tools, scope-aware identification)
+- `internal/domains/configmanager/secretversion/` — version create + list (2 tools, write-only security boundary)
 
 ---
 

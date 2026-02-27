@@ -11,6 +11,7 @@ Plans created for the InfraHub MCP Tools Expansion project. Each plan documents 
 | `phase-1b-infraproject-tools.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Add search, get, apply, delete, slug, undeploy tools for InfraProject domain |
 | `phase-1c-infrapipeline-tools.md` | ✅ Completed | 2026-02-28 | 2026-02-28 | Add list, get, latest, run, cancel, gate resolution tools for InfraPipeline domain |
 | `phase-2a-graph-tools.md` | ✅ Completed | 2026-02-28 | 2026-02-28 | Add 7 graph/dependency intelligence tools (org graph, env graph, service graph, resource graph, dependencies, dependents, impact analysis) |
+| `phase-2b-configmanager-tools.md` | ✅ Completed | 2026-02-28 | 2026-02-28 | Add 11 configmanager tools (5 variable, 4 secret, 2 secret version) — second non-infrahub bounded context |
 
 ### Status Legend
 
@@ -50,6 +51,12 @@ Plans created for the InfraHub MCP Tools Expansion project. Each plan documents 
 - **Phases**: Single phase
 - **Current Phase**: Complete
 - **Key Decisions**: Expanded from planned 4 to 7 tools (added environment graph, service graph, dependents), new `internal/domains/graph/` bounded context, shared DependencyInput struct
+
+### phase-2b-configmanager-tools.md
+- **Objective**: Add 11 MCP tools for configuration lifecycle management (variables, secrets, secret versions)
+- **Phases**: Single phase
+- **Current Phase**: Complete
+- **Key Decisions**: Expanded from planned 5 to 11 tools, write-only secret values (DD-2), explicit params for apply (DD-3), delete_secret with destructive warning (DD-5)
 
 ---
 
