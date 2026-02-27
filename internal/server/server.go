@@ -67,6 +67,10 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, stackjob.GetTool(), stackjob.GetHandler(serverAddress))
 	mcp.AddTool(srv, stackjob.GetLatestTool(), stackjob.GetLatestHandler(serverAddress))
 	mcp.AddTool(srv, stackjob.ListTool(), stackjob.ListHandler(serverAddress))
+	mcp.AddTool(srv, stackjob.RerunTool(), stackjob.RerunHandler(serverAddress))
+	mcp.AddTool(srv, stackjob.CancelTool(), stackjob.CancelHandler(serverAddress))
+	mcp.AddTool(srv, stackjob.ResumeTool(), stackjob.ResumeHandler(serverAddress))
+	mcp.AddTool(srv, stackjob.CheckEssentialsTool(), stackjob.CheckEssentialsHandler(serverAddress))
 
 	mcp.AddTool(srv, organization.ListTool(), organization.ListHandler(serverAddress))
 
@@ -126,7 +130,7 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, audit.GetTool(), audit.GetHandler(serverAddress))
 	mcp.AddTool(srv, audit.CountTool(), audit.CountHandler(serverAddress))
 
-	slog.Info("tools registered", "count", 55, "tools", []string{
+	slog.Info("tools registered", "count", 59, "tools", []string{
 		"apply_cloud_resource",
 		"get_cloud_resource",
 		"delete_cloud_resource",
@@ -136,6 +140,10 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 		"get_stack_job",
 		"get_latest_stack_job",
 		"list_stack_jobs",
+		"rerun_stack_job",
+		"cancel_stack_job",
+		"resume_stack_job",
+		"check_stack_job_essentials",
 		"list_organizations",
 		"list_environments",
 		"search_cloud_object_presets",

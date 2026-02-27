@@ -13,6 +13,7 @@ Plans created for the InfraHub MCP Tools Expansion project. Each plan documents 
 | `phase-2a-graph-tools.md` | ✅ Completed | 2026-02-28 | 2026-02-28 | Add 7 graph/dependency intelligence tools (org graph, env graph, service graph, resource graph, dependencies, dependents, impact analysis) |
 | `phase-2b-configmanager-tools.md` | ✅ Completed | 2026-02-28 | 2026-02-28 | Add 11 configmanager tools (5 variable, 4 secret, 2 secret version) — second non-infrahub bounded context |
 | `phase-3a-audit-tools.md` | ✅ Completed | 2026-02-28 | 2026-02-28 | Add 3 audit/version history tools (list, get, count) — third non-infrahub bounded context |
+| `phase-3b-stackjob-commands.md` | ✅ Completed | 2026-02-28 | 2026-02-28 | Add 4 stack job lifecycle control tools (rerun, cancel, resume, essentials) — completes operational surface |
 
 ### Status Legend
 
@@ -64,6 +65,12 @@ Plans created for the InfraHub MCP Tools Expansion project. Each plan documents 
 - **Phases**: Single phase
 - **Current Phase**: Complete
 - **Key Decisions**: Merge Get + GetByIdWithContextSize into single tool, dynamic ApiResourceKind enum resolver (first cross-resource-type domain), context_size defaults to 3 (standard unified diff)
+
+### phase-3b-stackjob-commands.md
+- **Objective**: Add 4 MCP tools for stack job lifecycle control (rerun, cancel, resume, essentials check)
+- **Phases**: Single phase
+- **Current Phase**: Complete
+- **Key Decisions**: Added `resume_stack_job` (discovered during proto analysis — approval gate dead-end argument), expanded from planned 3 to 4 tools, `which*` RPCs deferred
 
 ---
 

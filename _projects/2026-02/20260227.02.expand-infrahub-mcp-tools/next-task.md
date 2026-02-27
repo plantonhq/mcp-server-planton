@@ -21,7 +21,7 @@
 
 ## Current Status
 
-**Current Task**: Phase 3B/3C (StackJob Commands or Catalog)
+**Current Task**: Phase 3C (Catalog)
 **Status**: Ready to pick next phase
 
 **Current step:**
@@ -61,7 +61,13 @@
   - Third domain outside infrahub bounded context (`internal/domains/audit/`)
   - Dynamic `ApiResourceKind` enum resolver (first cross-resource-type domain)
   - Build, vet, tests all pass clean
-- 🔵 Next: **Phase 3B: StackJob Commands** (3 tools) or **Phase 3C: Catalog** (3 tools)
+- ✅ **Phase 3B: StackJob Commands / Lifecycle Control** (2026-02-28)
+  - 4 new tools (expanded from planned 3): `rerun_stack_job`, `cancel_stack_job`, `resume_stack_job`, `check_stack_job_essentials`
+  - Server expanded from 55 to 59 tools
+  - `resume_stack_job` added during proto analysis — approval gate dead-end argument (same as infrapipeline gate tools)
+  - Uses two gRPC services: `StackJobCommandController` (rerun, cancel, resume) + `StackJobEssentialsQueryController` (check)
+  - Build, vet, tests all pass clean
+- 🔵 Next: **Phase 3C: Catalog** (3 tools)
 
 ---
 
@@ -432,15 +438,62 @@
 
 ---
 
+### ✅ COMPLETED: Phase 3B — StackJob Commands / Lifecycle Control (2026-02-28)
+
+**Added 4 MCP tools for stack job lifecycle control, expanding the server from 55 to 59 tools. Completes the operational surface for stack jobs — agents can now observe, retry, cancel, approve, and pre-validate deployment jobs.**
+
+**What was delivered:**
+
+1. **`rerun_stack_job`** — Re-run a previously executed stack job via `StackJobCommandController.Rerun`
+   - `internal/domains/infrahub/stackjob/rerun.go` — Simple ID-based command, returns updated StackJob
+
+2. **`cancel_stack_job`** — Gracefully cancel a running stack job via `StackJobCommandController.Cancel`
+   - `internal/domains/infrahub/stackjob/cancel.go` — Signal-based graceful cancellation (current IaC op completes, remaining skipped, no rollback)
+
+3. **`resume_stack_job`** — Approve and resume an awaiting-approval stack job via `StackJobCommandController.Resume`
+   - `internal/domains/infrahub/stackjob/resume.go` — Unblocks jobs paused by flow control policies
+   - Combined with `cancel_stack_job`, gives agents a complete approval surface (approve = resume, reject = cancel)
+
+4. **`check_stack_job_essentials`** — Pre-validate deployment prerequisites via `StackJobEssentialsQueryController.Check`
+   - `internal/domains/infrahub/stackjob/essentials.go` — Kind resolution + CloudResourceOwner construction
+   - Returns 4 preflight checks: iac_module, backend_credential, flow_control, provider_credential
+
+5. **Tool definitions and handlers**
+   - `internal/domains/infrahub/stackjob/tools.go` — Updated from 3 to 7 tools (4 new input structs, tool defs, handlers)
+
+6. **Server registration**
+   - `internal/server/server.go` — 4 `mcp.AddTool` calls, count 55→59, tool name list updated
+
+**Key Decisions Made:**
+- DD-1: Added `resume_stack_job` (not in original plan) — discovered `resume` RPC during proto analysis; without it agents hit dead ends at approval gates (same argument as infrapipeline gate tools)
+- DD-2: Expanded from planned 3 to 4 tools
+- DD-3: Deferred `which*` RPCs (whichIacRunner, whichIacModule, etc.) — the `check` RPC covers combined preflight; granular lookups can be added later
+- DD-4: `cancel_stack_job` description captures graceful cancellation semantics from proto documentation
+
+**Files Created:**
+- `internal/domains/infrahub/stackjob/rerun.go`
+- `internal/domains/infrahub/stackjob/cancel.go`
+- `internal/domains/infrahub/stackjob/resume.go`
+- `internal/domains/infrahub/stackjob/essentials.go`
+
+**Files Modified:**
+- `internal/domains/infrahub/stackjob/tools.go` — 4 new tool sections (input structs + defs + handlers)
+- `internal/server/server.go` — Tool registration + count 55→59
+- `internal/domains/infrahub/doc.go` — Stackjob description expanded
+
+**Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
+
+---
+
 ## Objectives for Next Conversations
 
-### Option A (Recommended): Phase 3B — StackJob Commands / Lifecycle Control (3 tools)
+### Option A (Recommended): Phase 3C — Deployment Component & IaC Module Catalog (3 tools)
 
-Retry, cancel, and pre-validate stack jobs. Would bring the server to 58 tools.
+Browse cloud resource types and IaC modules. Would bring the server to 62 tools. Last phase in the master plan.
 
-### Option B: Phase 3C — Deployment Component & IaC Module Catalog (3 tools)
+### Option B: Cleanup / Consolidation
 
-Browse cloud resource types and IaC modules. Would bring the server to 58 tools.
+Refactor duplicated `joinEnumValues` helper, add more comprehensive tests, or address any technical debt accumulated across the 9 phases.
 
 ---
 
@@ -474,7 +527,7 @@ Existing domain implementations to use as reference:
 - `internal/domains/infrahub/infrachart/` — list + get + two-step build (3 tools)
 - `internal/domains/infrahub/infrapipeline/` — pipeline observability + control + gate resolution (7 tools)
 - `internal/domains/infrahub/infraproject/` — full lifecycle: search, get, apply, delete, slug, undeploy (6 tools)
-- `internal/domains/infrahub/stackjob/` — read-only query tools (3 tools)
+- `internal/domains/infrahub/stackjob/` — IaC stack job observability and lifecycle control (7 tools: get, list, latest, rerun, cancel, resume, essentials)
 - `internal/domains/infrahub/preset/` — search + get pair (2 tools)
 - `internal/domains/graph/` — dependency intelligence + impact analysis (7 tools, first non-infrahub bounded context)
 - `internal/domains/configmanager/variable/` — variable CRUD + resolve (5 tools, scope-aware identification)

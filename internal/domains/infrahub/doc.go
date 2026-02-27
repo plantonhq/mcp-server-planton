@@ -6,6 +6,6 @@
 //   - infrachart:    infra chart template discovery and rendering (list, get, build)
 //   - infrapipeline: pipeline observability and control (list, get, latest, run, cancel, gate resolution)
 //   - infraproject:  infra project lifecycle management (search, get, apply, delete, slug check, undeploy)
-//   - stackjob:      observability for IaC stack jobs (get, list, latest)
+//   - stackjob:      IaC stack job observability and lifecycle control (get, list, latest, rerun, cancel, resume, essentials)
 //   - preset:        cloud object preset discovery (search, get)
 package infrahub
