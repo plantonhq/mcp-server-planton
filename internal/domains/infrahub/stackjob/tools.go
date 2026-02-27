@@ -1,10 +1,15 @@
 // Package stackjob provides the MCP tools for the StackJob domain, backed by
-// the StackJobQueryController RPCs on the Planton backend.
+// the StackJobQueryController, StackJobCommandController, and
+// StackJobEssentialsQueryController RPCs on the Planton backend.
 //
-// Three tools are exposed:
-//   - get_stack_job: retrieve a specific stack job by its ID
-//   - get_latest_stack_job: retrieve the most recent stack job for a cloud resource
-//   - list_stack_jobs: query stack jobs by organization with optional filters
+// Seven tools are exposed:
+//   - get_stack_job:              retrieve a specific stack job by its ID
+//   - get_latest_stack_job:       retrieve the most recent stack job for a cloud resource
+//   - list_stack_jobs:            query stack jobs by organization with optional filters
+//   - rerun_stack_job:            re-run a previously executed stack job
+//   - cancel_stack_job:           gracefully cancel a running stack job
+//   - resume_stack_job:           approve and resume an awaiting-approval stack job
+//   - check_stack_job_essentials: pre-validate deployment prerequisites for a cloud resource kind
 package stackjob
 
 import (
@@ -128,6 +133,159 @@ func ListHandler(serverAddress string) func(context.Context, *mcp.CallToolReques
 			PageNum:           input.PageNum,
 			PageSize:          input.PageSize,
 		})
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// rerun_stack_job
+// ---------------------------------------------------------------------------
+
+// RerunStackJobInput defines the parameters for the rerun_stack_job tool.
+type RerunStackJobInput struct {
+	ID string `json:"id" jsonschema:"required,The stack job ID to re-run."`
+}
+
+// RerunTool returns the MCP tool definition for rerun_stack_job.
+func RerunTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "rerun_stack_job",
+		Description: "Re-run a previously executed stack job. " +
+			"Use this to retry a failed deployment without recreating the cloud resource apply. " +
+			"The new execution uses the same parameters as the original stack job. " +
+			"Returns the updated stack job. Use get_stack_job to monitor progress.",
+	}
+}
+
+// RerunHandler returns the typed tool handler for rerun_stack_job.
+func RerunHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *RerunStackJobInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *RerunStackJobInput) (*mcp.CallToolResult, any, error) {
+		if input.ID == "" {
+			return nil, nil, fmt.Errorf("'id' is required")
+		}
+		text, err := Rerun(ctx, serverAddress, input.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// cancel_stack_job
+// ---------------------------------------------------------------------------
+
+// CancelStackJobInput defines the parameters for the cancel_stack_job tool.
+type CancelStackJobInput struct {
+	ID string `json:"id" jsonschema:"required,The stack job ID to cancel."`
+}
+
+// CancelTool returns the MCP tool definition for cancel_stack_job.
+func CancelTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "cancel_stack_job",
+		Description: "Gracefully cancel a running stack job. " +
+			"Cancellation is not immediate: the currently executing IaC operation " +
+			"(e.g. pulumi up, terraform apply) completes fully, then remaining " +
+			"operations are skipped and marked as cancelled. Infrastructure created " +
+			"by completed operations remains — there is no automatic rollback. " +
+			"The resource lock is released, allowing queued stack jobs to proceed. " +
+			"The stack job must be in running status. " +
+			"Returns the stack job; use get_stack_job to monitor cancellation progress.",
+	}
+}
+
+// CancelHandler returns the typed tool handler for cancel_stack_job.
+func CancelHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *CancelStackJobInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *CancelStackJobInput) (*mcp.CallToolResult, any, error) {
+		if input.ID == "" {
+			return nil, nil, fmt.Errorf("'id' is required")
+		}
+		text, err := Cancel(ctx, serverAddress, input.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// resume_stack_job
+// ---------------------------------------------------------------------------
+
+// ResumeStackJobInput defines the parameters for the resume_stack_job tool.
+type ResumeStackJobInput struct {
+	ID string `json:"id" jsonschema:"required,The stack job ID to resume."`
+}
+
+// ResumeTool returns the MCP tool definition for resume_stack_job.
+func ResumeTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "resume_stack_job",
+		Description: "Approve and resume a stack job that is awaiting approval. " +
+			"Stack jobs enter the awaiting_approval state when a flow control policy " +
+			"requires manual approval before IaC execution proceeds. " +
+			"This tool unblocks the job, allowing it to continue with its remaining operations. " +
+			"To reject instead, use cancel_stack_job. " +
+			"Returns the updated stack job.",
+	}
+}
+
+// ResumeHandler returns the typed tool handler for resume_stack_job.
+func ResumeHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *ResumeStackJobInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *ResumeStackJobInput) (*mcp.CallToolResult, any, error) {
+		if input.ID == "" {
+			return nil, nil, fmt.Errorf("'id' is required")
+		}
+		text, err := Resume(ctx, serverAddress, input.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// check_stack_job_essentials
+// ---------------------------------------------------------------------------
+
+// CheckEssentialsInput defines the parameters for the
+// check_stack_job_essentials tool.
+type CheckEssentialsInput struct {
+	CloudResourceKind string `json:"cloud_resource_kind" jsonschema:"required,PascalCase cloud resource kind (e.g. AwsEksCluster). Read cloud-resource-kinds://catalog for valid kinds."`
+	Org               string `json:"org"                 jsonschema:"required,Organization identifier. Use list_organizations to discover available organizations."`
+	Env               string `json:"env,omitempty"        jsonschema:"Environment name. Provide when the resource will be deployed to a specific environment."`
+}
+
+// CheckEssentialsTool returns the MCP tool definition for
+// check_stack_job_essentials.
+func CheckEssentialsTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "check_stack_job_essentials",
+		Description: "Pre-validate that all prerequisites for running a stack job are in place " +
+			"for a given cloud resource kind and organization. " +
+			"Returns four preflight checks: iac_module (IaC module resolved), " +
+			"backend_credential (state backend configured), flow_control (approval policy resolved), " +
+			"and provider_credential (cloud provider credentials available). " +
+			"Each check includes a passed flag and any errors. " +
+			"Use before apply_cloud_resource to catch missing configuration early.",
+	}
+}
+
+// CheckEssentialsHandler returns the typed tool handler for
+// check_stack_job_essentials.
+func CheckEssentialsHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *CheckEssentialsInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *CheckEssentialsInput) (*mcp.CallToolResult, any, error) {
+		if input.CloudResourceKind == "" {
+			return nil, nil, fmt.Errorf("'cloud_resource_kind' is required")
+		}
+		if input.Org == "" {
+			return nil, nil, fmt.Errorf("'org' is required")
+		}
+		text, err := CheckEssentials(ctx, serverAddress, input.CloudResourceKind, input.Org, input.Env)
 		if err != nil {
 			return nil, nil, err
 		}
