@@ -1,0 +1,182 @@
+{
+  "name": "DigitalOceanCertificate",
+  "kind": "DigitalOceanCertificate",
+  "cloudProvider": "digitalocean",
+  "apiVersion": "digital-ocean.openmcf.org/v1",
+  "description": "digital-ocean-certificate",
+  "protoPackage": "org.openmcf.provider.digitalocean.digitaloceancertificate.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/digitalocean/digitaloceancertificate/v1/api.proto",
+    "spec": "org/openmcf/provider/digitalocean/digitaloceancertificate/v1/spec.proto"
+  },
+  "spec": {
+    "name": "DigitalOceanCertificateSpec",
+    "fields": [
+      {
+        "name": "CertificateName",
+        "jsonName": "certificateName",
+        "protoField": "certificate_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "certificate_name is a unique, human‑readable identifier (≤ 64 chars).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 64
+        }
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.digitaloceancertificate.v1.DigitalOceanCertificateType",
+          "enumValues": [
+            "lets_encrypt",
+            "custom"
+          ]
+        },
+        "description": "type must align with the branch chosen in certificate_source.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "LetsEncrypt",
+        "jsonName": "letsEncrypt",
+        "protoField": "lets_encrypt",
+        "type": {
+          "kind": "message",
+          "messageType": "DigitalOceanCertificateLetsEncryptParams"
+        },
+        "required": false,
+        "oneofGroup": "certificate_source"
+      },
+      {
+        "name": "Custom",
+        "jsonName": "custom",
+        "protoField": "custom",
+        "type": {
+          "kind": "message",
+          "messageType": "DigitalOceanCertificateCustomParams"
+        },
+        "required": false,
+        "oneofGroup": "certificate_source"
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Optional free‑form description (≤ 128 chars).",
+        "required": false,
+        "validation": {
+          "maxLength": 128
+        }
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Optional tags; must be unique and lowercase kebab.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "DigitalOceanCertificateCustomParams",
+      "description": "Parameters specific to a custom (user‑supplied) certificate.",
+      "protoType": "org.openmcf.provider.digitalocean.digitaloceancertificate.v1.DigitalOceanCertificateCustomParams",
+      "fields": [
+        {
+          "name": "LeafCertificate",
+          "jsonName": "leafCertificate",
+          "protoField": "leaf_certificate",
+          "type": {
+            "kind": "string"
+          },
+          "description": "leaf_certificate is the PEM‑encoded public certificate.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "PrivateKey",
+          "jsonName": "privateKey",
+          "protoField": "private_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "private_key is the PEM‑encoded private key.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "CertificateChain",
+          "jsonName": "certificateChain",
+          "protoField": "certificate_chain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "certificate_chain is an optional PEM‑encoded intermediate chain.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "DigitalOceanCertificateLetsEncryptParams",
+      "description": "Parameters specific to a Let's Encrypt certificate request.",
+      "protoType": "org.openmcf.provider.digitalocean.digitaloceancertificate.v1.DigitalOceanCertificateLetsEncryptParams",
+      "fields": [
+        {
+          "name": "Domains",
+          "jsonName": "domains",
+          "protoField": "domains",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "domains is the list of FQDNs (or wildcard domains) to include.\n At least one domain is required.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "unique": true
+          }
+        },
+        {
+          "name": "DisableAutoRenew",
+          "jsonName": "disableAutoRenew",
+          "protoField": "disable_auto_renew",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "disable auto_renew controls automatic renewal of the Let's Encrypt certificate.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

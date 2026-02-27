@@ -1,0 +1,54 @@
+{
+  "name": "CloudflareKvNamespace",
+  "kind": "CloudflareKvNamespace",
+  "cloudProvider": "cloudflare",
+  "apiVersion": "cloudflare.openmcf.org/v1",
+  "description": "cloudflare-kv-namespace",
+  "protoPackage": "org.openmcf.provider.cloudflare.cloudflarekvnamespace.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/cloudflare/cloudflarekvnamespace/v1/api.proto",
+    "spec": "org/openmcf/provider/cloudflare/cloudflarekvnamespace/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CloudflareKvNamespaceSpec",
+    "fields": [
+      {
+        "name": "NamespaceName",
+        "jsonName": "namespaceName",
+        "protoField": "namespace_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "A human-readable name for the KV namespace.\n This name must be unique within the Cloudflare account.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "maxLength": 64
+        }
+      },
+      {
+        "name": "TtlSeconds",
+        "jsonName": "ttlSeconds",
+        "protoField": "ttl_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Optional) Default time-to-live for key-value entries, in seconds.\n If set to 0 or left unset, keys will never expire by default (infinite TTL).\n If set to a positive value, it should be at least 60 seconds (minimum enforced by Cloudflare for expiring keys).",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) A short description of the namespace.\n Useful for documentation or identifying the purpose of this KV store.",
+        "required": false,
+        "validation": {
+          "maxLength": 256
+        }
+      }
+    ]
+  }
+}

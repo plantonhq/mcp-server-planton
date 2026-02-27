@@ -1,0 +1,299 @@
+{
+  "name": "AwsFsxLustreFileSystem",
+  "kind": "AwsFsxLustreFileSystem",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-fsx-lustre-file-system",
+  "protoPackage": "org.openmcf.provider.aws.awsfsxlustrefilesystem.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsfsxlustrefilesystem/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsfsxlustrefilesystem/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsFsxLustreFileSystemSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DeploymentType",
+        "jsonName": "deploymentType",
+        "protoField": "deployment_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Deployment type controlling data durability and performance characteristics.\n ForceNew — cannot be changed after creation.\n\n - \"SCRATCH_1\": temporary storage, no data replication. Lowest cost. Legacy.\n - \"SCRATCH_2\": temporary storage, no data replication. Higher burst throughput\n   than SCRATCH_1. Recommended for short-lived processing jobs.\n - \"PERSISTENT_1\": persistent storage with data replicated within a single AZ.\n   Supports automatic backups. Suitable for long-running workloads.\n - \"PERSISTENT_2\": latest persistent option with higher throughput tiers,\n   metadata IOPS configuration, and SSD storage. Recommended for new production\n   workloads requiring persistent storage.\n\n Default: SCRATCH_2",
+        "required": false,
+        "default": "SCRATCH_2",
+        "oneofGroup": "_deployment_type"
+      },
+      {
+        "name": "StorageCapacityGib",
+        "jsonName": "storageCapacityGib",
+        "protoField": "storage_capacity_gib",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Storage capacity in GiB. Minimum 1200 GiB. Exact valid values depend on\n deployment type and storage type:\n\n - SCRATCH_2 and PERSISTENT_2 (SSD): 1200, then increments of 2400.\n - PERSISTENT_1 (SSD): 1200, then increments of 2400.\n - PERSISTENT_1 (HDD): 6000, then increments of 6000.\n - SCRATCH_1: 1200, 2400, 3600, then increments of 3600.\n\n Can be increased after creation but never decreased. Increasing storage on\n SCRATCH_1 forces replacement.",
+        "required": false,
+        "validation": {
+          "min": 1200
+        }
+      },
+      {
+        "name": "StorageType",
+        "jsonName": "storageType",
+        "protoField": "storage_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Storage media type. ForceNew — cannot be changed after creation.\n\n - \"SSD\": solid-state drives. Sub-millisecond latency. Required for SCRATCH_2,\n   PERSISTENT_2, and recommended for most workloads.\n - \"HDD\": hard disk drives. Lower cost, higher latency. Only available for\n   PERSISTENT_1 deployments. Requires `per_unit_storage_throughput` of 12 or 40.\n\n Default: SSD",
+        "required": false,
+        "default": "SSD",
+        "oneofGroup": "_storage_type"
+      },
+      {
+        "name": "PerUnitStorageThroughput",
+        "jsonName": "perUnitStorageThroughput",
+        "protoField": "per_unit_storage_throughput",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Throughput per unit of storage in MB/s/TiB. Required for PERSISTENT_1 and\n PERSISTENT_2 deployments. Invalid for SCRATCH types.\n\n Valid values depend on deployment type and storage type:\n - PERSISTENT_1 + SSD: 50, 100, 200\n - PERSISTENT_1 + HDD: 12, 40\n - PERSISTENT_2 + SSD: 125, 250, 500, 1000",
+        "required": false
+      },
+      {
+        "name": "DataCompressionType",
+        "jsonName": "dataCompressionType",
+        "protoField": "data_compression_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Enable LZ4 data compression for all data on the file system. Reduces storage\n consumption and can improve throughput for compressible data. Can be changed\n after creation. Compression does not affect file system performance for\n Lustre operations.\n\n Default: NONE",
+        "required": false,
+        "default": "NONE",
+        "oneofGroup": "_data_compression_type"
+      },
+      {
+        "name": "FileSystemTypeVersion",
+        "jsonName": "fileSystemTypeVersion",
+        "protoField": "file_system_type_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Lustre file system type version. ForceNew — cannot be changed after creation.\n Format: \"x.y\" (e.g., \"2.12\", \"2.15\").\n\n Leave empty to use the latest version supported by the deployment type.\n Explicitly set only if workload compatibility requires a specific version.",
+        "required": false
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Subnet ID for the file system's network interface. Required. ForceNew.\n\n Lustre file systems are single-AZ — exactly one subnet is supported. The\n file system's ENI is created in this subnet. All compute resources mounting\n this file system must have network connectivity to this subnet.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[0].id"
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Security groups for the file system's network interface. ForceNew.\n\n Must allow Lustre traffic between the file system and its clients:\n - TCP port 988 (Lustre protocol)\n - TCP ports 1018-1023 (Lustre data channels)\n\n Up to 50 security groups.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed KMS key ARN for encryption at rest. ForceNew — the KMS key\n cannot be changed after creation. When omitted, the file system uses the\n AWS-managed FSx key. All Lustre file systems are encrypted at rest by default\n using AWS-managed keys; this field upgrades to a customer-managed key.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "ImportPath",
+        "jsonName": "importPath",
+        "protoField": "import_path",
+        "type": {
+          "kind": "string"
+        },
+        "description": "S3 URI to import data from (e.g., \"s3://my-bucket\" or \"s3://my-bucket/prefix\").\n ForceNew. Only supported on SCRATCH_1 and SCRATCH_2 deployments.\n\n When set, the file system automatically imports file metadata from S3. File\n data is lazy-loaded on first access. For more flexible S3 integration on\n PERSISTENT deployments, use a separate data repository association.",
+        "required": false
+      },
+      {
+        "name": "ExportPath",
+        "jsonName": "exportPath",
+        "protoField": "export_path",
+        "type": {
+          "kind": "string"
+        },
+        "description": "S3 URI for exporting data back to S3 (e.g., \"s3://my-bucket/output/\").\n ForceNew. Requires `import_path` to be set.\n\n When set, changes made on the file system are automatically exported to S3.",
+        "required": false
+      },
+      {
+        "name": "LogConfiguration",
+        "jsonName": "logConfiguration",
+        "protoField": "log_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsFsxLustreFileSystemLogConfiguration"
+        },
+        "description": "CloudWatch logging configuration for Lustre audit events (file access,\n file creation, deletion). Useful for compliance and debugging.",
+        "required": false
+      },
+      {
+        "name": "AutomaticBackupRetentionDays",
+        "jsonName": "automaticBackupRetentionDays",
+        "protoField": "automatic_backup_retention_days",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of days to retain automatic backups. Range: 0-90. Set to 0 to disable\n automatic backups.\n\n Default: 0 (no automatic backups)",
+        "required": false,
+        "default": "0",
+        "oneofGroup": "_automatic_backup_retention_days"
+      },
+      {
+        "name": "DailyAutomaticBackupStartTime",
+        "jsonName": "dailyAutomaticBackupStartTime",
+        "protoField": "daily_automatic_backup_start_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Daily UTC time to start automatic backups, in HH:MM format (e.g., \"05:00\").\n If not specified and backups are enabled, AWS chooses a default window.",
+        "required": false
+      },
+      {
+        "name": "CopyTagsToBackups",
+        "jsonName": "copyTagsToBackups",
+        "protoField": "copy_tags_to_backups",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Copy tags from the file system to backups. ForceNew.",
+        "required": false
+      },
+      {
+        "name": "SkipFinalBackup",
+        "jsonName": "skipFinalBackup",
+        "protoField": "skip_final_backup",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Skip creating a final backup when the file system is deleted. Applies only to\n PERSISTENT deployments with backup support.\n\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_skip_final_backup"
+      },
+      {
+        "name": "WeeklyMaintenanceStartTime",
+        "jsonName": "weeklyMaintenanceStartTime",
+        "protoField": "weekly_maintenance_start_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Weekly UTC maintenance window in the format \"d:HH:MM\" where d is the day of\n the week (1=Monday, 7=Sunday). Example: \"1:05:00\" for Monday at 05:00 UTC.",
+        "required": false
+      },
+      {
+        "name": "MetadataConfiguration",
+        "jsonName": "metadataConfiguration",
+        "protoField": "metadata_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsFsxLustreFileSystemMetadataConfiguration"
+        },
+        "description": "Metadata performance configuration. Only supported on PERSISTENT_2 deployments.\n Controls the metadata IOPS available for file creation, listing, and similar\n operations. Most workloads perform well with AUTOMATIC mode.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsFsxLustreFileSystemLogConfiguration",
+      "description": "AwsFsxLustreFileSystemLogConfiguration configures CloudWatch logging for Lustre\n file system audit events. Events include file access, creation, deletion, and\n permission changes.",
+      "protoType": "org.openmcf.provider.aws.awsfsxlustrefilesystem.v1.AwsFsxLustreFileSystemLogConfiguration",
+      "fields": [
+        {
+          "name": "Destination",
+          "jsonName": "destination",
+          "protoField": "destination",
+          "type": {
+            "kind": "string"
+          },
+          "description": "CloudWatch Logs log group ARN to receive audit events. The log group must\n exist and have a resource policy allowing FSx to write to it. If not set,\n logging is disabled regardless of the level setting.",
+          "required": false,
+          "referenceKind": "AwsCloudwatchLogGroup",
+          "referenceFieldPath": "status.outputs.log_group_arn"
+        },
+        {
+          "name": "Level",
+          "jsonName": "level",
+          "protoField": "level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Audit log level controlling which events are logged.\n\n - \"DISABLED\": no logging (default when log_configuration is omitted).\n - \"WARN_ONLY\": log warning-level events only.\n - \"ERROR_ONLY\": log error-level events only.\n - \"WARN_ERROR\": log both warning and error events.\n\n Default: WARN_ERROR",
+          "required": false,
+          "default": "WARN_ERROR",
+          "oneofGroup": "_level"
+        }
+      ]
+    },
+    {
+      "name": "AwsFsxLustreFileSystemMetadataConfiguration",
+      "description": "AwsFsxLustreFileSystemMetadataConfiguration controls the metadata performance\n of PERSISTENT_2 Lustre file systems. Metadata operations include file creation,\n listing, stat, rename, and deletion.",
+      "protoType": "org.openmcf.provider.aws.awsfsxlustrefilesystem.v1.AwsFsxLustreFileSystemMetadataConfiguration",
+      "fields": [
+        {
+          "name": "Mode",
+          "jsonName": "mode",
+          "protoField": "mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Metadata IOPS mode.\n\n - \"AUTOMATIC\": FSx scales metadata IOPS based on file system storage capacity.\n   Provides 1500-192000 IOPS depending on provisioned storage.\n - \"USER_PROVISIONED\": you specify the exact metadata IOPS. Allows higher\n   performance independent of storage size but at additional cost.\n\n Default: AUTOMATIC",
+          "required": false,
+          "default": "AUTOMATIC",
+          "oneofGroup": "_mode"
+        },
+        {
+          "name": "Iops",
+          "jsonName": "iops",
+          "protoField": "iops",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Metadata IOPS when mode is \"USER_PROVISIONED\". Ignored in AUTOMATIC mode.\n\n Valid values: 1500, 3000, 6000, 12000, 24000, 36000, 48000, 60000, 72000,\n 84000, 96000, 108000, 120000, 132000, 144000, 156000, 168000, 180000, 192000.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,558 @@
+{
+  "name": "AwsAppRunnerService",
+  "kind": "AwsAppRunnerService",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-app-runner-service",
+  "protoPackage": "org.openmcf.provider.aws.awsapprunnerservice.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsapprunnerservice/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsapprunnerservice/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsAppRunnerServiceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the App Runner service will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ImageSource",
+        "jsonName": "imageSource",
+        "protoField": "image_source",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsAppRunnerServiceImageSource"
+        },
+        "description": "Image-based deployment source. Use this to deploy from a container image\n stored in Amazon ECR (private) or ECR Public Gallery.",
+        "required": false
+      },
+      {
+        "name": "CodeSource",
+        "jsonName": "codeSource",
+        "protoField": "code_source",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsAppRunnerServiceCodeSource"
+        },
+        "description": "Code-based deployment source. Use this to deploy from a GitHub repository.\n App Runner clones the repo, builds the application using the specified runtime,\n and deploys the resulting container.",
+        "required": false
+      },
+      {
+        "name": "Port",
+        "jsonName": "port",
+        "protoField": "port",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Port that the application listens on inside the container. App Runner routes\n incoming HTTPS traffic on port 443 to this port.",
+        "required": false,
+        "default": "8080",
+        "oneofGroup": "_port"
+      },
+      {
+        "name": "StartCommand",
+        "jsonName": "startCommand",
+        "protoField": "start_command",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Override the container start command. For image source, this overrides the\n image ENTRYPOINT/CMD. For code source with configuration_source=\"API\",\n this is the command that starts the application.",
+        "required": false
+      },
+      {
+        "name": "EnvironmentVariables",
+        "jsonName": "environmentVariables",
+        "protoField": "environment_variables",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Environment variables injected into every instance at runtime. Keys are\n variable names, values are plaintext strings. Avoid embedding secrets\n here; use environment_secrets for sensitive values.\n Keys prefixed with \"AWSAPPRUNNER\" are reserved by the service.",
+        "required": false
+      },
+      {
+        "name": "EnvironmentSecrets",
+        "jsonName": "environmentSecrets",
+        "protoField": "environment_secrets",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Environment secrets injected at runtime. Keys are variable names, values\n are full ARNs of AWS Secrets Manager secrets or SSM Parameter Store parameters.\n App Runner retrieves the secret value at deploy time and injects it as a\n plaintext environment variable. The instance_role_arn must have permission\n to read these secrets.",
+        "required": false
+      },
+      {
+        "name": "Cpu",
+        "jsonName": "cpu",
+        "protoField": "cpu",
+        "type": {
+          "kind": "string"
+        },
+        "description": "CPU allocation per instance. Accepts numeric millicore strings or human-readable vCPU format.\n Numeric: \"256\", \"512\", \"1024\", \"2048\", \"4096\"\n Human-readable: \"0.25 vCPU\", \"0.5 vCPU\", \"1 vCPU\", \"2 vCPU\", \"4 vCPU\"",
+        "required": false,
+        "default": "1024",
+        "oneofGroup": "_cpu"
+      },
+      {
+        "name": "Memory",
+        "jsonName": "memory",
+        "protoField": "memory",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Memory allocation per instance. Accepts numeric megabyte strings or human-readable GB format.\n Numeric: \"512\", \"1024\", \"2048\", \"3072\", \"4096\", \"6144\", \"8192\", \"10240\", \"12288\"\n Human-readable: \"0.5 GB\", \"1 GB\", \"2 GB\", \"3 GB\", \"4 GB\", \"6 GB\", \"8 GB\", \"10 GB\", \"12 GB\"\n Note: Not all CPU/memory combinations are valid. See AWS documentation for valid pairings.",
+        "required": false,
+        "default": "2048",
+        "oneofGroup": "_memory"
+      },
+      {
+        "name": "InstanceRoleArn",
+        "jsonName": "instanceRoleArn",
+        "protoField": "instance_role_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IAM role that service instances assume at runtime to call AWS APIs.\n This is the role your application code uses (e.g., to read from S3, write to DynamoDB).\n This is NOT the role used to pull images from ECR (that is access_role_arn in image_source).",
+        "required": false,
+        "referenceKind": "AwsIamRole",
+        "referenceFieldPath": "status.outputs.role_arn"
+      },
+      {
+        "name": "HealthCheck",
+        "jsonName": "healthCheck",
+        "protoField": "health_check",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsAppRunnerServiceHealthCheck"
+        },
+        "description": "Health check configuration. App Runner uses health checks to monitor instance\n readiness. If not provided, App Runner uses default TCP health checks on the\n configured port.",
+        "required": false
+      },
+      {
+        "name": "AutoScaling",
+        "jsonName": "autoScaling",
+        "protoField": "auto_scaling",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsAppRunnerServiceAutoScaling"
+        },
+        "description": "Auto scaling configuration controls how App Runner scales the number of\n instances based on incoming request concurrency. If not provided, App Runner\n uses defaults: 1 min, 25 max, 100 max concurrency per instance.",
+        "required": false
+      },
+      {
+        "name": "VpcConnectorArn",
+        "jsonName": "vpcConnectorArn",
+        "protoField": "vpc_connector_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ARN of an existing VPC Connector for outbound VPC access. Use this when\n you want to share a single VPC Connector across multiple App Runner services.\n Mutually exclusive with subnet_ids/security_group_ids (which create an inline connector).",
+        "required": false
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "VPC subnet IDs for creating an inline VPC Connector. When provided, the module\n automatically creates a VPC Connector so the service can reach resources in\n your VPC (databases, caches, internal APIs). Provide subnets in at least two\n Availability Zones for high availability. Mutually exclusive with vpc_connector_arn.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Security group IDs for the inline VPC Connector. Controls what VPC resources\n the service can reach. Only used when subnet_ids is provided (ignored otherwise).",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "IsPubliclyAccessible",
+        "jsonName": "isPubliclyAccessible",
+        "protoField": "is_publicly_accessible",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the service endpoint is publicly accessible from the internet.\n When true (default), the service gets a public HTTPS URL. When false,\n the service is only reachable via a VPC Ingress Connection (a separate\n resource not managed by this component).",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_is_publicly_accessible"
+      },
+      {
+        "name": "IpAddressType",
+        "jsonName": "ipAddressType",
+        "protoField": "ip_address_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IP address type for the service endpoint.\n \"IPV4\": IPv4-only (default). \"DUAL_STACK\": IPv4 + IPv6.",
+        "required": false,
+        "default": "IPV4",
+        "oneofGroup": "_ip_address_type"
+      },
+      {
+        "name": "KmsKeyArn",
+        "jsonName": "kmsKeyArn",
+        "protoField": "kms_key_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed KMS key ARN for encrypting the service's stored copy of\n the container image and data logs. If omitted, App Runner uses an AWS-managed key.\n ForceNew: changing this value requires replacing the service.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "ObservabilityEnabled",
+        "jsonName": "observabilityEnabled",
+        "protoField": "observability_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable observability (AWS X-Ray tracing) for the service.\n When true, observability_configuration_arn must also be provided.",
+        "required": false
+      },
+      {
+        "name": "ObservabilityConfigurationArn",
+        "jsonName": "observabilityConfigurationArn",
+        "protoField": "observability_configuration_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ARN of an App Runner Observability Configuration resource. Required when\n observability_enabled is true. Observability configurations are created\n separately (via AWS Console or CLI) and can be shared across services.",
+        "required": false
+      },
+      {
+        "name": "AutoDeploymentsEnabled",
+        "jsonName": "autoDeploymentsEnabled",
+        "protoField": "auto_deployments_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether App Runner automatically triggers a new deployment when the source changes.\n For image source: redeploys when a new image is pushed to the same tag.\n For code source: redeploys when a new commit is pushed to the configured branch.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_auto_deployments_enabled"
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsAppRunnerServiceAutoScaling",
+      "description": "AwsAppRunnerServiceAutoScaling configures how App Runner scales the number of\n running instances in response to incoming traffic. App Runner uses a concurrency-based\n model: when the number of concurrent requests per instance exceeds max_concurrency,\n a new instance is launched (up to max_size). When traffic decreases, instances are\n removed (down to min_size).",
+      "protoType": "org.openmcf.provider.aws.awsapprunnerservice.v1.AwsAppRunnerServiceAutoScaling",
+      "fields": [
+        {
+          "name": "MinSize",
+          "jsonName": "minSize",
+          "protoField": "min_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of instances that App Runner keeps running at all times.\n These instances are always warm and ready to serve traffic. Setting this\n above 1 reduces cold-start latency at the cost of increased baseline charges.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 25
+          },
+          "default": "1",
+          "oneofGroup": "_min_size"
+        },
+        {
+          "name": "MaxSize",
+          "jsonName": "maxSize",
+          "protoField": "max_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of instances that App Runner scales out to during traffic spikes.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 25
+          },
+          "default": "25",
+          "oneofGroup": "_max_size"
+        },
+        {
+          "name": "MaxConcurrency",
+          "jsonName": "maxConcurrency",
+          "protoField": "max_concurrency",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of concurrent requests routed to a single instance before\n App Runner launches additional instances. Lower values provide more headroom\n per instance but cost more (more instances for the same traffic).",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 200
+          },
+          "default": "100",
+          "oneofGroup": "_max_concurrency"
+        }
+      ]
+    },
+    {
+      "name": "AwsAppRunnerServiceCodeSource",
+      "description": "AwsAppRunnerServiceCodeSource configures deployment from a GitHub code repository.\n App Runner clones the repository, builds the application using the specified runtime\n and build command, then deploys the resulting container.\n\n Requires an App Runner Connection resource that authorizes GitHub access. Connections\n are created out-of-band via the AWS Console or AWS CLI and can be shared across services.",
+      "protoType": "org.openmcf.provider.aws.awsapprunnerservice.v1.AwsAppRunnerServiceCodeSource",
+      "fields": [
+        {
+          "name": "RepositoryUrl",
+          "jsonName": "repositoryUrl",
+          "protoField": "repository_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "GitHub repository URL (e.g., \"https://github.com/owner/repo\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Branch",
+          "jsonName": "branch",
+          "protoField": "branch",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Branch name to deploy from (e.g., \"main\", \"production\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "SourceDirectory",
+          "jsonName": "sourceDirectory",
+          "protoField": "source_directory",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Subdirectory within the repository containing the application source code.\n Defaults to the repository root when not specified. Useful for monorepos\n where the App Runner service lives in a subfolder.",
+          "required": false
+        },
+        {
+          "name": "ConnectionArn",
+          "jsonName": "connectionArn",
+          "protoField": "connection_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of an App Runner Connection that provides GitHub access. Connections are\n created via the AWS Console or CLI (they require an OAuth handshake) and can\n be shared across multiple services.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ConfigurationSource",
+          "jsonName": "configurationSource",
+          "protoField": "configuration_source",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Where App Runner reads the build/runtime configuration from.\n \"API\": Configuration is provided in this spec (runtime, build_command, port, start_command).\n \"REPOSITORY\": Configuration is read from an apprunner.yaml file in the repository root\n   (or source_directory). In this mode, runtime and build_command in this spec are ignored.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Runtime",
+          "jsonName": "runtime",
+          "protoField": "runtime",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Runtime identifier for building and running the application. Required when\n configuration_source is \"API\", ignored when \"REPOSITORY\".\n Valid values: \"PYTHON_3\", \"NODEJS_12\", \"NODEJS_14\", \"NODEJS_16\", \"NODEJS_18\",\n \"CORRETTO_8\", \"CORRETTO_11\", \"GO_1\", \"DOTNET_6\", \"PHP_81\", \"RUBY_31\".",
+          "required": false
+        },
+        {
+          "name": "BuildCommand",
+          "jsonName": "buildCommand",
+          "protoField": "build_command",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Shell command to build/compile the application. Only used when configuration_source\n is \"API\". Example: \"npm ci \u0026\u0026 npm run build\" or \"pip install -r requirements.txt\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsAppRunnerServiceHealthCheck",
+      "description": "AwsAppRunnerServiceHealthCheck configures health monitoring for the service.\n App Runner periodically probes each instance to determine if it is healthy.\n Unhealthy instances are replaced automatically.",
+      "protoType": "org.openmcf.provider.aws.awsapprunnerservice.v1.AwsAppRunnerServiceHealthCheck",
+      "fields": [
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol used for health checks.\n \"TCP\": Checks that the port is open and accepting connections (default).\n \"HTTP\": Sends an HTTP GET request to the specified path and expects a 200 response.",
+          "required": false,
+          "default": "TCP",
+          "oneofGroup": "_protocol"
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URL path for HTTP health checks (e.g., \"/health\", \"/readyz\").\n Ignored when protocol is \"TCP\".",
+          "required": false,
+          "default": "/",
+          "oneofGroup": "_path"
+        },
+        {
+          "name": "IntervalSeconds",
+          "jsonName": "intervalSeconds",
+          "protoField": "interval_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Time in seconds between consecutive health checks.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 20
+          },
+          "default": "5",
+          "oneofGroup": "_interval_seconds"
+        },
+        {
+          "name": "TimeoutSeconds",
+          "jsonName": "timeoutSeconds",
+          "protoField": "timeout_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum time in seconds to wait for a health check response before\n considering the check failed.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 20
+          },
+          "default": "2",
+          "oneofGroup": "_timeout_seconds"
+        },
+        {
+          "name": "HealthyThreshold",
+          "jsonName": "healthyThreshold",
+          "protoField": "healthy_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive successful health checks required before marking\n an instance as healthy.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 20
+          },
+          "default": "1",
+          "oneofGroup": "_healthy_threshold"
+        },
+        {
+          "name": "UnhealthyThreshold",
+          "jsonName": "unhealthyThreshold",
+          "protoField": "unhealthy_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive failed health checks before marking an instance\n as unhealthy and triggering replacement.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 20
+          },
+          "default": "5",
+          "oneofGroup": "_unhealthy_threshold"
+        }
+      ]
+    },
+    {
+      "name": "AwsAppRunnerServiceImageSource",
+      "description": "AwsAppRunnerServiceImageSource configures deployment from a container image\n stored in Amazon ECR (private registry) or ECR Public Gallery.",
+      "protoType": "org.openmcf.provider.aws.awsapprunnerservice.v1.AwsAppRunnerServiceImageSource",
+      "fields": [
+        {
+          "name": "ImageIdentifier",
+          "jsonName": "imageIdentifier",
+          "protoField": "image_identifier",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Full container image identifier including tag or digest.\n ECR format: \"ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/REPO:TAG\"\n ECR Public format: \"public.ecr.aws/ALIAS/REPO:TAG\"",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ImageRepositoryType",
+          "jsonName": "imageRepositoryType",
+          "protoField": "image_repository_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Type of image repository.\n \"ECR\": Private Amazon ECR registry (requires access_role_arn for pull access).\n \"ECR_PUBLIC\": Public ECR Gallery (no authentication required for pulling).",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "AccessRoleArn",
+          "jsonName": "accessRoleArn",
+          "protoField": "access_role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM role ARN that grants App Runner permission to pull images from private ECR.\n Required when image_repository_type is \"ECR\". Not needed for \"ECR_PUBLIC\".\n This role must have the ecr:GetDownloadUrlForLayer, ecr:BatchGetImage, and\n ecr:GetAuthorizationToken permissions.",
+          "required": false,
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        }
+      ]
+    }
+  ]
+}

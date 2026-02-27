@@ -1,0 +1,93 @@
+{
+  "name": "AwsCertManagerCert",
+  "kind": "AwsCertManagerCert",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsCertManagerCert represents a containerized application deployed on AWS ECS.\n This resource manages ECS services that can run on either Fargate or EC2.",
+  "protoPackage": "org.openmcf.provider.aws.awscertmanagercert.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awscertmanagercert/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awscertmanagercert/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsCertManagerCertSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the ACM certificate will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "PrimaryDomainName",
+        "jsonName": "primaryDomainName",
+        "protoField": "primary_domain_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "primaryDomainName is a required field representing the main (apex or wildcard) domain name.\n Examples include \"example.com\" or \"*.example.com\" (wildcard).\n This domain will be set as the 'DomainName' in the AWS ACM certificate.\n\n The pattern enforces a domain-like structure, allowing an optional wildcard prefix.\n The string is mandatory, so users must always supply a primary domain.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^(?:\\*\\.[A-Za-z0-9\\-\\.]+|[A-Za-z0-9\\-\\.]+\\.[A-Za-z]{2,})$"
+        }
+      },
+      {
+        "name": "AlternateDomainNames",
+        "jsonName": "alternateDomainNames",
+        "protoField": "alternate_domain_names",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "alternateDomainNames is an optional list of Subject Alternative Names (SANs) for the certificate.\n Each entry must follow the same pattern as primary_domain_name and cannot contain duplicates.\n Primary domain should not be added to this list.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "Route53HostedZoneId",
+        "jsonName": "route53HostedZoneId",
+        "protoField": "route53_hosted_zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "route53_hosted_zone_id is the identifier of the Route53 hosted zone\n where DNS validation records will be created automatically.\n Must be a public hosted zone matching the domain names.\n Example: \"Z123456ABCXYZ\".",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsRoute53Zone",
+        "referenceFieldPath": "status.outputs.zone_id"
+      },
+      {
+        "name": "ValidationMethod",
+        "jsonName": "validationMethod",
+        "protoField": "validation_method",
+        "type": {
+          "kind": "string"
+        },
+        "description": "validation_method indicates how ACM verifies domain ownership.\n By default, DNS is recommended.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "DNS",
+            "EMAIL"
+          ]
+        },
+        "default": "DNS",
+        "oneofGroup": "_validation_method"
+      }
+    ]
+  }
+}

@@ -1,0 +1,872 @@
+{
+  "name": "KubernetesClickHouse",
+  "kind": "KubernetesClickHouse",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "click-house-kubernetes",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetesclickhouse.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetesclickhouse/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetesclickhouse/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesClickHouseSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "Target Kubernetes Cluster",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes Namespace",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "CreateNamespace",
+        "jsonName": "createNamespace",
+        "protoField": "create_namespace",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "flag to indicate if the namespace should be created",
+        "required": false
+      },
+      {
+        "name": "ClusterName",
+        "jsonName": "clusterName",
+        "protoField": "cluster_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "*\n The name of the ClickHouse cluster.\n This is used as the identifier for the ClickHouseInstallation custom resource.\n Must be a valid DNS subdomain name (lowercase alphanumeric with hyphens).\n Defaults to the resource metadata name if not specified.",
+        "required": false,
+        "validation": {
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "Container",
+        "jsonName": "container",
+        "protoField": "container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClickHouseContainer"
+        },
+        "description": "The container specifications for the ClickHouse deployment.",
+        "required": false
+      },
+      {
+        "name": "Ingress",
+        "jsonName": "ingress",
+        "protoField": "ingress",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClickHouseIngress"
+        },
+        "description": "The ingress configuration for the ClickHouse deployment.",
+        "required": false
+      },
+      {
+        "name": "Cluster",
+        "jsonName": "cluster",
+        "protoField": "cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClickHouseClusterConfig"
+        },
+        "description": "The cluster configuration for ClickHouse sharding and replication.",
+        "required": false
+      },
+      {
+        "name": "Version",
+        "jsonName": "version",
+        "protoField": "version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "*\n The ClickHouse version to deploy (e.g., \"24.3\", \"23.8\").\n If not specified, the operator's default stable version will be used.\n It's recommended to specify a version for production deployments to ensure consistency.",
+        "required": false
+      },
+      {
+        "name": "Coordination",
+        "jsonName": "coordination",
+        "protoField": "coordination",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClickHouseCoordinationConfig"
+        },
+        "description": "*\n Coordination configuration for cluster operations.\n Required when cluster.is_enabled = true.\n\n Recommended: Leave unspecified to use auto-managed ClickHouse Keeper (default).\n This is more efficient than ZooKeeper and easier to manage.\n\n Advanced: Configure external Keeper or ZooKeeper for shared infrastructure scenarios.",
+        "required": false
+      },
+      {
+        "name": "Zookeeper",
+        "jsonName": "zookeeper",
+        "protoField": "zookeeper",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClickHouseZookeeperConfig"
+        },
+        "description": "*\n ZooKeeper configuration for cluster coordination.\n\n DEPRECATED: Use 'coordination' field instead.\n This field is kept for backward compatibility and will be removed in v2.\n\n If both 'coordination' and 'zookeeper' are specified, 'coordination' takes precedence.",
+        "required": false
+      },
+      {
+        "name": "Logging",
+        "jsonName": "logging",
+        "protoField": "logging",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClickHouseLoggingConfig"
+        },
+        "description": "*\n Logging configuration for ClickHouse server.\n Controls the verbosity of ClickHouse server logs.\n\n Required field. Defaults to 'information' level (recommended for production).\n Use 'debug' or 'trace' levels only for troubleshooting as they generate significant log volume.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ContainerResources",
+      "description": "**ContainerResources** specifies the CPU and memory resources for a container.\n It allows you to define resource limits and requests to manage resource allocation and ensure optimal performance.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerResources",
+      "fields": [
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource limits for the container.\n Specify the maximum amount of CPU and memory that the container can use.",
+          "required": false
+        },
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource requests for the container.\n Specify the minimum amount of CPU and memory that the container is guaranteed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CpuMemory",
+      "description": "**CpuMemory** defines CPU and memory resource quantities for a container.\n It is used to specify the limits and requests for CPU and memory resources.",
+      "protoType": "org.openmcf.provider.kubernetes.CpuMemory",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClickHouseClusterConfig",
+      "description": "*\n **KubernetesClickHouseClusterConfig** defines the clustering configuration for ClickHouse.\n This includes settings for sharding and replication to enable distributed ClickHouse deployments.\n\n Clustering provides horizontal scaling and high availability. When clustering is enabled:\n - Data is distributed across shards for parallel processing\n - Each shard can have multiple replicas for redundancy\n - ZooKeeper is used for cluster coordination (automatically managed by the operator)",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesclickhouse.v1.KubernetesClickHouseClusterConfig",
+      "fields": [
+        {
+          "name": "IsEnabled",
+          "jsonName": "isEnabled",
+          "protoField": "is_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n A flag to enable or disable clustering mode for ClickHouse.\n When enabled, ClickHouse will be deployed in a distributed cluster configuration with sharding and replication.\n When disabled, a single standalone ClickHouse instance is deployed.\n Defaults to `false` (standalone mode suitable for development and small workloads).",
+          "required": false
+        },
+        {
+          "name": "ShardCount",
+          "jsonName": "shardCount",
+          "protoField": "shard_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "*\n The number of shards in the ClickHouse cluster.\n Sharding distributes data across multiple nodes for horizontal scaling and improved query performance.\n Each shard processes queries in parallel, allowing for massive throughput.\n This value is ignored if clustering is not enabled.\n Typical values: 2-8 for most use cases, can go higher for very large deployments.",
+          "required": false
+        },
+        {
+          "name": "ReplicaCount",
+          "jsonName": "replicaCount",
+          "protoField": "replica_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "*\n The number of replicas for each shard.\n Replication provides data redundancy and high availability.\n If one replica fails, queries can be served by other replicas in the same shard.\n This value is ignored if clustering is not enabled.\n Typical values: 2-3 (more than 3 replicas is rarely needed).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClickHouseContainer",
+      "description": "*\n **KubernetesClickHouseContainer** specifies the container configuration for the ClickHouse application.\n It includes resource allocations, data persistence options, and disk size.\n Proper configuration ensures optimal performance and data reliability for your ClickHouse deployment.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesclickhouse.v1.KubernetesClickHouseContainer",
+      "fields": [
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "*\n The number of ClickHouse replicas (pods) to deploy.\n For non-clustered deployments, this is the total number of ClickHouse pods.\n For clustered deployments, this value is ignored in favor of shard_count * replica_count.\n Must be at least 1.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "The CPU and memory resources allocated to each ClickHouse container.",
+          "required": false
+        },
+        {
+          "name": "PersistenceEnabled",
+          "jsonName": "persistenceEnabled",
+          "protoField": "persistence_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n A flag to enable or disable data persistence for ClickHouse.\n When enabled, data is persisted to a storage volume, allowing data to survive pod restarts.\n Defaults to `true`. Strongly recommended for production use.",
+          "required": false
+        },
+        {
+          "name": "DiskSize",
+          "jsonName": "diskSize",
+          "protoField": "disk_size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The size of the persistent volume attached to each ClickHouse pod (e.g., \"50Gi\", \"100Gi\").\n If the client does not provide a value, a default value is configured.\n This attribute is ignored when persistence is not enabled.\n **Note:** This value cannot be easily modified after creation due to Kubernetes limitations.\n Plan for growth and allocate sufficient storage initially.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClickHouseCoordinationConfig",
+      "description": "*\n **KubernetesClickHouseCoordinationConfig** defines coordination service configuration for ClickHouse cluster.\n ClickHouse requires coordination for distributed operations (DDL execution, replication management).\n\n For most use cases, auto-managed ClickHouse Keeper (default) is recommended.\n It's more efficient than ZooKeeper (75% less resources) and managed by the same operator.\n\n Use external coordination when:\n - Sharing infrastructure across multiple ClickHouse clusters\n - Using existing ZooKeeper for other services (Kafka, etc.)\n - Migrating from ZooKeeper to ClickHouse Keeper",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesclickhouse.v1.KubernetesClickHouseCoordinationConfig",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesclickhouse.v1.CoordinationType",
+            "enumValues": [
+              "keeper",
+              "external_keeper",
+              "external_zookeeper"
+            ]
+          },
+          "description": "*\n Type of coordination service to use.\n Defaults to 'keeper' (auto-managed ClickHouse Keeper).",
+          "required": false
+        },
+        {
+          "name": "KeeperConfig",
+          "jsonName": "keeperConfig",
+          "protoField": "keeper_config",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesClickHouseKeeperConfig"
+          },
+          "description": "*\n Configuration for auto-managed ClickHouse Keeper.\n Only used when type = 'keeper'.\n If not specified, sensible defaults are used (1 replica for dev, 3 for prod).",
+          "required": false
+        },
+        {
+          "name": "ExternalConfig",
+          "jsonName": "externalConfig",
+          "protoField": "external_config",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesClickHouseExternalCoordinationConfig"
+          },
+          "description": "*\n Configuration for external coordination service.\n Only used when type = 'external_keeper' or 'external_zookeeper'.\n Must specify at least one node.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClickHouseExternalCoordinationConfig",
+      "description": "*\n **KubernetesClickHouseExternalCoordinationConfig** defines external coordination service configuration.\n Use when connecting to existing ClickHouse Keeper or ZooKeeper infrastructure.\n\n Common scenarios:\n - Shared ZooKeeper used by Kafka, Solr, and ClickHouse\n - Centrally managed Keeper infrastructure\n - Multi-cluster coordination through shared Keeper",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesclickhouse.v1.KubernetesClickHouseExternalCoordinationConfig",
+      "fields": [
+        {
+          "name": "Nodes",
+          "jsonName": "nodes",
+          "protoField": "nodes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "*\n List of coordination service nodes in \"host:port\" format.\n\n For production, specify all nodes in the ensemble for redundancy.\n\n Examples:\n - ClickHouse Keeper: [\"keeper-prod:2181\"]\n - ClickHouse Keeper HA: [\"keeper-0.keeper-svc:2181\", \"keeper-1.keeper-svc:2181\", \"keeper-2.keeper-svc:2181\"]\n - ZooKeeper: [\"zk-0.zk.svc:2181\", \"zk-1.zk.svc:2181\", \"zk-2.zk.svc:2181\"]\n\n Port 2181 is the standard client port for both ZooKeeper and ClickHouse Keeper.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClickHouseIngress",
+      "description": "*\n **KubernetesClickHouseIngress** defines the ingress configuration for ClickHouse deployment.\n Controls external access to the ClickHouse cluster via LoadBalancer with automatic DNS configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesclickhouse.v1.KubernetesClickHouseIngress",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n Flag to enable or disable ingress.\n When enabled, creates a LoadBalancer service with external-dns annotations.",
+          "required": false
+        },
+        {
+          "name": "Hostname",
+          "jsonName": "hostname",
+          "protoField": "hostname",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The full hostname for external access (e.g., \"clickhouse.example.com\").\n This hostname will be configured automatically via external-dns.\n Required when enabled is true.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClickHouseKeeperConfig",
+      "description": "*\n **KubernetesClickHouseKeeperConfig** defines configuration for auto-managed ClickHouse Keeper.\n The operator creates a ClickHouseKeeperInstallation resource with these settings.\n\n ClickHouse Keeper is a ZooKeeper alternative written in C++ specifically for ClickHouse.\n Benefits: 75% less CPU/memory usage, no JVM overhead, protocol-compatible with ZooKeeper.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesclickhouse.v1.KubernetesClickHouseKeeperConfig",
+      "fields": [
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "*\n Number of ClickHouse Keeper replicas.\n Must be an odd number for quorum (1, 3, or 5).\n\n Recommendations:\n - Development/Testing: 1 (no fault tolerance)\n - Production: 3 (survives 1 node failure)\n - Large Production: 5 (survives 2 node failures)\n\n Defaults to 1 if not specified.",
+          "required": false
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "*\n Resources for each Keeper pod.\n\n Recommended defaults (applied if not specified):\n - Requests: 100m CPU, 256Mi memory\n - Limits: 500m CPU, 1Gi memory\n\n ClickHouse Keeper is very efficient; these defaults work for most deployments.",
+          "required": false
+        },
+        {
+          "name": "DiskSize",
+          "jsonName": "diskSize",
+          "protoField": "disk_size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n Persistent volume size for each Keeper pod.\n Defaults to \"10Gi\" if not specified.\n\n Keeper stores coordination metadata (not data), so 10Gi is sufficient for most use cases.\n Consider larger sizes (20-50Gi) for very large clusters (100+ nodes).",
+          "required": false,
+          "validation": {
+            "pattern": "^\\d+(\\.\\d+)?\\s?(Ki|Mi|Gi|Ti|Pi|Ei|K|M|G|T|P|E)$"
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClickHouseLoggingConfig",
+      "description": "*\n **KubernetesClickHouseLoggingConfig** defines logging configuration for ClickHouse server.\n Controls the verbosity and behavior of ClickHouse server logs.\n\n ClickHouse logging can significantly impact I/O performance and disk usage.\n Choose the appropriate level based on your operational needs.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesclickhouse.v1.KubernetesClickHouseLoggingConfig",
+      "fields": [
+        {
+          "name": "Level",
+          "jsonName": "level",
+          "protoField": "level",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesclickhouse.v1.LogLevel",
+            "enumValues": [
+              "debug",
+              "trace"
+            ]
+          },
+          "description": "*\n The log level for ClickHouse server logs.\n Defaults to 'information' if not specified.\n\n Production recommendation: Use 'information' for normal operations.\n Temporarily switch to 'debug' or 'trace' when troubleshooting specific issues,\n then revert to 'information' to avoid excessive log volume.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClickHouseZookeeperConfig",
+      "description": "*\n **KubernetesClickHouseZookeeperConfig** defines the ZooKeeper configuration for ClickHouse cluster coordination.\n\n DEPRECATED: This message is deprecated in favor of KubernetesClickHouseCoordinationConfig.\n Use the 'coordination' field in KubernetesClickHouseSpec instead.\n\n This is kept for backward compatibility and will be removed in v2.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesclickhouse.v1.KubernetesClickHouseZookeeperConfig",
+      "fields": [
+        {
+          "name": "UseExternal",
+          "jsonName": "useExternal",
+          "protoField": "use_external",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n A flag to use external ZooKeeper instead of operator-managed ZooKeeper.\n When false (default), the operator automatically provisions and manages ZooKeeper pods.\n When true, you must provide external ZooKeeper nodes.",
+          "required": false
+        },
+        {
+          "name": "Nodes",
+          "jsonName": "nodes",
+          "protoField": "nodes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "*\n List of external ZooKeeper nodes in the format \"host:port\".\n This is only used when use_external is true.\n Example: [\"zk-0.zk-headless.default.svc.cluster.local:2181\", \"zk-1.zk-headless.default.svc.cluster.local:2181\"]",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

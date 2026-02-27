@@ -1,0 +1,100 @@
+{
+  "name": "OpenStackLoadBalancer",
+  "kind": "OpenStackLoadBalancer",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackLoadBalancer is a Kubernetes Resource Model (KRM) style resource for managing\n Octavia load balancers in OpenStack.\n\n An Octavia load balancer provides a Virtual IP (VIP) endpoint on a subnet.\n Listeners, pools, members, and health monitors are attached to it to distribute\n traffic across backend servers. The VIP can be associated with a floating IP\n for external access.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackloadbalancer.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackloadbalancer/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackloadbalancer/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackLoadBalancerSpec",
+    "fields": [
+      {
+        "name": "VipSubnetId",
+        "jsonName": "vipSubnetId",
+        "protoField": "vip_subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The subnet on which to allocate the VIP address.\n This determines the network segment where the load balancer's virtual IP lives.\n The subnet must already exist and have available IP addresses.\n\n FK: OpenStackSubnet.status.outputs.subnet_id",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackSubnet",
+        "referenceFieldPath": "status.outputs.subnet_id"
+      },
+      {
+        "name": "VipAddress",
+        "jsonName": "vipAddress",
+        "protoField": "vip_address",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) A specific IP address to request for the VIP.\n Must be within the CIDR range of the specified subnet.\n If omitted, Octavia auto-allocates an available IP from the subnet.\n ForceNew: changing this requires recreating the load balancer.",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Human-readable description of the load balancer.",
+        "required": false
+      },
+      {
+        "name": "AdminStateUp",
+        "jsonName": "adminStateUp",
+        "protoField": "admin_state_up",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "(Optional) Administrative state of the load balancer.\n When false, the LB stops accepting traffic. Default: true.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_admin_state_up"
+      },
+      {
+        "name": "FlavorId",
+        "jsonName": "flavorId",
+        "protoField": "flavor_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The ID of an Octavia flavor to use for the load balancer.\n Flavors define resource limits (bandwidth, connections, etc.).\n ForceNew: changing this requires recreating the load balancer.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "(Optional) Tags applied to the load balancer in OpenStack.\n Must be unique within this resource.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Override the region from the provider configuration.\n Use this when the load balancer must be created in a specific region\n that differs from the provider's default.",
+        "required": false
+      }
+    ]
+  }
+}

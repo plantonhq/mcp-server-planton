@@ -1,0 +1,155 @@
+{
+  "name": "OciDnsZone",
+  "kind": "OciDnsZone",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciDnsZone is the top-level resource representing an OCI DNS Zone --\n a managed authoritative DNS zone supporting public and private\n resolution scopes with zone transfer capabilities.",
+  "protoPackage": "org.openmcf.provider.oci.ocidnszone.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocidnszone/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocidnszone/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciDnsZoneSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where this zone will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "ZoneType",
+        "jsonName": "zoneType",
+        "protoField": "zone_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ocidnszone.v1.ZoneType",
+          "enumValues": [
+            "primary",
+            "secondary"
+          ]
+        },
+        "description": "Zone type: PRIMARY or SECONDARY. Required. ForceNew.",
+        "required": false
+      },
+      {
+        "name": "Scope",
+        "jsonName": "scope",
+        "protoField": "scope",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ocidnszone.v1.Scope",
+          "enumValues": [
+            "global",
+            "scope_private"
+          ]
+        },
+        "description": "Resolution scope. When omitted, defaults to GLOBAL (public DNS).\n ForceNew.",
+        "required": false
+      },
+      {
+        "name": "ViewId",
+        "jsonName": "viewId",
+        "protoField": "view_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the private DNS view. Required when scope is private.\n Not applicable for global zones. ForceNew.",
+        "required": false,
+        "referenceFieldPath": "status.outputs.viewId"
+      },
+      {
+        "name": "IsDnssecEnabled",
+        "jsonName": "isDnssecEnabled",
+        "protoField": "is_dnssec_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable DNSSEC signing for the zone. When true, OCI generates\n KSK and ZSK key pairs and signs zone records. Only meaningful\n for GLOBAL zones. Nil/omitted = OCI default (disabled).",
+        "required": false,
+        "oneofGroup": "_is_dnssec_enabled"
+      },
+      {
+        "name": "ExternalMasters",
+        "jsonName": "externalMasters",
+        "protoField": "external_masters",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ExternalServer"
+          }
+        },
+        "description": "External master DNS servers that this SECONDARY zone replicates\n from. Required when zone_type is secondary. Not applicable for\n PRIMARY zones (ignored if set).",
+        "required": false
+      },
+      {
+        "name": "ExternalDownstreams",
+        "jsonName": "externalDownstreams",
+        "protoField": "external_downstreams",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ExternalServer"
+          }
+        },
+        "description": "External downstream DNS servers that receive zone transfers\n from this PRIMARY zone. Only supported for PRIMARY zones with\n GLOBAL scope.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ExternalServer",
+      "description": "External DNS server used for zone transfers.\n Used by both external_masters (inbound to SECONDARY zones) and\n external_downstreams (outbound from PRIMARY zones).",
+      "protoType": "org.openmcf.provider.oci.ocidnszone.v1.OciDnsZoneSpec.ExternalServer",
+      "fields": [
+        {
+          "name": "Address",
+          "jsonName": "address",
+          "protoField": "address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IPv4 or IPv6 address of the external DNS server.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port number. Must be 53 or omitted (OCI validates server-side).",
+          "required": false,
+          "oneofGroup": "_port"
+        },
+        {
+          "name": "TsigKeyId",
+          "jsonName": "tsigKeyId",
+          "protoField": "tsig_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the TSIG key for authenticating zone transfers.\n TSIG keys are not modeled as OpenMCF components.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

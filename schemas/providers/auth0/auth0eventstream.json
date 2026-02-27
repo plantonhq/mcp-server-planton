@@ -1,0 +1,198 @@
+{
+  "name": "Auth0EventStream",
+  "kind": "Auth0EventStream",
+  "cloudProvider": "auth0",
+  "apiVersion": "auth0.openmcf.org/v1",
+  "description": "Auth0EventStream is a deployment component that configures an Event Stream in Auth0.\n Event Streams enable real-time delivery of Auth0 events to external systems like\n AWS EventBridge or custom webhook endpoints.\n\n Use cases:\n - Stream authentication events to a SIEM system for security monitoring\n - Trigger workflows when users are created or updated\n - Build real-time dashboards for login analytics\n - Integrate Auth0 events with AWS Lambda for serverless processing\n\n Example manifest for EventBridge:\n ```yaml\n apiVersion: auth0.openmcf.org/v1\n kind: Auth0EventStream\n metadata:\n   name: security-events\n   org: my-organization\n   env: production\n spec:\n   destination_type: eventbridge\n   subscriptions:\n     - user.created\n     - user.updated\n     - authentication.success\n     - authentication.failure\n   eventbridge_configuration:\n     aws_account_id: \"123456789012\"\n     aws_region: us-east-1\n ```\n\n Example manifest for Webhook:\n ```yaml\n apiVersion: auth0.openmcf.org/v1\n kind: Auth0EventStream\n metadata:\n   name: user-events-webhook\n   org: my-organization\n   env: production\n spec:\n   destination_type: webhook\n   subscriptions:\n     - user.created\n     - user.updated\n     - user.deleted\n   webhook_configuration:\n     webhook_endpoint: \"https://api.example.com/webhooks/auth0\"\n     webhook_authorization:\n       method: bearer\n       token: \"your-secret-token\"\n ```",
+  "protoPackage": "org.openmcf.provider.auth0.auth0eventstream.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/auth0/auth0eventstream/v1/api.proto",
+    "spec": "org/openmcf/provider/auth0/auth0eventstream/v1/spec.proto"
+  },
+  "spec": {
+    "name": "Auth0EventStreamSpec",
+    "fields": [
+      {
+        "name": "DestinationType",
+        "jsonName": "destinationType",
+        "protoField": "destination_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "destination_type specifies where events should be delivered.\n This determines which configuration block is required.\n\n - \"eventbridge\": Events are delivered to AWS EventBridge.\n   Requires eventbridge_configuration to be set.\n   EventBridge configurations cannot be updated after creation.\n\n - \"webhook\": Events are delivered to an HTTPS endpoint.\n   Requires webhook_configuration to be set.\n   Webhook configurations can be updated after creation.\n\n https://auth0.com/docs/customize/log-streams#event-stream-destinations",
+        "required": true,
+        "validation": {
+          "required": true,
+          "enum": [
+            "eventbridge",
+            "webhook"
+          ]
+        }
+      },
+      {
+        "name": "Subscriptions",
+        "jsonName": "subscriptions",
+        "protoField": "subscriptions",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "subscriptions is a list of event types this stream is subscribed to.\n Only events matching these types will be delivered to the destination.\n At least one subscription is required.\n\n Common event types:\n - User events: user.created, user.updated, user.deleted\n - Authentication: authentication.success, authentication.failure\n - API operations: api.authorization.success, api.authorization.failure\n - Management API: management.client.created, management.connection.updated\n\n For a complete list of event types, see:\n https://auth0.com/docs/customize/log-streams/event-types",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "EventbridgeConfiguration",
+        "jsonName": "eventbridgeConfiguration",
+        "protoField": "eventbridge_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "Auth0EventBridgeConfiguration"
+        },
+        "description": "eventbridge_configuration contains settings for AWS EventBridge destination.\n Only applicable when destination_type is \"eventbridge\".\n\n EventBridge configurations CANNOT be updated after creation.\n Any change will force the resource to be recreated.",
+        "required": false
+      },
+      {
+        "name": "WebhookConfiguration",
+        "jsonName": "webhookConfiguration",
+        "protoField": "webhook_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "Auth0WebhookConfiguration"
+        },
+        "description": "webhook_configuration contains settings for webhook destination.\n Only applicable when destination_type is \"webhook\".\n\n Webhook configurations CAN be updated after creation,\n including the endpoint and authorization settings.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "Auth0EventBridgeConfiguration",
+      "description": "Auth0EventBridgeConfiguration configures AWS EventBridge as the event destination.\n EventBridge enables serverless processing of Auth0 events in AWS.\n\n IMPORTANT: EventBridge configurations cannot be updated after creation.\n Any change to these settings will force the event stream to be recreated.\n\n Setup flow:\n 1. Auth0 creates a partner event source in your AWS account\n 2. You must associate the event source with an EventBridge event bus\n 3. Create rules on the event bus to route events to targets",
+      "protoType": "org.openmcf.provider.auth0.auth0eventstream.v1.Auth0EventBridgeConfiguration",
+      "fields": [
+        {
+          "name": "AwsAccountId",
+          "jsonName": "awsAccountId",
+          "protoField": "aws_account_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "aws_account_id is the AWS account ID where events will be delivered.\n This is the 12-digit AWS account number.\n Example: \"123456789012\"\n\n Auth0 will create a partner event source in this account.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "pattern": "^[0-9]{12}$"
+          }
+        },
+        {
+          "name": "AwsRegion",
+          "jsonName": "awsRegion",
+          "protoField": "aws_region",
+          "type": {
+            "kind": "string"
+          },
+          "description": "aws_region is the AWS region for the EventBridge event bus.\n Events will be delivered to this region.\n Example: \"us-east-1\", \"eu-west-1\"\n\n Common regions:\n - us-east-1 (N. Virginia)\n - us-west-2 (Oregon)\n - eu-west-1 (Ireland)\n - ap-southeast-1 (Singapore)",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth0WebhookAuthorization",
+      "description": "Auth0WebhookAuthorization configures authentication for webhook endpoints.\n Supports both Basic and Bearer token authentication methods.",
+      "protoType": "org.openmcf.provider.auth0.auth0eventstream.v1.Auth0WebhookAuthorization",
+      "fields": [
+        {
+          "name": "Method",
+          "jsonName": "method",
+          "protoField": "method",
+          "type": {
+            "kind": "string"
+          },
+          "description": "method specifies the authorization method for the webhook.\n\n - \"basic\": HTTP Basic Authentication using username and password.\n   Auth0 sends: Authorization: Basic base64(username:password)\n\n - \"bearer\": Bearer token authentication.\n   Auth0 sends: Authorization: Bearer \u003ctoken\u003e",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "basic",
+              "bearer"
+            ]
+          }
+        },
+        {
+          "name": "Username",
+          "jsonName": "username",
+          "protoField": "username",
+          "type": {
+            "kind": "string"
+          },
+          "description": "username is the username for Basic authentication.\n Required when method is \"basic\".\n Ignored when method is \"bearer\".",
+          "required": false
+        },
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "password is the password for Basic authentication.\n Required when method is \"basic\".\n This value is stored securely and never returned by the API.\n Ignored when method is \"bearer\".",
+          "required": false
+        },
+        {
+          "name": "Token",
+          "jsonName": "token",
+          "protoField": "token",
+          "type": {
+            "kind": "string"
+          },
+          "description": "token is the bearer token for token-based authentication.\n Required when method is \"bearer\".\n This value is stored securely and never returned by the API.\n Ignored when method is \"basic\".\n\n Generate a secure token using OpenSSL:\n   openssl rand -base64 32   # Base64 encoded (recommended)\n   openssl rand -hex 32      # Hexadecimal\n\n The same token must be configured on your webhook server to validate\n incoming requests via the Authorization: Bearer \u003ctoken\u003e header.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Auth0WebhookConfiguration",
+      "description": "Auth0WebhookConfiguration configures an HTTPS endpoint as the event destination.\n Webhooks allow custom event processing at any HTTP endpoint.\n\n Webhook configurations can be updated after creation.",
+      "protoType": "org.openmcf.provider.auth0.auth0eventstream.v1.Auth0WebhookConfiguration",
+      "fields": [
+        {
+          "name": "WebhookEndpoint",
+          "jsonName": "webhookEndpoint",
+          "protoField": "webhook_endpoint",
+          "type": {
+            "kind": "string"
+          },
+          "description": "webhook_endpoint is the HTTPS URL that will receive webhook events.\n Must be a valid, publicly accessible HTTPS URL.\n Auth0 will POST event payloads to this endpoint.\n\n Requirements:\n - Must use HTTPS (HTTP is not supported)\n - Must be publicly accessible\n - Should respond with 2xx status within 10 seconds\n\n Example: \"https://api.example.com/webhooks/auth0\"",
+          "required": true,
+          "validation": {
+            "required": true,
+            "pattern": "^https://.+"
+          }
+        },
+        {
+          "name": "WebhookAuthorization",
+          "jsonName": "webhookAuthorization",
+          "protoField": "webhook_authorization",
+          "type": {
+            "kind": "message",
+            "messageType": "Auth0WebhookAuthorization"
+          },
+          "description": "webhook_authorization contains authentication settings for the webhook endpoint.\n Auth0 will include these credentials when calling your endpoint.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    }
+  ]
+}

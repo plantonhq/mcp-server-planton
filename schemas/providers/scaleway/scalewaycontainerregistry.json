@@ -1,0 +1,51 @@
+{
+  "name": "ScalewayContainerRegistry",
+  "kind": "ScalewayContainerRegistry",
+  "cloudProvider": "scaleway",
+  "apiVersion": "scaleway.openmcf.org/v1",
+  "description": "scaleway-container-registry",
+  "protoPackage": "org.openmcf.provider.scaleway.scalewaycontainerregistry.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/scaleway/scalewaycontainerregistry/v1/api.proto",
+    "spec": "org/openmcf/provider/scaleway/scalewaycontainerregistry/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ScalewayContainerRegistrySpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Scaleway region where the registry namespace will be created.\n\n The region determines the Docker endpoint URL:\n   `rg.\u003cregion\u003e.scw.cloud/\u003cnamespace-name\u003e`\n\n Available regions: \"fr-par\", \"nl-ams\", \"pl-waw\"\n\n Choose the region closest to your build infrastructure and\n deployment targets for lowest image push/pull latency. Consider\n data residency requirements for container images.\n\n Cannot be changed after creation (would require recreating the\n namespace and re-pushing all images).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Optional human-readable description of the registry namespace.\n\n Useful for documenting the purpose of the registry (e.g.,\n \"Production microservices images\", \"Staging environment artifacts\",\n \"Shared base images\").\n\n Has no effect on registry behavior. Displayed in the Scaleway\n Console for identification.",
+        "required": false
+      },
+      {
+        "name": "IsPublic",
+        "jsonName": "isPublic",
+        "protoField": "is_public",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether images in this namespace can be pulled without\n authentication.\n\n When false (default): Images require authentication to pull.\n Suitable for proprietary application images, internal tools, and\n any images that should not be publicly accessible.\n\n When true: Anyone can pull images from this namespace without\n credentials (`docker pull` works without `docker login`). Pushing\n always requires authentication regardless of this setting.\n Suitable for open-source projects, public base images, and shared\n community tools.\n\n Can be changed after creation (toggling public/private is safe).\n\n Default: false (private -- secure by default)",
+        "required": false,
+        "recommendedDefault": "false"
+      }
+    ]
+  }
+}

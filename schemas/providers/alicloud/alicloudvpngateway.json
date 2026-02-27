@@ -1,0 +1,535 @@
+{
+  "name": "AliCloudVpnGateway",
+  "kind": "AliCloudVpnGateway",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-vpn-gateway",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudvpngateway.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudvpngateway/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudvpngateway/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudVpnGatewaySpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the VPN Gateway will be created.\n Must match the region of the VPC and VSwitch.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC ID that the VPN Gateway belongs to.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "VswitchId",
+        "jsonName": "vswitchId",
+        "protoField": "vswitch_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VSwitch ID where the VPN Gateway is placed. Must be in the same VPC as\n vpc_id. The VPN Gateway consumes a private IP from this VSwitch.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVswitch",
+        "referenceFieldPath": "status.outputs.vswitch_id"
+      },
+      {
+        "name": "VpnGatewayName",
+        "jsonName": "vpnGatewayName",
+        "protoField": "vpn_gateway_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPN Gateway name. 2-128 characters; must start with a letter or Chinese\n character; can contain digits, underscores, periods, and hyphens.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 128
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the VPN Gateway's purpose.",
+        "required": false
+      },
+      {
+        "name": "Bandwidth",
+        "jsonName": "bandwidth",
+        "protoField": "bandwidth",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum public network bandwidth for the VPN Gateway in Mbps.\n This is immutable after creation (ForceNew in the provider).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "PaymentType",
+        "jsonName": "paymentType",
+        "protoField": "payment_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Billing method for the VPN Gateway.\n \"PayAsYouGo\" for on-demand billing, \"Subscription\" for reserved pricing.\n Default: \"PayAsYouGo\"",
+        "required": false,
+        "default": "PayAsYouGo",
+        "oneofGroup": "_payment_type"
+      },
+      {
+        "name": "EnableSsl",
+        "jsonName": "enableSsl",
+        "protoField": "enable_ssl",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable SSL VPN on the gateway for remote client access.\n When true, the gateway allocates a dedicated SSL VPN IP and supports\n SSL VPN server/client configuration. Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_enable_ssl"
+      },
+      {
+        "name": "SslConnections",
+        "jsonName": "sslConnections",
+        "protoField": "ssl_connections",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum number of concurrent SSL VPN client connections.\n Only relevant when enable_ssl is true. The value determines\n the SSL VPN license tier on the gateway.",
+        "required": false,
+        "oneofGroup": "_ssl_connections"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the VPN Gateway resource.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Resource group ID for access control. Leave empty to use the default\n resource group.",
+        "required": false
+      },
+      {
+        "name": "Connections",
+        "jsonName": "connections",
+        "protoField": "connections",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudVpnConnection"
+          }
+        },
+        "description": "IPsec VPN connections bundled with this gateway. Each entry creates a\n Customer Gateway (from the remote device's public IP) and a VPN\n Connection with the specified IKE/IPsec negotiation parameters.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudIkeConfig",
+      "description": "AliCloudIkeConfig defines the IKE (Internet Key Exchange) Phase 1\n negotiation parameters for establishing the IPsec security association.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudvpngateway.v1.AliCloudIkeConfig",
+      "fields": [
+        {
+          "name": "Psk",
+          "jsonName": "psk",
+          "protoField": "psk",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Pre-shared key (PSK) for IKE authentication. 1-100 characters.\n If omitted, the provider auto-generates a random PSK.",
+          "required": false,
+          "validation": {
+            "maxLength": 100
+          }
+        },
+        {
+          "name": "IkeVersion",
+          "jsonName": "ikeVersion",
+          "protoField": "ike_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IKE protocol version. IKEv2 is recommended for better performance and\n security. Default: \"ikev2\"",
+          "required": false,
+          "default": "ikev2",
+          "oneofGroup": "_ike_version"
+        },
+        {
+          "name": "IkeMode",
+          "jsonName": "ikeMode",
+          "protoField": "ike_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IKE negotiation mode. \"main\" provides identity protection (6 messages);\n \"aggressive\" is faster (3 messages) but exposes identities.\n Default: \"main\"",
+          "required": false,
+          "default": "main",
+          "oneofGroup": "_ike_mode"
+        },
+        {
+          "name": "IkeEncAlg",
+          "jsonName": "ikeEncAlg",
+          "protoField": "ike_enc_alg",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IKE encryption algorithm for Phase 1.\n Default: \"aes\"",
+          "required": false,
+          "default": "aes",
+          "oneofGroup": "_ike_enc_alg"
+        },
+        {
+          "name": "IkeAuthAlg",
+          "jsonName": "ikeAuthAlg",
+          "protoField": "ike_auth_alg",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IKE authentication algorithm for Phase 1.\n Default: \"sha1\"",
+          "required": false,
+          "default": "sha1",
+          "oneofGroup": "_ike_auth_alg"
+        },
+        {
+          "name": "IkePfs",
+          "jsonName": "ikePfs",
+          "protoField": "ike_pfs",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Diffie-Hellman key exchange group for Perfect Forward Secrecy in Phase 1.\n Higher groups provide stronger security at the cost of performance.\n Default: \"group2\" (1024-bit MODP)",
+          "required": false,
+          "default": "group2",
+          "oneofGroup": "_ike_pfs"
+        },
+        {
+          "name": "IkeLifetime",
+          "jsonName": "ikeLifetime",
+          "protoField": "ike_lifetime",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "IKE SA (Security Association) lifetime in seconds. When this expires, the\n SA is re-negotiated. Range: 0-86400. Default: 86400 (24 hours)",
+          "required": false,
+          "default": "86400",
+          "oneofGroup": "_ike_lifetime"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudIpsecConfig",
+      "description": "AliCloudIpsecConfig defines the IPsec (Phase 2) negotiation parameters\n that control how data traffic is encrypted through the tunnel.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudvpngateway.v1.AliCloudIpsecConfig",
+      "fields": [
+        {
+          "name": "IpsecEncAlg",
+          "jsonName": "ipsecEncAlg",
+          "protoField": "ipsec_enc_alg",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IPsec encryption algorithm for Phase 2 data traffic.\n Default: \"aes\"",
+          "required": false,
+          "default": "aes",
+          "oneofGroup": "_ipsec_enc_alg"
+        },
+        {
+          "name": "IpsecAuthAlg",
+          "jsonName": "ipsecAuthAlg",
+          "protoField": "ipsec_auth_alg",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IPsec authentication algorithm for Phase 2 data traffic.\n Default: \"md5\"",
+          "required": false,
+          "default": "md5",
+          "oneofGroup": "_ipsec_auth_alg"
+        },
+        {
+          "name": "IpsecPfs",
+          "jsonName": "ipsecPfs",
+          "protoField": "ipsec_pfs",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Diffie-Hellman key exchange group for Perfect Forward Secrecy in Phase 2.\n \"disabled\" turns off PFS (the Phase 1 key is reused).\n Default: \"group2\"",
+          "required": false,
+          "default": "group2",
+          "oneofGroup": "_ipsec_pfs"
+        },
+        {
+          "name": "IpsecLifetime",
+          "jsonName": "ipsecLifetime",
+          "protoField": "ipsec_lifetime",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "IPsec SA lifetime in seconds. Range: 0-86400. Default: 86400 (24 hours)",
+          "required": false,
+          "default": "86400",
+          "oneofGroup": "_ipsec_lifetime"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudVpnConnection",
+      "description": "AliCloudVpnConnection defines a single IPsec VPN connection between the\n Alibaba Cloud VPN Gateway and a remote network device (on-premises router,\n firewall, or another cloud VPN endpoint).\n\n Each connection creates two provider resources:\n   - A Customer Gateway representing the remote device's identity (IP + ASN)\n   - A VPN Connection with IPsec tunnel configuration",
+      "protoType": "org.openmcf.provider.alicloud.alicloudvpngateway.v1.AliCloudVpnConnection",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Connection name. Used as both the customer_gateway_name and\n vpn_connection_name in the provider. 2-128 characters.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 2,
+            "maxLength": 128
+          }
+        },
+        {
+          "name": "CustomerGatewayIp",
+          "jsonName": "customerGatewayIp",
+          "protoField": "customer_gateway_ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Public IP address of the remote VPN device (on-premises router, firewall,\n or other cloud gateway). This is immutable after the customer gateway is\n created.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "CustomerGatewayAsn",
+          "jsonName": "customerGatewayAsn",
+          "protoField": "customer_gateway_asn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "BGP Autonomous System Number of the remote device. Used when the remote\n gateway participates in BGP routing. Format: plain 32-bit ASN (e.g.\n \"65001\") or dot notation (e.g. \"4200000001\").",
+          "required": false
+        },
+        {
+          "name": "LocalSubnets",
+          "jsonName": "localSubnets",
+          "protoField": "local_subnets",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "VPC-side CIDR blocks that should be reachable through this tunnel.\n The VPN connection routes traffic for these CIDRs through the tunnel.\n At least 1, at most 10 CIDR blocks.\n Example: [\"10.0.0.0/8\", \"172.16.0.0/12\"]",
+          "required": false,
+          "validation": {
+            "minItems": 1,
+            "maxItems": 10
+          }
+        },
+        {
+          "name": "RemoteSubnets",
+          "jsonName": "remoteSubnets",
+          "protoField": "remote_subnets",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Remote-site CIDR blocks reachable on the other end of the tunnel.\n At least 1, at most 10 CIDR blocks.\n Example: [\"192.168.0.0/16\"]",
+          "required": false,
+          "validation": {
+            "minItems": 1,
+            "maxItems": 10
+          }
+        },
+        {
+          "name": "EnableDpd",
+          "jsonName": "enableDpd",
+          "protoField": "enable_dpd",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Dead Peer Detection (DPD). When enabled, the VPN gateway sends\n DPD packets to verify the remote peer is alive and re-negotiates if the\n peer becomes unreachable. Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_enable_dpd"
+        },
+        {
+          "name": "EnableNatTraversal",
+          "jsonName": "enableNatTraversal",
+          "protoField": "enable_nat_traversal",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable NAT traversal (NAT-T). Required when the remote VPN device is\n behind a NAT device. Encapsulates IPsec ESP packets in UDP to traverse\n NAT. Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_enable_nat_traversal"
+        },
+        {
+          "name": "EffectImmediately",
+          "jsonName": "effectImmediately",
+          "protoField": "effect_immediately",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Initiate IPsec negotiation immediately after creation rather than waiting\n for traffic to trigger the tunnel. Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_effect_immediately"
+        },
+        {
+          "name": "IkeConfig",
+          "jsonName": "ikeConfig",
+          "protoField": "ike_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudIkeConfig"
+          },
+          "description": "IKE (Phase 1) negotiation parameters. When omitted, the provider uses\n sensible defaults (IKEv2, main mode, AES encryption, SHA1 auth, DH group2,\n auto-generated pre-shared key, 86400s lifetime).",
+          "required": false
+        },
+        {
+          "name": "IpsecConfig",
+          "jsonName": "ipsecConfig",
+          "protoField": "ipsec_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudIpsecConfig"
+          },
+          "description": "IPsec (Phase 2) negotiation parameters. When omitted, the provider uses\n sensible defaults (AES encryption, MD5 auth, DH group2, 86400s lifetime).",
+          "required": false
+        },
+        {
+          "name": "HealthCheckConfig",
+          "jsonName": "healthCheckConfig",
+          "protoField": "health_check_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudVpnHealthCheckConfig"
+          },
+          "description": "Health check configuration for monitoring tunnel connectivity. When\n enabled, the VPN gateway periodically probes the remote endpoint and\n can trigger failover if the tunnel becomes unhealthy.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudVpnHealthCheckConfig",
+      "description": "AliCloudVpnHealthCheckConfig defines health monitoring for a VPN connection.\n When enabled, the VPN gateway periodically sends probes to detect tunnel\n failures and can trigger route failover in active-standby setups.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudvpngateway.v1.AliCloudVpnHealthCheckConfig",
+      "fields": [
+        {
+          "name": "Enable",
+          "jsonName": "enable",
+          "protoField": "enable",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable health checks for this connection. Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_enable"
+        },
+        {
+          "name": "Sip",
+          "jsonName": "sip",
+          "protoField": "sip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Source IP address for health check probes. Should be a private IP\n within the local VPC that is routable through the tunnel.",
+          "required": false
+        },
+        {
+          "name": "Dip",
+          "jsonName": "dip",
+          "protoField": "dip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Destination IP address for health check probes. Should be an IP on the\n remote network reachable through the tunnel.",
+          "required": false
+        },
+        {
+          "name": "Interval",
+          "jsonName": "interval",
+          "protoField": "interval",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Interval between health check probes in seconds. Default: 3",
+          "required": false,
+          "default": "3",
+          "oneofGroup": "_interval"
+        },
+        {
+          "name": "Retry",
+          "jsonName": "retry",
+          "protoField": "retry",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of consecutive probe failures before the tunnel is\n declared unhealthy. Default: 3",
+          "required": false,
+          "default": "3",
+          "oneofGroup": "_retry"
+        }
+      ]
+    }
+  ]
+}

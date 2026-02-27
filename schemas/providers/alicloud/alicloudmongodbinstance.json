@@ -1,0 +1,423 @@
+{
+  "name": "AliCloudMongodbInstance",
+  "kind": "AliCloudMongodbInstance",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-mongodb-instance",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudmongodbinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudmongodbinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudmongodbinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudMongodbInstanceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the MongoDB instance will be created.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VswitchId",
+        "jsonName": "vswitchId",
+        "protoField": "vswitch_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VSwitch ID where the MongoDB instance is placed. The instance inherits\n the VPC and availability zone from the VSwitch.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVswitch",
+        "referenceFieldPath": "status.outputs.vswitch_id"
+      },
+      {
+        "name": "EngineVersion",
+        "jsonName": "engineVersion",
+        "protoField": "engine_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "MongoDB engine version. This is a critical architectural choice --\n different versions support different features and wire protocols.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "DbInstanceClass",
+        "jsonName": "dbInstanceClass",
+        "protoField": "db_instance_class",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance specification class that determines CPU, memory, and IOPS.\n Examples: \"dds.mongo.mid\", \"dds.mongo.standard\", \"mongo.x8.medium\",\n \"mongo.x8.large\", \"mongo.x8.xlarge\".\n See Alibaba Cloud documentation for the full list of instance classes.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DbInstanceStorage",
+        "jsonName": "dbInstanceStorage",
+        "protoField": "db_instance_storage",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Storage space in GB. The valid range depends on the instance class and\n storage type. Typical values: 10, 20, 50, 100, 200, 500, 1000, 2000.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "min": 1
+        }
+      },
+      {
+        "name": "AccountPassword",
+        "jsonName": "accountPassword",
+        "protoField": "account_password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Root account password. 8-32 characters, must contain at least three of:\n uppercase letters, lowercase letters, digits, special characters.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 8,
+          "maxLength": 32
+        }
+      },
+      {
+        "name": "DbInstanceName",
+        "jsonName": "dbInstanceName",
+        "protoField": "db_instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance display name. 2-256 characters.\n If omitted, defaults to the metadata.name.",
+        "required": false
+      },
+      {
+        "name": "ZoneId",
+        "jsonName": "zoneId",
+        "protoField": "zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Primary availability zone ID. If omitted, Alibaba Cloud selects a zone\n from the VSwitch's region.\n Examples: \"cn-hangzhou-a\", \"cn-shanghai-b\".",
+        "required": false
+      },
+      {
+        "name": "SecondaryZoneId",
+        "jsonName": "secondaryZoneId",
+        "protoField": "secondary_zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Secondary availability zone for the standby node. When set together with\n zone_id and hidden_zone_id, creates a three-zone high-availability\n deployment where each replica-set member runs in a different AZ.",
+        "required": false
+      },
+      {
+        "name": "HiddenZoneId",
+        "jsonName": "hiddenZoneId",
+        "protoField": "hidden_zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Availability zone for the hidden node (the third replica-set member used\n for elections and backups). Required for full three-zone HA deployments.",
+        "required": false
+      },
+      {
+        "name": "ReplicationFactor",
+        "jsonName": "replicationFactor",
+        "protoField": "replication_factor",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of replica-set nodes. Includes the primary, secondary, and hidden\n nodes. Higher values increase read capacity and fault tolerance.\n Default: 3",
+        "required": false,
+        "default": "3",
+        "oneofGroup": "_replication_factor"
+      },
+      {
+        "name": "ReadonlyReplicas",
+        "jsonName": "readonlyReplicas",
+        "protoField": "readonly_replicas",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of read-only replicas (0-5). Read replicas handle read traffic\n to reduce load on the primary. Only available for replica-set instances\n with replication_factor \u003e= 3.",
+        "required": false,
+        "validation": {
+          "max": 5
+        },
+        "oneofGroup": "_readonly_replicas"
+      },
+      {
+        "name": "StorageEngine",
+        "jsonName": "storageEngine",
+        "protoField": "storage_engine",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Storage engine. WiredTiger is the default and recommended engine for\n most workloads. RocksDB is optimized for write-heavy workloads but is\n deprecated in newer MongoDB versions.\n Default: \"WiredTiger\"",
+        "required": false,
+        "default": "WiredTiger",
+        "oneofGroup": "_storage_engine"
+      },
+      {
+        "name": "StorageType",
+        "jsonName": "storageType",
+        "protoField": "storage_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Storage type. Determines the underlying disk technology.\n \"cloud_essd1\" (PL1), \"cloud_essd2\" (PL2), \"cloud_essd3\" (PL3) offer\n increasing IOPS tiers. \"cloud_auto\" auto-scales IOPS. \"local_ssd\"\n uses local NVMe disks for lowest latency.",
+        "required": false,
+        "oneofGroup": "_storage_type"
+      },
+      {
+        "name": "ProvisionedIops",
+        "jsonName": "provisionedIops",
+        "protoField": "provisioned_iops",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Provisioned IOPS for cloud storage types. Only applicable when\n storage_type is a cloud_essd variant or cloud_auto.",
+        "required": false,
+        "oneofGroup": "_provisioned_iops"
+      },
+      {
+        "name": "InstanceChargeType",
+        "jsonName": "instanceChargeType",
+        "protoField": "instance_charge_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Billing method. \"PostPaid\" for pay-as-you-go, \"PrePaid\" for subscription.\n Default: \"PostPaid\"",
+        "required": false,
+        "default": "PostPaid",
+        "oneofGroup": "_instance_charge_type"
+      },
+      {
+        "name": "SecurityIpList",
+        "jsonName": "securityIpList",
+        "protoField": "security_ip_list",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "IP addresses or CIDR blocks allowed to access the MongoDB instance.\n Default: [\"127.0.0.1\"] (no access). Set to [\"0.0.0.0/0\"] to allow all\n (not recommended for production).",
+        "required": false
+      },
+      {
+        "name": "SecurityGroupId",
+        "jsonName": "securityGroupId",
+        "protoField": "security_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ECS security group ID to associate with the MongoDB instance.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the instance is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the MongoDB instance.",
+        "required": false
+      },
+      {
+        "name": "SslAction",
+        "jsonName": "sslAction",
+        "protoField": "ssl_action",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SSL encryption action for client connections.\n \"Open\" enables SSL. \"Close\" disables SSL. \"Update\" rotates the\n SSL certificate. Once set, SSL cannot be fully removed (only toggled).",
+        "required": false,
+        "oneofGroup": "_ssl_action"
+      },
+      {
+        "name": "TdeStatus",
+        "jsonName": "tdeStatus",
+        "protoField": "tde_status",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Transparent Data Encryption (TDE) status. Once enabled, TDE cannot be\n disabled. Encrypts data at rest at the storage engine level.\n Mutually exclusive with `encrypted` and `cloud_disk_encryption_key`.",
+        "required": false,
+        "oneofGroup": "_tde_status"
+      },
+      {
+        "name": "EncryptionKey",
+        "jsonName": "encryptionKey",
+        "protoField": "encryption_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Custom KMS key ID for TDE encryption. When set with tde_status = \"enabled\",\n uses a customer-managed key instead of the service-managed default.",
+        "required": false
+      },
+      {
+        "name": "Encrypted",
+        "jsonName": "encrypted",
+        "protoField": "encrypted",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Cloud disk encryption. Encrypts the underlying cloud disk at the\n infrastructure layer. Mutually exclusive with `tde_status`.",
+        "required": false,
+        "oneofGroup": "_encrypted"
+      },
+      {
+        "name": "CloudDiskEncryptionKey",
+        "jsonName": "cloudDiskEncryptionKey",
+        "protoField": "cloud_disk_encryption_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "KMS key ID for cloud disk encryption. Only applicable when encrypted\n is true. Mutually exclusive with `tde_status` and `encryption_key`.",
+        "required": false
+      },
+      {
+        "name": "MaintainStartTime",
+        "jsonName": "maintainStartTime",
+        "protoField": "maintain_start_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Maintenance window start time in UTC format (e.g., \"02:00Z\").\n Alibaba Cloud may perform minor version upgrades or patches during\n this window.",
+        "required": false
+      },
+      {
+        "name": "MaintainEndTime",
+        "jsonName": "maintainEndTime",
+        "protoField": "maintain_end_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Maintenance window end time in UTC format (e.g., \"06:00Z\").",
+        "required": false
+      },
+      {
+        "name": "BackupTime",
+        "jsonName": "backupTime",
+        "protoField": "backup_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Backup time window in UTC. Format: \"HH:00Z-HH:00Z\" (1-hour window).\n Example: \"02:00Z-03:00Z\".",
+        "required": false
+      },
+      {
+        "name": "BackupPeriod",
+        "jsonName": "backupPeriod",
+        "protoField": "backup_period",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Backup days of the week. Each entry is a day name.\n Examples: [\"Monday\", \"Wednesday\", \"Friday\"].",
+        "required": false
+      },
+      {
+        "name": "Parameters",
+        "jsonName": "parameters",
+        "protoField": "parameters",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "MongoDB engine parameters as key-value pairs. Allows tuning engine\n settings such as operationProfiling.slowOpThresholdMs.\n Refer to Alibaba Cloud documentation for valid parameter names.",
+        "required": false
+      },
+      {
+        "name": "DbInstanceReleaseProtection",
+        "jsonName": "dbInstanceReleaseProtection",
+        "protoField": "db_instance_release_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable release protection to prevent accidental deletion via the\n console or API.",
+        "required": false,
+        "oneofGroup": "_db_instance_release_protection"
+      },
+      {
+        "name": "Period",
+        "jsonName": "period",
+        "protoField": "period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Subscription period in months. Only applicable when instance_charge_type\n is \"PrePaid\". Valid values: 1-9, 12, 24, 36.",
+        "required": false,
+        "oneofGroup": "_period"
+      },
+      {
+        "name": "AutoRenew",
+        "jsonName": "autoRenew",
+        "protoField": "auto_renew",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Auto-renewal for PrePaid instances. Ignored for PostPaid instances.",
+        "required": false,
+        "oneofGroup": "_auto_renew"
+      },
+      {
+        "name": "AutoRenewDuration",
+        "jsonName": "autoRenewDuration",
+        "protoField": "auto_renew_duration",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Auto-renewal period in months (1-12). Only applicable when auto_renew\n is true and instance_charge_type is \"PrePaid\".",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 12
+        },
+        "oneofGroup": "_auto_renew_duration"
+      }
+    ]
+  }
+}

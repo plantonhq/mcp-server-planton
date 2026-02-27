@@ -1,0 +1,390 @@
+{
+  "name": "AzureServiceBusNamespace",
+  "kind": "AzureServiceBusNamespace",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureServiceBusNamespace is the top-level API resource for an Azure Service\n Bus namespace. Azure Service Bus provides fully managed enterprise message\n brokering with message queues and publish-subscribe topics for decoupling\n applications and services.",
+  "protoPackage": "org.openmcf.provider.azure.azureservicebusnamespace.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azureservicebusnamespace/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azureservicebusnamespace/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureServiceBusNamespaceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Service Bus namespace will be created.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Service Bus namespace will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Service Bus namespace.\n Must be globally unique across Azure. Used as the endpoint:\n `{name}.servicebus.windows.net`\n\n Naming rules (Azure API enforced):\n - 6 to 50 characters\n - Must start with a letter\n - Must end with a letter or number\n - Can contain letters, numbers, and hyphens\n - Cannot end with \"-sb\" or \"-mgmt\" (reserved suffixes)\n\n **ForceNew**: Changing this destroys and recreates the namespace.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 6,
+          "maxLength": 50
+        }
+      },
+      {
+        "name": "Sku",
+        "jsonName": "sku",
+        "protoField": "sku",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The SKU tier for the Service Bus namespace.\n Uses Azure's exact API values for provider authenticity.\n\n Valid values:\n - \"Basic\": Queues only, no topics. Simple messaging scenarios.\n - \"Standard\" (default): Full-featured with queues and topics. Production\n   recommended. 99.95% SLA.\n - \"Premium\": Dedicated capacity, VNet integration, zone redundancy,\n   large messages up to 100 MB. Enterprise workloads.\n\n **Note**: Changing to/from Premium forces resource recreation.",
+        "required": false,
+        "default": "Standard",
+        "oneofGroup": "_sku"
+      },
+      {
+        "name": "Capacity",
+        "jsonName": "capacity",
+        "protoField": "capacity",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Messaging units for Premium SKU.\n Defines the dedicated processing capacity of the namespace.\n Higher capacity means more throughput and lower latency.\n\n Valid values: 1, 2, 4, 8, 16\n Only applicable for Premium SKU. Must be omitted for Basic/Standard.\n\n Each messaging unit provides approximately 1 MB/s throughput for sends\n and 2 MB/s for receives. Scale up for high-throughput workloads.",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 16
+        },
+        "oneofGroup": "_capacity"
+      },
+      {
+        "name": "PremiumMessagingPartitions",
+        "jsonName": "premiumMessagingPartitions",
+        "protoField": "premium_messaging_partitions",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Premium messaging partitions for the namespace.\n Partitions distribute messages across multiple message stores for\n higher throughput and availability within the Premium tier.\n\n Valid values: 1, 2, 4\n Only applicable for Premium SKU. Must be omitted for Basic/Standard.\n\n **ForceNew**: Changing this destroys and recreates the namespace.",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 4
+        },
+        "oneofGroup": "_premium_messaging_partitions"
+      },
+      {
+        "name": "ZoneRedundant",
+        "jsonName": "zoneRedundant",
+        "protoField": "zone_redundant",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable zone redundancy for the namespace.\n When enabled, the namespace metadata and data are replicated across\n availability zones within the region for higher availability.\n\n Only applicable for Premium SKU.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_zone_redundant"
+      },
+      {
+        "name": "MinimumTlsVersion",
+        "jsonName": "minimumTlsVersion",
+        "protoField": "minimum_tls_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Minimum TLS version for client connections.\n Azure enforces this on all AMQP, HTTP, and SBMP connections.\n\n Default: \"1.2\" (recommended for all production workloads)",
+        "required": false,
+        "default": "1.2",
+        "oneofGroup": "_minimum_tls_version"
+      },
+      {
+        "name": "PublicNetworkAccessEnabled",
+        "jsonName": "publicNetworkAccessEnabled",
+        "protoField": "public_network_access_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the namespace is accessible over the public internet.\n When false, the namespace can only be accessed via AzurePrivateEndpoint\n or VNet service endpoints.\n\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_public_network_access_enabled"
+      },
+      {
+        "name": "Queues",
+        "jsonName": "queues",
+        "protoField": "queues",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureServiceBusQueue"
+          }
+        },
+        "description": "Queues within this namespace.\n Service Bus queues deliver messages to a single consumer (point-to-point).\n Each queue is an independent entity within the namespace.\n\n Available in all SKU tiers (Basic, Standard, Premium).",
+        "required": false
+      },
+      {
+        "name": "Topics",
+        "jsonName": "topics",
+        "protoField": "topics",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureServiceBusTopic"
+          }
+        },
+        "description": "Topics within this namespace.\n Service Bus topics deliver messages to multiple independent subscriptions\n (publish-subscribe). Each topic can have many subscriptions, each with\n its own filter rules.\n\n **Not available in Basic SKU.** Use Standard or Premium for topics.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureServiceBusQueue",
+      "description": "AzureServiceBusQueue defines a queue within the Service Bus namespace.\n\n Queues provide reliable, ordered (FIFO) message delivery to a single\n consumer. Messages are stored durably until explicitly received and\n completed by a consumer.\n\n Key capabilities:\n - **Lock duration**: Messages are locked during processing. If not completed\n   within the lock duration, they become available to other consumers.\n - **Duplicate detection**: Prevents duplicate messages based on MessageId\n   within a configurable time window.\n - **Sessions**: Groups related messages for ordered, stateful processing.\n - **Dead-letter queue**: Automatically stores messages that cannot be\n   processed (expired, exceeded max delivery count, filter evaluation errors).\n - **Message forwarding**: Auto-forwards messages to another queue or topic\n   within the same namespace (for routing patterns).\n\n **ForceNew fields**: `name`, `partitioning_enabled`, `requires_duplicate_detection`,\n `requires_session`.",
+      "protoType": "org.openmcf.provider.azure.azureservicebusnamespace.v1.AzureServiceBusQueue",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The queue name.\n Must be unique within the namespace.\n\n Naming rules: 1-260 characters, starts and ends with a letter or number.\n Can contain letters, numbers, periods, hyphens, underscores, tildes,\n and forward slashes.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 260
+          }
+        },
+        {
+          "name": "MaxSizeInMegabytes",
+          "jsonName": "maxSizeInMegabytes",
+          "protoField": "max_size_in_megabytes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum size of the queue in megabytes.\n Determines how much message data the queue can hold before it starts\n rejecting new messages.\n\n Valid values: 1024, 2048, 3072, 4096, 5120 (Standard/Basic).\n Premium supports up to 81920 MB.\n Default: varies by SKU (1024 for Standard, 81920 for Premium).\n\n **Note**: For partitioned queues in Basic/Standard, the actual storage\n is 16x this value (Azure API detail, handled transparently).",
+          "required": false,
+          "oneofGroup": "_max_size_in_megabytes"
+        },
+        {
+          "name": "PartitioningEnabled",
+          "jsonName": "partitioningEnabled",
+          "protoField": "partitioning_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable queue partitioning.\n Partitioned queues distribute messages across multiple message stores\n for higher throughput.\n\n For Premium SKU: must match the namespace's `premium_messaging_partitions`\n setting. The IaC modules handle this automatically.\n\n **ForceNew**: Changing this destroys and recreates the queue.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_partitioning_enabled"
+        },
+        {
+          "name": "DefaultMessageTtl",
+          "jsonName": "defaultMessageTtl",
+          "protoField": "default_message_ttl",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Default message time-to-live as an ISO 8601 duration.\n Messages older than this duration are automatically dead-lettered or\n discarded (depending on `dead_lettering_on_message_expiration`).\n\n Examples: \"P14D\" (14 days), \"PT1H\" (1 hour), \"PT30M\" (30 minutes).\n Default: unbounded (messages never expire).",
+          "required": false,
+          "oneofGroup": "_default_message_ttl"
+        },
+        {
+          "name": "LockDuration",
+          "jsonName": "lockDuration",
+          "protoField": "lock_duration",
+          "type": {
+            "kind": "string"
+          },
+          "description": "How long a message is locked for processing as an ISO 8601 duration.\n When a consumer receives a message in PeekLock mode, the message is\n locked for this duration. If not completed within the lock duration,\n the message becomes available to other consumers.\n\n Range: PT5S (5 seconds) to PT5M (5 minutes).\n Default: \"PT1M\" (1 minute).\n\n Increase for long-running processing tasks. Decrease for fast handlers.",
+          "required": false,
+          "default": "PT1M",
+          "oneofGroup": "_lock_duration"
+        },
+        {
+          "name": "MaxDeliveryCount",
+          "jsonName": "maxDeliveryCount",
+          "protoField": "max_delivery_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of delivery attempts before dead-lettering.\n After this many failed delivery attempts, the message is moved to\n the queue's dead-letter sub-queue.\n\n Minimum: 1. Default: 10.\n\n Lower values detect poison messages faster. Higher values tolerate\n transient consumer failures better.",
+          "required": false,
+          "validation": {
+            "min": 1
+          },
+          "default": "10",
+          "oneofGroup": "_max_delivery_count"
+        },
+        {
+          "name": "RequiresDuplicateDetection",
+          "jsonName": "requiresDuplicateDetection",
+          "protoField": "requires_duplicate_detection",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable duplicate message detection.\n When enabled, Service Bus tracks MessageId values for a configurable\n time window (default 10 minutes) and silently drops duplicate messages.\n\n Useful for idempotent messaging patterns where producers may retry\n sends without knowing if the original message was accepted.\n\n **ForceNew**: Changing this destroys and recreates the queue.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_requires_duplicate_detection"
+        },
+        {
+          "name": "RequiresSession",
+          "jsonName": "requiresSession",
+          "protoField": "requires_session",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable message sessions for ordered processing.\n Sessions group related messages by a SessionId, enabling:\n - Strict FIFO ordering within a session\n - Stateful processing (session state stored on the broker)\n - Exclusive processing (one consumer per session at a time)\n\n All messages in a session are delivered to the same consumer in order.\n\n **ForceNew**: Changing this destroys and recreates the queue.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_requires_session"
+        },
+        {
+          "name": "DeadLetteringOnMessageExpiration",
+          "jsonName": "deadLetteringOnMessageExpiration",
+          "protoField": "dead_lettering_on_message_expiration",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Move expired messages to the dead-letter queue.\n When true, messages that exceed their TTL are moved to the dead-letter\n sub-queue instead of being discarded. This enables inspection and\n reprocessing of expired messages.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_dead_lettering_on_message_expiration"
+        },
+        {
+          "name": "ForwardTo",
+          "jsonName": "forwardTo",
+          "protoField": "forward_to",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Auto-forward messages to another queue or topic within the same namespace.\n When set, messages arriving in this queue are automatically forwarded\n to the specified entity. The value is the name of the target queue or\n topic (not the full resource ID).\n\n Useful for routing patterns and message distribution chains.",
+          "required": false,
+          "oneofGroup": "_forward_to"
+        },
+        {
+          "name": "ForwardDeadLetteredMessagesTo",
+          "jsonName": "forwardDeadLetteredMessagesTo",
+          "protoField": "forward_dead_lettered_messages_to",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Auto-forward dead-lettered messages to another queue or topic.\n When set, messages that are dead-lettered (expired, exceeded max\n delivery count) are forwarded to the specified entity instead of\n remaining in the dead-letter sub-queue.\n\n The value is the name of the target queue or topic within the same\n namespace.",
+          "required": false,
+          "oneofGroup": "_forward_dead_lettered_messages_to"
+        }
+      ]
+    },
+    {
+      "name": "AzureServiceBusTopic",
+      "description": "AzureServiceBusTopic defines a topic within the Service Bus namespace.\n\n Topics implement the publish-subscribe messaging pattern. Publishers send\n messages to a topic, and multiple subscriptions can independently receive\n copies of those messages with optional filter rules.\n\n **Not available in Basic SKU.** Use Standard or Premium.\n\n Topics do NOT have lock_duration, max_delivery_count, sessions, or\n dead-lettering -- those are subscription-level concerns. This component\n deliberately omits subscriptions (see spec comment).\n\n **ForceNew fields**: `name`, `partitioning_enabled`, `requires_duplicate_detection`.",
+      "protoType": "org.openmcf.provider.azure.azureservicebusnamespace.v1.AzureServiceBusTopic",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The topic name.\n Must be unique within the namespace.\n\n Naming rules: 1-260 characters, starts and ends with a letter or number.\n Can contain letters, numbers, periods, hyphens, underscores, tildes,\n and forward slashes.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 260
+          }
+        },
+        {
+          "name": "MaxSizeInMegabytes",
+          "jsonName": "maxSizeInMegabytes",
+          "protoField": "max_size_in_megabytes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum size of the topic in megabytes.\n Determines how much message data the topic can hold across all\n subscriptions before it starts rejecting new messages.\n\n Valid values: 1024, 2048, 3072, 4096, 5120 (Standard).\n Premium supports up to 81920 MB.\n Default: varies by SKU.",
+          "required": false,
+          "oneofGroup": "_max_size_in_megabytes"
+        },
+        {
+          "name": "PartitioningEnabled",
+          "jsonName": "partitioningEnabled",
+          "protoField": "partitioning_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable topic partitioning.\n Partitioned topics distribute messages across multiple message stores\n for higher throughput.\n\n For Premium SKU: must match the namespace's `premium_messaging_partitions`\n setting. The IaC modules handle this automatically.\n\n **ForceNew**: Changing this destroys and recreates the topic.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_partitioning_enabled"
+        },
+        {
+          "name": "DefaultMessageTtl",
+          "jsonName": "defaultMessageTtl",
+          "protoField": "default_message_ttl",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Default message time-to-live as an ISO 8601 duration.\n Messages older than this duration are automatically removed.\n\n Examples: \"P14D\" (14 days), \"PT1H\" (1 hour), \"P30D\" (30 days).\n Default: unbounded (messages never expire).",
+          "required": false,
+          "oneofGroup": "_default_message_ttl"
+        },
+        {
+          "name": "RequiresDuplicateDetection",
+          "jsonName": "requiresDuplicateDetection",
+          "protoField": "requires_duplicate_detection",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable duplicate message detection.\n When enabled, Service Bus tracks MessageId values and silently drops\n duplicate messages within a configurable time window (default 10 minutes).\n\n **ForceNew**: Changing this destroys and recreates the topic.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_requires_duplicate_detection"
+        },
+        {
+          "name": "SupportOrdering",
+          "jsonName": "supportOrdering",
+          "protoField": "support_ordering",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable message ordering support.\n When enabled, the topic preserves the order of messages within a\n session. Works with session-enabled subscriptions for ordered\n publish-subscribe patterns.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_support_ordering"
+        }
+      ]
+    }
+  ]
+}

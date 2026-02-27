@@ -1,0 +1,52 @@
+{
+  "name": "CivoIpAddress",
+  "kind": "CivoIpAddress",
+  "cloudProvider": "civo",
+  "apiVersion": "civo.openmcf.org/v1",
+  "description": "civo-ip-address",
+  "protoPackage": "org.openmcf.provider.civo.civoipaddress.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/civo/civoipaddress/v1/api.proto",
+    "spec": "org/openmcf/provider/civo/civoipaddress/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CivoIpAddressSpec",
+    "fields": [
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "An optional human-readable name or description for the reserved IP.\n If not provided, Civo may default to using the IP address as the name.",
+        "required": false,
+        "validation": {
+          "maxLength": 100
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.civo.CivoRegion",
+          "enumValues": [
+            "lon1",
+            "lon2",
+            "fra1",
+            "nyc1",
+            "phx1",
+            "mum1"
+          ]
+        },
+        "description": "Reserved IPs are region-specific; the IP can only be attached to resources in this region.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  }
+}

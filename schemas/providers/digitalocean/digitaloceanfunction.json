@@ -1,0 +1,236 @@
+{
+  "name": "DigitalOceanFunction",
+  "kind": "DigitalOceanFunction",
+  "cloudProvider": "digitalocean",
+  "apiVersion": "digital-ocean.openmcf.org/v1",
+  "description": "digital-ocean-function",
+  "protoPackage": "org.openmcf.provider.digitalocean.digitaloceanfunction.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/digitalocean/digitaloceanfunction/v1/api.proto",
+    "spec": "org/openmcf/provider/digitalocean/digitaloceanfunction/v1/spec.proto"
+  },
+  "spec": {
+    "name": "DigitalOceanFunctionSpec",
+    "fields": [
+      {
+        "name": "FunctionName",
+        "jsonName": "functionName",
+        "protoField": "function_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "function_name is the name of the function. Must be unique within the project.",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "maxLength": 64
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.DigitalOceanRegion",
+          "enumValues": [
+            "nyc3",
+            "sfo3",
+            "fra1",
+            "sgp1",
+            "lon1",
+            "tor1",
+            "blr1",
+            "ams3"
+          ]
+        },
+        "description": "region specifies the DigitalOcean region to deploy the function.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Runtime",
+        "jsonName": "runtime",
+        "protoField": "runtime",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.digitaloceanfunction.v1.DigitalOceanFunctionRuntime",
+          "enumValues": [
+            "nodejs_18",
+            "nodejs_20",
+            "python_39",
+            "python_310",
+            "python_311",
+            "go_120",
+            "go_121",
+            "php_82"
+          ]
+        },
+        "description": "runtime specifies the runtime environment for the function (e.g., nodejs, python, go).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "GithubSource",
+        "jsonName": "githubSource",
+        "protoField": "github_source",
+        "type": {
+          "kind": "message",
+          "messageType": "DigitalOceanFunctionGithubSource"
+        },
+        "description": "GitHub repository configuration for function source code",
+        "required": false
+      },
+      {
+        "name": "SourceDirectory",
+        "jsonName": "sourceDirectory",
+        "protoField": "source_directory",
+        "type": {
+          "kind": "string"
+        },
+        "description": "source_directory is the path within the repository containing the function code and project.yml\n Example: \"/functions/api-handler\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "MemoryMb",
+        "jsonName": "memoryMb",
+        "protoField": "memory_mb",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "memory_mb is the memory allocated to the function (in megabytes). Defaults to 256 if not specified.\n Valid values: 128, 256, 512, 1024, 2048",
+        "required": false,
+        "recommendedDefault": "256"
+      },
+      {
+        "name": "TimeoutMs",
+        "jsonName": "timeoutMs",
+        "protoField": "timeout_ms",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "timeout_ms is the maximum execution time for the function in milliseconds.\n Defaults to 3000ms (3 seconds) if not specified. Max: 300000ms (5 minutes)",
+        "required": false,
+        "recommendedDefault": "3000"
+      },
+      {
+        "name": "EnvironmentVariables",
+        "jsonName": "environmentVariables",
+        "protoField": "environment_variables",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "environment_variables are non-secret environment variables for the function",
+        "required": false
+      },
+      {
+        "name": "SecretEnvironmentVariables",
+        "jsonName": "secretEnvironmentVariables",
+        "protoField": "secret_environment_variables",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "secret_environment_variables are encrypted environment variables (e.g., database URLs, API keys)\n These are stored securely in App Platform's secret store",
+        "required": false
+      },
+      {
+        "name": "Entrypoint",
+        "jsonName": "entrypoint",
+        "protoField": "entrypoint",
+        "type": {
+          "kind": "string"
+        },
+        "description": "entrypoint is an optional function or script entrypoint name within the code\n Example: \"main\" for Go, \"handler\" for Node.js",
+        "required": false
+      },
+      {
+        "name": "CronSchedule",
+        "jsonName": "cronSchedule",
+        "protoField": "cron_schedule",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cron_schedule is an optional cron expression for scheduled function execution\n Example: \"0 * * * *\" for hourly execution\n If set, the function will not be exposed as an HTTP endpoint",
+        "required": false
+      },
+      {
+        "name": "IsWeb",
+        "jsonName": "isWeb",
+        "protoField": "is_web",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "is_web indicates if the function should be exposed as an HTTP endpoint\n Defaults to true. Set to false for background/scheduled functions.",
+        "required": false,
+        "recommendedDefault": "true"
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "DigitalOceanFunctionGithubSource",
+      "description": "DigitalOceanFunctionGithubSource defines the GitHub repository configuration for function source code",
+      "protoType": "org.openmcf.provider.digitalocean.digitaloceanfunction.v1.DigitalOceanFunctionGithubSource",
+      "fields": [
+        {
+          "name": "Repo",
+          "jsonName": "repo",
+          "protoField": "repo",
+          "type": {
+            "kind": "string"
+          },
+          "description": "repo is the GitHub repository in the format \"owner/repo\"",
+          "required": false,
+          "validation": {
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+$"
+          }
+        },
+        {
+          "name": "Branch",
+          "jsonName": "branch",
+          "protoField": "branch",
+          "type": {
+            "kind": "string"
+          },
+          "description": "branch is the Git branch to deploy from (e.g., \"main\", \"production\")",
+          "required": false,
+          "validation": {
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        {
+          "name": "DeployOnPush",
+          "jsonName": "deployOnPush",
+          "protoField": "deploy_on_push",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "deploy_on_push enables automatic redeployment when changes are pushed to the branch",
+          "required": false,
+          "recommendedDefault": "true"
+        }
+      ]
+    }
+  ]
+}

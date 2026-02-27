@@ -1,0 +1,82 @@
+{
+  "name": "OpenStackProject",
+  "kind": "OpenStackProject",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackProject is a Kubernetes Resource Model (KRM) style resource\n for managing OpenStack Identity (Keystone) projects.\n\n A project is the fundamental organizational unit in OpenStack. All cloud\n resources belong to a project, which provides resource isolation, quota\n boundaries, and access control scoping.\n\n Common use cases:\n   - Provision tenant projects for development teams\n   - Create isolated project hierarchies for multi-tenant environments\n   - Automate project onboarding in landing zone InfraCharts\n\n Note: Creating projects is an admin-level operation. The OpenStack credentials\n used with this component must have the \"admin\" role or equivalent permissions.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackproject.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackproject/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackproject/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackProjectSpec",
+    "fields": [
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description is a human-readable description of the project.\n Visible in the OpenStack API, Horizon dashboard, and CLI output.",
+        "required": false
+      },
+      {
+        "name": "DomainId",
+        "jsonName": "domainId",
+        "protoField": "domain_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "domain_id is the Keystone domain to which this project belongs.\n ForceNew: changing the domain requires recreating the project.\n If omitted, OpenStack assigns the project to the default domain.\n Most single-domain deployments can leave this empty.\n Example: \"default\", or a domain UUID like \"abcdef12-3456-7890-abcd-ef1234567890\"",
+        "required": false
+      },
+      {
+        "name": "Enabled",
+        "jsonName": "enabled",
+        "protoField": "enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "enabled controls whether the project is active.\n When disabled (false), all users in the project lose access to its\n resources, but the resources are NOT deleted.\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_enabled"
+      },
+      {
+        "name": "ParentId",
+        "jsonName": "parentId",
+        "protoField": "parent_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "parent_id is the UUID of the parent project in the project hierarchy.\n ForceNew: changing the parent requires recreating the project.\n If omitted, the project is created as a top-level project in its domain.\n Project hierarchies are used for nested quota management and organizational\n structuring in large deployments.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "tags is a set of tags to associate with the project.\n Tags are simple strings used for filtering and organizational purposes.\n They are visible in the OpenStack API and can be queried via tag-based filters.",
+        "required": false
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this project.\n If omitted, the region from the OpenStack provider config is used.\n Note: Keystone is typically a global service (not per-region), so this\n field is rarely needed. It controls which Keystone endpoint is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  }
+}

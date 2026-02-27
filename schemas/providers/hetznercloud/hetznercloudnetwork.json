@@ -1,0 +1,178 @@
+{
+  "name": "HetznerCloudNetwork",
+  "kind": "HetznerCloudNetwork",
+  "cloudProvider": "hetznercloud",
+  "apiVersion": "hetzner-cloud.openmcf.org/v1",
+  "description": "hetznercloud-network",
+  "protoPackage": "org.openmcf.provider.hetznercloud.hetznercloudnetwork.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/hetznercloud/hetznercloudnetwork/v1/api.proto",
+    "spec": "org/openmcf/provider/hetznercloud/hetznercloudnetwork/v1/spec.proto"
+  },
+  "spec": {
+    "name": "HetznerCloudNetworkSpec",
+    "fields": [
+      {
+        "name": "IpRange",
+        "jsonName": "ipRange",
+        "protoField": "ip_range",
+        "type": {
+          "kind": "string"
+        },
+        "description": "CIDR block for the network. Must be one of the private IPv4 ranges\n defined in RFC 1918 (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16).\n All subnet ip_ranges must fall within this range.\n\n Changing this value forces replacement of the network resource.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Subnets",
+        "jsonName": "subnets",
+        "protoField": "subnets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Subnet"
+          }
+        },
+        "description": "Subnets within the network. At least one subnet is required because\n a Hetzner Cloud network is unusable without subnets -- servers and\n other resources attach to subnets, not directly to the network.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Routes",
+        "jsonName": "routes",
+        "protoField": "routes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Route"
+          }
+        },
+        "description": "Static routes for the network. Optional -- default routing handles\n most use cases. Custom routes are needed for VPN gateways, NAT\n instances, or routing between networks.",
+        "required": false
+      },
+      {
+        "name": "DeleteProtection",
+        "jsonName": "deleteProtection",
+        "protoField": "delete_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Prevent accidental deletion of the network via the Hetzner Cloud API.\n When enabled, the network cannot be deleted until protection is removed.",
+        "required": false
+      },
+      {
+        "name": "ExposeRoutesToVswitch",
+        "jsonName": "exposeRoutesToVswitch",
+        "protoField": "expose_routes_to_vswitch",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Expose the network's routes to vSwitch connections. Only takes effect\n when a vSwitch connection is active (via a vswitch-type subnet).",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "Route",
+      "description": "Route defines a static route within the network. The destination must\n be a CIDR block that does not overlap with any subnet ip_range, and\n the gateway must be an IP address within one of the network's subnets.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudnetwork.v1.HetznerCloudNetworkSpec.Route",
+      "fields": [
+        {
+          "name": "Destination",
+          "jsonName": "destination",
+          "protoField": "destination",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Destination CIDR for this route. Must not overlap with any subnet\n ip_range or other route destinations in the same network, and must\n not be the first IP of the network's ip_range.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Gateway",
+          "jsonName": "gateway",
+          "protoField": "gateway",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Gateway IP address within one of the network's subnets. Cannot be\n the first IP of the network's ip_range or 172.31.1.1 (reserved for\n the public network interface gateway).",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subnet",
+      "description": "Subnet defines a subdivision of the network's ip_range assigned to a\n specific network zone. Servers and other resources attach to subnets.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudnetwork.v1.HetznerCloudNetworkSpec.Subnet",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.hetznercloud.hetznercloudnetwork.v1.SubnetType",
+            "enumValues": [
+              "cloud",
+              "server",
+              "vswitch"
+            ]
+          },
+          "description": "Type of subnet. Determines how the subnet connects to infrastructure.\n\n   - cloud:   Standard subnet for cloud servers (most common).\n   - server:  Subnet for connecting dedicated (Robot) servers.\n   - vswitch: Subnet linked to a Hetzner Robot vSwitch.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "NetworkZone",
+          "jsonName": "networkZone",
+          "protoField": "network_zone",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Hetzner Cloud network zone for this subnet.\n\n Known zones: \"eu-central\", \"us-east\", \"us-west\", \"ap-southeast\".\n All subnets in a network can be in different zones, enabling\n multi-region private connectivity.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "IpRange",
+          "jsonName": "ipRange",
+          "protoField": "ip_range",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP range for this subnet in CIDR notation. Must be a subset of the\n network's ip_range and must not overlap with other subnets or route\n destinations in the same network.\n\n Changing this value forces replacement of the subnet.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "VswitchId",
+          "jsonName": "vswitchId",
+          "protoField": "vswitch_id",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Hetzner Robot vSwitch ID. Required when type is vswitch, ignored\n otherwise. Links this subnet to a dedicated server vSwitch for\n hybrid cloud/dedicated connectivity.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

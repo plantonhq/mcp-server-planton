@@ -1,0 +1,549 @@
+{
+  "name": "HetznerCloudLoadBalancer",
+  "kind": "HetznerCloudLoadBalancer",
+  "cloudProvider": "hetznercloud",
+  "apiVersion": "hetzner-cloud.openmcf.org/v1",
+  "description": "hetznercloud-load-balancer",
+  "protoPackage": "org.openmcf.provider.hetznercloud.hetznercloudloadbalancer.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/hetznercloud/hetznercloudloadbalancer/v1/api.proto",
+    "spec": "org/openmcf/provider/hetznercloud/hetznercloudloadbalancer/v1/spec.proto"
+  },
+  "spec": {
+    "name": "HetznerCloudLoadBalancerSpec",
+    "fields": [
+      {
+        "name": "LoadBalancerType",
+        "jsonName": "loadBalancerType",
+        "protoField": "load_balancer_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Load balancer size that determines connection and bandwidth limits.\n\n Available types: \"lb11\" (25 targets, 10k connections/s),\n \"lb21\" (75 targets, 20k connections/s), \"lb31\" (150 targets,\n 40k connections/s).\n\n Can be changed after creation (in-place resize).",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Hetzner Cloud location for the load balancer (e.g., \"fsn1\", \"nbg1\",\n \"hel1\", \"ash\", \"hil\", \"sin\"). Determines the physical datacenter.\n\n Server targets must be reachable from this location. When using a\n private network, the network must have a subnet in the same network\n zone as this location.\n\n Changing this value forces replacement of the load balancer.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Algorithm",
+        "jsonName": "algorithm",
+        "protoField": "algorithm",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.hetznercloud.hetznercloudloadbalancer.v1.Algorithm",
+          "enumValues": [
+            "round_robin",
+            "least_connections"
+          ]
+        },
+        "description": "Traffic distribution algorithm. Determines how the load balancer\n selects a target for each incoming connection.\n\n Default: round_robin (if unspecified or algorithm_unspecified).",
+        "required": false
+      },
+      {
+        "name": "Services",
+        "jsonName": "services",
+        "protoField": "services",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Service"
+          }
+        },
+        "description": "Services (listeners) that the load balancer exposes. Each service\n binds to a listen_port and forwards traffic to targets on a\n destination_port using the specified protocol.\n\n At least one service is required -- a load balancer without services\n cannot accept traffic.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "ServerTargets",
+        "jsonName": "serverTargets",
+        "protoField": "server_targets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ServerTarget"
+          }
+        },
+        "description": "Server targets. Each entry adds a specific server as a backend.\n The server must be reachable from the load balancer's location.",
+        "required": false
+      },
+      {
+        "name": "LabelSelectorTargets",
+        "jsonName": "labelSelectorTargets",
+        "protoField": "label_selector_targets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "LabelSelectorTarget"
+          }
+        },
+        "description": "Label selector targets. Each entry dynamically adds all servers\n matching a Hetzner Cloud label selector as backends. Servers are\n auto-discovered and may change as labels are added or removed.",
+        "required": false
+      },
+      {
+        "name": "IpTargets",
+        "jsonName": "ipTargets",
+        "protoField": "ip_targets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "IpTarget"
+          }
+        },
+        "description": "IP targets. Each entry adds an external IP address as a backend.\n Use this for targets outside of Hetzner Cloud.",
+        "required": false
+      },
+      {
+        "name": "Network",
+        "jsonName": "network",
+        "protoField": "network",
+        "type": {
+          "kind": "message",
+          "messageType": "NetworkAttachment"
+        },
+        "description": "Private network attachment. Optional. When set, the load balancer\n is attached to the specified Hetzner Cloud network and receives a\n private IP within the network's subnet range. Target traffic can\n then flow over the private network instead of the public internet.\n\n A load balancer can be attached to at most one network.",
+        "required": false
+      },
+      {
+        "name": "DeleteProtection",
+        "jsonName": "deleteProtection",
+        "protoField": "delete_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Prevent accidental deletion of the load balancer via the Hetzner\n Cloud API. When enabled, the load balancer cannot be deleted until\n protection is removed.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "HealthCheck",
+      "description": "HealthCheck configures how the load balancer verifies that targets\n are healthy and able to receive traffic.\n\n All fields except port are optional when the health check block is\n present. Unset fields receive sensible defaults documented on each\n field. This allows minimal overrides like:\n\n   healthCheck:\n     port: 8080\n     http:\n       path: /health",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudloadbalancer.v1.HetznerCloudLoadBalancerSpec.HealthCheck",
+      "fields": [
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.hetznercloud.hetznercloudloadbalancer.v1.ServiceProtocol",
+            "enumValues": [
+              "http",
+              "https",
+              "tcp"
+            ]
+          },
+          "description": "Health check protocol. Determines whether the check performs a TCP\n connection test or an HTTP request.\n\n Default: matches the parent service's protocol (http -\u003e http,\n https -\u003e http, tcp -\u003e tcp). Handled in IaC modules.",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port to health-check on the target. Required when the health check\n block is present.\n\n Default: matches the parent service's destination_port. Handled in\n IaC modules.",
+          "required": false,
+          "oneofGroup": "_port"
+        },
+        {
+          "name": "Interval",
+          "jsonName": "interval",
+          "protoField": "interval",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Time between health checks in seconds.\n\n Default: 15",
+          "required": false,
+          "default": "15",
+          "oneofGroup": "_interval"
+        },
+        {
+          "name": "Timeout",
+          "jsonName": "timeout",
+          "protoField": "timeout",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum time to wait for a health check response in seconds. Must\n be less than interval.\n\n Default: 10",
+          "required": false,
+          "default": "10",
+          "oneofGroup": "_timeout"
+        },
+        {
+          "name": "Retries",
+          "jsonName": "retries",
+          "protoField": "retries",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive failed checks before a target is marked\n unhealthy.\n\n Default: 3",
+          "required": false,
+          "default": "3",
+          "oneofGroup": "_retries"
+        },
+        {
+          "name": "Http",
+          "jsonName": "http",
+          "protoField": "http",
+          "type": {
+            "kind": "message",
+            "messageType": "HealthCheckHttp"
+          },
+          "description": "HTTP-specific health check settings. Only used when the health\n check protocol is http or https.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "HealthCheckHttp",
+      "description": "HealthCheckHttp holds HTTP-specific settings for health checks.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudloadbalancer.v1.HetznerCloudLoadBalancerSpec.HealthCheckHttp",
+      "fields": [
+        {
+          "name": "Domain",
+          "jsonName": "domain",
+          "protoField": "domain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Domain name to send in the HTTP Host header for the health check\n request. If empty, the target's IP address is used.",
+          "required": false
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URL path for the health check request.\n\n Default: \"/\" (provider default when not specified).",
+          "required": false
+        },
+        {
+          "name": "Response",
+          "jsonName": "response",
+          "protoField": "response",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Expected response body substring. If set, the health check only\n passes when the response body contains this string.",
+          "required": false
+        },
+        {
+          "name": "Tls",
+          "jsonName": "tls",
+          "protoField": "tls",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Verify the target's TLS certificate when performing the health\n check. Only meaningful when the health check protocol is https.",
+          "required": false
+        },
+        {
+          "name": "StatusCodes",
+          "jsonName": "statusCodes",
+          "protoField": "status_codes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Expected HTTP status codes. The health check passes when the\n response status matches any code in this list.\n\n Default: [\"2??\", \"3??\"] (provider default when not specified).\n Uses wildcard notation: \"2??\" matches any 2xx status.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "HttpConfig",
+      "description": "HttpConfig holds HTTP-layer settings for http and https services.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudloadbalancer.v1.HetznerCloudLoadBalancerSpec.HttpConfig",
+      "fields": [
+        {
+          "name": "StickySessions",
+          "jsonName": "stickySessions",
+          "protoField": "sticky_sessions",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable cookie-based session affinity. When true, the load balancer\n sets a cookie on the first response and routes subsequent requests\n with that cookie to the same target.",
+          "required": false
+        },
+        {
+          "name": "CookieName",
+          "jsonName": "cookieName",
+          "protoField": "cookie_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the sticky session cookie. Only used when sticky_sessions\n is true.\n\n Default: \"HCLBSTICKY\" (provider default when not specified).",
+          "required": false
+        },
+        {
+          "name": "CookieLifetime",
+          "jsonName": "cookieLifetime",
+          "protoField": "cookie_lifetime",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Lifetime of the sticky session cookie in seconds. Only used when\n sticky_sessions is true.\n\n Default: 300 (provider default when not specified or 0).",
+          "required": false
+        },
+        {
+          "name": "CertificateIds",
+          "jsonName": "certificateIds",
+          "protoField": "certificate_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "TLS certificates for HTTPS termination. Only used when the parent\n service protocol is https.\n\n Each entry accepts a literal Hetzner Cloud certificate ID (as a\n string) or a reference to a HetznerCloudCertificate resource's\n output via valueFrom.\n\n Example (reference):\n   certificateIds:\n     - valueFrom:\n         kind: HetznerCloudCertificate\n         name: my-cert\n         fieldPath: status.outputs.certificate_id",
+          "required": false,
+          "referenceKind": "HetznerCloudCertificate",
+          "referenceFieldPath": "status.outputs.certificate_id"
+        },
+        {
+          "name": "RedirectHttp",
+          "jsonName": "redirectHttp",
+          "protoField": "redirect_http",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Redirect all HTTP traffic to HTTPS. Only valid for https services\n that use the default listen port (443). When enabled, the load\n balancer automatically creates an HTTP-to-HTTPS redirect on port\n 80.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "IpTarget",
+      "description": "IpTarget adds an external IP address as a load balancer backend.\n Use this for targets outside of Hetzner Cloud.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudloadbalancer.v1.HetznerCloudLoadBalancerSpec.IpTarget",
+      "fields": [
+        {
+          "name": "Ip",
+          "jsonName": "ip",
+          "protoField": "ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP address of the external backend.\n\n Changing this value forces replacement of the target.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "LabelSelectorTarget",
+      "description": "LabelSelectorTarget dynamically adds all Hetzner Cloud servers\n matching a label selector as load balancer backends.\n\n Servers are auto-discovered based on the selector expression. As\n server labels change, the target set updates automatically. This is\n useful for auto-scaling scenarios but means the exact target set is\n not captured in the manifest.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudloadbalancer.v1.HetznerCloudLoadBalancerSpec.LabelSelectorTarget",
+      "fields": [
+        {
+          "name": "Selector",
+          "jsonName": "selector",
+          "protoField": "selector",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Hetzner Cloud label selector expression. All servers matching this\n selector are added as targets.\n\n Example: \"env=production,role=web\"\n\n Changing this value forces replacement of the target.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "UsePrivateIp",
+          "jsonName": "usePrivateIp",
+          "protoField": "use_private_ip",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Route traffic to servers' private IPs instead of their public IPs.\n Requires the load balancer and all matching servers to be attached\n to the same private network.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "NetworkAttachment",
+      "description": "NetworkAttachment attaches the load balancer to a Hetzner Cloud\n private network. A load balancer can be attached to at most one\n network.\n\n When attached, the load balancer receives a private IP within the\n network's subnet range. Server targets with use_private_ip=true\n then receive traffic over the private network.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudloadbalancer.v1.HetznerCloudLoadBalancerSpec.NetworkAttachment",
+      "fields": [
+        {
+          "name": "NetworkId",
+          "jsonName": "networkId",
+          "protoField": "network_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Network to attach the load balancer to.\n\n Accepts a literal Hetzner Cloud network ID (as a string) or a\n reference to a HetznerCloudNetwork resource's output via valueFrom.\n\n Changing this value forces replacement of the network attachment.\n\n Example (reference):\n   networkId:\n     valueFrom:\n       kind: HetznerCloudNetwork\n       name: main-vpc\n       fieldPath: status.outputs.network_id",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "HetznerCloudNetwork",
+          "referenceFieldPath": "status.outputs.network_id"
+        },
+        {
+          "name": "Ip",
+          "jsonName": "ip",
+          "protoField": "ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specific IP address to assign to the load balancer within the\n network's subnet range. If omitted, Hetzner Cloud auto-assigns\n an IP.",
+          "required": false
+        },
+        {
+          "name": "EnablePublicInterface",
+          "jsonName": "enablePublicInterface",
+          "protoField": "enable_public_interface",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable the load balancer's public interface. When false, the load\n balancer is only reachable via its private network IP.\n\n Default: true\n\n IMPORTANT: This uses optional bool because proto3 bool defaults to\n false, which would silently disable the public interface. The\n optional keyword + default annotation ensures correct behavior.",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_enable_public_interface"
+        }
+      ]
+    },
+    {
+      "name": "ServerTarget",
+      "description": "ServerTarget adds a specific Hetzner Cloud server as a load balancer\n backend. The server must be reachable from the load balancer's\n location.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudloadbalancer.v1.HetznerCloudLoadBalancerSpec.ServerTarget",
+      "fields": [
+        {
+          "name": "ServerId",
+          "jsonName": "serverId",
+          "protoField": "server_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Server to add as a target.\n\n Accepts a literal Hetzner Cloud server ID (as a string) or a\n reference to a HetznerCloudServer resource's output via valueFrom.\n\n Changing this value forces replacement of the target.\n\n Example (reference):\n   serverId:\n     valueFrom:\n       kind: HetznerCloudServer\n       name: web-1\n       fieldPath: status.outputs.server_id",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "HetznerCloudServer",
+          "referenceFieldPath": "status.outputs.server_id"
+        },
+        {
+          "name": "UsePrivateIp",
+          "jsonName": "usePrivateIp",
+          "protoField": "use_private_ip",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Route traffic to the server's private IP instead of its public IP.\n Requires the load balancer and server to be attached to the same\n private network.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Service",
+      "description": "Service defines a listener on the load balancer that accepts traffic\n on a protocol/port combination and forwards it to targets.\n\n Each service binds to a unique listen_port on the load balancer. The\n combination of protocol + listen_port identifies the service (both are\n ForceNew in the provider -- changing either replaces the service).",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudloadbalancer.v1.HetznerCloudLoadBalancerSpec.Service",
+      "fields": [
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.hetznercloud.hetznercloudloadbalancer.v1.ServiceProtocol",
+            "enumValues": [
+              "http",
+              "https",
+              "tcp"
+            ]
+          },
+          "description": "Listener protocol. Determines how the load balancer processes\n incoming connections for this service.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ListenPort",
+          "jsonName": "listenPort",
+          "protoField": "listen_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port the load balancer listens on for this service.\n\n Must be unique across all services on the same load balancer.\n Defaults to 80 for HTTP, 443 for HTTPS. Required for TCP.\n\n Changing this value forces replacement of the service.",
+          "required": false,
+          "oneofGroup": "_listen_port"
+        },
+        {
+          "name": "DestinationPort",
+          "jsonName": "destinationPort",
+          "protoField": "destination_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port on the target servers that receives forwarded traffic.\n\n Defaults to the listen_port value for HTTP and HTTPS. Required\n for TCP.",
+          "required": false,
+          "oneofGroup": "_destination_port"
+        },
+        {
+          "name": "Proxyprotocol",
+          "jsonName": "proxyprotocol",
+          "protoField": "proxyprotocol",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable PROXY protocol (v1) when forwarding to targets. The target\n application must support PROXY protocol to parse the original\n client IP from the PROXY header.",
+          "required": false
+        },
+        {
+          "name": "Http",
+          "jsonName": "http",
+          "protoField": "http",
+          "type": {
+            "kind": "message",
+            "messageType": "HttpConfig"
+          },
+          "description": "HTTP-level configuration. Only applicable when protocol is http or\n https. Ignored for tcp services.",
+          "required": false
+        },
+        {
+          "name": "HealthCheck",
+          "jsonName": "healthCheck",
+          "protoField": "health_check",
+          "type": {
+            "kind": "message",
+            "messageType": "HealthCheck"
+          },
+          "description": "Health check configuration for this service. Optional -- when not\n set, the provider creates a default health check matching the\n service protocol and destination port.\n\n Set this to customize the health check path, interval, thresholds,\n or to use a different protocol than the service (e.g., TCP health\n check on an HTTP service).",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

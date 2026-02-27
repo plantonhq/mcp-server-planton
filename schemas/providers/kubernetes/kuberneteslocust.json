@@ -1,0 +1,687 @@
+{
+  "name": "KubernetesLocust",
+  "kind": "KubernetesLocust",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "locust-kubernetes",
+  "protoPackage": "org.openmcf.provider.kubernetes.kuberneteslocust.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kuberneteslocust/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kuberneteslocust/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesLocustSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "Target Kubernetes Cluster",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes Namespace",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "CreateNamespace",
+        "jsonName": "createNamespace",
+        "protoField": "create_namespace",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "flag to indicate if the namespace should be created",
+        "required": false
+      },
+      {
+        "name": "MasterContainer",
+        "jsonName": "masterContainer",
+        "protoField": "master_container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesLocustContainer"
+        },
+        "description": "The master container specifications for the Locust cluster.\n This defines the resource allocation and number of replicas for the master node.",
+        "required": false
+      },
+      {
+        "name": "WorkerContainer",
+        "jsonName": "workerContainer",
+        "protoField": "worker_container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesLocustContainer"
+        },
+        "description": "The worker container specifications for the Locust cluster.\n This defines the resource allocation and number of replicas for the worker nodes.",
+        "required": false
+      },
+      {
+        "name": "Ingress",
+        "jsonName": "ingress",
+        "protoField": "ingress",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesLocustIngress"
+        },
+        "description": "The ingress configuration for the Locust deployment.",
+        "required": false
+      },
+      {
+        "name": "LoadTest",
+        "jsonName": "loadTest",
+        "protoField": "load_test",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesLocustLoadTest"
+        },
+        "description": "The load test parameters, including the main test script, additional library files,\n and extra Python pip packages needed for test execution.\n This specifies how the Locust nodes will simulate traffic and interact with the target application.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "HelmValues",
+        "jsonName": "helmValues",
+        "protoField": "helm_values",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "A map of key-value pairs providing additional customization options for the Helm chart used\n to deploy the Locust cluster. These values allow for further refinement of the deployment,\n such as customizing resource limits, setting environment variables, or specifying version tags.\n For detailed information on the available options, refer to the Helm chart documentation at:\n https://github.com/deliveryhero/helm-charts/tree/master/stable/locust#values",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ContainerResources",
+      "description": "**ContainerResources** specifies the CPU and memory resources for a container.\n It allows you to define resource limits and requests to manage resource allocation and ensure optimal performance.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerResources",
+      "fields": [
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource limits for the container.\n Specify the maximum amount of CPU and memory that the container can use.",
+          "required": false
+        },
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource requests for the container.\n Specify the minimum amount of CPU and memory that the container is guaranteed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CpuMemory",
+      "description": "**CpuMemory** defines CPU and memory resource quantities for a container.\n It is used to specify the limits and requests for CPU and memory resources.",
+      "protoType": "org.openmcf.provider.kubernetes.CpuMemory",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesLocustContainer",
+      "description": "**KubernetesLocustContainer** specifies the container configuration for Locust master and worker nodes.\n It includes resource allocations for CPU and memory, as well as the number of replicas to deploy.\n Proper configuration ensures optimal performance and scalability of your load testing environment.",
+      "protoType": "org.openmcf.provider.kubernetes.kuberneteslocust.v1.KubernetesLocustContainer",
+      "fields": [
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of replicas for the container.\n This determines the level of concurrency and load generation capabilities.",
+          "required": false
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "The CPU and memory resources allocated to the Locust container.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesLocustIngress",
+      "description": "*\n KubernetesLocustIngress defines ingress configuration for Locust.",
+      "protoType": "org.openmcf.provider.kubernetes.kuberneteslocust.v1.KubernetesLocustIngress",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Flag to enable or disable ingress.",
+          "required": false
+        },
+        {
+          "name": "Hostname",
+          "jsonName": "hostname",
+          "protoField": "hostname",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The full hostname for external access (e.g., \"locust.example.com\").\n Required when enabled is true.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesLocustLoadTest",
+      "description": "**KubernetesLocustLoadTest** defines the specification for a load test using a Locust cluster.\n This message includes the primary Python script for Locust and any additional library files\n necessary to execute the load test. By providing these details, you can define the behavior\n of simulated users and customize the load test according to your application's requirements.",
+      "protoType": "org.openmcf.provider.kubernetes.kuberneteslocust.v1.KubernetesLocustLoadTest",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "A unique identifier or name for this particular load test specification.\n It is used to reference or distinguish this test configuration among others within a testing suite or environment.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "MainPyContent",
+          "jsonName": "mainPyContent",
+          "protoField": "main_py_content",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Python code for the main Locust test script.\n This script defines the behavior of the simulated users and is crucial for executing the load test.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "LibFilesContent",
+          "jsonName": "libFilesContent",
+          "protoField": "lib_files_content",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "A map where each entry consists of a filename and its associated Python code content.\n These files typically contain additional classes or functions required by the main_py_content script.\n The key of the map is the filename, and the value is the file content.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "PipPackages",
+          "jsonName": "pipPackages",
+          "protoField": "pip_packages",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "A list of extra Python pip packages that are required for the load test.\n These packages will be installed in the environment where the load test is executed,\n allowing for extended functionality or custom dependencies to be included easily.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

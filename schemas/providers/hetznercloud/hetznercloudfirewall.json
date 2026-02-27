@@ -1,0 +1,125 @@
+{
+  "name": "HetznerCloudFirewall",
+  "kind": "HetznerCloudFirewall",
+  "cloudProvider": "hetznercloud",
+  "apiVersion": "hetzner-cloud.openmcf.org/v1",
+  "description": "hetznercloud-firewall",
+  "protoPackage": "org.openmcf.provider.hetznercloud.hetznercloudfirewall.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/hetznercloud/hetznercloudfirewall/v1/api.proto",
+    "spec": "org/openmcf/provider/hetznercloud/hetznercloudfirewall/v1/spec.proto"
+  },
+  "spec": {
+    "name": "HetznerCloudFirewallSpec",
+    "fields": [
+      {
+        "name": "Rules",
+        "jsonName": "rules",
+        "protoField": "rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Rule"
+          }
+        },
+        "description": "Firewall rules that define allowed traffic.\n\n Hetzner Cloud firewalls are deny-by-default for inbound traffic: when a\n firewall is applied to a server, all inbound packets not matching a rule\n are dropped. Outbound traffic is allowed by default unless explicitly\n restricted by outbound rules.\n\n An empty rules list creates a firewall that blocks all inbound traffic\n and allows all outbound traffic when applied to a server.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "Rule",
+      "description": "Rule defines a single firewall rule controlling traffic in one direction.",
+      "protoType": "org.openmcf.provider.hetznercloud.hetznercloudfirewall.v1.HetznerCloudFirewallSpec.Rule",
+      "fields": [
+        {
+          "name": "Direction",
+          "jsonName": "direction",
+          "protoField": "direction",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.hetznercloud.hetznercloudfirewall.v1.Direction",
+            "enumValues": [
+              "in",
+              "out"
+            ]
+          },
+          "description": "Traffic direction this rule applies to.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.hetznercloud.hetznercloudfirewall.v1.Protocol",
+            "enumValues": [
+              "icmp",
+              "tcp",
+              "udp",
+              "esp",
+              "gre"
+            ]
+          },
+          "description": "IP protocol this rule matches.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Port or port range for TCP and UDP rules.\n\n Accepts a single port (\"80\"), a range (\"80-443\"), or \"any\" for all ports.\n Required when protocol is tcp or udp. Must not be set for icmp, esp, or gre.",
+          "required": false
+        },
+        {
+          "name": "SourceIps",
+          "jsonName": "sourceIps",
+          "protoField": "source_ips",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "CIDR blocks allowed as traffic sources for inbound rules (direction = in).\n\n Use [\"0.0.0.0/0\", \"::/0\"] to allow all IPv4 and IPv6 traffic.\n Required when direction is in.",
+          "required": false
+        },
+        {
+          "name": "DestinationIps",
+          "jsonName": "destinationIps",
+          "protoField": "destination_ips",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "CIDR blocks allowed as traffic destinations for outbound rules (direction = out).\n\n Use [\"0.0.0.0/0\", \"::/0\"] to allow all IPv4 and IPv6 traffic.\n Required when direction is out.",
+          "required": false
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description of what this rule allows.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

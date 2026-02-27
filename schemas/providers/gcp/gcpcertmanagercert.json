@@ -1,0 +1,108 @@
+{
+  "name": "GcpCertManagerCert",
+  "kind": "GcpCertManagerCert",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-cert-manager-cert",
+  "protoPackage": "org.openmcf.provider.gcp.gcpcertmanagercert.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpcertmanagercert/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpcertmanagercert/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpCertManagerCertSpec",
+    "fields": [
+      {
+        "name": "GcpProjectId",
+        "jsonName": "gcpProjectId",
+        "protoField": "gcp_project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "gcp_project_id is the ID of the GCP project where the certificate will be created.\n This is a required field.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "PrimaryDomainName",
+        "jsonName": "primaryDomainName",
+        "protoField": "primary_domain_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "primary_domain_name is a required field representing the main (apex or wildcard) domain name.\n Examples include \"example.com\" or \"*.example.com\" (wildcard).\n This domain will be set as the primary domain in the GCP certificate.\n\n The pattern enforces a domain-like structure, allowing an optional wildcard prefix.\n The string is mandatory, so users must always supply a primary domain.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^(?:\\*\\.[A-Za-z0-9\\-\\.]+|[A-Za-z0-9\\-\\.]+\\.[A-Za-z]{2,})$"
+        }
+      },
+      {
+        "name": "AlternateDomainNames",
+        "jsonName": "alternateDomainNames",
+        "protoField": "alternate_domain_names",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "alternate_domain_names is an optional list of Subject Alternative Names (SANs) for the certificate.\n Each entry must follow the same pattern as primary_domain_name and cannot contain duplicates.\n Primary domain should not be added to this list.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "CloudDnsZoneId",
+        "jsonName": "cloudDnsZoneId",
+        "protoField": "cloud_dns_zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cloud_dns_zone_id is the identifier of the Cloud DNS managed zone\n where DNS validation records will be created automatically.\n Must be a public managed zone matching the domain names.\n Example: \"my-dns-zone\" or a full zone name.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpDnsZone",
+        "referenceFieldPath": "status.outputs.zone_name"
+      },
+      {
+        "name": "CertificateType",
+        "jsonName": "certificateType",
+        "protoField": "certificate_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.gcp.gcpcertmanagercert.v1.CertificateType",
+          "enumValues": [
+            "LOAD_BALANCER"
+          ]
+        },
+        "description": "certificate_type indicates which type of certificate to create.\n MANAGED uses Google Certificate Manager (newer, more flexible).\n LOAD_BALANCER uses Google-managed SSL certificates (classic, for load balancers).\n By default, MANAGED is used.",
+        "required": false,
+        "default": "MANAGED",
+        "oneofGroup": "_certificate_type"
+      },
+      {
+        "name": "ValidationMethod",
+        "jsonName": "validationMethod",
+        "protoField": "validation_method",
+        "type": {
+          "kind": "string"
+        },
+        "description": "validation_method indicates how the certificate verifies domain ownership.\n By default, DNS validation is used.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "DNS"
+          ]
+        },
+        "default": "DNS",
+        "oneofGroup": "_validation_method"
+      }
+    ]
+  }
+}

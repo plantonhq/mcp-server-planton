@@ -1,0 +1,187 @@
+{
+  "name": "OpenStackSubnet",
+  "kind": "OpenStackSubnet",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackSubnet is a Kubernetes Resource Model (KRM) style resource for managing\n Neutron subnets in OpenStack.\n\n A subnet provides IP address allocation within a network. It defines the CIDR block,\n gateway, DHCP settings, and DNS configuration for network connectivity.\n Subnets are referenced by router interfaces, load balancers, and container cluster templates.",
+  "protoPackage": "org.openmcf.provider.openstack.openstacksubnet.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstacksubnet/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstacksubnet/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackSubnetSpec",
+    "fields": [
+      {
+        "name": "NetworkId",
+        "jsonName": "networkId",
+        "protoField": "network_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "network_id is the ID of the network to which this subnet belongs.\n This is the defining relationship -- every subnet must belong to exactly one network.\n Can reference an OpenStackNetwork resource's output or be a literal network UUID.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackNetwork",
+        "referenceFieldPath": "status.outputs.network_id"
+      },
+      {
+        "name": "Cidr",
+        "jsonName": "cidr",
+        "protoField": "cidr",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cidr is the IP address range for this subnet in CIDR notation.\n Example IPv4: \"192.168.1.0/24\". Example IPv6: \"2001:db8::/64\".\n The CIDR must be valid for the selected ip_version.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "IpVersion",
+        "jsonName": "ipVersion",
+        "protoField": "ip_version",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "ip_version is the IP protocol version for this subnet.\n Must be 4 (IPv4) or 6 (IPv6).\n Default: 4",
+        "required": false,
+        "default": "4",
+        "oneofGroup": "_ip_version"
+      },
+      {
+        "name": "GatewayIp",
+        "jsonName": "gatewayIp",
+        "protoField": "gateway_ip",
+        "type": {
+          "kind": "string"
+        },
+        "description": "gateway_ip is the IP address of the subnet gateway.\n If omitted (and no_gateway is false), OpenStack automatically assigns the first\n usable IP in the CIDR as the gateway.\n Mutually exclusive with no_gateway.",
+        "required": false
+      },
+      {
+        "name": "NoGateway",
+        "jsonName": "noGateway",
+        "protoField": "no_gateway",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "no_gateway disables the gateway on this subnet when set to true.\n Use this for isolated subnets that do not need routing (e.g., storage networks).\n Mutually exclusive with gateway_ip.",
+        "required": false
+      },
+      {
+        "name": "EnableDhcp",
+        "jsonName": "enableDhcp",
+        "protoField": "enable_dhcp",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "enable_dhcp controls whether DHCP is enabled on this subnet.\n When enabled, OpenStack's DHCP agent assigns IP addresses to ports on this subnet.\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_enable_dhcp"
+      },
+      {
+        "name": "DnsNameservers",
+        "jsonName": "dnsNameservers",
+        "protoField": "dns_nameservers",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "dns_nameservers is a list of DNS server IP addresses for this subnet.\n These are pushed to instances via DHCP.\n Example: [\"8.8.8.8\", \"8.8.4.4\"]",
+        "required": false
+      },
+      {
+        "name": "AllocationPools",
+        "jsonName": "allocationPools",
+        "protoField": "allocation_pools",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AllocationPool"
+          }
+        },
+        "description": "allocation_pools defines the sub-ranges of the CIDR from which IPs are allocated.\n If omitted, the entire CIDR (minus gateway and network/broadcast addresses) is used.\n Each pool specifies a start and end IP address.",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description is a human-readable description of the subnet.\n This is stored on the OpenStack resource and visible in Horizon and API responses.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "tags are string tags to associate with the subnet in OpenStack.\n Tags are stored on the OpenStack resource and can be used for filtering\n and organization in the OpenStack API and Horizon dashboard.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this subnet.\n If omitted, the region from the OpenStack provider config is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AllocationPool",
+      "description": "AllocationPool defines an IP allocation range within a subnet.\n The range is inclusive: both start and end addresses are allocatable.",
+      "protoType": "org.openmcf.provider.openstack.openstacksubnet.v1.AllocationPool",
+      "fields": [
+        {
+          "name": "Start",
+          "jsonName": "start",
+          "protoField": "start",
+          "type": {
+            "kind": "string"
+          },
+          "description": "start is the first IP address in the allocation range.\n Example: \"192.168.1.100\"",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "End",
+          "jsonName": "end",
+          "protoField": "end",
+          "type": {
+            "kind": "string"
+          },
+          "description": "end is the last IP address in the allocation range.\n Example: \"192.168.1.200\"",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    }
+  ]
+}

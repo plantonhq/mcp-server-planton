@@ -1,0 +1,332 @@
+{
+  "name": "GcpRedisInstance",
+  "kind": "GcpRedisInstance",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-redis-instance",
+  "protoPackage": "org.openmcf.provider.gcp.gcpredisinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpredisinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpredisinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpRedisInstanceSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the Redis instance will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "InstanceName",
+        "jsonName": "instanceName",
+        "protoField": "instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Redis instance. This becomes the GCP resource name.\n Must start with a lowercase letter, contain only lowercase letters, numbers,\n and hyphens, and end with a lowercase letter or number. Maximum 40 characters.\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 40,
+          "pattern": "^[a-z][a-z0-9-]{0,38}[a-z0-9]$"
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP region where the instance will be deployed (e.g., \"us-central1\").",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Tier",
+        "jsonName": "tier",
+        "protoField": "tier",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Service tier controlling availability and replication.\n BASIC: standalone instance, no replication, no SLA.\n STANDARD_HA: primary + replica with automatic failover, 99.9% SLA.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "enum": [
+            "BASIC",
+            "STANDARD_HA"
+          ]
+        }
+      },
+      {
+        "name": "MemorySizeGb",
+        "jsonName": "memorySizeGb",
+        "protoField": "memory_size_gb",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Memory size in GiB for the Redis instance. This is the total memory\n available for storing data. Minimum 1 GiB.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "min": 1
+        }
+      },
+      {
+        "name": "RedisVersion",
+        "jsonName": "redisVersion",
+        "protoField": "redis_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Redis engine version (e.g., \"REDIS_7_0\", \"REDIS_7_2\", \"REDIS_6_X\").\n If not specified, the latest supported version is used.",
+        "required": false
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable display name for the instance.",
+        "required": false
+      },
+      {
+        "name": "LocationId",
+        "jsonName": "locationId",
+        "protoField": "location_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Zone within the region where the instance will be placed.\n For STANDARD_HA, this is the primary zone. GCP automatically selects\n a different zone for the replica. If not specified, GCP picks a zone.",
+        "required": false
+      },
+      {
+        "name": "AuthorizedNetwork",
+        "jsonName": "authorizedNetwork",
+        "protoField": "authorized_network",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC network to which the instance is connected.\n If not specified, the default network is used.\n Immutable after creation.",
+        "required": false,
+        "referenceKind": "GcpVpc",
+        "referenceFieldPath": "status.outputs.network_self_link"
+      },
+      {
+        "name": "ConnectMode",
+        "jsonName": "connectMode",
+        "protoField": "connect_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "How the instance connects to the VPC network.\n DIRECT_PEERING: VPC peering (default). Simpler setup.\n PRIVATE_SERVICE_ACCESS: uses a private services connection. Required for\n Shared VPC and some network configurations.\n Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "ReservedIpRange",
+        "jsonName": "reservedIpRange",
+        "protoField": "reserved_ip_range",
+        "type": {
+          "kind": "string"
+        },
+        "description": "CIDR range of internal addresses reserved for this instance (e.g., \"10.0.0.0/29\").\n Must be a /29 block, unique and non-overlapping with existing subnets.\n If not specified, GCP automatically selects an unused /29 block.\n Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "AuthEnabled",
+        "jsonName": "authEnabled",
+        "protoField": "auth_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether Redis AUTH is enabled. When true, clients must provide\n the AUTH string (exported in stack outputs) to connect.\n AUTH provides an additional layer of security beyond network controls.",
+        "required": false
+      },
+      {
+        "name": "TransitEncryptionMode",
+        "jsonName": "transitEncryptionMode",
+        "protoField": "transit_encryption_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "TLS encryption mode for client-to-server traffic.\n DISABLED: no encryption (default).\n SERVER_AUTHENTICATION: clients verify the server's identity via TLS.\n Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "RedisConfigs",
+        "jsonName": "redisConfigs",
+        "protoField": "redis_configs",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Redis configuration parameters as key-value pairs.\n See https://cloud.google.com/memorystore/docs/redis/reference/rest/v1/projects.locations.instances#Instance.FIELDS.redis_configs\n for the list of supported parameters (e.g., \"maxmemory-policy\", \"notify-keyspace-events\").",
+        "required": false
+      },
+      {
+        "name": "MaintenanceWindow",
+        "jsonName": "maintenanceWindow",
+        "protoField": "maintenance_window",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpRedisInstanceMaintenanceWindow"
+        },
+        "description": "Weekly maintenance window. If not specified, GCP schedules maintenance\n at its discretion.",
+        "required": false
+      },
+      {
+        "name": "ReadReplicasMode",
+        "jsonName": "readReplicasMode",
+        "protoField": "read_replicas_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Read replica mode. Can only be set at creation time.\n READ_REPLICAS_DISABLED (default): no read endpoint, no scaling.\n READ_REPLICAS_ENABLED: read endpoint provided, instance can scale replicas.\n Only available with STANDARD_HA tier.",
+        "required": false
+      },
+      {
+        "name": "ReplicaCount",
+        "jsonName": "replicaCount",
+        "protoField": "replica_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of read replicas. Valid range is 1-5 when read_replicas_mode is\n READ_REPLICAS_ENABLED and tier is STANDARD_HA.",
+        "required": false
+      },
+      {
+        "name": "PersistenceConfig",
+        "jsonName": "persistenceConfig",
+        "protoField": "persistence_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpRedisInstancePersistenceConfig"
+        },
+        "description": "Persistence configuration for RDB snapshots.",
+        "required": false
+      },
+      {
+        "name": "CustomerManagedKey",
+        "jsonName": "customerManagedKey",
+        "protoField": "customer_managed_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cloud KMS key for customer-managed encryption at rest (CMEK).\n Format: projects/{project}/locations/{location}/keyRings/{keyRing}/cryptoKeys/{key}\n If not specified, data is encrypted with Google-managed keys.\n Immutable after creation.",
+        "required": false,
+        "referenceKind": "GcpKmsKey",
+        "referenceFieldPath": "status.outputs.key_id"
+      },
+      {
+        "name": "DeletionProtection",
+        "jsonName": "deletionProtection",
+        "protoField": "deletion_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether Terraform/Pulumi deletion protection is enabled.\n When true, the instance cannot be destroyed without first disabling\n this flag. Recommended for production instances.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpRedisInstanceMaintenanceWindow",
+      "description": "GcpRedisInstanceMaintenanceWindow defines a weekly maintenance window for\n the Redis instance. GCP uses this to schedule updates and patches.\n The maintenance window is fixed at 1 hour duration.",
+      "protoType": "org.openmcf.provider.gcp.gcpredisinstance.v1.GcpRedisInstanceMaintenanceWindow",
+      "fields": [
+        {
+          "name": "Day",
+          "jsonName": "day",
+          "protoField": "day",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Day of the week for the maintenance window.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "MONDAY",
+              "TUESDAY",
+              "WEDNESDAY",
+              "THURSDAY",
+              "FRIDAY",
+              "SATURDAY",
+              "SUNDAY"
+            ]
+          }
+        },
+        {
+          "name": "Hour",
+          "jsonName": "hour",
+          "protoField": "hour",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Hour of day (0-23, UTC) when the maintenance window starts.",
+          "required": false,
+          "validation": {
+            "max": 23
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpRedisInstancePersistenceConfig",
+      "description": "GcpRedisInstancePersistenceConfig controls RDB snapshot persistence for\n the Redis instance. When enabled, data is periodically written to disk,\n providing durability across restarts and failovers.\n\n Persistence is only meaningful for STANDARD_HA tier instances.",
+      "protoType": "org.openmcf.provider.gcp.gcpredisinstance.v1.GcpRedisInstancePersistenceConfig",
+      "fields": [
+        {
+          "name": "PersistenceMode",
+          "jsonName": "persistenceMode",
+          "protoField": "persistence_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Persistence mode. DISABLED turns off persistence entirely.\n RDB enables periodic RDB snapshots.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "DISABLED",
+              "RDB"
+            ]
+          }
+        },
+        {
+          "name": "RdbSnapshotPeriod",
+          "jsonName": "rdbSnapshotPeriod",
+          "protoField": "rdb_snapshot_period",
+          "type": {
+            "kind": "string"
+          },
+          "description": "How often RDB snapshots are taken. Required when persistence_mode is RDB.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

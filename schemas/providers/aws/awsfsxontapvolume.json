@@ -1,0 +1,439 @@
+{
+  "name": "AwsFsxOntapVolume",
+  "kind": "AwsFsxOntapVolume",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-fsx-ontap-volume",
+  "protoPackage": "org.openmcf.provider.aws.awsfsxontapvolume.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsfsxontapvolume/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsfsxontapvolume/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsFsxOntapVolumeSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "StorageVirtualMachineId",
+        "jsonName": "storageVirtualMachineId",
+        "protoField": "storage_virtual_machine_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The ID of the Storage Virtual Machine that this volume belongs to. Required.\n ForceNew — the volume cannot be moved to a different SVM after creation.\n\n The SVM provides the network endpoints, protocol configuration, and Active\n Directory integration. All volumes within an SVM share its protocol stack.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsFsxOntapStorageVirtualMachine",
+        "referenceFieldPath": "status.outputs.svm_id"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the volume within the ONTAP file system. Required. ForceNew.\n\n This is the ONTAP volume name (not the OpenMCF metadata name). ONTAP volume\n names must be alphanumeric plus underscores — hyphens are not allowed. This\n name appears in junction paths, SnapMirror relationships, and ONTAP CLI\n output.\n\n Constraints: 1-203 characters, alphanumeric and underscore only.",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "maxLength": 203
+        }
+      },
+      {
+        "name": "SizeInMegabytes",
+        "jsonName": "sizeInMegabytes",
+        "protoField": "size_in_megabytes",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "The size of the volume in megabytes. Required.\n\n Minimum 20 MB. Maximum is constrained by the file system's total storage\n capacity. ONTAP volumes support thin provisioning, so the logical size can\n exceed the physical capacity available — ONTAP handles overcommit at the\n aggregate level.\n\n Covers volumes up to ~2.1 PB (int32 max). For the extremely rare case of\n volumes exceeding 2 PB, use the AWS console or CLI with size_in_bytes.",
+        "required": false,
+        "validation": {
+          "min": 20
+        }
+      },
+      {
+        "name": "JunctionPath",
+        "jsonName": "junctionPath",
+        "protoField": "junction_path",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The location in the SVM namespace where this volume is mounted. Clients\n access the volume at this path (e.g., mount nfs.svm.example.com:/vol1).\n\n If omitted, the volume is created but not mounted — it exists in ONTAP\n but is not accessible via NFS/SMB until a junction path is set.\n\n Must start with \"/\" and be unique within the SVM. Examples: \"/vol1\",\n \"/data/prod\", \"/shares/finance\".\n\n Constraints: 1-255 characters.",
+        "required": false
+      },
+      {
+        "name": "OntapVolumeType",
+        "jsonName": "ontapVolumeType",
+        "protoField": "ontap_volume_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The ONTAP volume type. ForceNew.\n\n - \"RW\": Read-write volume. The standard type for serving data to clients.\n - \"DP\": Data protection volume. A read-only destination for SnapMirror\n   replication. DP volumes cannot be mounted until the SnapMirror\n   relationship is broken or the volume is converted.\n\n Default: RW",
+        "required": false,
+        "default": "RW",
+        "oneofGroup": "_ontap_volume_type"
+      },
+      {
+        "name": "VolumeStyle",
+        "jsonName": "volumeStyle",
+        "protoField": "volume_style",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The volume style. ForceNew.\n\n - \"FLEXVOL\": Traditional ONTAP volume on a single aggregate. Suitable for\n   most workloads. Simpler operations and faster metadata performance.\n - \"FLEXGROUP\": A volume distributed across multiple aggregates for high\n   throughput and large-scale workloads (hundreds of TBs to PBs). Requires\n   aggregate_configuration. Ideal for data lakes, genomics, and media.\n\n Default: FLEXVOL",
+        "required": false,
+        "default": "FLEXVOL",
+        "oneofGroup": "_volume_style"
+      },
+      {
+        "name": "SecurityStyle",
+        "jsonName": "securityStyle",
+        "protoField": "security_style",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The security style for this volume's root directory. Controls how file\n permissions are evaluated.\n\n - \"UNIX\": UNIX permissions (mode bits, uid/gid). Best for Linux/NFS.\n - \"NTFS\": Windows ACLs. Best for Windows/SMB with Active Directory.\n - \"MIXED\": Both permission systems coexist. The effective security style\n   depends on which protocol last set permissions on a file.\n\n If omitted, inherits from the parent SVM's root_volume_security_style.",
+        "required": false
+      },
+      {
+        "name": "SnapshotPolicy",
+        "jsonName": "snapshotPolicy",
+        "protoField": "snapshot_policy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the ONTAP snapshot policy to apply to this volume. Snapshot\n policies control automatic snapshot creation and retention.\n\n Common policies: \"default\" (6 hourly + 2 daily + 2 weekly), \"none\"\n (no automatic snapshots). Custom policies can be created via the ONTAP CLI.\n\n Constraints: 1-255 characters.",
+        "required": false
+      },
+      {
+        "name": "StorageEfficiencyEnabled",
+        "jsonName": "storageEfficiencyEnabled",
+        "protoField": "storage_efficiency_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable ONTAP storage efficiency features: deduplication, compression, and\n compaction. These features reduce physical storage consumption by\n identifying and eliminating redundant data blocks.\n\n Recommended for most workloads. Disable only for workloads that are\n already compressed or deduplicated (e.g., encrypted data, pre-compressed\n media files) where the CPU overhead provides no benefit.",
+        "required": false
+      },
+      {
+        "name": "CopyTagsToBackups",
+        "jsonName": "copyTagsToBackups",
+        "protoField": "copy_tags_to_backups",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to copy resource tags to automatic volume backups.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_copy_tags_to_backups"
+      },
+      {
+        "name": "SkipFinalBackup",
+        "jsonName": "skipFinalBackup",
+        "protoField": "skip_final_backup",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to skip the automatic backup that AWS takes when the volume is\n deleted. Set to true for development/test volumes where the backup is\n unnecessary.\n\n Default: false (a final backup is taken)",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_skip_final_backup"
+      },
+      {
+        "name": "BypassSnaplockEnterpriseRetention",
+        "jsonName": "bypassSnaplockEnterpriseRetention",
+        "protoField": "bypass_snaplock_enterprise_retention",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to allow deletion of a SnapLock Enterprise volume that contains\n WORM files with unexpired retention periods. Only relevant for SnapLock\n Enterprise volumes — Compliance volumes can never bypass retention.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_bypass_snaplock_enterprise_retention"
+      },
+      {
+        "name": "TieringPolicy",
+        "jsonName": "tieringPolicy",
+        "protoField": "tiering_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsFsxOntapVolumeTieringPolicy"
+        },
+        "description": "Data tiering policy that controls when and how data moves from primary\n SSD storage to lower-cost capacity pool storage. If omitted, the volume\n uses the default tiering policy (SNAPSHOT_ONLY).",
+        "required": false
+      },
+      {
+        "name": "SnaplockConfiguration",
+        "jsonName": "snaplockConfiguration",
+        "protoField": "snaplock_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsFsxOntapVolumeSnaplockConfiguration"
+        },
+        "description": "SnapLock configuration for WORM (Write Once Read Many) compliance storage.\n When configured, files committed to this volume become immutable for their\n retention period. ForceNew for snaplock_type.\n\n SnapLock has two modes:\n - ENTERPRISE: Admins can delete WORM files before retention expiry (if\n   privileged_delete is enabled). Suitable for internal governance.\n - COMPLIANCE: No one — not even the root/admin user or AWS support — can\n   delete WORM files before retention expiry. Required for SEC 17a-4, HIPAA,\n   and similar regulations.\n\n Once set, the snaplock_type cannot be changed. Choosing the wrong type\n requires deleting and recreating the volume.",
+        "required": false
+      },
+      {
+        "name": "AggregateConfiguration",
+        "jsonName": "aggregateConfiguration",
+        "protoField": "aggregate_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsFsxOntapVolumeAggregateConfiguration"
+        },
+        "description": "Aggregate configuration for FLEXGROUP volumes. Controls how the volume is\n distributed across the file system's aggregates. Ignored for FLEXVOL\n volumes.\n\n All fields in this block are ForceNew — changing the aggregate layout\n requires recreating the volume.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsFsxOntapVolumeAggregateConfiguration",
+      "description": "AwsFsxOntapVolumeAggregateConfiguration controls how a FLEXGROUP volume is\n distributed across the file system's aggregates. All fields are ForceNew —\n changing the aggregate layout requires recreating the volume.\n\n Aggregates are the physical storage pools within an ONTAP file system. Each\n HA pair has its own set of aggregates (named aggr1, aggr2, etc.). FlexGroup\n volumes spread data across aggregates for parallel throughput.",
+      "protoType": "org.openmcf.provider.aws.awsfsxontapvolume.v1.AwsFsxOntapVolumeAggregateConfiguration",
+      "fields": [
+        {
+          "name": "Aggregates",
+          "jsonName": "aggregates",
+          "protoField": "aggregates",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "The list of aggregate names to use for the FlexGroup volume. Each name\n must match the pattern \"aggr\" followed by 1-2 digits (e.g., \"aggr1\",\n \"aggr2\"). Maximum 12 aggregates.\n\n ForceNew — changing this requires volume recreation.",
+          "required": false,
+          "validation": {
+            "maxItems": 12
+          }
+        },
+        {
+          "name": "ConstituentsPerAggregate",
+          "jsonName": "constituentsPerAggregate",
+          "protoField": "constituents_per_aggregate",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of FlexGroup constituents (member volumes) to create per\n aggregate. The total number of constituents equals\n constituents_per_aggregate * len(aggregates).\n\n Higher values increase parallelism but also metadata overhead. Default\n in AWS is typically 8.\n\n Range: 1-200. ForceNew.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsFsxOntapVolumeAutocommitPeriod",
+      "description": "AwsFsxOntapVolumeAutocommitPeriod configures automatic transition of files to\n WORM state after a period of inactivity.",
+      "protoType": "org.openmcf.provider.aws.awsfsxontapvolume.v1.AwsFsxOntapVolumeAutocommitPeriod",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The unit of time for the autocommit period.\n\n - \"NONE\": Autocommit is disabled.\n - \"MINUTES\", \"HOURS\", \"DAYS\", \"MONTHS\", \"YEARS\": The time unit for the\n   value field.",
+          "required": false
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of time units before an unmodified file is auto-committed to\n WORM state. Required when type is not \"NONE\".\n\n Range: 1-65535.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsFsxOntapVolumeRetentionDuration",
+      "description": "AwsFsxOntapVolumeRetentionDuration specifies a time duration for SnapLock\n retention periods. Used for default, minimum, and maximum retention.",
+      "protoType": "org.openmcf.provider.aws.awsfsxontapvolume.v1.AwsFsxOntapVolumeRetentionDuration",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The unit of time for the retention duration.\n\n - \"SECONDS\", \"MINUTES\", \"HOURS\", \"DAYS\", \"MONTHS\", \"YEARS\": Standard\n   time units. The value field specifies the count.\n - \"INFINITE\": Files are retained forever. The value field is ignored.\n - \"UNSPECIFIED\": No retention period is set. The value field is ignored.",
+          "required": false
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of time units for the retention duration. Ignored when type is\n \"INFINITE\" or \"UNSPECIFIED\".\n\n Range: 0-65535.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsFsxOntapVolumeRetentionPeriod",
+      "description": "AwsFsxOntapVolumeRetentionPeriod defines the default, minimum, and maximum\n retention bounds for WORM files on a SnapLock volume.\n\n - default_retention: Applied to files committed without an explicit retention\n   period.\n - minimum_retention: The shortest retention any file can have. Prevents\n   accidental setting of too-short retention.\n - maximum_retention: The longest retention any file can have. Prevents\n   accidental setting of very long retention that would lock data indefinitely.",
+      "protoType": "org.openmcf.provider.aws.awsfsxontapvolume.v1.AwsFsxOntapVolumeRetentionPeriod",
+      "fields": [
+        {
+          "name": "DefaultRetention",
+          "jsonName": "defaultRetention",
+          "protoField": "default_retention",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsFsxOntapVolumeRetentionDuration"
+          },
+          "description": "The default retention period applied to files committed to WORM state\n without an explicit retention period.",
+          "required": false
+        },
+        {
+          "name": "MinimumRetention",
+          "jsonName": "minimumRetention",
+          "protoField": "minimum_retention",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsFsxOntapVolumeRetentionDuration"
+          },
+          "description": "The minimum retention period. Files cannot have retention periods shorter\n than this value.",
+          "required": false
+        },
+        {
+          "name": "MaximumRetention",
+          "jsonName": "maximumRetention",
+          "protoField": "maximum_retention",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsFsxOntapVolumeRetentionDuration"
+          },
+          "description": "The maximum retention period. Files cannot have retention periods longer\n than this value.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsFsxOntapVolumeSnaplockConfiguration",
+      "description": "AwsFsxOntapVolumeSnaplockConfiguration configures WORM (Write Once Read Many)\n storage for regulatory compliance. Once a file is committed to WORM state on\n a SnapLock volume, it cannot be modified or deleted until its retention period\n expires.\n\n SnapLock is used by organizations subject to SEC 17a-4(f), CFTC Rule 1.31,\n HIPAA, FINRA, and similar regulations that require immutable record retention.",
+      "protoType": "org.openmcf.provider.aws.awsfsxontapvolume.v1.AwsFsxOntapVolumeSnaplockConfiguration",
+      "fields": [
+        {
+          "name": "SnaplockType",
+          "jsonName": "snaplockType",
+          "protoField": "snaplock_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The SnapLock retention mode. Required. ForceNew — cannot be changed after\n volume creation.\n\n - \"ENTERPRISE\": Administrative deletion of WORM files is possible (if\n   privileged_delete is enabled). Suitable for internal governance policies\n   where an escape hatch is acceptable.\n - \"COMPLIANCE\": Immutable. No one can delete WORM files before retention\n   expiry — not the root user, not AWS Support, not even the account owner.\n   Required for SEC 17a-4 and similar strict regulatory mandates.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "AuditLogVolume",
+          "jsonName": "auditLogVolume",
+          "protoField": "audit_log_volume",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether this volume is designated as the SnapLock audit log volume.\n A single audit log volume per SVM records all SnapLock operations\n (file commits, retention changes, privileged deletions).\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_audit_log_volume"
+        },
+        {
+          "name": "PrivilegedDelete",
+          "jsonName": "privilegedDelete",
+          "protoField": "privileged_delete",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Controls whether privileged deletion of WORM files is allowed before their\n retention period expires. Only meaningful for ENTERPRISE SnapLock.\n\n - \"DISABLED\": Privileged delete is not allowed (default).\n - \"ENABLED\": Administrators can delete WORM files early.\n - \"PERMANENTLY_DISABLED\": Privileged delete is permanently disabled and\n   cannot be re-enabled. Use this for Enterprise volumes that must never\n   allow early deletion.\n\n Default: DISABLED",
+          "required": false,
+          "default": "DISABLED",
+          "oneofGroup": "_privileged_delete"
+        },
+        {
+          "name": "VolumeAppendModeEnabled",
+          "jsonName": "volumeAppendModeEnabled",
+          "protoField": "volume_append_mode_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether volume-append mode is enabled. When enabled, files can be appended\n to (new data added at the end) even after being committed to WORM state.\n The existing content remains immutable. Useful for log files and audit\n trails that need continuous appending.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_volume_append_mode_enabled"
+        },
+        {
+          "name": "AutocommitPeriod",
+          "jsonName": "autocommitPeriod",
+          "protoField": "autocommit_period",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsFsxOntapVolumeAutocommitPeriod"
+          },
+          "description": "Configures automatic commitment of files to WORM state after a period of\n inactivity. When autocommit is configured, files that have not been modified\n for the specified duration are automatically transitioned to WORM state.\n\n This eliminates the need for applications to explicitly commit files.",
+          "required": false
+        },
+        {
+          "name": "RetentionPeriod",
+          "jsonName": "retentionPeriod",
+          "protoField": "retention_period",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsFsxOntapVolumeRetentionPeriod"
+          },
+          "description": "Configures the default, minimum, and maximum retention periods for WORM\n files on this volume. These bounds constrain how long files must be retained\n and provide guardrails for retention policy enforcement.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsFsxOntapVolumeTieringPolicy",
+      "description": "AwsFsxOntapVolumeTieringPolicy controls the movement of data between primary\n SSD storage and lower-cost capacity pool (HDD) storage. Tiering reduces costs\n by automatically migrating infrequently accessed data.",
+      "protoType": "org.openmcf.provider.aws.awsfsxontapvolume.v1.AwsFsxOntapVolumeTieringPolicy",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The tiering policy name.\n\n - \"NONE\": All data remains on primary SSD storage. No tiering. Use for\n   latency-sensitive workloads where all data must be instantly accessible.\n - \"SNAPSHOT_ONLY\": Only snapshot data (point-in-time copies) is tiered.\n   Active file system data stays on SSD. The safest tiering option.\n - \"AUTO\": Data not accessed for the cooling period is automatically tiered.\n   The most cost-effective option for mixed-access workloads.\n - \"ALL\": All data (including active data) is stored on capacity pool. Only\n   metadata stays on SSD. Lowest cost, highest latency for first access.",
+          "required": false
+        },
+        {
+          "name": "CoolingPeriod",
+          "jsonName": "coolingPeriod",
+          "protoField": "cooling_period",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of days before data is considered \"cold\" and eligible for\n tiering to capacity pool storage. Only applicable when name is \"AUTO\" or\n \"SNAPSHOT_ONLY\".\n\n Range: 2-183 days. Lower values tier data more aggressively (lower cost,\n potentially higher latency for recently accessed data).",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

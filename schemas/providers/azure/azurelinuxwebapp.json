@@ -1,0 +1,1190 @@
+{
+  "name": "AzureLinuxWebApp",
+  "kind": "AzureLinuxWebApp",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureLinuxWebApp is the top-level API resource for an Azure Linux Web App.\n A web app is a fully managed web hosting platform for running HTTP-based\n applications, supporting multiple language runtimes (Node.js, Python, .NET,\n Java, PHP, Ruby, Go) and custom Docker containers.\n\n It runs on an AzureServicePlan and provides built-in load balancing,\n auto-scaling, and CI/CD integration.",
+  "protoPackage": "org.openmcf.provider.azure.azurelinuxwebapp.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurelinuxwebapp/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurelinuxwebapp/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureLinuxWebAppSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Web App will be created.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".\n\n **ForceNew**: Changing this destroys and recreates the web app.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Web App will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.\n\n **ForceNew**: Changing this destroys and recreates the web app.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Web App.\n Must be globally unique across Azure (it forms the default hostname:\n `{name}.azurewebsites.net`).\n\n Allowed characters: alphanumeric and hyphens.\n Must start and end with an alphanumeric character.\n Length: 2 to 60 characters.\n\n **ForceNew**: Changing this destroys and recreates the web app.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 60
+        }
+      },
+      {
+        "name": "ServicePlanId",
+        "jsonName": "servicePlanId",
+        "protoField": "service_plan_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The App Service Plan that provides compute resources for this Web App.\n Determines the pricing tier, scale behavior, and available features.\n\n Free/Shared (F1/D1): shared infra, dev/test only\n Basic (B1-B3): dedicated compute, manual scaling\n Standard (S1-S3): auto-scale, deployment slots\n Premium (P1v3-P3v3): enhanced performance, zone redundancy",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureServicePlan",
+        "referenceFieldPath": "status.outputs.plan_id"
+      },
+      {
+        "name": "SiteConfig",
+        "jsonName": "siteConfig",
+        "protoField": "site_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureLinuxWebAppSiteConfig"
+        },
+        "description": "Site configuration for the Web App.\n Contains the application stack (runtime), security settings,\n networking behavior, and operational configuration.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "AppSettings",
+        "jsonName": "appSettings",
+        "protoField": "app_settings",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Application settings (environment variables) for the Web App.\n Key-value pairs that are available to the application at runtime via\n environment variables.\n\n Common use cases: database connection strings, API keys, feature flags,\n third-party service configuration.",
+        "required": false
+      },
+      {
+        "name": "ConnectionStrings",
+        "jsonName": "connectionStrings",
+        "protoField": "connection_strings",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureLinuxWebAppConnectionString"
+          }
+        },
+        "description": "Named connection strings for database and service connections.\n Each connection string has a name, type, and value. The type determines\n how Azure exposes the connection in the runtime environment.\n\n For most use cases, app_settings is simpler. Use connection_strings when\n you need Azure's native connection string management (e.g., for Entity\n Framework, Azure Service Bus SDK auto-discovery).",
+        "required": false
+      },
+      {
+        "name": "ApplicationInsightsConnectionString",
+        "jsonName": "applicationInsightsConnectionString",
+        "protoField": "application_insights_connection_string",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Application Insights connection string for APM telemetry.\n When provided, the Web App can be configured to send telemetry\n (requests, dependencies, exceptions, traces) to Application Insights.\n\n Uses the connection_string format (not the legacy instrumentation_key).",
+        "required": false,
+        "referenceKind": "AzureApplicationInsights",
+        "referenceFieldPath": "status.outputs.connection_string"
+      },
+      {
+        "name": "HttpsOnly",
+        "jsonName": "httpsOnly",
+        "protoField": "https_only",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enforce HTTPS-only access to the Web App.\n When true, all HTTP requests are redirected to HTTPS.\n\n Default: true (secure by default, unlike the Azure API default of false)",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_https_only"
+      },
+      {
+        "name": "PublicNetworkAccessEnabled",
+        "jsonName": "publicNetworkAccessEnabled",
+        "protoField": "public_network_access_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable or disable public network access to the Web App.\n When false, the Web App is only accessible via VNet integration\n or Private Endpoints.\n\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_public_network_access_enabled"
+      },
+      {
+        "name": "Enabled",
+        "jsonName": "enabled",
+        "protoField": "enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable or disable the Web App.\n When false, the Web App is stopped and does not serve traffic,\n but the resource still exists and incurs plan-level costs.\n Useful for temporarily disabling an app without deleting it.\n\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_enabled"
+      },
+      {
+        "name": "VirtualNetworkSubnetId",
+        "jsonName": "virtualNetworkSubnetId",
+        "protoField": "virtual_network_subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The subnet ID for VNet integration. When provided, the Web App's\n outbound traffic routes through this subnet, enabling access to\n VNet-connected resources (databases, Redis, etc.) without public endpoints.\n\n The subnet must be delegated to Microsoft.Web/serverFarms.\n Not supported on Free (F1) and Shared (D1) tiers.",
+        "required": false,
+        "referenceKind": "AzureSubnet",
+        "referenceFieldPath": "status.outputs.subnet_id"
+      },
+      {
+        "name": "Identity",
+        "jsonName": "identity",
+        "protoField": "identity",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureLinuxWebAppIdentity"
+        },
+        "description": "Managed identity configuration for the Web App.\n Enables the app to authenticate with Azure services (Key Vault, Storage,\n ACR, etc.) without managing credentials.\n\n When identity is configured with SystemAssigned, the web app gets\n a system-assigned identity whose principal_id and tenant_id are exported\n as stack outputs.",
+        "required": false
+      },
+      {
+        "name": "KeyVaultReferenceIdentityId",
+        "jsonName": "keyVaultReferenceIdentityId",
+        "protoField": "key_vault_reference_identity_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "User Assigned Identity ID for accessing Key Vault references.\n When the Web App uses Key Vault references in app_settings\n (e.g., `@Microsoft.KeyVault(SecretUri=...)`), this identity is used\n to authenticate with Key Vault.\n\n If not specified, the system-assigned identity is used.",
+        "required": false,
+        "referenceKind": "AzureUserAssignedIdentity",
+        "referenceFieldPath": "status.outputs.identity_id"
+      },
+      {
+        "name": "ClientAffinityEnabled",
+        "jsonName": "clientAffinityEnabled",
+        "protoField": "client_affinity_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable client affinity (ARR session affinity) for the Web App.\n When true, Azure uses ARR (Application Request Routing) cookies to\n route subsequent requests from a client to the same instance. This is\n useful for stateful applications that store session data in memory.\n\n For stateless apps (recommended), disable this for better load distribution.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_client_affinity_enabled"
+      },
+      {
+        "name": "ClientCertificateEnabled",
+        "jsonName": "clientCertificateEnabled",
+        "protoField": "client_certificate_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable client certificate authentication (mutual TLS).\n When true, clients must present a valid certificate to access the app.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_client_certificate_enabled"
+      },
+      {
+        "name": "ClientCertificateMode",
+        "jsonName": "clientCertificateMode",
+        "protoField": "client_certificate_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Client certificate mode when client_certificate_enabled is true.\n\n Valid values:\n - \"Required\": All requests must have a valid client certificate\n - \"Optional\": Certificate is requested but not required\n - \"OptionalInteractiveUser\": Certificate is optional for browser users\n\n Default: \"Optional\"",
+        "required": false,
+        "default": "Optional",
+        "oneofGroup": "_client_certificate_mode"
+      },
+      {
+        "name": "ClientCertificateExclusionPaths",
+        "jsonName": "clientCertificateExclusionPaths",
+        "protoField": "client_certificate_exclusion_paths",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Paths excluded from client certificate validation.\n Semicolon-separated list of paths where client certificates are not required.\n Example: \"/api/health;/api/status\"",
+        "required": false
+      },
+      {
+        "name": "StorageMounts",
+        "jsonName": "storageMounts",
+        "protoField": "storage_mounts",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureLinuxWebAppStorageMount"
+          }
+        },
+        "description": "Azure Storage Account mounts for the Web App.\n Mounts Azure File Shares or Blob containers as directories accessible\n to the application code at runtime.",
+        "required": false
+      },
+      {
+        "name": "Logs",
+        "jsonName": "logs",
+        "protoField": "logs",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureLinuxWebAppLogs"
+        },
+        "description": "Logging configuration for the Web App.\n Controls application-level logging, HTTP request logging, failed request\n tracing, and detailed error messages. Unlike Function Apps where logging\n is nested inside site_config, Web App logs are a top-level block.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureLinuxWebAppApplicationLogs",
+      "description": "AzureLinuxWebAppApplicationLogs configures application-level logging\n for the Web App. Application logs capture output from the application\n code (e.g., console.log, logging framework output).",
+      "protoType": "org.openmcf.provider.azure.azurelinuxwebapp.v1.AzureLinuxWebAppApplicationLogs",
+      "fields": [
+        {
+          "name": "FileSystemLevel",
+          "jsonName": "fileSystemLevel",
+          "protoField": "file_system_level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Log level for the file system logger.\n Controls which log messages are written to the application log files.\n\n Valid values:\n - \"Off\": No logging\n - \"Error\": Only errors\n - \"Warning\": Errors and warnings\n - \"Information\": Errors, warnings, and informational messages\n - \"Verbose\": All messages including debug/trace\n\n Default: \"Error\"",
+          "required": false,
+          "default": "Error",
+          "oneofGroup": "_file_system_level"
+        }
+      ]
+    },
+    {
+      "name": "AzureLinuxWebAppApplicationStack",
+      "description": "AzureLinuxWebAppApplicationStack defines the runtime for the Web App.\n\n Exactly one runtime must be specified. This maps to the `application_stack`\n block within `site_config` in the Terraform provider. The constraint is\n documented (not enforced via proto) because protobuf lacks native oneOf-with-\n optional semantics for this pattern.\n\n Web Apps support a broader set of runtimes compared to Function Apps,\n including PHP, Ruby, Go, and Java with configurable application servers.\n\n Runtime options:\n - .NET: dotnet_version\n - Node.js: node_version\n - Python: python_version\n - PHP: php_version\n - Ruby: ruby_version (deprecated, limited support)\n - Go: go_version (deprecated, limited support)\n - Java: java_version + java_server + java_server_version\n - Container: docker (registry_url + image_name + image_tag)",
+      "protoType": "org.openmcf.provider.azure.azurelinuxwebapp.v1.AzureLinuxWebAppApplicationStack",
+      "fields": [
+        {
+          "name": "DotnetVersion",
+          "jsonName": "dotnetVersion",
+          "protoField": "dotnet_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": ".NET runtime version.\n\n Valid values: \"3.1\", \"6.0\", \"7.0\", \"8.0\", \"9.0\", \"10.0\"",
+          "required": false
+        },
+        {
+          "name": "NodeVersion",
+          "jsonName": "nodeVersion",
+          "protoField": "node_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Node.js runtime version.\n Linux Web Apps use the LTS variant identifiers.\n\n Valid values: \"12-lts\", \"14-lts\", \"16-lts\", \"18-lts\", \"20-lts\",\n \"22-lts\", \"24-lts\"",
+          "required": false
+        },
+        {
+          "name": "PythonVersion",
+          "jsonName": "pythonVersion",
+          "protoField": "python_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Python runtime version.\n\n Valid values: \"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\", \"3.12\", \"3.13\"",
+          "required": false
+        },
+        {
+          "name": "PhpVersion",
+          "jsonName": "phpVersion",
+          "protoField": "php_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PHP runtime version.\n\n Valid values: \"7.4\", \"8.0\", \"8.1\", \"8.2\", \"8.3\", \"8.4\"",
+          "required": false
+        },
+        {
+          "name": "RubyVersion",
+          "jsonName": "rubyVersion",
+          "protoField": "ruby_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Ruby runtime version.\n\n **Deprecated**: Ruby support on Azure App Service is limited and\n not recommended for new deployments. Consider containerized deployment\n via the docker block instead.\n\n Valid values: \"2.6\", \"2.7\"",
+          "required": false
+        },
+        {
+          "name": "GoVersion",
+          "jsonName": "goVersion",
+          "protoField": "go_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Go runtime version.\n\n **Deprecated**: Go support on Azure App Service is limited and\n not recommended for new deployments. Consider containerized deployment\n via the docker block instead.\n\n Valid values: \"1.18\", \"1.19\"",
+          "required": false
+        },
+        {
+          "name": "JavaVersion",
+          "jsonName": "javaVersion",
+          "protoField": "java_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Java runtime version.\n When using Java, you must also set java_server and java_server_version\n to specify the application server.\n\n Valid values: \"8\", \"11\", \"17\", \"21\"\n\n RequiredWith: java_server, java_server_version",
+          "required": false
+        },
+        {
+          "name": "JavaServer",
+          "jsonName": "javaServer",
+          "protoField": "java_server",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Java application server type.\n Specifies the servlet container or application server runtime.\n\n Valid values:\n - \"JAVA\": Java SE (embedded server, e.g., Spring Boot executable JAR)\n - \"TOMCAT\": Apache Tomcat servlet container\n - \"JBOSSEAP\": Red Hat JBoss EAP application server\n\n RequiredWith: java_version, java_server_version",
+          "required": false
+        },
+        {
+          "name": "JavaServerVersion",
+          "jsonName": "javaServerVersion",
+          "protoField": "java_server_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Java application server version.\n The valid values depend on the selected java_server:\n\n JAVA: \"8\", \"11\", \"17\", \"21\" (SE version, typically matches java_version)\n TOMCAT: \"8.5\", \"9.0\", \"10.0\", \"10.1\" (and minor versions)\n JBOSSEAP: \"7\", \"7.4\", \"8.0\" (and minor versions)\n\n No CEL whitelist is applied because the valid combinations across\n server types and Azure region availability are too numerous.\n\n RequiredWith: java_version, java_server",
+          "required": false
+        },
+        {
+          "name": "Docker",
+          "jsonName": "docker",
+          "protoField": "docker",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureLinuxWebAppDockerConfig"
+          },
+          "description": "Docker container configuration.\n Runs a custom container image as the Web App runtime.\n Any web server that listens on the configured port (default 8080)\n can be deployed as a containerized Web App.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureLinuxWebAppConnectionString",
+      "description": "AzureLinuxWebAppConnectionString defines a named connection string\n for the Web App. Connection strings are exposed to the application via\n environment variables with a prefix based on the type.",
+      "protoType": "org.openmcf.provider.azure.azurelinuxwebapp.v1.AzureLinuxWebAppConnectionString",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the connection string.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The type of connection string. Determines the environment variable prefix.\n\n Valid values: MySQL, SQLServer, SQLAzure, Custom, NotificationHub,\n ServiceBus, EventHub, APIHub, DocDb, RedisCache, PostgreSQL",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The connection string value. This is a sensitive credential.\n Can be a literal value or a reference to a secrets manager.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AzureLinuxWebAppCorsSettings",
+      "description": "AzureLinuxWebAppCorsSettings configures Cross-Origin Resource Sharing\n for the Web App's HTTP endpoints.",
+      "protoType": "org.openmcf.provider.azure.azurelinuxwebapp.v1.AzureLinuxWebAppCorsSettings",
+      "fields": [
+        {
+          "name": "AllowedOrigins",
+          "jsonName": "allowedOrigins",
+          "protoField": "allowed_origins",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "List of origins allowed to make cross-origin requests.\n Use \"*\" to allow all origins (not recommended for production).\n Example: [\"https://myapp.example.com\", \"https://admin.example.com\"]",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "SupportCredentials",
+          "jsonName": "supportCredentials",
+          "protoField": "support_credentials",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Allow credentials (cookies, authorization headers) in cross-origin requests.\n Cannot be used with allowed_origins = [\"*\"].\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_support_credentials"
+        }
+      ]
+    },
+    {
+      "name": "AzureLinuxWebAppDockerConfig",
+      "description": "AzureLinuxWebAppDockerConfig defines the container configuration for\n running the Web App as a custom Docker container.\n\n The container image must run a web server that listens on the port\n specified by the WEBSITES_PORT environment variable (default: 8080).",
+      "protoType": "org.openmcf.provider.azure.azurelinuxwebapp.v1.AzureLinuxWebAppDockerConfig",
+      "fields": [
+        {
+          "name": "RegistryUrl",
+          "jsonName": "registryUrl",
+          "protoField": "registry_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The URL of the container registry.\n Examples: \"https://myregistry.azurecr.io\", \"https://ghcr.io\"",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ImageName",
+          "jsonName": "imageName",
+          "protoField": "image_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The container image name (without tag).\n Example: \"myorg/my-web-app\"",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ImageTag",
+          "jsonName": "imageTag",
+          "protoField": "image_tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The container image tag.\n Example: \"latest\", \"v1.2.3\", \"sha-abc123\"",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "RegistryUsername",
+          "jsonName": "registryUsername",
+          "protoField": "registry_username",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Username for authenticating with the container registry.\n Not needed when using managed identity for ACR authentication\n (set container_registry_use_managed_identity in site_config).",
+          "required": false
+        },
+        {
+          "name": "RegistryPassword",
+          "jsonName": "registryPassword",
+          "protoField": "registry_password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Password for authenticating with the container registry.\n This is a sensitive credential. Provide directly or via StringValueOrRef.\n\n Not needed when using managed identity for ACR authentication.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureLinuxWebAppHttpLogs",
+      "description": "AzureLinuxWebAppHttpLogs configures HTTP request/response logging\n for the Web App. HTTP logs capture details about incoming requests\n and outgoing responses, useful for traffic analysis and debugging.",
+      "protoType": "org.openmcf.provider.azure.azurelinuxwebapp.v1.AzureLinuxWebAppHttpLogs",
+      "fields": [
+        {
+          "name": "RetentionInMb",
+          "jsonName": "retentionInMb",
+          "protoField": "retention_in_mb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum size of HTTP log files in megabytes.\n When the total log size exceeds this limit, the oldest log files\n are automatically deleted.\n\n Range: 25 to 100 MB.\n\n Default: 35",
+          "required": false,
+          "validation": {
+            "min": 25,
+            "max": 100
+          },
+          "default": "35",
+          "oneofGroup": "_retention_in_mb"
+        },
+        {
+          "name": "RetentionInDays",
+          "jsonName": "retentionInDays",
+          "protoField": "retention_in_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of days to retain HTTP log files.\n Set to 0 for indefinite retention (limited only by retention_in_mb).\n\n Default: 0 (indefinite, limited by disk quota)",
+          "required": false,
+          "default": "0",
+          "oneofGroup": "_retention_in_days"
+        }
+      ]
+    },
+    {
+      "name": "AzureLinuxWebAppIdentity",
+      "description": "AzureLinuxWebAppIdentity configures managed identity for the Web App.\n\n Managed identities eliminate the need to manage credentials for\n authenticating with Azure services. The identity is automatically managed\n by Azure AD and can be assigned RBAC roles on Azure resources.\n\n Follows the same pattern as AzureFunctionAppIdentity.",
+      "protoType": "org.openmcf.provider.azure.azurelinuxwebapp.v1.AzureLinuxWebAppIdentity",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Identity type.\n \"SystemAssigned\": Azure-managed identity tied to the Web App lifecycle.\n \"UserAssigned\": Pre-created identity with independent lifecycle.\n \"SystemAssigned,UserAssigned\": Both identity types.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "IdentityIds",
+          "jsonName": "identityIds",
+          "protoField": "identity_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "User Assigned Identity Azure resource IDs.\n Required when type includes \"UserAssigned\".\n\n Can be literal ARM resource IDs or references to AzureUserAssignedIdentity outputs.",
+          "required": false,
+          "referenceKind": "AzureUserAssignedIdentity",
+          "referenceFieldPath": "status.outputs.identity_id"
+        }
+      ]
+    },
+    {
+      "name": "AzureLinuxWebAppIpRestriction",
+      "description": "AzureLinuxWebAppIpRestriction defines an IP-based access restriction rule.\n Rules are evaluated in priority order (lower number = higher priority).\n\n Exactly one of ip_address, service_tag, or virtual_network_subnet_id\n must be specified per rule.",
+      "protoType": "org.openmcf.provider.azure.azurelinuxwebapp.v1.AzureLinuxWebAppIpRestriction",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Rule name for identification.",
+          "required": false
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Rule priority. Lower numbers are evaluated first.\n Range: 1 to 65000.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65000
+          },
+          "oneofGroup": "_priority"
+        },
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action to take when the rule matches.\n\n Valid values: \"Allow\", \"Deny\"\n\n Default: \"Allow\"",
+          "required": false,
+          "default": "Allow",
+          "oneofGroup": "_action"
+        },
+        {
+          "name": "IpAddress",
+          "jsonName": "ipAddress",
+          "protoField": "ip_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP address or CIDR range.\n Example: \"10.0.0.0/24\", \"203.0.113.50/32\"",
+          "required": false
+        },
+        {
+          "name": "ServiceTag",
+          "jsonName": "serviceTag",
+          "protoField": "service_tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Azure service tag.\n Example: \"AzureFrontDoor.Backend\", \"AzureCloud.WestUS\"",
+          "required": false
+        },
+        {
+          "name": "VirtualNetworkSubnetId",
+          "jsonName": "virtualNetworkSubnetId",
+          "protoField": "virtual_network_subnet_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Subnet ID for VNet-based access control.\n Traffic from this subnet is allowed/denied based on the action.",
+          "required": false,
+          "referenceKind": "AzureSubnet",
+          "referenceFieldPath": "status.outputs.subnet_id"
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description of the rule.",
+          "required": false
+        },
+        {
+          "name": "Headers",
+          "jsonName": "headers",
+          "protoField": "headers",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureLinuxWebAppIpRestrictionHeaders"
+          },
+          "description": "HTTP header filters for the rule.\n Used with Azure Front Door or other reverse proxies to restrict\n access based on request headers.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureLinuxWebAppIpRestrictionHeaders",
+      "description": "AzureLinuxWebAppIpRestrictionHeaders defines header-based filters for\n IP restriction rules. Used primarily with Azure Front Door to ensure\n traffic comes through the CDN rather than directly to the Web App.",
+      "protoType": "org.openmcf.provider.azure.azurelinuxwebapp.v1.AzureLinuxWebAppIpRestrictionHeaders",
+      "fields": [
+        {
+          "name": "XForwardedFor",
+          "jsonName": "xForwardedFor",
+          "protoField": "x_forwarded_for",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "X-Forwarded-For header values to match.\n Up to 8 entries. CIDR ranges are supported.",
+          "required": false
+        },
+        {
+          "name": "XForwardedHost",
+          "jsonName": "xForwardedHost",
+          "protoField": "x_forwarded_host",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "X-Forwarded-Host header values to match.\n Up to 8 entries.",
+          "required": false
+        },
+        {
+          "name": "XAzureFdid",
+          "jsonName": "xAzureFdid",
+          "protoField": "x_azure_fdid",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "X-Azure-FDID (Front Door ID) header values to match.\n Up to 8 entries. Used to ensure traffic comes from your specific\n Front Door instance.",
+          "required": false
+        },
+        {
+          "name": "XFdHealthProbe",
+          "jsonName": "xFdHealthProbe",
+          "protoField": "x_fd_health_probe",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "X-FD-HealthProbe header values to match.\n Used to allow Front Door health probe traffic.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureLinuxWebAppLogs",
+      "description": "AzureLinuxWebAppLogs configures the logging behavior for the Web App.\n\n Unlike Function Apps where logging is nested inside site_config as\n app_service_logs, Web App logs are a top-level block on the resource\n with richer configuration options including application logs, HTTP logs,\n failed request tracing, and detailed error messages.",
+      "protoType": "org.openmcf.provider.azure.azurelinuxwebapp.v1.AzureLinuxWebAppLogs",
+      "fields": [
+        {
+          "name": "ApplicationLogs",
+          "jsonName": "applicationLogs",
+          "protoField": "application_logs",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureLinuxWebAppApplicationLogs"
+          },
+          "description": "Application-level logging configuration.\n Controls the verbosity of application logs written to the file system.",
+          "required": false
+        },
+        {
+          "name": "HttpLogs",
+          "jsonName": "httpLogs",
+          "protoField": "http_logs",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureLinuxWebAppHttpLogs"
+          },
+          "description": "HTTP request logging configuration.\n Controls retention and storage limits for HTTP request/response logs.",
+          "required": false
+        },
+        {
+          "name": "FailedRequestTracing",
+          "jsonName": "failedRequestTracing",
+          "protoField": "failed_request_tracing",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable failed request tracing.\n When true, Azure captures detailed traces for failed HTTP requests\n (status code \u003e= 400), including the request pipeline stages, timing,\n and any errors. Useful for diagnosing intermittent failures.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_failed_request_tracing"
+        },
+        {
+          "name": "DetailedErrorMessages",
+          "jsonName": "detailedErrorMessages",
+          "protoField": "detailed_error_messages",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable detailed error messages in HTTP error responses.\n When true, the Web App returns detailed error pages for HTTP errors\n instead of generic error pages. Useful for development and debugging.\n\n **Security note**: Disable in production to avoid leaking internal\n implementation details in error responses.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_detailed_error_messages"
+        }
+      ]
+    },
+    {
+      "name": "AzureLinuxWebAppSiteConfig",
+      "description": "AzureLinuxWebAppSiteConfig defines the site-level configuration for a\n Linux Web App. This maps to the `site_config` block in the Terraform\n azurerm_linux_web_app resource.\n\n Contains the application stack (runtime selection), scaling settings,\n security configuration, networking behavior, and operational controls.",
+      "protoType": "org.openmcf.provider.azure.azurelinuxwebapp.v1.AzureLinuxWebAppSiteConfig",
+      "fields": [
+        {
+          "name": "ApplicationStack",
+          "jsonName": "applicationStack",
+          "protoField": "application_stack",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureLinuxWebAppApplicationStack"
+          },
+          "description": "The application stack defines the runtime for the Web App.\n Exactly one runtime must be specified: dotnet_version, node_version,\n python_version, php_version, ruby_version, go_version, java_version\n (with java_server + java_server_version), or docker.",
+          "required": false
+        },
+        {
+          "name": "AlwaysOn",
+          "jsonName": "alwaysOn",
+          "protoField": "always_on",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Keep the Web App always loaded in memory.\n When true, the app is never unloaded due to inactivity.\n\n Critical for Standard and Premium plans -- without this, the app\n may be unloaded after idle periods, causing cold start latency.\n\n Not supported on Free (F1) tier.",
+          "required": false,
+          "oneofGroup": "_always_on"
+        },
+        {
+          "name": "AppCommandLine",
+          "jsonName": "appCommandLine",
+          "protoField": "app_command_line",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Custom startup command for the Web App.\n Overrides the default startup behavior. Useful for custom Docker\n containers or runtimes that need specific initialization.\n Example: \"gunicorn --bind=0.0.0.0 --timeout 600 app:app\"",
+          "required": false
+        },
+        {
+          "name": "HealthCheckPath",
+          "jsonName": "healthCheckPath",
+          "protoField": "health_check_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Health check endpoint path.\n Azure periodically sends requests to this path and marks the instance\n as unhealthy if it doesn't respond with a 200-299 status code.\n Unhealthy instances are removed from the load balancer rotation.\n\n Recommended for production deployments. Common paths: \"/health\",\n \"/healthz\", \"/api/health\".",
+          "required": false
+        },
+        {
+          "name": "HealthCheckEvictionTimeInMin",
+          "jsonName": "healthCheckEvictionTimeInMin",
+          "protoField": "health_check_eviction_time_in_min",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Time in minutes after which an unhealthy instance is evicted.\n Azure monitors the health check path and removes instances that\n have been continuously unhealthy for this duration.\n\n Range: 2 to 10 minutes.",
+          "required": false,
+          "validation": {
+            "min": 2,
+            "max": 10
+          },
+          "oneofGroup": "_health_check_eviction_time_in_min"
+        },
+        {
+          "name": "MinimumTlsVersion",
+          "jsonName": "minimumTlsVersion",
+          "protoField": "minimum_tls_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Minimum TLS version for incoming HTTPS requests.\n\n Valid values: \"1.0\", \"1.1\", \"1.2\", \"1.3\"\n\n Default: \"1.2\" (industry standard; \"1.3\" for maximum security)",
+          "required": false,
+          "default": "1.2",
+          "oneofGroup": "_minimum_tls_version"
+        },
+        {
+          "name": "ScmMinimumTlsVersion",
+          "jsonName": "scmMinimumTlsVersion",
+          "protoField": "scm_minimum_tls_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Minimum TLS version for SCM (Kudu) site.\n\n Default: \"1.2\"",
+          "required": false,
+          "default": "1.2",
+          "oneofGroup": "_scm_minimum_tls_version"
+        },
+        {
+          "name": "FtpsState",
+          "jsonName": "ftpsState",
+          "protoField": "ftps_state",
+          "type": {
+            "kind": "string"
+          },
+          "description": "FTPS state for the Web App.\n Controls whether FTP/FTPS file deployment is allowed.\n\n Valid values:\n - \"AllAllowed\": Both FTP and FTPS are enabled\n - \"FtpsOnly\": Only FTPS (encrypted) is enabled\n - \"Disabled\": FTP/FTPS is completely disabled (recommended)\n\n Default: \"Disabled\" (secure by default)",
+          "required": false,
+          "default": "Disabled",
+          "oneofGroup": "_ftps_state"
+        },
+        {
+          "name": "WorkerCount",
+          "jsonName": "workerCount",
+          "protoField": "worker_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of worker instances for the Web App.\n Controls how many instances are allocated.\n\n Range: 1-100.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 100
+          },
+          "oneofGroup": "_worker_count"
+        },
+        {
+          "name": "Http2Enabled",
+          "jsonName": "http2Enabled",
+          "protoField": "http2_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable HTTP/2 protocol for the Web App.\n HTTP/2 provides multiplexing, header compression, and server push\n for improved performance.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_http2_enabled"
+        },
+        {
+          "name": "WebsocketsEnabled",
+          "jsonName": "websocketsEnabled",
+          "protoField": "websockets_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable WebSocket connections for the Web App.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_websockets_enabled"
+        },
+        {
+          "name": "Use32BitWorker",
+          "jsonName": "use32BitWorker",
+          "protoField": "use_32_bit_worker",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Use a 32-bit worker process instead of 64-bit.\n Reduces memory footprint but limits addressable memory to ~2 GB.\n\n Note: The Azure provider defaults to true, but OpenMCF overrides\n this to false. 64-bit workers are recommended for production.\n\n Default: false (opinionated override; Azure provider default is true)",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_use_32_bit_worker"
+        },
+        {
+          "name": "VnetRouteAllEnabled",
+          "jsonName": "vnetRouteAllEnabled",
+          "protoField": "vnet_route_all_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Route all outbound traffic from the Web App through the VNet.\n Requires virtual_network_subnet_id to be set on the spec.\n\n When false (default), only RFC1918 traffic routes through the VNet.\n When true, all outbound traffic (including public internet) routes\n through the VNet, enabling inspection via NSG rules or a firewall.\n\n Not supported on Free (F1) and Shared (D1) tiers.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_vnet_route_all_enabled"
+        },
+        {
+          "name": "LoadBalancingMode",
+          "jsonName": "loadBalancingMode",
+          "protoField": "load_balancing_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Load balancing mode for distributing requests across instances.\n\n Valid values: LeastRequests, WeightedRoundRobin, LeastResponseTime,\n WeightedTotalTraffic, RequestHash, PerSiteRoundRobin\n\n Default: \"LeastRequests\"",
+          "required": false,
+          "default": "LeastRequests",
+          "oneofGroup": "_load_balancing_mode"
+        },
+        {
+          "name": "Cors",
+          "jsonName": "cors",
+          "protoField": "cors",
+          "type": {
+            "kind": "message",
+            "messageType": "AzureLinuxWebAppCorsSettings"
+          },
+          "description": "CORS (Cross-Origin Resource Sharing) configuration.\n Controls which origins are allowed to make cross-origin requests to\n the Web App's HTTP endpoints.",
+          "required": false
+        },
+        {
+          "name": "IpRestrictions",
+          "jsonName": "ipRestrictions",
+          "protoField": "ip_restrictions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AzureLinuxWebAppIpRestriction"
+            }
+          },
+          "description": "IP restriction rules for the main site.\n Controls which IP addresses, service tags, or subnets can access\n the Web App.",
+          "required": false
+        },
+        {
+          "name": "IpRestrictionDefaultAction",
+          "jsonName": "ipRestrictionDefaultAction",
+          "protoField": "ip_restriction_default_action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Default action for IP restrictions on the main site.\n When \"Allow\", unlisted IPs are allowed (rules are deny-list).\n When \"Deny\", unlisted IPs are denied (rules are allow-list).\n\n Default: \"Allow\"",
+          "required": false,
+          "default": "Allow",
+          "oneofGroup": "_ip_restriction_default_action"
+        },
+        {
+          "name": "ScmUseMainIpRestriction",
+          "jsonName": "scmUseMainIpRestriction",
+          "protoField": "scm_use_main_ip_restriction",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Use the main site's IP restrictions for the SCM (Kudu) site.\n When true, scm_ip_restrictions are ignored.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_scm_use_main_ip_restriction"
+        },
+        {
+          "name": "ScmIpRestrictions",
+          "jsonName": "scmIpRestrictions",
+          "protoField": "scm_ip_restrictions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AzureLinuxWebAppIpRestriction"
+            }
+          },
+          "description": "IP restriction rules for the SCM (Kudu) site.\n Only used when scm_use_main_ip_restriction is false.",
+          "required": false
+        },
+        {
+          "name": "ScmIpRestrictionDefaultAction",
+          "jsonName": "scmIpRestrictionDefaultAction",
+          "protoField": "scm_ip_restriction_default_action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Default action for IP restrictions on the SCM site.\n\n Default: \"Allow\"",
+          "required": false,
+          "default": "Allow",
+          "oneofGroup": "_scm_ip_restriction_default_action"
+        },
+        {
+          "name": "ContainerRegistryUseManagedIdentity",
+          "jsonName": "containerRegistryUseManagedIdentity",
+          "protoField": "container_registry_use_managed_identity",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Use managed identity for pulling container images from Azure Container Registry.\n Requires the Web App's identity to have AcrPull role on the registry.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_container_registry_use_managed_identity"
+        },
+        {
+          "name": "ContainerRegistryManagedIdentityClientId",
+          "jsonName": "containerRegistryManagedIdentityClientId",
+          "protoField": "container_registry_managed_identity_client_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Client ID of the managed identity used for ACR image pulls.\n Only used when container_registry_use_managed_identity is true and\n a user-assigned identity (not system-assigned) should be used.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureLinuxWebAppStorageMount",
+      "description": "AzureLinuxWebAppStorageMount defines an Azure Storage mount for\n the Web App. Mounts Azure File Shares or Blob containers as\n directories accessible to application code at runtime.",
+      "protoType": "org.openmcf.provider.azure.azurelinuxwebapp.v1.AzureLinuxWebAppStorageMount",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this mount within the Web App.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Storage type.\n\n Valid values:\n - \"AzureBlob\": Mount an Azure Blob container (read-only)\n - \"AzureFiles\": Mount an Azure File Share (read-write)",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AccountName",
+          "jsonName": "accountName",
+          "protoField": "account_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the Azure Storage Account that contains the share or container.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ShareName",
+          "jsonName": "shareName",
+          "protoField": "share_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the file share or blob container to mount.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "AccessKey",
+          "jsonName": "accessKey",
+          "protoField": "access_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Access key for the storage account.\n This is a sensitive credential.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "MountPath",
+          "jsonName": "mountPath",
+          "protoField": "mount_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path inside the container where the share is mounted.\n Example: \"/mnt/data\"",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

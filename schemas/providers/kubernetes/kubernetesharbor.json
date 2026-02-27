@@ -1,0 +1,1605 @@
+{
+  "name": "KubernetesHarbor",
+  "kind": "KubernetesHarbor",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "harbor-kubernetes",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetesharbor.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetesharbor/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetesharbor/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesHarborSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "Target Kubernetes Cluster",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes Namespace",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "CreateNamespace",
+        "jsonName": "createNamespace",
+        "protoField": "create_namespace",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "flag to indicate if the namespace should be created",
+        "required": false
+      },
+      {
+        "name": "CoreContainer",
+        "jsonName": "coreContainer",
+        "protoField": "core_container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesHarborContainer"
+        },
+        "description": "The container specifications for Harbor Core (API server, authentication, webhook).",
+        "required": false
+      },
+      {
+        "name": "PortalContainer",
+        "jsonName": "portalContainer",
+        "protoField": "portal_container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesHarborContainer"
+        },
+        "description": "The container specifications for Harbor Portal (web UI).",
+        "required": false
+      },
+      {
+        "name": "RegistryContainer",
+        "jsonName": "registryContainer",
+        "protoField": "registry_container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesHarborContainer"
+        },
+        "description": "The container specifications for Harbor Registry (Docker/OCI registry backend).",
+        "required": false
+      },
+      {
+        "name": "JobserviceContainer",
+        "jsonName": "jobserviceContainer",
+        "protoField": "jobservice_container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesHarborContainer"
+        },
+        "description": "The container specifications for Harbor Jobservice (background job execution).",
+        "required": false
+      },
+      {
+        "name": "Database",
+        "jsonName": "database",
+        "protoField": "database",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesHarborDatabaseConfig"
+        },
+        "description": "The database configuration for Harbor, supporting both self-managed and external PostgreSQL.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Cache",
+        "jsonName": "cache",
+        "protoField": "cache",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesHarborCacheConfig"
+        },
+        "description": "The cache configuration for Harbor, supporting both self-managed and external Redis.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Storage",
+        "jsonName": "storage",
+        "protoField": "storage",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesHarborStorageConfig"
+        },
+        "description": "The object storage configuration for Harbor artifact storage.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Ingress",
+        "jsonName": "ingress",
+        "protoField": "ingress",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesHarborIngress"
+        },
+        "description": "The ingress configuration for Harbor UI and registry endpoints.",
+        "required": false
+      },
+      {
+        "name": "HelmValues",
+        "jsonName": "helmValues",
+        "protoField": "helm_values",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "*\n A map of key-value pairs that provide additional customization options for the Harbor Helm chart.\n These values allow for further refinement of the deployment, such as enabling Trivy scanner,\n configuring Notary for image signing, or customizing authentication providers.\n For detailed information on available options, refer to the Helm chart documentation at:\n https://github.com/goharbor/harbor-helm",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ContainerImage",
+      "description": "**ContainerImage** represents the container image information.\n It includes the repository, tag, and optional image pull secret for private registries.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerImage",
+      "fields": [
+        {
+          "name": "Repo",
+          "jsonName": "repo",
+          "protoField": "repo",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The repository of the image (e.g., \"gcr.io/project/image\").",
+          "required": false
+        },
+        {
+          "name": "Tag",
+          "jsonName": "tag",
+          "protoField": "tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The tag of the image (e.g., \"latest\" or \"1.0.0\").",
+          "required": false
+        },
+        {
+          "name": "PullSecretName",
+          "jsonName": "pullSecretName",
+          "protoField": "pull_secret_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the image pull secret for private image repositories.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ContainerResources",
+      "description": "**ContainerResources** specifies the CPU and memory resources for a container.\n It allows you to define resource limits and requests to manage resource allocation and ensure optimal performance.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerResources",
+      "fields": [
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource limits for the container.\n Specify the maximum amount of CPU and memory that the container can use.",
+          "required": false
+        },
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource requests for the container.\n Specify the minimum amount of CPU and memory that the container is guaranteed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CpuMemory",
+      "description": "**CpuMemory** defines CPU and memory resource quantities for a container.\n It is used to specify the limits and requests for CPU and memory resources.",
+      "protoType": "org.openmcf.provider.kubernetes.CpuMemory",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborAzureStorage",
+      "description": "*\n **KubernetesHarborAzureStorage** defines Azure Blob Storage configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborAzureStorage",
+      "fields": [
+        {
+          "name": "AccountName",
+          "jsonName": "accountName",
+          "protoField": "account_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure storage account name.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AccountKey",
+          "jsonName": "accountKey",
+          "protoField": "account_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure storage account key.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Container",
+          "jsonName": "container",
+          "protoField": "container",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure blob container name.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "RootDirectory",
+          "jsonName": "rootDirectory",
+          "protoField": "root_directory",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The root directory path within the container.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborCacheConfig",
+      "description": "*\n **KubernetesHarborCacheConfig** defines the Redis cache configuration for Harbor.\n It supports two deployment modes:\n 1. Self-managed: Deploy Redis within the Kubernetes cluster (default).\n 2. External: Connect to an existing external Redis instance.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborCacheConfig",
+      "fields": [
+        {
+          "name": "IsExternal",
+          "jsonName": "isExternal",
+          "protoField": "is_external",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n Flag to enable using an external Redis cache.\n When false (default), Harbor will deploy and manage its own Redis instance.\n When true, the external_cache field must be configured.",
+          "required": false
+        },
+        {
+          "name": "ExternalCache",
+          "jsonName": "externalCache",
+          "protoField": "external_cache",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesHarborExternalRedis"
+          },
+          "description": "*\n External Redis cache connection details.\n This field is required when is_external is true and ignored when false.",
+          "required": false
+        },
+        {
+          "name": "ManagedCache",
+          "jsonName": "managedCache",
+          "protoField": "managed_cache",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesHarborManagedRedis"
+          },
+          "description": "*\n Self-managed Redis configuration.\n This field is used when is_external is false and configures the in-cluster Redis deployment.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborContainer",
+      "description": "*\n **KubernetesHarborContainer** specifies the container configuration for various Harbor components.\n It includes settings such as the number of replicas, container image, and resource allocations.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborContainer",
+      "fields": [
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of pods to deploy for this component.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "The CPU and memory resources allocated to the container.",
+          "required": false
+        },
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerImage"
+          },
+          "description": "The container image configuration (repository and tag).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborDatabaseConfig",
+      "description": "*\n **KubernetesHarborDatabaseConfig** defines the PostgreSQL database configuration for Harbor.\n It supports two deployment modes:\n 1. Self-managed: Deploy PostgreSQL within the Kubernetes cluster (default).\n 2. External: Connect to an existing external PostgreSQL instance.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborDatabaseConfig",
+      "fields": [
+        {
+          "name": "IsExternal",
+          "jsonName": "isExternal",
+          "protoField": "is_external",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n Flag to enable using an external PostgreSQL database.\n When false (default), Harbor will deploy and manage its own PostgreSQL instance.\n When true, the external_database field must be configured.",
+          "required": false
+        },
+        {
+          "name": "ExternalDatabase",
+          "jsonName": "externalDatabase",
+          "protoField": "external_database",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesHarborExternalPostgresql"
+          },
+          "description": "*\n External PostgreSQL database connection details.\n This field is required when is_external is true and ignored when false.",
+          "required": false
+        },
+        {
+          "name": "ManagedDatabase",
+          "jsonName": "managedDatabase",
+          "protoField": "managed_database",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesHarborManagedPostgresql"
+          },
+          "description": "*\n Self-managed PostgreSQL configuration.\n This field is used when is_external is false and configures the in-cluster PostgreSQL deployment.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborExternalPostgresql",
+      "description": "*\n **KubernetesHarborExternalPostgresql** defines connection parameters for an external PostgreSQL instance.\n This allows Harbor to use a pre-existing PostgreSQL database instead of deploying one within the cluster.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborExternalPostgresql",
+      "fields": [
+        {
+          "name": "Host",
+          "jsonName": "host",
+          "protoField": "host",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The hostname or endpoint of the external PostgreSQL instance.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The port for PostgreSQL (default is 5432).",
+          "required": false,
+          "validation": {
+            "max": 65535
+          },
+          "default": "5432",
+          "oneofGroup": "_port"
+        },
+        {
+          "name": "Username",
+          "jsonName": "username",
+          "protoField": "username",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The username for authenticating to PostgreSQL.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The password for authenticating to PostgreSQL.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "CoreDatabase",
+          "jsonName": "coreDatabase",
+          "protoField": "core_database",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the database for Harbor Core (default is \"registry\").",
+          "required": false,
+          "default": "registry",
+          "oneofGroup": "_core_database"
+        },
+        {
+          "name": "ClairDatabase",
+          "jsonName": "clairDatabase",
+          "protoField": "clair_database",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the database for Clair (vulnerability scanner).",
+          "required": false,
+          "default": "clair",
+          "oneofGroup": "_clair_database"
+        },
+        {
+          "name": "NotaryServerDatabase",
+          "jsonName": "notaryServerDatabase",
+          "protoField": "notary_server_database",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the database for Notary Server (image signing).",
+          "required": false,
+          "default": "notary_server",
+          "oneofGroup": "_notary_server_database"
+        },
+        {
+          "name": "NotarySignerDatabase",
+          "jsonName": "notarySignerDatabase",
+          "protoField": "notary_signer_database",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the database for Notary Signer (image signing).",
+          "required": false,
+          "default": "notary_signer",
+          "oneofGroup": "_notary_signer_database"
+        },
+        {
+          "name": "UseSsl",
+          "jsonName": "useSsl",
+          "protoField": "use_ssl",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to use SSL/TLS connection to PostgreSQL.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborExternalRedis",
+      "description": "*\n **KubernetesHarborExternalRedis** defines connection parameters for an external Redis instance.\n This allows Harbor to use a pre-existing Redis cache instead of deploying one within the cluster.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborExternalRedis",
+      "fields": [
+        {
+          "name": "Host",
+          "jsonName": "host",
+          "protoField": "host",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The hostname or endpoint of the external Redis instance (e.g., \"redis.example.com:6379\").",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The port for Redis (default is 6379).",
+          "required": false,
+          "validation": {
+            "max": 65535
+          },
+          "default": "6379",
+          "oneofGroup": "_port"
+        },
+        {
+          "name": "Username",
+          "jsonName": "username",
+          "protoField": "username",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The username for authenticating to Redis (if ACLs are enabled).",
+          "required": false
+        },
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The password for authenticating to Redis.",
+          "required": false
+        },
+        {
+          "name": "DatabaseIndex",
+          "jsonName": "databaseIndex",
+          "protoField": "database_index",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The Redis database index to use (default is 0).",
+          "required": false,
+          "default": "0",
+          "oneofGroup": "_database_index"
+        },
+        {
+          "name": "UseSentinel",
+          "jsonName": "useSentinel",
+          "protoField": "use_sentinel",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to use Sentinel for high availability.",
+          "required": false
+        },
+        {
+          "name": "SentinelMasterSet",
+          "jsonName": "sentinelMasterSet",
+          "protoField": "sentinel_master_set",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Sentinel master set name (required if use_sentinel is true).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborFilesystemStorage",
+      "description": "*\n **KubernetesHarborFilesystemStorage** defines filesystem (PVC) storage configuration.\n Note: This is not suitable for production high-availability deployments.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborFilesystemStorage",
+      "fields": [
+        {
+          "name": "DiskSize",
+          "jsonName": "diskSize",
+          "protoField": "disk_size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The size of the persistent volume for storing artifacts (e.g., \"100Gi\").\n Note: This value cannot be modified after creation due to Kubernetes PVC limitations.",
+          "required": false
+        },
+        {
+          "name": "StorageClass",
+          "jsonName": "storageClass",
+          "protoField": "storage_class",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The storage class to use for the PVC.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborGcsStorage",
+      "description": "*\n **KubernetesHarborGcsStorage** defines Google Cloud Storage configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborGcsStorage",
+      "fields": [
+        {
+          "name": "Bucket",
+          "jsonName": "bucket",
+          "protoField": "bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The GCS bucket name.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "KeyData",
+          "jsonName": "keyData",
+          "protoField": "key_data",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The base64-encoded service account key JSON.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "RootDirectory",
+          "jsonName": "rootDirectory",
+          "protoField": "root_directory",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The root directory path within the bucket.",
+          "required": false
+        },
+        {
+          "name": "ChunkSize",
+          "jsonName": "chunkSize",
+          "protoField": "chunk_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The chunk size for upload (default is 5242880 bytes).",
+          "required": false,
+          "default": "5242880",
+          "oneofGroup": "_chunk_size"
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborIngress",
+      "description": "*\n **KubernetesHarborIngress** defines the ingress configuration for Harbor endpoints.\n It provides separate ingress settings for the Core/Portal UI and Notary service.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborIngress",
+      "fields": [
+        {
+          "name": "Core",
+          "jsonName": "core",
+          "protoField": "core",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesHarborIngressEndpoint"
+          },
+          "description": "Ingress configuration for Harbor Core and Portal (web UI and API).",
+          "required": false
+        },
+        {
+          "name": "Notary",
+          "jsonName": "notary",
+          "protoField": "notary",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesHarborIngressEndpoint"
+          },
+          "description": "Ingress configuration for Notary service (image signing).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborIngressEndpoint",
+      "description": "*\n **KubernetesHarborIngressEndpoint** defines ingress configuration for a specific Harbor endpoint.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborIngressEndpoint",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Flag to enable or disable ingress for this endpoint.",
+          "required": false
+        },
+        {
+          "name": "Hostname",
+          "jsonName": "hostname",
+          "protoField": "hostname",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The full hostname for external access (e.g., \"harbor.example.com\").\n This hostname will be configured via Gateway API resources.\n Required when enabled is true.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborManagedPostgresql",
+      "description": "*\n **KubernetesHarborManagedPostgresql** defines configuration for a self-managed PostgreSQL deployment.\n This supports simple single-node deployments suitable for development and testing.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborManagedPostgresql",
+      "fields": [
+        {
+          "name": "Container",
+          "jsonName": "container",
+          "protoField": "container",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesHarborPostgresqlContainer"
+          },
+          "description": "The container specifications for PostgreSQL.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborManagedRedis",
+      "description": "*\n **KubernetesHarborManagedRedis** defines configuration for a self-managed Redis deployment.\n This supports simple single-node deployments suitable for development and testing.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborManagedRedis",
+      "fields": [
+        {
+          "name": "Container",
+          "jsonName": "container",
+          "protoField": "container",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesHarborRedisContainer"
+          },
+          "description": "The container specifications for Redis.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborOssStorage",
+      "description": "*\n **KubernetesHarborOssStorage** defines Alibaba Cloud OSS configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborOssStorage",
+      "fields": [
+        {
+          "name": "Bucket",
+          "jsonName": "bucket",
+          "protoField": "bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The OSS bucket name.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Endpoint",
+          "jsonName": "endpoint",
+          "protoField": "endpoint",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The OSS endpoint (e.g., \"oss-cn-hangzhou.aliyuncs.com\").",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AccessKeyId",
+          "jsonName": "accessKeyId",
+          "protoField": "access_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The access key ID.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AccessKeySecret",
+          "jsonName": "accessKeySecret",
+          "protoField": "access_key_secret",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The access key secret.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "RootDirectory",
+          "jsonName": "rootDirectory",
+          "protoField": "root_directory",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The root directory path within the bucket.",
+          "required": false
+        },
+        {
+          "name": "Secure",
+          "jsonName": "secure",
+          "protoField": "secure",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to use HTTPS.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborPostgresqlContainer",
+      "description": "*\n **KubernetesHarborPostgresqlContainer** specifies the container configuration for PostgreSQL.\n It includes replica count, resource allocations, and persistence settings.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborPostgresqlContainer",
+      "fields": [
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of PostgreSQL pods to deploy.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "The CPU and memory resources allocated to the PostgreSQL container.",
+          "required": false
+        },
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerImage"
+          },
+          "description": "The container image configuration for PostgreSQL.",
+          "required": false
+        },
+        {
+          "name": "PersistenceEnabled",
+          "jsonName": "persistenceEnabled",
+          "protoField": "persistence_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n Flag to enable or disable data persistence for PostgreSQL.\n When enabled, data is persisted to a storage volume, allowing data to survive pod restarts.\n Defaults to true.",
+          "required": false
+        },
+        {
+          "name": "DiskSize",
+          "jsonName": "diskSize",
+          "protoField": "disk_size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The size of the persistent volume attached to each PostgreSQL pod (e.g., \"20Gi\").\n This attribute is ignored when persistence is not enabled.\n Note: This value cannot be modified after creation due to Kubernetes StatefulSet limitations.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborRedisContainer",
+      "description": "*\n **KubernetesHarborRedisContainer** specifies the container configuration for Redis.\n It includes replica count, resource allocations, and persistence settings.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborRedisContainer",
+      "fields": [
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of Redis pods to deploy.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "The CPU and memory resources allocated to the Redis container.",
+          "required": false
+        },
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerImage"
+          },
+          "description": "The container image configuration for Redis.",
+          "required": false
+        },
+        {
+          "name": "PersistenceEnabled",
+          "jsonName": "persistenceEnabled",
+          "protoField": "persistence_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n Flag to enable or disable data persistence for Redis.\n When enabled, data is persisted to a storage volume, allowing data to survive pod restarts.\n Defaults to true.",
+          "required": false
+        },
+        {
+          "name": "DiskSize",
+          "jsonName": "diskSize",
+          "protoField": "disk_size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The size of the persistent volume attached to each Redis pod (e.g., \"8Gi\").\n This attribute is ignored when persistence is not enabled.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborS3Storage",
+      "description": "*\n **KubernetesHarborS3Storage** defines S3-compatible object storage configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborS3Storage",
+      "fields": [
+        {
+          "name": "Bucket",
+          "jsonName": "bucket",
+          "protoField": "bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The S3 bucket name.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Region",
+          "jsonName": "region",
+          "protoField": "region",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The AWS region (e.g., \"us-west-2\").",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AccessKey",
+          "jsonName": "accessKey",
+          "protoField": "access_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The AWS access key ID.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "SecretKey",
+          "jsonName": "secretKey",
+          "protoField": "secret_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The AWS secret access key.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "RegionEndpoint",
+          "jsonName": "regionEndpoint",
+          "protoField": "region_endpoint",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to use regional endpoint (default is false for global endpoint).",
+          "required": false
+        },
+        {
+          "name": "Encrypt",
+          "jsonName": "encrypt",
+          "protoField": "encrypt",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to encrypt objects using server-side encryption.",
+          "required": false
+        },
+        {
+          "name": "Secure",
+          "jsonName": "secure",
+          "protoField": "secure",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to use secure (HTTPS) connection.",
+          "required": false
+        },
+        {
+          "name": "RootDirectory",
+          "jsonName": "rootDirectory",
+          "protoField": "root_directory",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The root directory path within the bucket.",
+          "required": false
+        },
+        {
+          "name": "EndpointUrl",
+          "jsonName": "endpointUrl",
+          "protoField": "endpoint_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Custom S3 endpoint URL (for S3-compatible services like MinIO).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesHarborStorageConfig",
+      "description": "*\n **KubernetesHarborStorageConfig** defines the storage configuration for Harbor artifacts.\n For production high-availability deployments, external object storage (S3, GCS, Azure) is required.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborStorageConfig",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesharbor.v1.KubernetesHarborStorageType",
+            "enumValues": [
+              "filesystem",
+              "s3",
+              "gcs",
+              "azure",
+              "oss"
+            ]
+          },
+          "description": "The type of storage backend to use.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "S3",
+          "jsonName": "s3",
+          "protoField": "s3",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesHarborS3Storage"
+          },
+          "description": "S3-compatible storage configuration (required when type is s3).",
+          "required": false
+        },
+        {
+          "name": "Gcs",
+          "jsonName": "gcs",
+          "protoField": "gcs",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesHarborGcsStorage"
+          },
+          "description": "Google Cloud Storage configuration (required when type is gcs).",
+          "required": false
+        },
+        {
+          "name": "Azure",
+          "jsonName": "azure",
+          "protoField": "azure",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesHarborAzureStorage"
+          },
+          "description": "Azure Blob Storage configuration (required when type is azure).",
+          "required": false
+        },
+        {
+          "name": "Oss",
+          "jsonName": "oss",
+          "protoField": "oss",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesHarborOssStorage"
+          },
+          "description": "Alibaba Cloud OSS configuration (required when type is oss).",
+          "required": false
+        },
+        {
+          "name": "Filesystem",
+          "jsonName": "filesystem",
+          "protoField": "filesystem",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesHarborFilesystemStorage"
+          },
+          "description": "Filesystem storage configuration (required when type is filesystem).",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

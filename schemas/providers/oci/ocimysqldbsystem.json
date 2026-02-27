@@ -1,0 +1,751 @@
+{
+  "name": "OciMysqlDbSystem",
+  "kind": "OciMysqlDbSystem",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciMysqlDbSystem is the top-level resource representing an Oracle Cloud\n Infrastructure MySQL HeatWave Database System -- a fully managed MySQL\n database service with optional in-memory analytics acceleration.",
+  "protoPackage": "org.openmcf.provider.oci.ocimysqldbsystem.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocimysqldbsystem/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocimysqldbsystem/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciMysqlDbSystemSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the MySQL DB System will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable name shown in the OCI Console.\n Falls back to metadata.name if not provided.",
+        "required": false
+      },
+      {
+        "name": "AvailabilityDomain",
+        "jsonName": "availabilityDomain",
+        "protoField": "availability_domain",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Availability domain for the primary (read/write) endpoint.\n Example: \"Uocm:PHX-AD-1\". Changing this forces recreation.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ShapeName",
+        "jsonName": "shapeName",
+        "protoField": "shape_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Compute shape for the DB System. Determines CPU, memory, and network\n bandwidth. Examples: \"MySQL.VM.Standard.E4.1.8GB\",\n \"MySQL.VM.Standard.E4.4.64GB\", \"MySQL.HeatWave.VM.Standard\".",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the subnet where the DB System will be placed.\n Changing this forces recreation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciSubnet",
+        "referenceFieldPath": "status.outputs.subnetId"
+      },
+      {
+        "name": "AdminUsername",
+        "jsonName": "adminUsername",
+        "protoField": "admin_username",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Administrative username for the database. Changing this forces recreation.\n When omitted, the provider default applies.",
+        "required": false
+      },
+      {
+        "name": "AdminPassword",
+        "jsonName": "adminPassword",
+        "protoField": "admin_password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Administrative password for the database. Must be 8-32 characters and\n contain at least one numeric, one lowercase, one uppercase, and one\n special character. Changing this forces recreation.",
+        "required": false
+      },
+      {
+        "name": "MysqlVersion",
+        "jsonName": "mysqlVersion",
+        "protoField": "mysql_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "MySQL version identifier (e.g. \"8.0.36\", \"9.1.0\").\n When omitted, the latest available version is used.\n Changing this forces recreation.",
+        "required": false
+      },
+      {
+        "name": "ConfigurationId",
+        "jsonName": "configurationId",
+        "protoField": "configuration_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of a MySQL Configuration to apply to the DB System.\n Configurations define MySQL server variable settings (buffer pool size,\n max connections, etc.). When omitted, the default configuration for\n the selected shape is used.",
+        "required": false
+      },
+      {
+        "name": "IsHighlyAvailable",
+        "jsonName": "isHighlyAvailable",
+        "protoField": "is_highly_available",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, enables High Availability. Three instances are provisioned\n across different fault domains with automatic failover. Standby\n instances are not directly accessible.",
+        "required": false,
+        "oneofGroup": "_is_highly_available"
+      },
+      {
+        "name": "HostnameLabel",
+        "jsonName": "hostnameLabel",
+        "protoField": "hostname_label",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Hostname for the primary endpoint. Combined with the subnet's DNS\n domain to form the FQDN for database access.",
+        "required": false
+      },
+      {
+        "name": "IpAddress",
+        "jsonName": "ipAddress",
+        "protoField": "ip_address",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Specific private IP address for the primary endpoint within the\n subnet. When omitted, OCI auto-assigns an available IP.\n Changing this forces recreation.",
+        "required": false
+      },
+      {
+        "name": "FaultDomain",
+        "jsonName": "faultDomain",
+        "protoField": "fault_domain",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Fault domain for the primary (read/write) endpoint.\n Example: \"FAULT-DOMAIN-1\". Changing this forces recreation.",
+        "required": false
+      },
+      {
+        "name": "Port",
+        "jsonName": "port",
+        "protoField": "port",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "TCP port for the MySQL protocol on the primary endpoint.\n Default: 3306. Changing this forces recreation.",
+        "required": false
+      },
+      {
+        "name": "PortX",
+        "jsonName": "portX",
+        "protoField": "port_x",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "TCP port for the X Protocol (MySQL Shell, connectors) on the\n primary endpoint. Default: 33060. Changing this forces recreation.",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "User-provided description of the DB System.",
+        "required": false
+      },
+      {
+        "name": "CrashRecovery",
+        "jsonName": "crashRecovery",
+        "protoField": "crash_recovery",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Controls InnoDB crash recovery mechanisms (Redo Logs, Double Write\n Buffer, Binary Log syncing). Disabling improves write performance\n but risks data loss on unexpected failure. Values: \"ENABLED\",\n \"DISABLED\".",
+        "required": false
+      },
+      {
+        "name": "DatabaseManagement",
+        "jsonName": "databaseManagement",
+        "protoField": "database_management",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Enables monitoring via the OCI Database Management service.\n Values: \"ENABLED\", \"DISABLED\".",
+        "required": false
+      },
+      {
+        "name": "NsgIds",
+        "jsonName": "nsgIds",
+        "protoField": "nsg_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "OCIDs of network security groups for the DB System VNIC.",
+        "required": false,
+        "referenceKind": "OciSecurityGroup",
+        "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+      },
+      {
+        "name": "DataStorage",
+        "jsonName": "dataStorage",
+        "protoField": "data_storage",
+        "type": {
+          "kind": "message",
+          "messageType": "DataStorage"
+        },
+        "description": "Data storage configuration. Uses the modern data_storage block\n (the legacy top-level data_storage_size_in_gb is deprecated).",
+        "required": false
+      },
+      {
+        "name": "BackupPolicy",
+        "jsonName": "backupPolicy",
+        "protoField": "backup_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "BackupPolicy"
+        },
+        "description": "Automatic backup configuration.",
+        "required": false
+      },
+      {
+        "name": "Maintenance",
+        "jsonName": "maintenance",
+        "protoField": "maintenance",
+        "type": {
+          "kind": "message",
+          "messageType": "Maintenance"
+        },
+        "description": "Maintenance window configuration.",
+        "required": false
+      },
+      {
+        "name": "DeletionPolicy",
+        "jsonName": "deletionPolicy",
+        "protoField": "deletion_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "DeletionPolicy"
+        },
+        "description": "Deletion safety configuration.",
+        "required": false
+      },
+      {
+        "name": "EncryptData",
+        "jsonName": "encryptData",
+        "protoField": "encrypt_data",
+        "type": {
+          "kind": "message",
+          "messageType": "EncryptData"
+        },
+        "description": "Data-at-rest encryption configuration.",
+        "required": false
+      },
+      {
+        "name": "SecureConnections",
+        "jsonName": "secureConnections",
+        "protoField": "secure_connections",
+        "type": {
+          "kind": "message",
+          "messageType": "SecureConnections"
+        },
+        "description": "TLS certificate configuration for client connections.",
+        "required": false
+      },
+      {
+        "name": "CustomerContacts",
+        "jsonName": "customerContacts",
+        "protoField": "customer_contacts",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "CustomerContact"
+          }
+        },
+        "description": "Customer contact email addresses for operational notifications\n (maintenance windows, critical alerts). Maximum 10 contacts.",
+        "required": false,
+        "validation": {
+          "maxItems": 10
+        }
+      },
+      {
+        "name": "ReadEndpoint",
+        "jsonName": "readEndpoint",
+        "protoField": "read_endpoint",
+        "type": {
+          "kind": "message",
+          "messageType": "ReadEndpoint"
+        },
+        "description": "Read-only endpoint configuration for read scaling.",
+        "required": false
+      },
+      {
+        "name": "DatabaseConsole",
+        "jsonName": "databaseConsole",
+        "protoField": "database_console",
+        "type": {
+          "kind": "message",
+          "messageType": "DatabaseConsole"
+        },
+        "description": "MySQL Database Console (web-based management UI) configuration.",
+        "required": false
+      },
+      {
+        "name": "Rest",
+        "jsonName": "rest",
+        "protoField": "rest",
+        "type": {
+          "kind": "message",
+          "messageType": "Rest"
+        },
+        "description": "MySQL REST API service configuration.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "BackupPolicy",
+      "description": "BackupPolicy configures automatic backups for the DB System.",
+      "protoType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.OciMysqlDbSystemSpec.BackupPolicy",
+      "fields": [
+        {
+          "name": "IsEnabled",
+          "jsonName": "isEnabled",
+          "protoField": "is_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether automatic backups are enabled.",
+          "required": false,
+          "oneofGroup": "_is_enabled"
+        },
+        {
+          "name": "RetentionInDays",
+          "jsonName": "retentionInDays",
+          "protoField": "retention_in_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of days to retain automatic backups.",
+          "required": false
+        },
+        {
+          "name": "WindowStartTime",
+          "jsonName": "windowStartTime",
+          "protoField": "window_start_time",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Start of the 30-minute daily backup window in RFC3339 time format\n (e.g. \"03:00\"). When omitted, OCI selects the window.",
+          "required": false
+        },
+        {
+          "name": "PitrPolicy",
+          "jsonName": "pitrPolicy",
+          "protoField": "pitr_policy",
+          "type": {
+            "kind": "message",
+            "messageType": "PitrPolicy"
+          },
+          "description": "Point-in-time recovery configuration.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CustomerContact",
+      "description": "CustomerContact holds a single customer contact email for notifications.",
+      "protoType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.OciMysqlDbSystemSpec.CustomerContact",
+      "fields": [
+        {
+          "name": "Email",
+          "jsonName": "email",
+          "protoField": "email",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Email address for operational notifications.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "DataStorage",
+      "description": "DataStorage configures the data volume for the DB System.",
+      "protoType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.OciMysqlDbSystemSpec.DataStorage",
+      "fields": [
+        {
+          "name": "DataStorageSizeInGb",
+          "jsonName": "dataStorageSizeInGb",
+          "protoField": "data_storage_size_in_gb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Initial data volume size in gigabytes. Supported values depend on\n the shape (typically 50 GB minimum).",
+          "required": false
+        },
+        {
+          "name": "IsAutoExpandStorageEnabled",
+          "jsonName": "isAutoExpandStorageEnabled",
+          "protoField": "is_auto_expand_storage_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, storage automatically expands when usage nears the limit.",
+          "required": false,
+          "oneofGroup": "_is_auto_expand_storage_enabled"
+        },
+        {
+          "name": "MaxStorageSizeInGbs",
+          "jsonName": "maxStorageSizeInGbs",
+          "protoField": "max_storage_size_in_gbs",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum storage size in gigabytes for auto-expansion.\n Only effective when is_auto_expand_storage_enabled is true.\n Range: 32768-131072 depending on initial size.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "DatabaseConsole",
+      "description": "DatabaseConsole configures the web-based MySQL management console.",
+      "protoType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.OciMysqlDbSystemSpec.DatabaseConsole",
+      "fields": [
+        {
+          "name": "Status",
+          "jsonName": "status",
+          "protoField": "status",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.DatabaseConsoleStatus",
+            "enumValues": [
+              "enabled",
+              "disabled"
+            ]
+          },
+          "description": "Whether the database console is enabled or disabled.",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port for the database console. Valid values: 443 or 1024-65535.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "DeletionPolicy",
+      "description": "DeletionPolicy controls behavior when the DB System is deleted.",
+      "protoType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.OciMysqlDbSystemSpec.DeletionPolicy",
+      "fields": [
+        {
+          "name": "AutomaticBackupRetention",
+          "jsonName": "automaticBackupRetention",
+          "protoField": "automatic_backup_retention",
+          "type": {
+            "kind": "string"
+          },
+          "description": "What to do with automatic backups on deletion.\n Values: \"DELETE\", \"RETAIN\".",
+          "required": false
+        },
+        {
+          "name": "FinalBackup",
+          "jsonName": "finalBackup",
+          "protoField": "final_backup",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Whether to create a final backup before deletion.\n Values: \"REQUIRE_FINAL_BACKUP\", \"SKIP_FINAL_BACKUP\".",
+          "required": false
+        },
+        {
+          "name": "IsDeleteProtected",
+          "jsonName": "isDeleteProtected",
+          "protoField": "is_delete_protected",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, the DB System cannot be deleted. Must be set to false\n before deletion is possible.",
+          "required": false,
+          "oneofGroup": "_is_delete_protected"
+        }
+      ]
+    },
+    {
+      "name": "EncryptData",
+      "description": "EncryptData configures data-at-rest encryption for the DB System.",
+      "protoType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.OciMysqlDbSystemSpec.EncryptData",
+      "fields": [
+        {
+          "name": "KeyGenerationType",
+          "jsonName": "keyGenerationType",
+          "protoField": "key_generation_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.KeyGenerationType",
+            "enumValues": [
+              "system",
+              "byok"
+            ]
+          },
+          "description": "Key generation strategy. \"system\" uses Oracle-managed keys.\n \"byok\" (Bring Your Own Key) requires key_id to be set.",
+          "required": false
+        },
+        {
+          "name": "KeyId",
+          "jsonName": "keyId",
+          "protoField": "key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the customer-managed encryption key. Required when\n key_generation_type is byok.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Maintenance",
+      "description": "Maintenance configures the maintenance window for the DB System.",
+      "protoType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.OciMysqlDbSystemSpec.Maintenance",
+      "fields": [
+        {
+          "name": "WindowStartTime",
+          "jsonName": "windowStartTime",
+          "protoField": "window_start_time",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Start of the maintenance window. Format: \"{day-of-week} {time-of-day}\"\n (e.g. \"mon 10:00\"). Required when maintenance is configured.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "MaintenanceScheduleType",
+          "jsonName": "maintenanceScheduleType",
+          "protoField": "maintenance_schedule_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.MaintenanceScheduleType",
+            "enumValues": [
+              "early",
+              "regular"
+            ]
+          },
+          "description": "Maintenance schedule type.",
+          "required": false
+        },
+        {
+          "name": "VersionPreference",
+          "jsonName": "versionPreference",
+          "protoField": "version_preference",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.VersionPreference",
+            "enumValues": [
+              "oldest",
+              "second_newest",
+              "newest"
+            ]
+          },
+          "description": "Version preference for automatic upgrades.",
+          "required": false
+        },
+        {
+          "name": "VersionTrackPreference",
+          "jsonName": "versionTrackPreference",
+          "protoField": "version_track_preference",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.VersionTrackPreference",
+            "enumValues": [
+              "long_term_support",
+              "innovation",
+              "follow"
+            ]
+          },
+          "description": "Version track preference controlling which release stream to follow.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "PitrPolicy",
+      "description": "PitrPolicy configures point-in-time recovery for the DB System.",
+      "protoType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.OciMysqlDbSystemSpec.PitrPolicy",
+      "fields": [
+        {
+          "name": "IsEnabled",
+          "jsonName": "isEnabled",
+          "protoField": "is_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether point-in-time recovery is enabled. Requires automatic\n backups to be enabled.",
+          "required": false,
+          "oneofGroup": "_is_enabled"
+        }
+      ]
+    },
+    {
+      "name": "ReadEndpoint",
+      "description": "ReadEndpoint configures the read-only endpoint for read scaling.\n When enabled, a separate DNS endpoint is created that distributes\n read queries across HA replicas.",
+      "protoType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.OciMysqlDbSystemSpec.ReadEndpoint",
+      "fields": [
+        {
+          "name": "IsEnabled",
+          "jsonName": "isEnabled",
+          "protoField": "is_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the read endpoint is enabled.",
+          "required": false,
+          "oneofGroup": "_is_enabled"
+        },
+        {
+          "name": "ExcludeIps",
+          "jsonName": "excludeIps",
+          "protoField": "exclude_ips",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "IP addresses to exclude from serving read requests.",
+          "required": false
+        },
+        {
+          "name": "ReadEndpointHostnameLabel",
+          "jsonName": "readEndpointHostnameLabel",
+          "protoField": "read_endpoint_hostname_label",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Hostname for the read endpoint. Combined with the subnet's DNS\n domain to form the read endpoint FQDN.",
+          "required": false
+        },
+        {
+          "name": "ReadEndpointIpAddress",
+          "jsonName": "readEndpointIpAddress",
+          "protoField": "read_endpoint_ip_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specific private IP address for the read endpoint.\n When omitted, OCI auto-assigns an available IP.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Rest",
+      "description": "Rest configures the MySQL REST API service (MySQL Router REST API).",
+      "protoType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.OciMysqlDbSystemSpec.Rest",
+      "fields": [
+        {
+          "name": "Configuration",
+          "jsonName": "configuration",
+          "protoField": "configuration",
+          "type": {
+            "kind": "string"
+          },
+          "description": "REST API configuration mode.",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port for the REST API service. Valid values: 443 or 1024-65535.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "SecureConnections",
+      "description": "SecureConnections configures TLS certificates for client connections.",
+      "protoType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.OciMysqlDbSystemSpec.SecureConnections",
+      "fields": [
+        {
+          "name": "CertificateGenerationType",
+          "jsonName": "certificateGenerationType",
+          "protoField": "certificate_generation_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocimysqldbsystem.v1.CertificateGenerationType",
+            "enumValues": [
+              "system_cert",
+              "byoc"
+            ]
+          },
+          "description": "Certificate generation strategy. \"system\" uses Oracle-managed\n certificates. \"byoc\" (Bring Your Own Certificate) requires\n certificate_id to be set.",
+          "required": false
+        },
+        {
+          "name": "CertificateId",
+          "jsonName": "certificateId",
+          "protoField": "certificate_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the customer-managed certificate. Required when\n certificate_generation_type is byoc.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

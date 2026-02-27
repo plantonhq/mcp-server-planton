@@ -1,0 +1,1149 @@
+{
+  "name": "KubernetesCronJob",
+  "kind": "KubernetesCronJob",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "cron-job-kubernetes",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetescronjob.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetescronjob/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetescronjob/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesCronJobSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "Target Kubernetes Cluster",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes Namespace",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "CreateNamespace",
+        "jsonName": "createNamespace",
+        "protoField": "create_namespace",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "flag to indicate if the namespace should be created",
+        "required": false
+      },
+      {
+        "name": "Image",
+        "jsonName": "image",
+        "protoField": "image",
+        "type": {
+          "kind": "message",
+          "messageType": "ContainerImage"
+        },
+        "description": "*\n The container image to be used for the application.\n The `pull_secret_name` is determined by looking up the\n `container_image_artifact_store_id` from the environment where the cron-job is deployed.",
+        "required": false
+      },
+      {
+        "name": "Resources",
+        "jsonName": "resources",
+        "protoField": "resources",
+        "type": {
+          "kind": "message",
+          "messageType": "ContainerResources"
+        },
+        "description": "*\n The CPU and memory resources allocated to the cron-job container.\n If not specified, default container resources (limits.cpu=1000m, limits.memory=1Gi,\n requests.cpu=50m, requests.memory=100Mi) are applied.",
+        "required": false
+      },
+      {
+        "name": "Env",
+        "jsonName": "env",
+        "protoField": "env",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesCronJobContainerAppEnv"
+        },
+        "description": "*\n Environment variables and secrets for the cron-job container.\n This includes both straightforward environment variables (key=value)\n and references to secrets.",
+        "required": false
+      },
+      {
+        "name": "Schedule",
+        "jsonName": "schedule",
+        "protoField": "schedule",
+        "type": {
+          "kind": "string"
+        },
+        "description": "*\n A cron schedule expression in standard Cron format, e.g. \"0 0 * * *\".\n This field is required.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "StartingDeadlineSeconds",
+        "jsonName": "startingDeadlineSeconds",
+        "protoField": "starting_deadline_seconds",
+        "type": {
+          "kind": "uint64"
+        },
+        "description": "*\n Optional deadline in seconds for starting the job if it misses its scheduled time.\n If set to 0, no deadline is enforced.",
+        "required": false,
+        "default": "0",
+        "oneofGroup": "_starting_deadline_seconds"
+      },
+      {
+        "name": "ConcurrencyPolicy",
+        "jsonName": "concurrencyPolicy",
+        "protoField": "concurrency_policy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "*\n Concurrency policy specifies how concurrent job runs are handled.\n Allowed values are: \"Allow\", \"Forbid\", \"Replace\".\n Default is \"Forbid\".",
+        "required": false,
+        "validation": {
+          "enum": [
+            "Allow",
+            "Forbid",
+            "Replace"
+          ]
+        },
+        "default": "Forbid",
+        "oneofGroup": "_concurrency_policy"
+      },
+      {
+        "name": "Suspend",
+        "jsonName": "suspend",
+        "protoField": "suspend",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "*\n If true, no subsequent runs are scheduled.\n Default is false.",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_suspend"
+      },
+      {
+        "name": "SuccessfulJobsHistoryLimit",
+        "jsonName": "successfulJobsHistoryLimit",
+        "protoField": "successful_jobs_history_limit",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "*\n Number of successful finished jobs to retain.\n Default is 3.",
+        "required": false,
+        "default": "3",
+        "oneofGroup": "_successful_jobs_history_limit"
+      },
+      {
+        "name": "FailedJobsHistoryLimit",
+        "jsonName": "failedJobsHistoryLimit",
+        "protoField": "failed_jobs_history_limit",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "*\n Number of failed finished jobs to retain.\n Default is 1.",
+        "required": false,
+        "default": "1",
+        "oneofGroup": "_failed_jobs_history_limit"
+      },
+      {
+        "name": "BackoffLimit",
+        "jsonName": "backoffLimit",
+        "protoField": "backoff_limit",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "*\n Number of retries before marking this job as failed.\n Default is 6.",
+        "required": false,
+        "default": "6",
+        "oneofGroup": "_backoff_limit"
+      },
+      {
+        "name": "RestartPolicy",
+        "jsonName": "restartPolicy",
+        "protoField": "restart_policy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "*\n Pod restart policy.\n Allowed values: \"Always\", \"OnFailure\", \"Never\".\n Default is \"Never\".",
+        "required": false,
+        "validation": {
+          "enum": [
+            "Always",
+            "OnFailure",
+            "Never"
+          ]
+        },
+        "default": "Never",
+        "oneofGroup": "_restart_policy"
+      },
+      {
+        "name": "Command",
+        "jsonName": "command",
+        "protoField": "command",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "*\n An optional list of commands (equivalent to an ENTRYPOINT override) for the cron-job container.\n If omitted, the default ENTRYPOINT in the image will be used.\n Example: [\"sh\",\"-c\",\"echo Hello from Cron\"]",
+        "required": false
+      },
+      {
+        "name": "Args",
+        "jsonName": "args",
+        "protoField": "args",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "*\n An optional list of arguments passed to the container command or the image's default ENTRYPOINT.\n If omitted, the default CMD in the image will be used.\n Example: [\"-f\",\"/path/to/config.yaml\"]",
+        "required": false
+      },
+      {
+        "name": "ConfigMaps",
+        "jsonName": "configMaps",
+        "protoField": "config_maps",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "*\n ConfigMaps to create alongside the CronJob.\n Key is the ConfigMap name, value is the content.\n These ConfigMaps can be referenced in volume mounts.\n\n Example:\n   config_maps:\n     backup-script: |\n       #!/bin/bash\n       echo \"Running backup...\"\n       pg_dump $DATABASE_URL \u003e /backup/dump.sql",
+        "required": false
+      },
+      {
+        "name": "VolumeMounts",
+        "jsonName": "volumeMounts",
+        "protoField": "volume_mounts",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "VolumeMount"
+          }
+        },
+        "description": "*\n Volume mounts for the CronJob container.\n Supports mounting ConfigMaps, Secrets, HostPaths, EmptyDirs, and PVCs.\n ConfigMaps defined in spec.config_maps can be referenced here.\n\n Example:\n   volume_mounts:\n     - name: backup-script\n       mountPath: /scripts/backup.sh\n       configMap:\n         name: backup-script\n         key: backup-script\n         path: backup.sh",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ConfigMapVolumeSource",
+      "description": "*\n ConfigMapVolumeSource mounts a ConfigMap as a volume.\n The ConfigMap can be one defined in spec.config_maps or an existing ConfigMap in the namespace.\n\n When 'key' is specified, only that key is mounted as a single file.\n When 'key' is not specified, all keys are mounted as files in the directory.\n\n Example - Mount entire ConfigMap as directory:\n   configMap:\n     name: app-config\n\n Example - Mount single key as file:\n   configMap:\n     name: app-config\n     key: database.yaml\n     path: db-config.yaml",
+      "protoType": "org.openmcf.provider.kubernetes.ConfigMapVolumeSource",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the ConfigMap to mount.\n Can reference a ConfigMap defined in spec.config_maps or an existing one in the namespace.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specific key from the ConfigMap to mount as a single file.\n If not specified, all keys are mounted as files in the directory.",
+          "required": false
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "If key is specified, this is the filename to use for the mounted file.\n Defaults to the key name if not specified.\n Example: key=\"config\" path=\"app.yaml\" mounts the \"config\" key as \"app.yaml\"",
+          "required": false
+        },
+        {
+          "name": "DefaultMode",
+          "jsonName": "defaultMode",
+          "protoField": "default_mode",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Mode bits to use on created files. Must be a value between 0 and 0777.\n Defaults to 0644.\n Use 0755 (493 in decimal) for executable scripts.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ContainerImage",
+      "description": "**ContainerImage** represents the container image information.\n It includes the repository, tag, and optional image pull secret for private registries.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerImage",
+      "fields": [
+        {
+          "name": "Repo",
+          "jsonName": "repo",
+          "protoField": "repo",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The repository of the image (e.g., \"gcr.io/project/image\").",
+          "required": false
+        },
+        {
+          "name": "Tag",
+          "jsonName": "tag",
+          "protoField": "tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The tag of the image (e.g., \"latest\" or \"1.0.0\").",
+          "required": false
+        },
+        {
+          "name": "PullSecretName",
+          "jsonName": "pullSecretName",
+          "protoField": "pull_secret_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the image pull secret for private image repositories.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ContainerResources",
+      "description": "**ContainerResources** specifies the CPU and memory resources for a container.\n It allows you to define resource limits and requests to manage resource allocation and ensure optimal performance.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerResources",
+      "fields": [
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource limits for the container.\n Specify the maximum amount of CPU and memory that the container can use.",
+          "required": false
+        },
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource requests for the container.\n Specify the minimum amount of CPU and memory that the container is guaranteed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CpuMemory",
+      "description": "**CpuMemory** defines CPU and memory resource quantities for a container.\n It is used to specify the limits and requests for CPU and memory resources.",
+      "protoType": "org.openmcf.provider.kubernetes.CpuMemory",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "EmptyDirVolumeSource",
+      "description": "*\n EmptyDirVolumeSource creates an empty directory for temporary storage.\n The directory is created when a pod is assigned to a node and exists as long as the pod runs.\n Data is deleted when the pod is removed.\n\n Use cases:\n - Scratch space for computations\n - Checkpoint storage for crash recovery\n - Shared space between containers in a pod\n\n Example - Default (disk-backed):\n   emptyDir: {}\n\n Example - Memory-backed (faster, but uses RAM):\n   emptyDir:\n     medium: Memory\n     sizeLimit: 256Mi",
+      "protoType": "org.openmcf.provider.kubernetes.EmptyDirVolumeSource",
+      "fields": [
+        {
+          "name": "Medium",
+          "jsonName": "medium",
+          "protoField": "medium",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Medium for the empty directory.\n \"\" (default) uses the node's default medium (typically disk).\n \"Memory\" uses a tmpfs (RAM-backed filesystem).\n\n Memory-backed volumes are faster but:\n - Count against container memory limits\n - Are lost on node restart\n - Should have sizeLimit set to prevent OOM",
+          "required": false
+        },
+        {
+          "name": "SizeLimit",
+          "jsonName": "sizeLimit",
+          "protoField": "size_limit",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Size limit for the empty directory.\n Format: Kubernetes quantity (e.g., \"1Gi\", \"500Mi\").\n Only strictly enforced when medium is \"Memory\".\n For disk-backed volumes, this is a best-effort limit.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "HostPathVolumeSource",
+      "description": "*\n HostPathVolumeSource mounts a file or directory from the host node's filesystem.\n Use with caution as it ties pods to specific nodes.\n\n Common use cases:\n - Log collection DaemonSets mounting /var/log\n - Node monitoring agents mounting /sys or /proc\n - Container runtime sockets (e.g., /var/run/docker.sock)\n\n Example:\n   hostPath:\n     path: /var/log\n     type: Directory",
+      "protoType": "org.openmcf.provider.kubernetes.HostPathVolumeSource",
+      "fields": [
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path on the host to mount.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Type of the host path.\n Valid values:\n   \"\" - Empty string (default) means no check is performed before mounting\n   \"DirectoryOrCreate\" - Create directory if it doesn't exist\n   \"Directory\" - Directory must exist\n   \"FileOrCreate\" - Create file if it doesn't exist\n   \"File\" - File must exist\n   \"Socket\" - UNIX socket must exist\n   \"CharDevice\" - Character device must exist\n   \"BlockDevice\" - Block device must exist",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesCronJobContainerAppEnv",
+      "description": "*\n KubernetesCronJobContainerAppEnv defines the environment variables\n and secrets for the cron-job container.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetescronjob.v1.KubernetesCronJobContainerAppEnv",
+      "fields": [
+        {
+          "name": "Variables",
+          "jsonName": "variables",
+          "protoField": "variables",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "*\n A map of environment variable names to their values.\n Each variable can be provided either as a literal string value or as a reference\n to another OpenMCF resource's field.\n\n **Option 1: Direct string value**\n ```yaml\n variables:\n   BACKUP_RETENTION_DAYS:\n     value: \"30\"\n ```\n\n **Option 2: Reference to another resource's field**\n ```yaml\n variables:\n   DATABASE_HOST:\n     valueFrom:\n       kind: PostgresCluster\n       name: my-postgres\n       fieldPath: \"status.outputs.host\"\n ```\n\n When using valueFrom references, the orchestrator resolves the reference\n and populates the value field before invoking the IaC modules.",
+          "required": false
+        },
+        {
+          "name": "Secrets",
+          "jsonName": "secrets",
+          "protoField": "secrets",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "message",
+              "messageType": "KubernetesSensitiveValue"
+            }
+          },
+          "description": "*\n A map of secret environment variable names to their values.\n Each secret can be provided either as a literal string value or as a reference\n to an existing Kubernetes Secret.\n\n Using secret references is recommended for production deployments.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSecretKeyRef",
+      "description": "*\n **KubernetesSecretKeyRef** is a reference to a specific key within a Kubernetes Secret.\n This allows components to retrieve sensitive values from existing secrets rather than\n storing them as plain text in the configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesSecretKeyRef",
+      "fields": [
+        {
+          "name": "Namespace",
+          "jsonName": "namespace",
+          "protoField": "namespace",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The namespace of the Kubernetes Secret.\n If not specified, defaults to the namespace where the component is deployed.\n Note: Cross-namespace secret references may not be supported by all Helm charts.",
+          "required": false
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The name of the Kubernetes Secret.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The key within the Kubernetes Secret that contains the value.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSensitiveValue",
+      "description": "*\n **KubernetesSensitiveValue** represents a sensitive value that can be provided either\n as a literal string or as a reference to a Kubernetes Secret.\n\n Using secret references is recommended for production deployments to avoid storing\n sensitive values in plain text within configuration files or version control.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesSensitiveValue",
+      "fields": [
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n A literal string value.\n Warning: Using plain text for sensitive values is not recommended for production.\n Consider using secret_ref instead.",
+          "required": false,
+          "oneofGroup": "sensitive_value"
+        },
+        {
+          "name": "SecretRef",
+          "jsonName": "secretRef",
+          "protoField": "secret_ref",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSecretKeyRef"
+          },
+          "description": "*\n A reference to a key within a Kubernetes Secret.\n The secret must exist in the cluster before the component is deployed.",
+          "required": false,
+          "oneofGroup": "sensitive_value"
+        }
+      ]
+    },
+    {
+      "name": "PvcVolumeSource",
+      "description": "*\n PvcVolumeSource mounts an existing PersistentVolumeClaim.\n\n For StatefulSets: The claimName can reference a volumeClaimTemplate name,\n and the StatefulSet controller will automatically handle per-pod PVC binding.\n\n Example:\n   pvc:\n     claimName: data-volume\n     readOnly: false",
+      "protoType": "org.openmcf.provider.kubernetes.PvcVolumeSource",
+      "fields": [
+        {
+          "name": "ClaimName",
+          "jsonName": "claimName",
+          "protoField": "claim_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the PersistentVolumeClaim to mount.\n For StatefulSets, this can be the name of a volumeClaimTemplate.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ReadOnly",
+          "jsonName": "readOnly",
+          "protoField": "read_only",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the PVC should be mounted read-only.\n Default is false.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "SecretVolumeSource",
+      "description": "*\n SecretVolumeSource mounts a Secret as a volume.\n Works similarly to ConfigMapVolumeSource but for sensitive data.\n\n Example:\n   secret:\n     name: tls-certs\n     key: tls.crt\n     path: server.crt",
+      "protoType": "org.openmcf.provider.kubernetes.SecretVolumeSource",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the Secret to mount.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specific key from the Secret to mount as a single file.\n If not specified, all keys are mounted as files in the directory.",
+          "required": false
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "If key is specified, this is the filename to use for the mounted file.\n Defaults to the key name if not specified.",
+          "required": false
+        },
+        {
+          "name": "DefaultMode",
+          "jsonName": "defaultMode",
+          "protoField": "default_mode",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Mode bits to use on created files. Must be a value between 0 and 0777.\n Defaults to 0644.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "VolumeMount",
+      "description": "*\n VolumeMount defines how to mount a volume into a container.\n Supports multiple volume types: ConfigMap, Secret, HostPath, EmptyDir, and PVC.\n Only one volume source should be specified per mount.\n\n Example usage:\n   volumeMounts:\n     - name: config\n       mountPath: /etc/app/config.yaml\n       configMap:\n         name: app-config\n         key: config.yaml\n     - name: logs\n       mountPath: /var/log\n       hostPath:\n         path: /var/log\n         type: Directory",
+      "protoType": "org.openmcf.provider.kubernetes.VolumeMount",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the volume mount. Must be unique within the container.\n Used to correlate with the volume definition.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "MountPath",
+          "jsonName": "mountPath",
+          "protoField": "mount_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path within the container at which the volume should be mounted.\n Must be an absolute path.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ReadOnly",
+          "jsonName": "readOnly",
+          "protoField": "read_only",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the volume should be mounted read-only.\n Default is false.",
+          "required": false
+        },
+        {
+          "name": "SubPath",
+          "jsonName": "subPath",
+          "protoField": "sub_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Path within the volume from which the container's volume should be mounted.\n Defaults to \"\" (volume's root).\n Useful for mounting a subdirectory of a volume.",
+          "required": false
+        },
+        {
+          "name": "ConfigMap",
+          "jsonName": "configMap",
+          "protoField": "config_map",
+          "type": {
+            "kind": "message",
+            "messageType": "ConfigMapVolumeSource"
+          },
+          "description": "ConfigMap volume source.\n Use this to mount a ConfigMap as a file or directory.",
+          "required": false
+        },
+        {
+          "name": "Secret",
+          "jsonName": "secret",
+          "protoField": "secret",
+          "type": {
+            "kind": "message",
+            "messageType": "SecretVolumeSource"
+          },
+          "description": "Secret volume source.\n Use this to mount a Secret as a file or directory.",
+          "required": false
+        },
+        {
+          "name": "HostPath",
+          "jsonName": "hostPath",
+          "protoField": "host_path",
+          "type": {
+            "kind": "message",
+            "messageType": "HostPathVolumeSource"
+          },
+          "description": "HostPath volume source.\n Use this to mount a file or directory from the host node's filesystem.\n Common for DaemonSets that need access to node-level resources.",
+          "required": false
+        },
+        {
+          "name": "EmptyDir",
+          "jsonName": "emptyDir",
+          "protoField": "empty_dir",
+          "type": {
+            "kind": "message",
+            "messageType": "EmptyDirVolumeSource"
+          },
+          "description": "EmptyDir volume source.\n Use this for temporary storage that is erased when the pod is removed.\n Useful for scratch space, caching, or sharing data between containers.",
+          "required": false
+        },
+        {
+          "name": "Pvc",
+          "jsonName": "pvc",
+          "protoField": "pvc",
+          "type": {
+            "kind": "message",
+            "messageType": "PvcVolumeSource"
+          },
+          "description": "PersistentVolumeClaim volume source.\n Use this to mount an existing PVC.\n For StatefulSets, this can reference a volumeClaimTemplate.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

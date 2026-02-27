@@ -1,0 +1,186 @@
+{
+  "name": "DigitalOceanDroplet",
+  "kind": "DigitalOceanDroplet",
+  "cloudProvider": "digitalocean",
+  "apiVersion": "digital-ocean.openmcf.org/v1",
+  "description": "digital-ocean-droplet",
+  "protoPackage": "org.openmcf.provider.digitalocean.digitaloceandroplet.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/digitalocean/digitaloceandroplet/v1/api.proto",
+    "spec": "org/openmcf/provider/digitalocean/digitaloceandroplet/v1/spec.proto"
+  },
+  "spec": {
+    "name": "DigitalOceanDropletSpec",
+    "fields": [
+      {
+        "name": "DropletName",
+        "jsonName": "dropletName",
+        "protoField": "droplet_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "droplet hostname (DNS-compatible, \u003c=63 chars)",
+        "required": true,
+        "validation": {
+          "required": true,
+          "maxLength": 63,
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.DigitalOceanRegion",
+          "enumValues": [
+            "nyc3",
+            "sfo3",
+            "fra1",
+            "sgp1",
+            "lon1",
+            "tor1",
+            "blr1",
+            "ams3"
+          ]
+        },
+        "description": "region slug (datacenter location for the droplet)",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Size",
+        "jsonName": "size",
+        "protoField": "size",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Droplet size slug, e.g. \"s-2vcpu-4gb\" or \"g-8vcpu-32gb\".\n Valid values: must match the regexp \"^[a-z0-9]+(-[a-z0-9]+)+$\" and\n must be accepted by the DigitalOcean /v2/sizes API at creation time.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)+$"
+        }
+      },
+      {
+        "name": "Image",
+        "jsonName": "image",
+        "protoField": "image",
+        "type": {
+          "kind": "string"
+        },
+        "description": "image slug for the droplet base image (e.g. \"ubuntu-22-04-x64\")",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "Vpc",
+        "jsonName": "vpc",
+        "protoField": "vpc",
+        "type": {
+          "kind": "string"
+        },
+        "description": "target vpc network uuid for the droplet",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "DigitalOceanVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "EnableIpv6",
+        "jsonName": "enableIpv6",
+        "protoField": "enable_ipv6",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "enable IPv6 networking (disabled by default)",
+        "required": false
+      },
+      {
+        "name": "EnableBackups",
+        "jsonName": "enableBackups",
+        "protoField": "enable_backups",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "enable automated backups (disabled by default)",
+        "required": false
+      },
+      {
+        "name": "DisableMonitoring",
+        "jsonName": "disableMonitoring",
+        "protoField": "disable_monitoring",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "disable digitalocean monitoring agent (monitoring on by default)",
+        "required": false
+      },
+      {
+        "name": "VolumeIds",
+        "jsonName": "volumeIds",
+        "protoField": "volume_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "block storage volumes to attach (must reside in same region)",
+        "required": false,
+        "referenceKind": "DigitalOceanVolume",
+        "referenceFieldPath": "status.outputs.volume_id"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "tags to apply to the droplet (must be unique)",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "UserData",
+        "jsonName": "userData",
+        "protoField": "user_data",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cloud-init user data script (\u003c=32 KiB)",
+        "required": false
+      },
+      {
+        "name": "Timezone",
+        "jsonName": "timezone",
+        "protoField": "timezone",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.digitaloceandroplet.v1.DigitalOceanDropletTimezone",
+          "enumValues": [
+            "local"
+          ]
+        },
+        "description": "timezone setting for the droplet's clock (default: UTC)",
+        "required": false,
+        "default": "UTC",
+        "oneofGroup": "_timezone"
+      }
+    ]
+  }
+}

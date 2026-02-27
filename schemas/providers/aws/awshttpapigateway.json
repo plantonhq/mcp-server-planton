@@ -1,0 +1,592 @@
+{
+  "name": "AwsHttpApiGateway",
+  "kind": "AwsHttpApiGateway",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsHttpApiGateway is the Kubernetes-style resource envelope for an AWS API Gateway HTTP API.\n\n HTTP APIs are the recommended API type for building RESTful APIs and HTTP proxies\n in AWS. They offer lower latency and cost compared to REST APIs, with native support\n for Lambda proxy integration, JWT authorization, and automatic deployments.",
+  "protoPackage": "org.openmcf.provider.aws.awshttpapigateway.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awshttpapigateway/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awshttpapigateway/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsHttpApiGatewaySpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the API (max 1024 characters).",
+        "required": false,
+        "validation": {
+          "maxLength": 1024
+        }
+      },
+      {
+        "name": "CorsConfiguration",
+        "jsonName": "corsConfiguration",
+        "protoField": "cors_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsHttpApiGatewayCorsConfig"
+        },
+        "description": "CORS configuration for cross-origin requests. When not set, no CORS\n headers are returned by the API.",
+        "required": false
+      },
+      {
+        "name": "DisableExecuteApiEndpoint",
+        "jsonName": "disableExecuteApiEndpoint",
+        "protoField": "disable_execute_api_endpoint",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Disable the default execute-api endpoint. Set to true when a custom domain\n is configured externally to prevent direct access via the default endpoint.",
+        "required": false
+      },
+      {
+        "name": "Stage",
+        "jsonName": "stage",
+        "protoField": "stage",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsHttpApiGatewayStageConfig"
+        },
+        "description": "Stage configuration for the deployed API. When not set, a \"$default\" stage\n with auto_deploy=true is created automatically, which is the recommended\n configuration for most HTTP APIs.",
+        "required": false
+      },
+      {
+        "name": "Routes",
+        "jsonName": "routes",
+        "protoField": "routes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsHttpApiGatewayRoute"
+          }
+        },
+        "description": "API routes mapping request patterns to backend integrations. Each route\n specifies a route key (e.g., \"GET /users\", \"$default\") and an inline\n integration that defines the backend target.\n\n When multiple routes share the same integration configuration (same type,\n URI, and payload format), the IaC modules automatically deduplicate and\n create a single integration resource.\n\n At least one route is required -- an API without routes has no function.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Authorizers",
+        "jsonName": "authorizers",
+        "protoField": "authorizers",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsHttpApiGatewayAuthorizer"
+          }
+        },
+        "description": "Named authorizers that can be referenced by routes. Define JWT authorizers\n for Cognito/Auth0/OIDC integration, or Lambda (REQUEST) authorizers for\n custom authorization logic. Routes reference authorizers by name.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsHttpApiGatewayAccessLogConfig",
+      "description": "AwsHttpApiGatewayAccessLogConfig configures access logging for the API stage.",
+      "protoType": "org.openmcf.provider.aws.awshttpapigateway.v1.AwsHttpApiGatewayAccessLogConfig",
+      "fields": [
+        {
+          "name": "DestinationArn",
+          "jsonName": "destinationArn",
+          "protoField": "destination_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "CloudWatch Log Group ARN for access log delivery. Accepts a direct ARN\n or a reference to an AwsCloudwatchLogGroup resource.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsCloudwatchLogGroup",
+          "referenceFieldPath": "status.outputs.log_group_arn"
+        },
+        {
+          "name": "Format",
+          "jsonName": "format",
+          "protoField": "format",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Log format template. Uses API Gateway access log variables (e.g.,\n $context.requestId, $context.identity.sourceIp, $context.httpMethod).\n\n Common JSON format:\n   {\"requestId\":\"$context.requestId\",\"ip\":\"$context.identity.sourceIp\",\n    \"method\":\"$context.httpMethod\",\"path\":\"$context.routeKey\",\n    \"status\":\"$context.status\",\"latency\":\"$context.responseLatency\"}",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsHttpApiGatewayAuthorizer",
+      "description": "AwsHttpApiGatewayAuthorizer defines a named authorizer that can be referenced\n by routes. HTTP APIs support two authorizer types:\n - JWT: Validates JSON Web Tokens from Cognito, Auth0, or any OIDC provider.\n - REQUEST: Invokes a Lambda function for custom authorization logic.",
+      "protoType": "org.openmcf.provider.aws.awshttpapigateway.v1.AwsHttpApiGatewayAuthorizer",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this authorizer. Routes reference authorizers by this name.\n Must be unique across all authorizers in the spec.",
+          "required": false,
+          "validation": {
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        {
+          "name": "AuthorizerType",
+          "jsonName": "authorizerType",
+          "protoField": "authorizer_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Authorizer type. Valid values:\n - \"JWT\": Validates a JSON Web Token using the configured issuer and audiences.\n - \"REQUEST\": Invokes a Lambda function that returns an authorization decision.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "JwtConfiguration",
+          "jsonName": "jwtConfiguration",
+          "protoField": "jwt_configuration",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsHttpApiGatewayJwtConfig"
+          },
+          "description": "JWT configuration. Required when authorizer_type is \"JWT\".\n Configures the token issuer and expected audiences for JWT validation.",
+          "required": false
+        },
+        {
+          "name": "AuthorizerUri",
+          "jsonName": "authorizerUri",
+          "protoField": "authorizer_uri",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Lambda function URI for REQUEST authorizers. This is the Lambda function\n invoke ARN. Required when authorizer_type is \"REQUEST\".",
+          "required": false,
+          "referenceKind": "AwsLambda",
+          "referenceFieldPath": "status.outputs.function_arn"
+        },
+        {
+          "name": "AuthorizerCredentialsArn",
+          "jsonName": "authorizerCredentialsArn",
+          "protoField": "authorizer_credentials_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM role ARN that API Gateway assumes to invoke the Lambda authorizer.\n Only applicable to REQUEST authorizers.",
+          "required": false,
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        },
+        {
+          "name": "IdentitySources",
+          "jsonName": "identitySources",
+          "protoField": "identity_sources",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Identity sources used to extract the authorization token or context.\n For JWT authorizers: \"$request.header.Authorization\" (typical).\n For REQUEST authorizers: varies by implementation.",
+          "required": false
+        },
+        {
+          "name": "ResultTtlSeconds",
+          "jsonName": "resultTtlSeconds",
+          "protoField": "result_ttl_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Time in seconds that API Gateway caches the authorizer result.\n Range: 0-3600. Set to 0 to disable caching.\n AWS default: 300 for REQUEST authorizers with identity sources.",
+          "required": false
+        },
+        {
+          "name": "EnableSimpleResponses",
+          "jsonName": "enableSimpleResponses",
+          "protoField": "enable_simple_responses",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable simple boolean responses from Lambda authorizers.\n When true, the Lambda returns {\"isAuthorized\": true/false} instead of an\n IAM policy document. Simpler to implement for most use cases.\n Only applicable to REQUEST authorizers.",
+          "required": false
+        },
+        {
+          "name": "AuthorizerPayloadFormatVersion",
+          "jsonName": "authorizerPayloadFormatVersion",
+          "protoField": "authorizer_payload_format_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Payload format version for the Lambda authorizer event.\n - \"2.0\" (recommended): Simplified event with direct access to headers/query params.\n - \"1.0\": Legacy format.\n Only applicable to REQUEST authorizers.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsHttpApiGatewayCorsConfig",
+      "description": "AwsHttpApiGatewayCorsConfig configures cross-origin resource sharing (CORS) for the API.\n CORS allows web browsers to make requests to the API from a different domain.\n When not configured, the API returns no CORS headers and browsers block\n cross-origin requests.",
+      "protoType": "org.openmcf.provider.aws.awshttpapigateway.v1.AwsHttpApiGatewayCorsConfig",
+      "fields": [
+        {
+          "name": "AllowOrigins",
+          "jsonName": "allowOrigins",
+          "protoField": "allow_origins",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Origins allowed to make cross-origin requests (e.g., \"https://example.com\", \"*\").",
+          "required": false
+        },
+        {
+          "name": "AllowMethods",
+          "jsonName": "allowMethods",
+          "protoField": "allow_methods",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "HTTP methods allowed for cross-origin requests (e.g., \"GET\", \"POST\", \"OPTIONS\").",
+          "required": false
+        },
+        {
+          "name": "AllowHeaders",
+          "jsonName": "allowHeaders",
+          "protoField": "allow_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Request headers allowed in cross-origin requests (e.g., \"Content-Type\", \"Authorization\").",
+          "required": false
+        },
+        {
+          "name": "ExposeHeaders",
+          "jsonName": "exposeHeaders",
+          "protoField": "expose_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Response headers exposed to the browser in cross-origin responses.",
+          "required": false
+        },
+        {
+          "name": "MaxAgeSeconds",
+          "jsonName": "maxAgeSeconds",
+          "protoField": "max_age_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum time in seconds that browsers can cache CORS preflight results.\n Reduces the number of preflight OPTIONS requests. Range: 0-86400.",
+          "required": false,
+          "validation": {
+            "max": 86400
+          }
+        },
+        {
+          "name": "AllowCredentials",
+          "jsonName": "allowCredentials",
+          "protoField": "allow_credentials",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the API supports credentials (cookies, authorization headers)\n in cross-origin requests.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsHttpApiGatewayIntegration",
+      "description": "AwsHttpApiGatewayIntegration defines the backend target for a route.\n For HTTP APIs, the two primary integration types are AWS_PROXY (Lambda) and\n HTTP_PROXY (upstream HTTP service).",
+      "protoType": "org.openmcf.provider.aws.awshttpapigateway.v1.AwsHttpApiGatewayIntegration",
+      "fields": [
+        {
+          "name": "IntegrationType",
+          "jsonName": "integrationType",
+          "protoField": "integration_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Integration type. Valid values:\n - \"AWS_PROXY\": Lambda proxy integration -- API Gateway invokes a Lambda\n   function and passes the HTTP request as the event.\n - \"HTTP_PROXY\": HTTP proxy integration -- API Gateway forwards the\n   request to an upstream HTTP endpoint.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "IntegrationUri",
+          "jsonName": "integrationUri",
+          "protoField": "integration_uri",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Integration URI. For AWS_PROXY integrations this is the Lambda function\n ARN. For HTTP_PROXY integrations this is the upstream HTTP URL.\n Accepts a direct value or a reference to another resource's output\n (e.g., an AwsLambda function_arn).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "PayloadFormatVersion",
+          "jsonName": "payloadFormatVersion",
+          "protoField": "payload_format_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Payload format version for Lambda integrations. Controls the format of the\n event sent to the Lambda function.\n - \"2.0\" (recommended): Simplified event structure with direct body access.\n - \"1.0\": Legacy format with multi-value headers and base64 encoding.\n Defaults to \"2.0\" when empty. Only applicable to AWS_PROXY integrations.",
+          "required": false
+        },
+        {
+          "name": "IntegrationMethod",
+          "jsonName": "integrationMethod",
+          "protoField": "integration_method",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP method used for the integration request. Defaults to the route's HTTP\n method for HTTP_PROXY integrations. For AWS_PROXY (Lambda) integrations,\n this is always POST regardless of the value set here.",
+          "required": false
+        },
+        {
+          "name": "TimeoutMilliseconds",
+          "jsonName": "timeoutMilliseconds",
+          "protoField": "timeout_milliseconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Integration timeout in milliseconds. If the backend does not respond within\n this duration, API Gateway returns a 504 Gateway Timeout.\n Range: 50-30000 (50ms to 30s). AWS default: 30000 (30s).\n Leave at 0 to use the AWS default.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsHttpApiGatewayJwtConfig",
+      "description": "AwsHttpApiGatewayJwtConfig configures JWT validation for a JWT authorizer.",
+      "protoType": "org.openmcf.provider.aws.awshttpapigateway.v1.AwsHttpApiGatewayJwtConfig",
+      "fields": [
+        {
+          "name": "Issuer",
+          "jsonName": "issuer",
+          "protoField": "issuer",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Token issuer URL. API Gateway validates that the JWT's \"iss\" claim matches\n this value. For Cognito: \"https://cognito-idp.{region}.amazonaws.com/{userPoolId}\".\n For Auth0: \"https://{domain}/\".",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Audiences",
+          "jsonName": "audiences",
+          "protoField": "audiences",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Expected audiences. API Gateway validates that the JWT's \"aud\" claim matches\n one of these values. For Cognito this is the app client ID.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsHttpApiGatewayRoute",
+      "description": "AwsHttpApiGatewayRoute maps a request pattern to a backend integration.\n Each route defines a route key (HTTP method + path or \"$default\") and the\n integration configuration that processes matching requests.",
+      "protoType": "org.openmcf.provider.aws.awshttpapigateway.v1.AwsHttpApiGatewayRoute",
+      "fields": [
+        {
+          "name": "RouteKey",
+          "jsonName": "routeKey",
+          "protoField": "route_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Route key defining the request pattern to match. Format: \"{METHOD} {PATH}\"\n for specific routes (e.g., \"GET /users\", \"POST /orders/{id}\") or \"$default\"\n for a catch-all route that handles unmatched requests.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Integration",
+          "jsonName": "integration",
+          "protoField": "integration",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsHttpApiGatewayIntegration"
+          },
+          "description": "Backend integration that processes requests matching this route.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "AuthorizationType",
+          "jsonName": "authorizationType",
+          "protoField": "authorization_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Authorization type for this route. Valid values:\n - \"NONE\" (default): No authorization required.\n - \"JWT\": JSON Web Token authorization using a JWT authorizer.\n - \"AWS_IAM\": AWS IAM authorization using SigV4 signatures.",
+          "required": false
+        },
+        {
+          "name": "AuthorizerName",
+          "jsonName": "authorizerName",
+          "protoField": "authorizer_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the authorizer to use for this route. Must match the name of an\n authorizer defined in the `authorizers` field. Required when\n `authorization_type` is \"JWT\".",
+          "required": false
+        },
+        {
+          "name": "AuthorizationScopes",
+          "jsonName": "authorizationScopes",
+          "protoField": "authorization_scopes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OAuth 2.0 scopes required for JWT authorization. The request must include\n all specified scopes to be authorized. Only applicable when\n `authorization_type` is \"JWT\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsHttpApiGatewayStageConfig",
+      "description": "AwsHttpApiGatewayStageConfig configures the deployment stage for the API.\n Most HTTP APIs use a single \"$default\" stage with auto-deploy enabled.",
+      "protoType": "org.openmcf.provider.aws.awshttpapigateway.v1.AwsHttpApiGatewayStageConfig",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Stage name. Defaults to \"$default\" when empty, which is the recommended\n configuration for HTTP APIs. Named stages (e.g., \"prod\", \"dev\") append\n the stage name to the invoke URL path.",
+          "required": false
+        },
+        {
+          "name": "AutoDeploy",
+          "jsonName": "autoDeploy",
+          "protoField": "auto_deploy",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable automatic deployment when routes, integrations, or authorizers\n change. Defaults to true when the stage name is \"$default\" or empty.\n Set to false to require explicit deployments.",
+          "required": false
+        },
+        {
+          "name": "AccessLog",
+          "jsonName": "accessLog",
+          "protoField": "access_log",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsHttpApiGatewayAccessLogConfig"
+          },
+          "description": "Access logging configuration. When set, API Gateway streams access logs\n to the specified CloudWatch Log Group.",
+          "required": false
+        },
+        {
+          "name": "DefaultThrottle",
+          "jsonName": "defaultThrottle",
+          "protoField": "default_throttle",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsHttpApiGatewayThrottleConfig"
+          },
+          "description": "Default throttling settings applied to all routes unless overridden\n per route in the stage route settings.",
+          "required": false
+        },
+        {
+          "name": "StageVariables",
+          "jsonName": "stageVariables",
+          "protoField": "stage_variables",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Stage variables passed to integrations. These act as environment-specific\n configuration values accessible in integration request parameters.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsHttpApiGatewayThrottleConfig",
+      "description": "AwsHttpApiGatewayThrottleConfig configures request throttling for the API stage.",
+      "protoType": "org.openmcf.provider.aws.awshttpapigateway.v1.AwsHttpApiGatewayThrottleConfig",
+      "fields": [
+        {
+          "name": "BurstLimit",
+          "jsonName": "burstLimit",
+          "protoField": "burst_limit",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of concurrent requests allowed (burst). API Gateway uses\n the token bucket algorithm where burst_limit is the bucket size.",
+          "required": false
+        },
+        {
+          "name": "RateLimit",
+          "jsonName": "rateLimit",
+          "protoField": "rate_limit",
+          "type": {
+            "kind": "double"
+          },
+          "description": "Steady-state request rate limit (requests per second). API Gateway uses\n this as the token refill rate.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

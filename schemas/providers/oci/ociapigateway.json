@@ -1,0 +1,987 @@
+{
+  "name": "OciApiGateway",
+  "kind": "OciApiGateway",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciApiGateway is the top-level resource representing an OCI API Gateway\n bundled with a single API deployment -- providing managed REST API\n endpoints with routing, authentication, CORS, and rate limiting.",
+  "protoPackage": "org.openmcf.provider.oci.ociapigateway.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ociapigateway/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ociapigateway/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciApiGatewaySpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the gateway and deployment will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "EndpointType",
+        "jsonName": "endpointType",
+        "protoField": "endpoint_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ociapigateway.v1.EndpointType",
+          "enumValues": [
+            "endpoint_type_public",
+            "endpoint_type_private"
+          ]
+        },
+        "description": "Whether the gateway is internet-facing (public) or VCN-internal (private).\n Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the subnet where the gateway will be deployed.\n For public gateways, this must be a public subnet. Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciSubnet",
+        "referenceFieldPath": "status.outputs.subnetId"
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Display name for the gateway. When omitted, the metadata name is used.",
+        "required": false
+      },
+      {
+        "name": "CertificateId",
+        "jsonName": "certificateId",
+        "protoField": "certificate_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the OCI Certificates service certificate for TLS termination\n on the gateway. Only meaningful for public gateways serving HTTPS.",
+        "required": false
+      },
+      {
+        "name": "NetworkSecurityGroupIds",
+        "jsonName": "networkSecurityGroupIds",
+        "protoField": "network_security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "OCIDs of network security groups applied to the gateway.",
+        "required": false,
+        "referenceKind": "OciSecurityGroup",
+        "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+      },
+      {
+        "name": "Deployment",
+        "jsonName": "deployment",
+        "protoField": "deployment",
+        "type": {
+          "kind": "message",
+          "messageType": "Deployment"
+        },
+        "description": "The API deployment that defines routes, backends, and policies.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AccessLog",
+      "description": "AccessLog controls request/response access logging.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.AccessLog",
+      "fields": [
+        {
+          "name": "IsEnabled",
+          "jsonName": "isEnabled",
+          "protoField": "is_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether access logging is enabled.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "description": "Authentication configures JWT token validation at the deployment level.\n Tokens are validated before requests reach route backends. This covers\n the most common API security pattern: an IdP (Auth0, OCI IDCS, Okta)\n issues tokens and the gateway validates them via JWKS or static keys.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.Authentication",
+      "fields": [
+        {
+          "name": "Issuers",
+          "jsonName": "issuers",
+          "protoField": "issuers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Token issuers (iss claim). Tokens with issuers not in this list are rejected.",
+          "required": false
+        },
+        {
+          "name": "Audiences",
+          "jsonName": "audiences",
+          "protoField": "audiences",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Allowed audiences (aud claim). Tokens not targeting any of these audiences are rejected.",
+          "required": false
+        },
+        {
+          "name": "TokenHeader",
+          "jsonName": "tokenHeader",
+          "protoField": "token_header",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP header containing the token. Defaults to \"Authorization\" on the OCI side.",
+          "required": false
+        },
+        {
+          "name": "TokenQueryParam",
+          "jsonName": "tokenQueryParam",
+          "protoField": "token_query_param",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Query parameter containing the token. Mutually exclusive with token_header\n in practice, but OCI allows both (header takes precedence).",
+          "required": false
+        },
+        {
+          "name": "TokenAuthScheme",
+          "jsonName": "tokenAuthScheme",
+          "protoField": "token_auth_scheme",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Authentication scheme prefix in the header value (e.g., \"Bearer\").\n Defaults to \"Bearer\" on the OCI side.",
+          "required": false
+        },
+        {
+          "name": "MaxClockSkewInSeconds",
+          "jsonName": "maxClockSkewInSeconds",
+          "protoField": "max_clock_skew_in_seconds",
+          "type": {
+            "kind": "float"
+          },
+          "description": "Maximum allowed clock skew in seconds when verifying token exp/nbf/iat claims.",
+          "required": false,
+          "oneofGroup": "_max_clock_skew_in_seconds"
+        },
+        {
+          "name": "IsAnonymousAccessAllowed",
+          "jsonName": "isAnonymousAccessAllowed",
+          "protoField": "is_anonymous_access_allowed",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, unauthenticated requests are allowed through (routes can still\n enforce authorization individually). Useful for APIs with mixed public/private routes.",
+          "required": false,
+          "oneofGroup": "_is_anonymous_access_allowed"
+        },
+        {
+          "name": "PublicKeys",
+          "jsonName": "publicKeys",
+          "protoField": "public_keys",
+          "type": {
+            "kind": "message",
+            "messageType": "PublicKeys"
+          },
+          "description": "Public key configuration for verifying token signatures.",
+          "required": false
+        },
+        {
+          "name": "VerifyClaims",
+          "jsonName": "verifyClaims",
+          "protoField": "verify_claims",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "VerifyClaim"
+            }
+          },
+          "description": "Additional claims to verify on validated tokens.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Backend",
+      "description": "Backend defines where matching requests are forwarded.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.Backend",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociapigateway.v1.BackendType",
+            "enumValues": [
+              "http",
+              "oracle_functions",
+              "stock_response"
+            ]
+          },
+          "description": "Backend type.",
+          "required": false
+        },
+        {
+          "name": "Url",
+          "jsonName": "url",
+          "protoField": "url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Target URL for HTTP backends (e.g., \"https://backend.example.com:8080\").\n Required when type is http.",
+          "required": false
+        },
+        {
+          "name": "FunctionId",
+          "jsonName": "functionId",
+          "protoField": "function_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the OCI function to invoke. Required when type is oracle_functions.",
+          "required": false
+        },
+        {
+          "name": "Status",
+          "jsonName": "status",
+          "protoField": "status",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "HTTP status code for stock responses (e.g., 200, 404).\n Only applicable when type is stock_response.",
+          "required": false
+        },
+        {
+          "name": "Body",
+          "jsonName": "body",
+          "protoField": "body",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Response body for stock responses.\n Only applicable when type is stock_response.",
+          "required": false
+        },
+        {
+          "name": "ConnectTimeoutInSeconds",
+          "jsonName": "connectTimeoutInSeconds",
+          "protoField": "connect_timeout_in_seconds",
+          "type": {
+            "kind": "float"
+          },
+          "description": "Connection timeout in seconds. Applicable to http and oracle_functions backends.",
+          "required": false,
+          "oneofGroup": "_connect_timeout_in_seconds"
+        },
+        {
+          "name": "ReadTimeoutInSeconds",
+          "jsonName": "readTimeoutInSeconds",
+          "protoField": "read_timeout_in_seconds",
+          "type": {
+            "kind": "float"
+          },
+          "description": "Read timeout in seconds. Applicable to http and oracle_functions backends.",
+          "required": false,
+          "oneofGroup": "_read_timeout_in_seconds"
+        },
+        {
+          "name": "SendTimeoutInSeconds",
+          "jsonName": "sendTimeoutInSeconds",
+          "protoField": "send_timeout_in_seconds",
+          "type": {
+            "kind": "float"
+          },
+          "description": "Send timeout in seconds. Applicable to http and oracle_functions backends.",
+          "required": false,
+          "oneofGroup": "_send_timeout_in_seconds"
+        },
+        {
+          "name": "IsSslVerifyDisabled",
+          "jsonName": "isSslVerifyDisabled",
+          "protoField": "is_ssl_verify_disabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to skip TLS certificate verification for the backend.\n Applicable to http backends.",
+          "required": false,
+          "oneofGroup": "_is_ssl_verify_disabled"
+        },
+        {
+          "name": "Headers",
+          "jsonName": "headers",
+          "protoField": "headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "BackendHeader"
+            }
+          },
+          "description": "Custom headers to add to requests forwarded to the backend.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "BackendHeader",
+      "description": "BackendHeader is a custom HTTP header added to backend requests.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.BackendHeader",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Header name.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Header value.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CorsPolicy",
+      "description": "CorsPolicy configures Cross-Origin Resource Sharing for browser-based clients.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.CorsPolicy",
+      "fields": [
+        {
+          "name": "AllowedOrigins",
+          "jsonName": "allowedOrigins",
+          "protoField": "allowed_origins",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Allowed origins. At least one origin is required (e.g., [\"*\"] or\n [\"https://app.example.com\"]).",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "AllowedMethods",
+          "jsonName": "allowedMethods",
+          "protoField": "allowed_methods",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Allowed HTTP methods (e.g., [\"GET\", \"POST\", \"PUT\", \"DELETE\"]).",
+          "required": false
+        },
+        {
+          "name": "AllowedHeaders",
+          "jsonName": "allowedHeaders",
+          "protoField": "allowed_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Allowed request headers.",
+          "required": false
+        },
+        {
+          "name": "ExposedHeaders",
+          "jsonName": "exposedHeaders",
+          "protoField": "exposed_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Response headers exposed to the browser.",
+          "required": false
+        },
+        {
+          "name": "IsAllowCredentialsEnabled",
+          "jsonName": "isAllowCredentialsEnabled",
+          "protoField": "is_allow_credentials_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the browser may send credentials (cookies, authorization headers).",
+          "required": false,
+          "oneofGroup": "_is_allow_credentials_enabled"
+        },
+        {
+          "name": "MaxAgeInSeconds",
+          "jsonName": "maxAgeInSeconds",
+          "protoField": "max_age_in_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "How long (in seconds) the browser may cache preflight responses.",
+          "required": false,
+          "oneofGroup": "_max_age_in_seconds"
+        }
+      ]
+    },
+    {
+      "name": "Deployment",
+      "description": "Deployment defines the API specification deployed on the gateway.\n Each deployment has a unique path_prefix and contains the route\n definitions, request policies, and logging configuration.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.Deployment",
+      "fields": [
+        {
+          "name": "PathPrefix",
+          "jsonName": "pathPrefix",
+          "protoField": "path_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URL path prefix for all routes in this deployment (e.g., \"/api/v1\").\n Must start with \"/\" and must be unique per gateway. Immutable after creation.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DisplayName",
+          "jsonName": "displayName",
+          "protoField": "display_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Display name for the deployment. When omitted, defaults to\n \"{gateway_display_name}-deployment\".",
+          "required": false
+        },
+        {
+          "name": "LoggingPolicies",
+          "jsonName": "loggingPolicies",
+          "protoField": "logging_policies",
+          "type": {
+            "kind": "message",
+            "messageType": "LoggingPolicies"
+          },
+          "description": "Logging configuration for the deployment.",
+          "required": false
+        },
+        {
+          "name": "RequestPolicies",
+          "jsonName": "requestPolicies",
+          "protoField": "request_policies",
+          "type": {
+            "kind": "message",
+            "messageType": "RequestPolicies"
+          },
+          "description": "Deployment-level request policies applied before route matching.",
+          "required": false
+        },
+        {
+          "name": "Routes",
+          "jsonName": "routes",
+          "protoField": "routes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "Route"
+            }
+          },
+          "description": "API routes defining path-to-backend mappings. At least one route\n is required. Routes are evaluated in order; first match wins.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "ExecutionLog",
+      "description": "ExecutionLog controls gateway processing detail logging.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.ExecutionLog",
+      "fields": [
+        {
+          "name": "IsEnabled",
+          "jsonName": "isEnabled",
+          "protoField": "is_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether execution logging is enabled.",
+          "required": false
+        },
+        {
+          "name": "LogLevel",
+          "jsonName": "logLevel",
+          "protoField": "log_level",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociapigateway.v1.LogLevel",
+            "enumValues": [
+              "info",
+              "warn",
+              "error"
+            ]
+          },
+          "description": "Log verbosity level. Only meaningful when is_enabled is true.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "LoggingPolicies",
+      "description": "LoggingPolicies configures access and execution logging for the deployment\n or individual routes.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.LoggingPolicies",
+      "fields": [
+        {
+          "name": "AccessLog",
+          "jsonName": "accessLog",
+          "protoField": "access_log",
+          "type": {
+            "kind": "message",
+            "messageType": "AccessLog"
+          },
+          "description": "Access log captures every request/response pair.",
+          "required": false
+        },
+        {
+          "name": "ExecutionLog",
+          "jsonName": "executionLog",
+          "protoField": "execution_log",
+          "type": {
+            "kind": "message",
+            "messageType": "ExecutionLog"
+          },
+          "description": "Execution log captures gateway processing details.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "PublicKeys",
+      "description": "PublicKeys configures how the gateway obtains keys for JWT signature verification.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.PublicKeys",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociapigateway.v1.PublicKeyType",
+            "enumValues": [
+              "remote_jwks",
+              "static_keys"
+            ]
+          },
+          "description": "How public keys are obtained.",
+          "required": false
+        },
+        {
+          "name": "Uri",
+          "jsonName": "uri",
+          "protoField": "uri",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URI of the JWKS endpoint (e.g., \"https://idp.example.com/.well-known/jwks.json\").\n Required when type is remote_jwks.",
+          "required": false
+        },
+        {
+          "name": "IsSslVerifyDisabled",
+          "jsonName": "isSslVerifyDisabled",
+          "protoField": "is_ssl_verify_disabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to skip TLS certificate verification when fetching JWKS.\n Only applicable when type is remote_jwks.",
+          "required": false,
+          "oneofGroup": "_is_ssl_verify_disabled"
+        },
+        {
+          "name": "MaxCacheDurationInHours",
+          "jsonName": "maxCacheDurationInHours",
+          "protoField": "max_cache_duration_in_hours",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "How long (in hours) to cache the JWKS response. Only applicable when\n type is remote_jwks. OCI defaults to 1 hour.",
+          "required": false,
+          "oneofGroup": "_max_cache_duration_in_hours"
+        },
+        {
+          "name": "Keys",
+          "jsonName": "keys",
+          "protoField": "keys",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "StaticKey"
+            }
+          },
+          "description": "Static keys for token verification. Required when type is static_keys.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "RateLimiting",
+      "description": "RateLimiting configures request rate limiting at the deployment level.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.RateLimiting",
+      "fields": [
+        {
+          "name": "RateInRequestsPerSecond",
+          "jsonName": "rateInRequestsPerSecond",
+          "protoField": "rate_in_requests_per_second",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of requests per second.",
+          "required": false
+        },
+        {
+          "name": "RateKey",
+          "jsonName": "rateKey",
+          "protoField": "rate_key",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociapigateway.v1.RateKey",
+            "enumValues": [
+              "client_ip",
+              "total"
+            ]
+          },
+          "description": "How requests are grouped for rate limiting.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "RequestPolicies",
+      "description": "RequestPolicies defines deployment-level policies applied to every request\n before route matching.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.RequestPolicies",
+      "fields": [
+        {
+          "name": "Authentication",
+          "jsonName": "authentication",
+          "protoField": "authentication",
+          "type": {
+            "kind": "message",
+            "messageType": "Authentication"
+          },
+          "description": "JWT-based authentication configuration.",
+          "required": false
+        },
+        {
+          "name": "Cors",
+          "jsonName": "cors",
+          "protoField": "cors",
+          "type": {
+            "kind": "message",
+            "messageType": "CorsPolicy"
+          },
+          "description": "Cross-Origin Resource Sharing policy for browser-based clients.",
+          "required": false
+        },
+        {
+          "name": "RateLimiting",
+          "jsonName": "rateLimiting",
+          "protoField": "rate_limiting",
+          "type": {
+            "kind": "message",
+            "messageType": "RateLimiting"
+          },
+          "description": "Rate limiting policy.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Route",
+      "description": "Route defines a path-to-backend mapping within the deployment.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.Route",
+      "fields": [
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URL path pattern (e.g., \"/users/{userId}\", \"/health\").\n Supports exact, prefix, and wildcard matching per OCI path semantics.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Methods",
+          "jsonName": "methods",
+          "protoField": "methods",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "HTTP methods this route handles (e.g., [\"GET\", \"POST\"]).\n When empty, all methods are accepted.",
+          "required": false
+        },
+        {
+          "name": "Backend",
+          "jsonName": "backend",
+          "protoField": "backend",
+          "type": {
+            "kind": "message",
+            "messageType": "Backend"
+          },
+          "description": "Backend that processes matching requests.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Authorization",
+          "jsonName": "authorization",
+          "protoField": "authorization",
+          "type": {
+            "kind": "message",
+            "messageType": "RouteAuthorization"
+          },
+          "description": "Per-route authorization policy. When authentication is configured at\n the deployment level, this controls which routes require valid tokens.",
+          "required": false
+        },
+        {
+          "name": "LoggingPolicies",
+          "jsonName": "loggingPolicies",
+          "protoField": "logging_policies",
+          "type": {
+            "kind": "message",
+            "messageType": "LoggingPolicies"
+          },
+          "description": "Per-route logging policy override.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "RouteAuthorization",
+      "description": "RouteAuthorization controls access for individual routes when deployment-level\n authentication is enabled.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.RouteAuthorization",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociapigateway.v1.AuthorizationType",
+            "enumValues": [
+              "anonymous",
+              "any_of",
+              "authentication_only"
+            ]
+          },
+          "description": "Authorization enforcement level.",
+          "required": false
+        },
+        {
+          "name": "AllowedScope",
+          "jsonName": "allowedScope",
+          "protoField": "allowed_scope",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OAuth2 scopes required when type is any_of. The token must contain\n at least one of these scopes.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "StaticKey",
+      "description": "StaticKey defines a single public key for JWT signature verification.\n Supports both PEM-encoded certificates and JSON Web Key (JWK) format.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.StaticKey",
+      "fields": [
+        {
+          "name": "Kid",
+          "jsonName": "kid",
+          "protoField": "kid",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Key identifier (kid). Used to match incoming tokens to the correct key.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Format",
+          "jsonName": "format",
+          "protoField": "format",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociapigateway.v1.KeyFormat",
+            "enumValues": [
+              "pem",
+              "json_web_key"
+            ]
+          },
+          "description": "Key encoding format.",
+          "required": false
+        },
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PEM-encoded public key or certificate. Required when format is pem.",
+          "required": false
+        },
+        {
+          "name": "Kty",
+          "jsonName": "kty",
+          "protoField": "kty",
+          "type": {
+            "kind": "string"
+          },
+          "description": "JWK key type (e.g., \"RSA\", \"EC\"). Required when format is json_web_key.",
+          "required": false
+        },
+        {
+          "name": "Alg",
+          "jsonName": "alg",
+          "protoField": "alg",
+          "type": {
+            "kind": "string"
+          },
+          "description": "JWK algorithm (e.g., \"RS256\"). Used when format is json_web_key.",
+          "required": false
+        },
+        {
+          "name": "E",
+          "jsonName": "e",
+          "protoField": "e",
+          "type": {
+            "kind": "string"
+          },
+          "description": "RSA public exponent (Base64url-encoded). Used for RSA keys in JWK format.",
+          "required": false
+        },
+        {
+          "name": "N",
+          "jsonName": "n",
+          "protoField": "n",
+          "type": {
+            "kind": "string"
+          },
+          "description": "RSA modulus (Base64url-encoded). Used for RSA keys in JWK format.",
+          "required": false
+        },
+        {
+          "name": "Use",
+          "jsonName": "use",
+          "protoField": "use",
+          "type": {
+            "kind": "string"
+          },
+          "description": "JWK public key use (e.g., \"sig\"). Used when format is json_web_key.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "VerifyClaim",
+      "description": "VerifyClaim defines an additional claim to verify on validated JWT tokens.",
+      "protoType": "org.openmcf.provider.oci.ociapigateway.v1.OciApiGatewaySpec.VerifyClaim",
+      "fields": [
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Claim name (e.g., \"scope\", \"groups\", \"email\").",
+          "required": false
+        },
+        {
+          "name": "Values",
+          "jsonName": "values",
+          "protoField": "values",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Expected claim values. If non-empty, the token's claim must match\n at least one of these values.",
+          "required": false
+        },
+        {
+          "name": "IsRequired",
+          "jsonName": "isRequired",
+          "protoField": "is_required",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the claim must be present in the token.",
+          "required": false,
+          "oneofGroup": "_is_required"
+        }
+      ]
+    }
+  ]
+}

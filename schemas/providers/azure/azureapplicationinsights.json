@@ -1,0 +1,132 @@
+{
+  "name": "AzureApplicationInsights",
+  "kind": "AzureApplicationInsights",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureApplicationInsights is the top-level resource definition for an Azure\n Application Insights instance. It follows the KRM (Kubernetes Resource Model)\n pattern with apiVersion, kind, metadata, spec, and status.",
+  "protoPackage": "org.openmcf.provider.azure.azureapplicationinsights.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azureapplicationinsights/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azureapplicationinsights/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureApplicationInsightsSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where Application Insights will be deployed.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".\n Should match the region of the application(s) being monitored to minimize\n telemetry ingestion latency and data residency concerns.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where Application Insights will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Application Insights resource.\n Must be unique within the resource group.\n Length: 1 to 260 characters.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 260
+        }
+      },
+      {
+        "name": "ApplicationType",
+        "jsonName": "applicationType",
+        "protoField": "application_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The type of application being monitored.\n Uses exact Azure API values -- no conversion needed in IaC modules.\n - \"web\": Web applications (ASP.NET, Spring Boot, Django, Express, etc.)\n - \"java\": Java applications (standalone, not web)\n - \"Node.JS\": Node.js applications\n - \"other\": All other application types\n Default: web\n Note: This field is ForceNew in Azure -- changing it requires resource recreation.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "web",
+            "java",
+            "Node.JS",
+            "other"
+          ]
+        },
+        "default": "web",
+        "oneofGroup": "_application_type"
+      },
+      {
+        "name": "WorkspaceId",
+        "jsonName": "workspaceId",
+        "protoField": "workspace_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Log Analytics Workspace to store Application Insights data.\n Required -- workspace-based Application Insights is the only supported mode.\n Classic (non-workspace) Application Insights is deprecated by Microsoft.\n Can be a literal workspace resource ID or a reference to an\n AzureLogAnalyticsWorkspace output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureLogAnalyticsWorkspace",
+        "referenceFieldPath": "status.outputs.workspace_id"
+      },
+      {
+        "name": "RetentionInDays",
+        "jsonName": "retentionInDays",
+        "protoField": "retention_in_days",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "The number of days to retain telemetry data.\n Azure only allows specific values: 30, 60, 90, 120, 180, 270, 365, 550, 730.\n Free tier includes 90 days. Beyond that, retention is billed per GB per month.\n Default: 90",
+        "required": false,
+        "default": "90",
+        "oneofGroup": "_retention_in_days"
+      },
+      {
+        "name": "DailyDataCapInGb",
+        "jsonName": "dailyDataCapInGb",
+        "protoField": "daily_data_cap_in_gb",
+        "type": {
+          "kind": "double"
+        },
+        "description": "The daily telemetry data cap in GB.\n When the cap is reached, telemetry ingestion stops until the next UTC day.\n Set to control costs in development or staging environments.\n Default: 100 (Azure's default)",
+        "required": false,
+        "default": "100",
+        "oneofGroup": "_daily_data_cap_in_gb"
+      },
+      {
+        "name": "SamplingPercentage",
+        "jsonName": "samplingPercentage",
+        "protoField": "sampling_percentage",
+        "type": {
+          "kind": "double"
+        },
+        "description": "The percentage of telemetry data to sample (0-100).\n Reducing sampling percentage lowers data volume and cost while still providing\n statistically representative telemetry. Common production values are 25-50%.\n Set to 100 for full fidelity (all telemetry collected).\n Default: 100",
+        "required": false,
+        "default": "100",
+        "oneofGroup": "_sampling_percentage"
+      }
+    ]
+  }
+}

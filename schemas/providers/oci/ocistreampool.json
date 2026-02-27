@@ -1,0 +1,213 @@
+{
+  "name": "OciStreamPool",
+  "kind": "OciStreamPool",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciStreamPool is the top-level resource representing an OCI Stream\n Pool -- a Kafka-compatible managed streaming container that groups\n streams under shared Kafka settings, encryption, and networking.",
+  "protoPackage": "org.openmcf.provider.oci.ocistreampool.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocistreampool/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocistreampool/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciStreamPoolSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the stream pool will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "KafkaSettings",
+        "jsonName": "kafkaSettings",
+        "protoField": "kafka_settings",
+        "type": {
+          "kind": "message",
+          "messageType": "KafkaSettings"
+        },
+        "description": "Kafka compatibility settings for the stream pool. All fields are\n optional and updatable; OCI applies sensible defaults when omitted.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the KMS master encryption key for encrypting streams in\n this pool. When omitted, Oracle-managed encryption is used.\n Updatable -- the pool can be re-encrypted with a different key.",
+        "required": false,
+        "referenceKind": "OciKmsKey",
+        "referenceFieldPath": "status.outputs.keyId"
+      },
+      {
+        "name": "PrivateEndpointSettings",
+        "jsonName": "privateEndpointSettings",
+        "protoField": "private_endpoint_settings",
+        "type": {
+          "kind": "message",
+          "messageType": "PrivateEndpointSettings"
+        },
+        "description": "Private endpoint configuration for the stream pool. When provided,\n the pool is accessible only from within the specified subnet.\n Entire block is ForceNew -- any change forces pool recreation.",
+        "required": false
+      },
+      {
+        "name": "Streams",
+        "jsonName": "streams",
+        "protoField": "streams",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Stream"
+          }
+        },
+        "description": "Streams within this pool. Each stream is identified by its name,\n which is used as the resource key in IaC modules.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "KafkaSettings",
+      "description": "KafkaSettings controls the Kafka compatibility layer for the pool.\n All fields are optional; OCI applies defaults when omitted.",
+      "protoType": "org.openmcf.provider.oci.ocistreampool.v1.OciStreamPoolSpec.KafkaSettings",
+      "fields": [
+        {
+          "name": "AutoCreateTopicsEnable",
+          "jsonName": "autoCreateTopicsEnable",
+          "protoField": "auto_create_topics_enable",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable automatic topic creation when a Kafka producer publishes\n to a non-existent topic.",
+          "required": false,
+          "oneofGroup": "_auto_create_topics_enable"
+        },
+        {
+          "name": "LogRetentionHours",
+          "jsonName": "logRetentionHours",
+          "protoField": "log_retention_hours",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Default hours to retain log data before deletion (24-168).\n OCI defaults to 24 when omitted.",
+          "required": false,
+          "oneofGroup": "_log_retention_hours"
+        },
+        {
+          "name": "NumPartitions",
+          "jsonName": "numPartitions",
+          "protoField": "num_partitions",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Default number of partitions for auto-created topics.",
+          "required": false,
+          "oneofGroup": "_num_partitions"
+        }
+      ]
+    },
+    {
+      "name": "PrivateEndpointSettings",
+      "description": "PrivateEndpointSettings configures private networking for the pool.\n All fields are ForceNew.",
+      "protoType": "org.openmcf.provider.oci.ocistreampool.v1.OciStreamPoolSpec.PrivateEndpointSettings",
+      "fields": [
+        {
+          "name": "SubnetId",
+          "jsonName": "subnetId",
+          "protoField": "subnet_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the subnet for the private endpoint.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "OciSubnet",
+          "referenceFieldPath": "status.outputs.subnetId"
+        },
+        {
+          "name": "NsgIds",
+          "jsonName": "nsgIds",
+          "protoField": "nsg_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OCIDs of network security groups for the private endpoint.",
+          "required": false,
+          "referenceKind": "OciSecurityGroup",
+          "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+        },
+        {
+          "name": "PrivateEndpointIp",
+          "jsonName": "privateEndpointIp",
+          "protoField": "private_endpoint_ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specific IP address within the subnet CIDR for the private\n endpoint. When omitted, OCI auto-assigns an available IP.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Stream",
+      "description": "Stream defines an individual stream within the pool.\n Streams are immutable -- changing name, partitions, or\n retention_in_hours forces recreation.",
+      "protoType": "org.openmcf.provider.oci.ocistreampool.v1.OciStreamPoolSpec.Stream",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Stream name. Used as the resource key in IaC modules. ForceNew.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Partitions",
+          "jsonName": "partitions",
+          "protoField": "partitions",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of partitions in the stream. ForceNew.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "RetentionInHours",
+          "jsonName": "retentionInHours",
+          "protoField": "retention_in_hours",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Retention period in hours (24-168). ForceNew.\n When omitted, OCI defaults to 24 hours.",
+          "required": false,
+          "oneofGroup": "_retention_in_hours"
+        }
+      ]
+    }
+  ]
+}

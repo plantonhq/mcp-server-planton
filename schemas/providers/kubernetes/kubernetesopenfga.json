@@ -1,0 +1,765 @@
+{
+  "name": "KubernetesOpenFga",
+  "kind": "KubernetesOpenFga",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "open-fga-kubernetes",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetesopenfga.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetesopenfga/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetesopenfga/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesOpenFgaSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "Target Kubernetes Cluster",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes Namespace",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "CreateNamespace",
+        "jsonName": "createNamespace",
+        "protoField": "create_namespace",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "flag to indicate if the namespace should be created",
+        "required": false
+      },
+      {
+        "name": "Container",
+        "jsonName": "container",
+        "protoField": "container",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesOpenFgaContainer"
+        },
+        "description": "The container specifications for the OpenFGA deployment.",
+        "required": false
+      },
+      {
+        "name": "Ingress",
+        "jsonName": "ingress",
+        "protoField": "ingress",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesOpenFgaIngress"
+        },
+        "description": "*\n The ingress configuration for the OpenFGA deployment.",
+        "required": false
+      },
+      {
+        "name": "Datastore",
+        "jsonName": "datastore",
+        "protoField": "datastore",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesOpenFgaDataStore"
+        },
+        "description": "*\n The data store configuration for OpenFGA.\n This specifies the backend database engine and connection details.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ContainerResources",
+      "description": "**ContainerResources** specifies the CPU and memory resources for a container.\n It allows you to define resource limits and requests to manage resource allocation and ensure optimal performance.",
+      "protoType": "org.openmcf.provider.kubernetes.ContainerResources",
+      "fields": [
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource limits for the container.\n Specify the maximum amount of CPU and memory that the container can use.",
+          "required": false
+        },
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "message",
+            "messageType": "CpuMemory"
+          },
+          "description": "The resource requests for the container.\n Specify the minimum amount of CPU and memory that the container is guaranteed.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CpuMemory",
+      "description": "**CpuMemory** defines CPU and memory resource quantities for a container.\n It is used to specify the limits and requests for CPU and memory resources.",
+      "protoType": "org.openmcf.provider.kubernetes.CpuMemory",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesOpenFgaContainer",
+      "description": "*\n **KubernetesOpenFgaContainer** specifies the container configuration for the OpenFGA application.\n It includes resource allocations for CPU and memory to ensure the application runs efficiently,\n and the number of replicas for scaling purposes.\n Recommended defaults: CPU requests - 50m, Memory requests - 256Mi, CPU limits - 1, Memory limits - 1Gi.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesopenfga.v1.KubernetesOpenFgaContainer",
+      "fields": [
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of OpenFGA replicas to deploy. This determines the level of concurrency and availability.",
+          "required": false
+        },
+        {
+          "name": "Resources",
+          "jsonName": "resources",
+          "protoField": "resources",
+          "type": {
+            "kind": "message",
+            "messageType": "ContainerResources"
+          },
+          "description": "The CPU and memory resources allocated to the OpenFGA container.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesOpenFgaDataStore",
+      "description": "*\n **KubernetesOpenFgaDataStore** represents the configuration for the OpenFGA data store in a Kubernetes deployment.\n It specifies the type of database engine to use and connection details for connecting to the database.\n The URI is constructed from these fields in the deployment modules, enabling secure password handling\n via Kubernetes Secrets.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesopenfga.v1.KubernetesOpenFgaDataStore",
+      "fields": [
+        {
+          "name": "Engine",
+          "jsonName": "engine",
+          "protoField": "engine",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n Specifies the type of data store engine to use.\n Allowed values are \"mysql\" for MySQL database and \"postgres\" for PostgreSQL database.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Host",
+          "jsonName": "host",
+          "protoField": "host",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The hostname or endpoint of the database server.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "*\n The port number of the database server.\n Defaults to 5432 for PostgreSQL and 3306 for MySQL.",
+          "required": false,
+          "validation": {
+            "max": 65535
+          },
+          "oneofGroup": "_port"
+        },
+        {
+          "name": "Database",
+          "jsonName": "database",
+          "protoField": "database",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The name of the database to connect to.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Username",
+          "jsonName": "username",
+          "protoField": "username",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The username for authenticating to the database.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSensitiveValue"
+          },
+          "description": "*\n The password for authenticating to the database.\n Can be provided either as a plain string value or as a reference to an existing Kubernetes Secret.\n\n Using a secret reference is recommended for production deployments:\n ```yaml\n password:\n   secretRef:\n     name: openfga-db-credentials\n     key: password\n ```\n\n For development/testing, a plain string value can be used:\n ```yaml\n password:\n   stringValue: my-password\n ```",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "IsSecure",
+          "jsonName": "isSecure",
+          "protoField": "is_secure",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n Whether to use SSL/TLS connection to the database.\n When enabled, adds sslmode=require (for PostgreSQL) or tls=true (for MySQL) to the connection string.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesOpenFgaIngress",
+      "description": "*\n KubernetesOpenFgaIngress defines the ingress configuration for OpenFGA.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesopenfga.v1.KubernetesOpenFgaIngress",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Flag to enable or disable ingress.",
+          "required": false
+        },
+        {
+          "name": "Hostname",
+          "jsonName": "hostname",
+          "protoField": "hostname",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The full hostname for external access (e.g., \"openfga.example.com\").\n Required when enabled is true.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSecretKeyRef",
+      "description": "*\n **KubernetesSecretKeyRef** is a reference to a specific key within a Kubernetes Secret.\n This allows components to retrieve sensitive values from existing secrets rather than\n storing them as plain text in the configuration.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesSecretKeyRef",
+      "fields": [
+        {
+          "name": "Namespace",
+          "jsonName": "namespace",
+          "protoField": "namespace",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The namespace of the Kubernetes Secret.\n If not specified, defaults to the namespace where the component is deployed.\n Note: Cross-namespace secret references may not be supported by all Helm charts.",
+          "required": false
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The name of the Kubernetes Secret.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The key within the Kubernetes Secret that contains the value.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesSensitiveValue",
+      "description": "*\n **KubernetesSensitiveValue** represents a sensitive value that can be provided either\n as a literal string or as a reference to a Kubernetes Secret.\n\n Using secret references is recommended for production deployments to avoid storing\n sensitive values in plain text within configuration files or version control.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesSensitiveValue",
+      "fields": [
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n A literal string value.\n Warning: Using plain text for sensitive values is not recommended for production.\n Consider using secret_ref instead.",
+          "required": false,
+          "oneofGroup": "sensitive_value"
+        },
+        {
+          "name": "SecretRef",
+          "jsonName": "secretRef",
+          "protoField": "secret_ref",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesSecretKeyRef"
+          },
+          "description": "*\n A reference to a key within a Kubernetes Secret.\n The secret must exist in the cluster before the component is deployed.",
+          "required": false,
+          "oneofGroup": "sensitive_value"
+        }
+      ]
+    }
+  ]
+}

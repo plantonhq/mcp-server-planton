@@ -1,0 +1,663 @@
+{
+  "name": "AwsSagemakerDomain",
+  "kind": "AwsSagemakerDomain",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-sagemaker-domain",
+  "protoPackage": "org.openmcf.provider.aws.awssagemakerdomain.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awssagemakerdomain/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awssagemakerdomain/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsSagemakerDomainSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "AuthMode",
+        "jsonName": "authMode",
+        "protoField": "auth_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "auth_mode determines how users authenticate to the SageMaker Domain.\n \"IAM\": users authenticate with AWS IAM credentials. Suitable for single-account teams\n   or programmatic access. Each user's IAM identity determines their permissions.\n \"SSO\": users authenticate via AWS IAM Identity Center (formerly AWS SSO). Recommended\n   for enterprise teams with centralized identity management.\n ForceNew: changing auth_mode forces domain replacement.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "vpc_id is the VPC in which the SageMaker Domain is created.\n All domain network interfaces (for notebooks, training, and app traffic) are placed\n in this VPC. The VPC must have DNS resolution and DNS hostnames enabled.\n ForceNew: changing the VPC forces domain replacement.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "subnet_ids are the VPC subnets where SageMaker provisions elastic network interfaces\n for notebook and training traffic. For high availability, provide subnets in at least\n two Availability Zones. Maximum 16 subnets.\n ForceNew: changing subnets forces domain replacement.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        },
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "kms_key_id is the KMS key ARN used to encrypt the EFS volume attached to the domain.\n Each SageMaker Domain creates a dedicated EFS file system for user home directories.\n If omitted, AWS uses the default aws/elasticfilesystem service key.\n ForceNew: changing the KMS key forces domain replacement.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "AppNetworkAccessType",
+        "jsonName": "appNetworkAccessType",
+        "protoField": "app_network_access_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "app_network_access_type controls whether notebook and training traffic can reach the internet.\n \"PublicInternetOnly\" (default): ENIs have internet access via VPC routing.\n \"VpcOnly\": all traffic stays within the VPC; internet access requires a NAT gateway.\n \"VpcOnly\" is recommended for production to prevent data exfiltration and satisfy\n compliance requirements. Docker trusted accounts only work in VpcOnly mode.",
+        "required": false,
+        "default": "PublicInternetOnly",
+        "oneofGroup": "_app_network_access_type"
+      },
+      {
+        "name": "DefaultUserSettings",
+        "jsonName": "defaultUserSettings",
+        "protoField": "default_user_settings",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsSagemakerDomainDefaultUserSettings"
+        },
+        "description": "default_user_settings defines the default configuration inherited by all user profiles\n in the domain. These settings control the execution environment, app configurations,\n security boundaries, and storage defaults. Individual user profiles can override these\n defaults via AwsSagemakerUserProfile (not in v1 scope).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "DomainSecurityGroupIds",
+        "jsonName": "domainSecurityGroupIds",
+        "protoField": "domain_security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "domain_security_group_ids are security groups applied at the domain level for\n domain-scoped apps and shared resources. These are separate from user-level security\n groups (default_user_settings.security_group_ids) and control domain-wide network boundaries.\n Maximum 3 security groups. ForceNew: changing these forces domain replacement.",
+        "required": false,
+        "validation": {
+          "maxItems": 3
+        },
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "DockerSettings",
+        "jsonName": "dockerSettings",
+        "protoField": "docker_settings",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsSagemakerDomainDockerSettings"
+        },
+        "description": "docker_settings controls Docker access within the SageMaker Domain.\n When enabled, users can build and run custom Docker containers directly in their\n notebooks and terminals -- essential for custom training containers, inference\n endpoints, and reproducible ML pipelines.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsSagemakerDomainCodeRepository",
+      "description": "AwsSagemakerDomainCodeRepository defines a Git repository automatically cloned into\n JupyterLab on startup, providing immediate access to team code and shared notebooks.",
+      "protoType": "org.openmcf.provider.aws.awssagemakerdomain.v1.AwsSagemakerDomainCodeRepository",
+      "fields": [
+        {
+          "name": "RepositoryUrl",
+          "jsonName": "repositoryUrl",
+          "protoField": "repository_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "repository_url is the HTTPS URL of the Git repository to clone.\n Must be an HTTPS URL (SSH URLs are not supported by SageMaker).\n Examples: \"https://github.com/org/ml-notebooks.git\"\n Maximum length: 1024 characters.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "maxLength": 1024
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsSagemakerDomainCustomImage",
+      "description": "AwsSagemakerDomainCustomImage defines a custom Docker image available as a kernel\n in SageMaker Studio. Custom images enable teams to standardize on specific ML framework\n versions, proprietary libraries, or GPU-optimized environments.",
+      "protoType": "org.openmcf.provider.aws.awssagemakerdomain.v1.AwsSagemakerDomainCustomImage",
+      "fields": [
+        {
+          "name": "AppImageConfigName",
+          "jsonName": "appImageConfigName",
+          "protoField": "app_image_config_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "app_image_config_name is the name of the SageMaker AppImageConfig that defines how\n the image is presented to users (kernel specifications, file system configuration).\n The AppImageConfig must exist before referencing it here.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ImageName",
+          "jsonName": "imageName",
+          "protoField": "image_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "image_name is the name of the SageMaker Image resource that contains this container image.\n The Image resource must exist before referencing it here.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ImageVersionNumber",
+          "jsonName": "imageVersionNumber",
+          "protoField": "image_version_number",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "image_version_number pins to a specific version of the image.\n If omitted, the latest available version is used.",
+          "required": false,
+          "oneofGroup": "_image_version_number"
+        }
+      ]
+    },
+    {
+      "name": "AwsSagemakerDomainDefaultUserSettings",
+      "description": "AwsSagemakerDomainDefaultUserSettings defines the default configuration inherited by all\n user profiles in the domain. Each setting establishes a baseline that individual user\n profiles inherit unless explicitly overridden.",
+      "protoType": "org.openmcf.provider.aws.awssagemakerdomain.v1.AwsSagemakerDomainDefaultUserSettings",
+      "fields": [
+        {
+          "name": "ExecutionRoleArn",
+          "jsonName": "executionRoleArn",
+          "protoField": "execution_role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "execution_role_arn is the IAM role assumed by SageMaker when running notebooks,\n training jobs, and other ML workloads on behalf of users. This role determines what\n AWS resources (S3 buckets, ECR repos, Secrets Manager, etc.) users can access from\n their Studio sessions. The role must have a trust policy allowing\n sagemaker.amazonaws.com to assume it.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        },
+        {
+          "name": "SecurityGroupIds",
+          "jsonName": "securityGroupIds",
+          "protoField": "security_group_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "security_group_ids are user-level security groups controlling network access for\n notebook instances and apps. These are attached to the ENIs created for each user's\n apps and control inbound/outbound traffic at the user level. Maximum 5 security groups.",
+          "required": false,
+          "validation": {
+            "maxItems": 5
+          },
+          "referenceKind": "AwsSecurityGroup",
+          "referenceFieldPath": "status.outputs.security_group_id"
+        },
+        {
+          "name": "DefaultLandingUri",
+          "jsonName": "defaultLandingUri",
+          "protoField": "default_landing_uri",
+          "type": {
+            "kind": "string"
+          },
+          "description": "default_landing_uri is the URI of the default app opened when a user accesses the domain.\n Common values:\n   \"studio::relative/JupyterLab\" - opens JupyterLab (recommended for most teams)\n   \"studio::relative/JupyterServer:\" - opens classic Jupyter Server\n   \"studio::\" - opens SageMaker Studio home\n If omitted, AWS uses the platform default.",
+          "required": false
+        },
+        {
+          "name": "StudioWebPortal",
+          "jsonName": "studioWebPortal",
+          "protoField": "studio_web_portal",
+          "type": {
+            "kind": "string"
+          },
+          "description": "studio_web_portal controls whether the SageMaker Studio web portal is accessible.\n \"ENABLED\" (default): users can access the full Studio web interface.\n \"DISABLED\": restricts access to programmatic-only usage (API/CLI).",
+          "required": false,
+          "default": "ENABLED",
+          "oneofGroup": "_studio_web_portal"
+        },
+        {
+          "name": "JupyterLabAppSettings",
+          "jsonName": "jupyterLabAppSettings",
+          "protoField": "jupyter_lab_app_settings",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsSagemakerDomainJupyterLabAppSettings"
+          },
+          "description": "jupyter_lab_app_settings configures JupyterLab, the primary IDE for SageMaker Studio.\n JupyterLab provides a modern notebook and code editing experience with built-in Git\n integration, terminal access, extension support, and collaborative editing.",
+          "required": false
+        },
+        {
+          "name": "KernelGatewayAppSettings",
+          "jsonName": "kernelGatewayAppSettings",
+          "protoField": "kernel_gateway_app_settings",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsSagemakerDomainKernelGatewayAppSettings"
+          },
+          "description": "kernel_gateway_app_settings configures KernelGateway apps that provide custom compute\n kernels. Use KernelGateway to bring your own Docker images with specialized ML\n frameworks, custom libraries, or GPU-optimized environments that go beyond the\n standard SageMaker-provided kernels.",
+          "required": false
+        },
+        {
+          "name": "SharingSettings",
+          "jsonName": "sharingSettings",
+          "protoField": "sharing_settings",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsSagemakerDomainSharingSettings"
+          },
+          "description": "sharing_settings controls notebook output sharing to S3. When enabled, notebook cell\n outputs are persisted to an S3 location, allowing team members to view results\n without running the notebook.",
+          "required": false
+        },
+        {
+          "name": "SpaceStorageSettings",
+          "jsonName": "spaceStorageSettings",
+          "protoField": "space_storage_settings",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsSagemakerDomainSpaceStorageSettings"
+          },
+          "description": "space_storage_settings configures default EBS volume sizes for user spaces.\n Spaces use EBS volumes for working storage beyond the shared EFS home directory.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsSagemakerDomainDockerSettings",
+      "description": "AwsSagemakerDomainDockerSettings controls Docker access within the SageMaker Domain.\n Docker access enables users to build custom training containers, test inference images,\n and create reproducible ML pipelines directly within their Studio environment.",
+      "protoType": "org.openmcf.provider.aws.awssagemakerdomain.v1.AwsSagemakerDomainDockerSettings",
+      "fields": [
+        {
+          "name": "EnableDockerAccess",
+          "jsonName": "enableDockerAccess",
+          "protoField": "enable_docker_access",
+          "type": {
+            "kind": "string"
+          },
+          "description": "enable_docker_access controls whether users can build and run Docker containers\n in their notebooks and terminals.\n \"ENABLED\": Docker commands (build, pull, run) are available.\n \"DISABLED\": Docker access is blocked.",
+          "required": false
+        },
+        {
+          "name": "VpcOnlyTrustedAccounts",
+          "jsonName": "vpcOnlyTrustedAccounts",
+          "protoField": "vpc_only_trusted_accounts",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "vpc_only_trusted_accounts restricts Docker image pulling to images from specified\n AWS account IDs when app_network_access_type is \"VpcOnly\". This prevents users from\n pulling arbitrary images from public registries, enforcing approved image sources.\n Maximum 20 account IDs.",
+          "required": false,
+          "validation": {
+            "maxItems": 20
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsSagemakerDomainIdleSettings",
+      "description": "AwsSagemakerDomainIdleSettings configures automatic shutdown of idle app instances.\n Idle detection is based on user activity: notebook cell execution, terminal commands,\n file operations, and UI interactions. When no activity is detected for the configured\n timeout period, the instance is automatically stopped, releasing compute resources.",
+      "protoType": "org.openmcf.provider.aws.awssagemakerdomain.v1.AwsSagemakerDomainIdleSettings",
+      "fields": [
+        {
+          "name": "LifecycleManagement",
+          "jsonName": "lifecycleManagement",
+          "protoField": "lifecycle_management",
+          "type": {
+            "kind": "string"
+          },
+          "description": "lifecycle_management enables or disables automatic idle shutdown.\n \"ENABLED\": idle instances are automatically shut down after idle_timeout_in_minutes.\n \"DISABLED\": instances run until manually stopped (not recommended for production).",
+          "required": false
+        },
+        {
+          "name": "IdleTimeoutInMinutes",
+          "jsonName": "idleTimeoutInMinutes",
+          "protoField": "idle_timeout_in_minutes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "idle_timeout_in_minutes is the duration of inactivity (in minutes) before an instance\n is automatically shut down. Range: 60-525600 (1 hour to 365 days).\n A reasonable production default is 120 (2 hours).",
+          "required": false,
+          "validation": {
+            "min": 60,
+            "max": 525600
+          }
+        },
+        {
+          "name": "MinIdleTimeoutInMinutes",
+          "jsonName": "minIdleTimeoutInMinutes",
+          "protoField": "min_idle_timeout_in_minutes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "min_idle_timeout_in_minutes sets the minimum idle timeout that individual users can\n configure for their own apps. Prevents users from setting excessively short timeouts\n that would cause disruptive shutdowns during brief pauses. Range: 60-525600.",
+          "required": false,
+          "validation": {
+            "min": 60,
+            "max": 525600
+          }
+        },
+        {
+          "name": "MaxIdleTimeoutInMinutes",
+          "jsonName": "maxIdleTimeoutInMinutes",
+          "protoField": "max_idle_timeout_in_minutes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "max_idle_timeout_in_minutes sets the maximum idle timeout that individual users can\n configure. Prevents users from effectively disabling idle shutdown by setting\n extremely long timeouts. Range: 60-525600.",
+          "required": false,
+          "validation": {
+            "min": 60,
+            "max": 525600
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsSagemakerDomainJupyterLabAppSettings",
+      "description": "AwsSagemakerDomainJupyterLabAppSettings configures the JupyterLab IDE for the domain.\n JupyterLab is the recommended primary IDE for SageMaker Studio, providing notebooks,\n code editors, terminals, and extension support in a modern web interface.",
+      "protoType": "org.openmcf.provider.aws.awssagemakerdomain.v1.AwsSagemakerDomainJupyterLabAppSettings",
+      "fields": [
+        {
+          "name": "DefaultResourceSpec",
+          "jsonName": "defaultResourceSpec",
+          "protoField": "default_resource_spec",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsSagemakerDomainResourceSpec"
+          },
+          "description": "default_resource_spec sets the default compute instance type and lifecycle configuration\n for new JupyterLab apps. Users can override the instance type at app creation time.",
+          "required": false
+        },
+        {
+          "name": "LifecycleConfigArns",
+          "jsonName": "lifecycleConfigArns",
+          "protoField": "lifecycle_config_arns",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "lifecycle_config_arns are ARNs of lifecycle configuration scripts that run when\n JupyterLab apps start. Use lifecycle configs to install Python packages, configure\n JupyterLab extensions, set environment variables, or mount additional storage.",
+          "required": false
+        },
+        {
+          "name": "CustomImages",
+          "jsonName": "customImages",
+          "protoField": "custom_images",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsSagemakerDomainCustomImage"
+            }
+          },
+          "description": "custom_images are custom Docker images available as JupyterLab kernels.\n Each image must be registered in SageMaker via an AppImageConfig that defines\n the kernel specification and file system layout. Maximum 200 images.",
+          "required": false,
+          "validation": {
+            "maxItems": 200
+          }
+        },
+        {
+          "name": "CodeRepositories",
+          "jsonName": "codeRepositories",
+          "protoField": "code_repositories",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsSagemakerDomainCodeRepository"
+            }
+          },
+          "description": "code_repositories are Git repositories automatically cloned into JupyterLab on startup.\n Provides immediate access to team code, shared notebooks, and documentation.\n Maximum 10 repositories.",
+          "required": false,
+          "validation": {
+            "maxItems": 10
+          }
+        },
+        {
+          "name": "IdleSettings",
+          "jsonName": "idleSettings",
+          "protoField": "idle_settings",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsSagemakerDomainIdleSettings"
+          },
+          "description": "idle_settings configures automatic shutdown of idle JupyterLab instances.\n Critical for cost management: without idle timeout, instances run 24/7 at full\n compute cost even when no user is interacting with them.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsSagemakerDomainKernelGatewayAppSettings",
+      "description": "AwsSagemakerDomainKernelGatewayAppSettings configures KernelGateway for custom compute kernels.\n KernelGateway enables \"bring your own image\" workflows where teams use custom Docker\n images with specialized ML frameworks, proprietary libraries, or GPU-optimized stacks\n that are not available in the standard SageMaker-provided kernels.",
+      "protoType": "org.openmcf.provider.aws.awssagemakerdomain.v1.AwsSagemakerDomainKernelGatewayAppSettings",
+      "fields": [
+        {
+          "name": "DefaultResourceSpec",
+          "jsonName": "defaultResourceSpec",
+          "protoField": "default_resource_spec",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsSagemakerDomainResourceSpec"
+          },
+          "description": "default_resource_spec sets the default compute instance type and lifecycle configuration\n for new KernelGateway apps.",
+          "required": false
+        },
+        {
+          "name": "LifecycleConfigArns",
+          "jsonName": "lifecycleConfigArns",
+          "protoField": "lifecycle_config_arns",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "lifecycle_config_arns are ARNs of lifecycle configuration scripts for KernelGateway apps.",
+          "required": false
+        },
+        {
+          "name": "CustomImages",
+          "jsonName": "customImages",
+          "protoField": "custom_images",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsSagemakerDomainCustomImage"
+            }
+          },
+          "description": "custom_images are custom Docker images available as KernelGateway kernels.\n Each image must be registered in SageMaker via an AppImageConfig. Maximum 200 images.",
+          "required": false,
+          "validation": {
+            "maxItems": 200
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsSagemakerDomainResourceSpec",
+      "description": "AwsSagemakerDomainResourceSpec defines the default compute and image configuration for an\n app type. This shared structure is used by JupyterLab, KernelGateway, and other app settings.",
+      "protoType": "org.openmcf.provider.aws.awssagemakerdomain.v1.AwsSagemakerDomainResourceSpec",
+      "fields": [
+        {
+          "name": "InstanceType",
+          "jsonName": "instanceType",
+          "protoField": "instance_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "instance_type is the EC2 instance type for the app's compute.\n Common choices:\n   \"ml.t3.medium\" - development/exploration (2 vCPU, 4 GB)\n   \"ml.m5.large\" - general-purpose notebooks (2 vCPU, 8 GB)\n   \"ml.g4dn.xlarge\" - GPU workloads (1 GPU, 4 vCPU, 16 GB)\n   \"ml.p3.2xlarge\" - heavy training (1 V100 GPU, 8 vCPU, 61 GB)\n   \"system\" - lightweight system-managed instance for JupyterServer",
+          "required": false
+        },
+        {
+          "name": "LifecycleConfigArn",
+          "jsonName": "lifecycleConfigArn",
+          "protoField": "lifecycle_config_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "lifecycle_config_arn is the ARN of a lifecycle configuration script that runs\n when this specific app type starts.",
+          "required": false
+        },
+        {
+          "name": "SagemakerImageArn",
+          "jsonName": "sagemakerImageArn",
+          "protoField": "sagemaker_image_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "sagemaker_image_arn is the ARN of a SageMaker Image that defines the app's container.\n Use this to specify a custom base image instead of the SageMaker-provided default.",
+          "required": false
+        },
+        {
+          "name": "SagemakerImageVersionAlias",
+          "jsonName": "sagemakerImageVersionAlias",
+          "protoField": "sagemaker_image_version_alias",
+          "type": {
+            "kind": "string"
+          },
+          "description": "sagemaker_image_version_alias is a human-readable alias for a specific image version\n (e.g., \"latest\", \"v2.0\"). Mutually exclusive with sagemaker_image_version_arn.",
+          "required": false
+        },
+        {
+          "name": "SagemakerImageVersionArn",
+          "jsonName": "sagemakerImageVersionArn",
+          "protoField": "sagemaker_image_version_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "sagemaker_image_version_arn is the ARN of a specific SageMaker image version.\n Pins the app to an exact image version for reproducibility across team members.\n Mutually exclusive with sagemaker_image_version_alias.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsSagemakerDomainSharingSettings",
+      "description": "AwsSagemakerDomainSharingSettings controls notebook output sharing to S3.\n When enabled, notebook cell outputs (plots, tables, printed results) are automatically\n persisted to an S3 location, allowing team members to view results without running\n the notebook themselves -- useful for review workflows and audit trails.",
+      "protoType": "org.openmcf.provider.aws.awssagemakerdomain.v1.AwsSagemakerDomainSharingSettings",
+      "fields": [
+        {
+          "name": "NotebookOutputOption",
+          "jsonName": "notebookOutputOption",
+          "protoField": "notebook_output_option",
+          "type": {
+            "kind": "string"
+          },
+          "description": "notebook_output_option controls whether notebook cell outputs are persisted to S3.\n \"Allowed\": outputs are copied to S3 at the location specified by s3_output_path.\n \"Disabled\" (default): outputs are not shared externally.",
+          "required": false,
+          "default": "Disabled",
+          "oneofGroup": "_notebook_output_option"
+        },
+        {
+          "name": "S3KmsKeyId",
+          "jsonName": "s3KmsKeyId",
+          "protoField": "s3_kms_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "s3_kms_key_id is the KMS key used to encrypt shared notebook outputs in S3.\n If omitted, outputs are encrypted with the default S3 bucket encryption.",
+          "required": false,
+          "referenceKind": "AwsKmsKey",
+          "referenceFieldPath": "status.outputs.key_arn"
+        },
+        {
+          "name": "S3OutputPath",
+          "jsonName": "s3OutputPath",
+          "protoField": "s3_output_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "s3_output_path is the S3 URI where shared notebook outputs are stored.\n Required when notebook_output_option is \"Allowed\".\n Example: \"s3://my-team-bucket/notebook-outputs/\"",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsSagemakerDomainSpaceStorageSettings",
+      "description": "AwsSagemakerDomainSpaceStorageSettings configures default EBS volume sizes for user spaces.\n Spaces use EBS volumes for fast working storage (code checkouts, intermediate training data,\n model artifacts) beyond the shared EFS home directory.",
+      "protoType": "org.openmcf.provider.aws.awssagemakerdomain.v1.AwsSagemakerDomainSpaceStorageSettings",
+      "fields": [
+        {
+          "name": "DefaultEbsVolumeSizeInGb",
+          "jsonName": "defaultEbsVolumeSizeInGb",
+          "protoField": "default_ebs_volume_size_in_gb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "default_ebs_volume_size_in_gb is the default EBS volume size (in GB) assigned to new spaces.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "MaximumEbsVolumeSizeInGb",
+          "jsonName": "maximumEbsVolumeSizeInGb",
+          "protoField": "maximum_ebs_volume_size_in_gb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "maximum_ebs_volume_size_in_gb is the maximum EBS volume size (in GB) that users can request\n for their spaces. Must be \u003e= default_ebs_volume_size_in_gb.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    }
+  ]
+}

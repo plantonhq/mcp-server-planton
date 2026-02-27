@@ -1,0 +1,322 @@
+{
+  "name": "ScalewayServerlessFunction",
+  "kind": "ScalewayServerlessFunction",
+  "cloudProvider": "scaleway",
+  "apiVersion": "scaleway.openmcf.org/v1",
+  "description": "ScalewayServerlessFunction is a Kubernetes Resource Model (KRM) style\n resource for deploying and managing serverless functions on Scaleway.\n\n This is a **composite** resource that bundles a function namespace,\n the function itself, and optional cron triggers into a single\n declarable unit. Under the hood it creates:\n   - scaleway_function_namespace (1x) -- grouping container\n   - scaleway_function (1x) -- the serverless function\n   - scaleway_function_cron (0..Nx) -- optional scheduled triggers\n\n **Deployment model:** This resource defines the function\n *infrastructure* (runtime, memory, scaling, networking, env vars).\n Code can be deployed alongside via `zip_file`/`zip_hash` fields,\n or separately via the Scaleway CLI (`scw function deploy`) or CI/CD\n pipeline.\n\n **Composition pattern:** This is a mid-tier resource (DAG Layer 2).\n Upstream: `private_network_id` optionally references\n ScalewayPrivateNetwork for VPC connectivity.\n Downstream: `domain_name` output can be referenced by\n ScalewayDnsRecord for custom domain routing.",
+  "protoPackage": "org.openmcf.provider.scaleway.scalewayserverlessfunction.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/scaleway/scalewayserverlessfunction/v1/api.proto",
+    "spec": "org/openmcf/provider/scaleway/scalewayserverlessfunction/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ScalewayServerlessFunctionSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region where the function namespace and function are deployed.\n\n Scaleway serverless functions are regional resources.\n Valid regions: \"fr-par\", \"nl-ams\", \"pl-waw\".",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Runtime",
+        "jsonName": "runtime",
+        "protoField": "runtime",
+        "type": {
+          "kind": "string"
+        },
+        "description": "runtime specifies the language runtime for the function.\n\n This is a plain string (not an enum) because Scaleway adds new\n runtimes frequently. Using a string avoids proto staleness.\n\n Known runtimes (as of 2026):\n   Node.js: \"node20\", \"node22\"\n   Python:  \"python39\", \"python310\", \"python311\", \"python312\", \"python313\"\n   Go:      \"go122\", \"go123\", \"go124\"\n   Rust:    \"rust165\"\n   PHP:     \"php82\"\n\n See https://www.scaleway.com/en/docs/serverless-functions/reference-content/functions-runtimes/",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Handler",
+        "jsonName": "handler",
+        "protoField": "handler",
+        "type": {
+          "kind": "string"
+        },
+        "description": "handler is the function entrypoint, runtime-dependent.\n\n Examples:\n   Python: \"handler.handle\"\n   Node.js: \"handler.handler\"\n   Go: \"Handle\"\n\n Refer to Scaleway documentation for handler conventions per runtime.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Privacy",
+        "jsonName": "privacy",
+        "protoField": "privacy",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.scaleway.scalewayserverlessfunction.v1.ScalewayServerlessFunctionPrivacy",
+          "enumValues": [
+            "privacy_public",
+            "privacy_private"
+          ]
+        },
+        "description": "privacy controls how the function is authenticated.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description of the function. Optional, human-readable.",
+        "required": false
+      },
+      {
+        "name": "MemoryLimitMb",
+        "jsonName": "memoryLimitMb",
+        "protoField": "memory_limit_mb",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "memory_limit_mb is the memory allocated to each function instance\n in megabytes.\n\n Higher memory also increases CPU allocation proportionally.\n Common values: 128, 256, 512, 1024, 2048.\n Defaults to 256 MB if not specified.",
+        "required": false,
+        "recommendedDefault": "256"
+      },
+      {
+        "name": "MinScale",
+        "jsonName": "minScale",
+        "protoField": "min_scale",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "min_scale is the minimum number of always-running function instances.\n\n Set to 0 (default) for scale-to-zero behavior -- the function\n spins down when idle and incurs no compute charges.\n Set to 1+ for always-warm instances (eliminates cold starts but\n incurs continuous billing).",
+        "required": false
+      },
+      {
+        "name": "MaxScale",
+        "jsonName": "maxScale",
+        "protoField": "max_scale",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "max_scale is the maximum number of concurrent function instances.\n\n The function auto-scales based on incoming workload but never\n exceeds this limit. Defaults to 20 if not specified.",
+        "required": false,
+        "recommendedDefault": "20"
+      },
+      {
+        "name": "TimeoutSeconds",
+        "jsonName": "timeoutSeconds",
+        "protoField": "timeout_seconds",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "timeout_seconds is the maximum execution time for a single\n function invocation in seconds.\n\n If the function exceeds this duration, Scaleway terminates it.\n Defaults to 300 seconds (5 minutes) if not specified.",
+        "required": false,
+        "recommendedDefault": "300"
+      },
+      {
+        "name": "HttpOption",
+        "jsonName": "httpOption",
+        "protoField": "http_option",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.scaleway.scalewayserverlessfunction.v1.ScalewayServerlessFunctionHttpOption",
+          "enumValues": [
+            "enabled",
+            "redirected"
+          ]
+        },
+        "description": "http_option controls HTTP/HTTPS behavior for the function endpoint.\n\n Defaults to \"enabled\" (both HTTP and HTTPS allowed) if not specified.",
+        "required": false
+      },
+      {
+        "name": "Env",
+        "jsonName": "env",
+        "protoField": "env",
+        "type": {
+          "kind": "message",
+          "messageType": "ScalewayServerlessFunctionEnv"
+        },
+        "description": "env groups environment variables and secrets for the function.\n\n Variables are non-secret and visible in logs/dashboards.\n Secrets are encrypted at rest and masked in the Scaleway console.\n\n Modeled as repeated name-value messages (Kubernetes-style) rather\n than maps to preserve sort order and enable future `valueFrom`\n extension.",
+        "required": false
+      },
+      {
+        "name": "PrivateNetworkId",
+        "jsonName": "privateNetworkId",
+        "protoField": "private_network_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "private_network_id optionally connects the function to a Scaleway\n Private Network for VPC-internal communication.\n\n When connected, the function can reach resources on the Private\n Network (databases, Redis clusters, other services) without\n traversing the public internet.\n\n Leave unset for functions that only need public internet access.",
+        "required": false,
+        "referenceKind": "ScalewayPrivateNetwork",
+        "referenceFieldPath": "status.outputs.private_network_id"
+      },
+      {
+        "name": "Sandbox",
+        "jsonName": "sandbox",
+        "protoField": "sandbox",
+        "type": {
+          "kind": "string"
+        },
+        "description": "sandbox selects the execution environment for the function.\n\n Available sandboxes depend on the Scaleway platform version.\n Common values: \"v1\" (standard), \"v2\" (enhanced security).\n Leave empty to use the platform default.",
+        "required": false
+      },
+      {
+        "name": "ZipFile",
+        "jsonName": "zipFile",
+        "protoField": "zip_file",
+        "type": {
+          "kind": "string"
+        },
+        "description": "zip_file is the local path to a zip archive containing the\n function source code.\n\n When provided, the IaC module uploads this archive and triggers\n deployment. Use together with `zip_hash` for change detection.\n\n Leave empty when deploying code separately via the Scaleway CLI\n or CI/CD pipeline.",
+        "required": false
+      },
+      {
+        "name": "ZipHash",
+        "jsonName": "zipHash",
+        "protoField": "zip_hash",
+        "type": {
+          "kind": "string"
+        },
+        "description": "zip_hash is a hash of the zip archive for change detection.\n\n When the hash changes, the IaC module re-uploads and redeploys\n the function. Can be any string (e.g., SHA256 of the zip file).\n\n Only meaningful when `zip_file` is also set.",
+        "required": false
+      },
+      {
+        "name": "CronTriggers",
+        "jsonName": "cronTriggers",
+        "protoField": "cron_triggers",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ScalewayServerlessFunctionCronTrigger"
+          }
+        },
+        "description": "cron_triggers defines optional scheduled triggers for the function.\n\n Each trigger creates a `scaleway_function_cron` resource that\n invokes the function on the specified schedule with the given\n JSON arguments.\n\n Common patterns:\n   Hourly cleanup:    schedule = \"0 * * * *\"\n   Nightly backup:    schedule = \"0 2 * * *\"\n   Every 5 minutes:   schedule = \"*/5 * * * *\"",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ScalewayServerlessFunctionCronTrigger",
+      "description": "ScalewayServerlessFunctionCronTrigger defines a scheduled trigger\n that invokes the function on a CRON schedule.\n\n Each trigger creates a separate `scaleway_function_cron` Terraform\n resource linked to the function.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayserverlessfunction.v1.ScalewayServerlessFunctionCronTrigger",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is an optional human-readable identifier for the trigger.\n\n If not provided, Scaleway auto-generates a name. Providing a name\n makes triggers easier to identify in the console and logs.",
+          "required": false
+        },
+        {
+          "name": "Schedule",
+          "jsonName": "schedule",
+          "protoField": "schedule",
+          "type": {
+            "kind": "string"
+          },
+          "description": "schedule is a UNIX CRON expression defining when the function\n is invoked.\n\n Examples:\n   \"0 * * * *\"    -- every hour at minute 0\n   \"0 2 * * *\"    -- daily at 2:00 AM\n   \"*/5 * * * *\"  -- every 5 minutes\n   \"0 0 * * 0\"    -- weekly on Sunday at midnight\n\n See https://www.scaleway.com/en/docs/serverless/functions/reference-content/cron-schedules/",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Args",
+          "jsonName": "args",
+          "protoField": "args",
+          "type": {
+            "kind": "string"
+          },
+          "description": "args is a JSON string passed to the function's event object on\n each scheduled invocation.\n\n Must be valid JSON. Use \"{}\" for no arguments.\n\n Example: '{\"cleanup_type\": \"stale_sessions\", \"batch_size\": 100}'",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "ScalewayServerlessFunctionEnv",
+      "description": "ScalewayServerlessFunctionEnv groups environment variables and secrets\n for the function.\n\n This is a component-local message (NOT shared across components).\n Each component defines its own Env message to enable independent\n evolution and avoid cross-component coupling.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayserverlessfunction.v1.ScalewayServerlessFunctionEnv",
+      "fields": [
+        {
+          "name": "Variables",
+          "jsonName": "variables",
+          "protoField": "variables",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "ScalewayServerlessFunctionEnvVar"
+            }
+          },
+          "description": "variables are non-secret environment variables.\n\n These are visible in the Scaleway console and may appear in\n function logs. Do not put sensitive values here -- use `secrets`.",
+          "required": false
+        },
+        {
+          "name": "Secrets",
+          "jsonName": "secrets",
+          "protoField": "secrets",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "ScalewayServerlessFunctionEnvVar"
+            }
+          },
+          "description": "secrets are encrypted environment variables.\n\n Scaleway stores these encrypted at rest and masks them in the\n console. Use for database URLs, API keys, tokens, and other\n sensitive configuration.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ScalewayServerlessFunctionEnvVar",
+      "description": "ScalewayServerlessFunctionEnvVar is a single environment variable\n name-value pair.\n\n Modeled as a message (not a map entry) to preserve ordering and\n enable future extension with `valueFrom` for referencing external\n secret stores.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayserverlessfunction.v1.ScalewayServerlessFunctionEnvVar",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is the environment variable name (e.g., \"DATABASE_URL\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "value is the environment variable value.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

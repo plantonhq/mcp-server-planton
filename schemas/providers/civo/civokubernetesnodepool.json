@@ -1,0 +1,114 @@
+{
+  "name": "CivoKubernetesNodePool",
+  "kind": "CivoKubernetesNodePool",
+  "cloudProvider": "civo",
+  "apiVersion": "civo.openmcf.org/v1",
+  "description": "civo-kubernetes-node-pool",
+  "protoPackage": "org.openmcf.provider.civo.civokubernetesnodepool.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/civo/civokubernetesnodepool/v1/api.proto",
+    "spec": "org/openmcf/provider/civo/civokubernetesnodepool/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CivoKubernetesNodePoolSpec",
+    "fields": [
+      {
+        "name": "NodePoolName",
+        "jsonName": "nodePoolName",
+        "protoField": "node_pool_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "A name for the node pool. Must be unique within the Civo Kubernetes cluster.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Cluster",
+        "jsonName": "cluster",
+        "protoField": "cluster",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to the Civo Kubernetes cluster in which to create this node pool.\n Accepts the cluster's name or a reference to the CivoKubernetesCluster resource.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "CivoKubernetesCluster",
+        "referenceFieldPath": "metadata.name"
+      },
+      {
+        "name": "Size",
+        "jsonName": "size",
+        "protoField": "size",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The slug identifier for the size of each node in the pool (e.g., \"g4s.kube.medium\").\n Defines the CPU and memory of the nodes.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "NodeCount",
+        "jsonName": "nodeCount",
+        "protoField": "node_count",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "The number of nodes to provision in the pool. Must be at least 1.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "AutoScale",
+        "jsonName": "autoScale",
+        "protoField": "auto_scale",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable auto-scaling for this node pool. If true, the platform manages node count between min_nodes and max_nodes.",
+        "required": false
+      },
+      {
+        "name": "MinNodes",
+        "jsonName": "minNodes",
+        "protoField": "min_nodes",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Minimum number of nodes when auto-scaling is enabled. Required if auto_scale is true.",
+        "required": false
+      },
+      {
+        "name": "MaxNodes",
+        "jsonName": "maxNodes",
+        "protoField": "max_nodes",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Maximum number of nodes when auto-scaling is enabled. Required if auto_scale is true.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "A list of tags to apply to the node pool for organizational purposes.",
+        "required": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "name": "AliCloudDnsZone",
+  "kind": "AliCloudDnsZone",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-dns-zone",
+  "protoPackage": "org.openmcf.provider.alicloud.aliclouddnszone.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/aliclouddnszone/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/aliclouddnszone/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudDnsZoneSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region for provider initialization.\n While Alidns is a global service, the provider requires a region.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DomainName",
+        "jsonName": "domainName",
+        "protoField": "domain_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The domain name to manage in Alidns.\n Must be a valid domain (e.g., \"example.com\", \"sub.example.com\").\n Cannot be changed after creation (ForceNew).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 253
+        }
+      },
+      {
+        "name": "GroupId",
+        "jsonName": "groupId",
+        "protoField": "group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alidns domain group ID for organizational grouping.\n Groups help organize large numbers of domains in the Alidns console.\n If omitted, the domain is placed in the default group.",
+        "required": false
+      },
+      {
+        "name": "Remark",
+        "jsonName": "remark",
+        "protoField": "remark",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Remark or description for the domain.\n Visible in the Alidns console; useful for noting the domain's purpose.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for access control and cost attribution.\n If omitted, the domain is placed in the account's default resource group.\n Cannot be changed after creation (ForceNew).",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the domain.",
+        "required": false
+      }
+    ]
+  }
+}

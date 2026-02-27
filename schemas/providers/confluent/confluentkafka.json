@@ -1,0 +1,176 @@
+{
+  "name": "ConfluentKafka",
+  "kind": "ConfluentKafka",
+  "cloudProvider": "confluent",
+  "apiVersion": "confluent.openmcf.org/v1",
+  "description": "confluent-kafka",
+  "protoPackage": "org.openmcf.provider.confluent.confluentkafka.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/confluent/confluentkafka/v1/api.proto",
+    "spec": "org/openmcf/provider/confluent/confluentkafka/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ConfluentKafkaSpec",
+    "fields": [
+      {
+        "name": "Cloud",
+        "jsonName": "cloud",
+        "protoField": "cloud",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cloud provider\nhttps://www.pulumi.com/registry/packages/confluentcloud/api-docs/kafkacluster/#cloud_yaml",
+        "required": true,
+        "validation": {
+          "required": true,
+          "enum": [
+            "AWS",
+            "AZURE",
+            "GCP"
+          ]
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region is the cloud-specific region where the cluster will be deployed (e.g., us-east-2, us-central1, eastus)\nhttps://www.pulumi.com/registry/packages/confluentcloud/api-docs/kafkacluster/#region_yaml",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Availability",
+        "jsonName": "availability",
+        "protoField": "availability",
+        "type": {
+          "kind": "string"
+        },
+        "description": "availability determines high availability configuration\nSINGLE_ZONE: Development/testing, no SLA\nMULTI_ZONE: Production, 99.99% SLA (required for Standard/Dedicated)\nLOW and HIGH are legacy values for Basic clusters\nhttps://www.pulumi.com/registry/packages/confluentcloud/api-docs/kafkacluster/#availability_yaml",
+        "required": true,
+        "validation": {
+          "required": true,
+          "enum": [
+            "SINGLE_ZONE",
+            "MULTI_ZONE",
+            "LOW",
+            "HIGH"
+          ]
+        }
+      },
+      {
+        "name": "EnvironmentId",
+        "jsonName": "environmentId",
+        "protoField": "environment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "environment_id is the ID of the Confluent Cloud environment (parent container for clusters)\nhttps://www.pulumi.com/registry/packages/confluentcloud/api-docs/kafkacluster/#environment_yaml",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ClusterType",
+        "jsonName": "clusterType",
+        "protoField": "cluster_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cluster_type determines the deployment type and capabilities\nBASIC: Multi-tenant, development/testing, single-zone only, public internet only\nSTANDARD: Multi-tenant, production, elastic scaling, public internet only\nENTERPRISE: Multi-tenant, production, elastic scaling, supports private networking\nDEDICATED: Single-tenant, production, provisioned capacity (CKU), supports private networking\nDefault: STANDARD (if not specified)",
+        "required": false,
+        "validation": {
+          "enum": [
+            "BASIC",
+            "STANDARD",
+            "ENTERPRISE",
+            "DEDICATED"
+          ]
+        }
+      },
+      {
+        "name": "DedicatedConfig",
+        "jsonName": "dedicatedConfig",
+        "protoField": "dedicated_config",
+        "type": {
+          "kind": "message",
+          "messageType": "ConfluentKafkaDedicatedConfig"
+        },
+        "description": "dedicated_config is required only when cluster_type is DEDICATED\nconfigures provisioned capacity (CKU) for dedicated clusters",
+        "required": false
+      },
+      {
+        "name": "NetworkConfig",
+        "jsonName": "networkConfig",
+        "protoField": "network_config",
+        "type": {
+          "kind": "message",
+          "messageType": "ConfluentKafkaNetworkConfig"
+        },
+        "description": "network_config configures private networking (PrivateLink, VNet Peering, Private Service Connect)\nOnly available for ENTERPRISE and DEDICATED cluster types\nOptional: If not specified, cluster uses public internet access",
+        "required": false
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "display_name is the human-readable name shown in Confluent Cloud UI\nOptional: If not specified, defaults to metadata.name",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ConfluentKafkaDedicatedConfig",
+      "description": "confluent-kafka dedicated cluster configuration\nRequired when cluster_type is DEDICATED",
+      "protoType": "org.openmcf.provider.confluent.confluentkafka.v1.ConfluentKafkaDedicatedConfig",
+      "fields": [
+        {
+          "name": "Cku",
+          "jsonName": "cku",
+          "protoField": "cku",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "cku (Confluent Kafka Units) is the provisioned capacity for dedicated clusters\nMinimum: 1 CKU, can be scaled up/down but not to zero\nhttps://www.pulumi.com/registry/packages/confluentcloud/api-docs/kafkacluster/#cku_yaml",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "ConfluentKafkaNetworkConfig",
+      "description": "confluent-kafka network configuration for private networking\nEnables PrivateLink (AWS), Private Link (Azure), or Private Service Connect (GCP)\nOnly available for ENTERPRISE and DEDICATED cluster types",
+      "protoType": "org.openmcf.provider.confluent.confluentkafka.v1.ConfluentKafkaNetworkConfig",
+      "fields": [
+        {
+          "name": "NetworkId",
+          "jsonName": "networkId",
+          "protoField": "network_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "network_id is the ID of the Confluent Cloud network resource\nMust be pre-created in the same environment\nhttps://docs.confluent.io/cloud/current/networking/overview.html",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

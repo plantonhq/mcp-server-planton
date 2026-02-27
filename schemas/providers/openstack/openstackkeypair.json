@@ -1,0 +1,37 @@
+{
+  "name": "OpenStackKeypair",
+  "kind": "OpenStackKeypair",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackKeypair is a Kubernetes Resource Model (KRM) style resource for managing\n SSH keypairs in OpenStack Nova (Compute service).\n\n Keypairs are used to authenticate SSH access to compute instances. This component supports\n both importing existing public keys and generating new keypairs via OpenStack.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackkeypair.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackkeypair/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackkeypair/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackKeypairSpec",
+    "fields": [
+      {
+        "name": "PublicKey",
+        "jsonName": "publicKey",
+        "protoField": "public_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "public_key is the SSH public key to import, in OpenSSH authorized_keys format.\n Example: \"ssh-rsa AAAAB3NzaC1yc2EAAAA... user@host\"\n\n If omitted, OpenStack will generate a new keypair. In that case, the private key\n is available as a sensitive IaC-level output only (not in platform stack outputs).\n Security note: generated private keys are stored unencrypted in IaC state.\n For production use, generating keys locally with ssh-keygen and importing the\n public key is the recommended approach.",
+        "required": false
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this keypair.\n If omitted, the region from the OpenStack provider config is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  }
+}

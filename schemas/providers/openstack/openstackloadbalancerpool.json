@@ -1,0 +1,167 @@
+{
+  "name": "OpenStackLoadBalancerPool",
+  "kind": "OpenStackLoadBalancerPool",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackLoadBalancerPool is a Kubernetes Resource Model (KRM) style resource\n for managing Octavia backend pools in OpenStack.\n\n A pool groups backend members and defines how traffic from a listener is distributed\n across those members. The pool specifies the protocol, load-balancing algorithm,\n and optional session persistence. Members and health monitors attach to the pool.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackloadbalancerpool.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackloadbalancerpool/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackloadbalancerpool/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackLoadBalancerPoolSpec",
+    "fields": [
+      {
+        "name": "ListenerId",
+        "jsonName": "listenerId",
+        "protoField": "listener_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The listener this pool is the default pool for.\n ForceNew: changing this requires recreating the pool.\n\n FK: OpenStackLoadBalancerListener.status.outputs.listener_id",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackLoadBalancerListener",
+        "referenceFieldPath": "status.outputs.listener_id"
+      },
+      {
+        "name": "Protocol",
+        "jsonName": "protocol",
+        "protoField": "protocol",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The protocol used by pool members to receive traffic.\n ForceNew: changing this requires recreating the pool.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "enum": [
+            "HTTP",
+            "HTTPS",
+            "TCP",
+            "UDP",
+            "PROXY"
+          ]
+        }
+      },
+      {
+        "name": "LbMethod",
+        "jsonName": "lbMethod",
+        "protoField": "lb_method",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The load-balancing algorithm to distribute traffic across members.\n\n - ROUND_ROBIN: Equal distribution across all members\n - LEAST_CONNECTIONS: Send to member with fewest active connections\n - SOURCE_IP: Hash client IP for sticky routing\n - SOURCE_IP_PORT: Hash client IP and port for fine-grained stickiness",
+        "required": true,
+        "validation": {
+          "required": true,
+          "enum": [
+            "ROUND_ROBIN",
+            "LEAST_CONNECTIONS",
+            "SOURCE_IP",
+            "SOURCE_IP_PORT"
+          ]
+        }
+      },
+      {
+        "name": "Persistence",
+        "jsonName": "persistence",
+        "protoField": "persistence",
+        "type": {
+          "kind": "message",
+          "messageType": "SessionPersistence"
+        },
+        "description": "(Optional) Session persistence configuration.\n Ensures requests from the same client are routed to the same backend member.\n Only one persistence config is allowed (Octavia enforces this).",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Human-readable description of the pool.",
+        "required": false
+      },
+      {
+        "name": "AdminStateUp",
+        "jsonName": "adminStateUp",
+        "protoField": "admin_state_up",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "(Optional) Administrative state of the pool.\n When false, the pool stops receiving traffic. Default: true.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_admin_state_up"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "(Optional) Tags applied to the pool in OpenStack.\n Must be unique within this resource.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Override the region from the provider configuration.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "SessionPersistence",
+      "description": "SessionPersistence defines how client sessions are pinned to backend members.\n\n Validations:\n - cookie_name is only valid when type is APP_COOKIE.",
+      "protoType": "org.openmcf.provider.openstack.openstackloadbalancerpool.v1.SessionPersistence",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "(Required) The type of session persistence.\n\n - SOURCE_IP: Hash the client's IP address\n - HTTP_COOKIE: Octavia inserts and tracks a cookie\n - APP_COOKIE: Application manages the cookie (requires cookie_name)",
+          "required": true,
+          "validation": {
+            "required": true,
+            "enum": [
+              "SOURCE_IP",
+              "HTTP_COOKIE",
+              "APP_COOKIE"
+            ]
+          }
+        },
+        {
+          "name": "CookieName",
+          "jsonName": "cookieName",
+          "protoField": "cookie_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "(Optional) The name of the application cookie to use for session affinity.\n Only valid when type is APP_COOKIE.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

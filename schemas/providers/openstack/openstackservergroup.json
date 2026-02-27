@@ -1,0 +1,46 @@
+{
+  "name": "OpenStackServerGroup",
+  "kind": "OpenStackServerGroup",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackServerGroup is a Kubernetes Resource Model (KRM) style resource\n for managing OpenStack Compute server groups.\n\n A server group is a placement constraint for compute instances. By assigning\n instances to a server group with an affinity or anti-affinity policy, you\n control whether instances are co-located on the same hypervisor or spread\n across different hypervisors.\n\n Common use cases:\n   - Anti-affinity for HA: spread database replicas across different hosts\n   - Affinity for performance: co-locate coupled services on the same host\n   - Soft policies for best-effort placement without hard scheduling failures",
+  "protoPackage": "org.openmcf.provider.openstack.openstackservergroup.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackservergroup/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackservergroup/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackServerGroupSpec",
+    "fields": [
+      {
+        "name": "Policy",
+        "jsonName": "policy",
+        "protoField": "policy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "policy is the placement policy for instances in this server group.\n\n Valid values:\n   \"affinity\"           - all members on the same hypervisor (hard constraint)\n   \"anti-affinity\"      - all members on different hypervisors (hard constraint)\n   \"soft-affinity\"      - prefer same hypervisor, no failure if unavailable (requires API 2.15+)\n   \"soft-anti-affinity\" - prefer different hypervisors, no failure if unavailable (requires API 2.15+)\n\n ForceNew: changing the policy recreates the server group.\n\n Note: the OpenStack API accepts this as a list, but only one policy is\n allowed per server group. We model it as a singular string for clarity.",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "enum": [
+            "affinity",
+            "anti-affinity",
+            "soft-affinity",
+            "soft-anti-affinity"
+          ]
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this server group.\n If omitted, the region from the OpenStack provider config is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  }
+}

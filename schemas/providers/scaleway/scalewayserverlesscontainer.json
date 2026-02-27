@@ -1,0 +1,530 @@
+{
+  "name": "ScalewayServerlessContainer",
+  "kind": "ScalewayServerlessContainer",
+  "cloudProvider": "scaleway",
+  "apiVersion": "scaleway.openmcf.org/v1",
+  "description": "ScalewayServerlessContainer is a Kubernetes Resource Model (KRM) style\n resource for deploying and managing serverless containers on Scaleway.\n\n This is a **composite** resource that bundles a container namespace,\n the container itself, and optional cron triggers into a single\n declarable unit. Under the hood it creates:\n   - scaleway_container_namespace (1x) -- grouping container\n   - scaleway_container (1x) -- the serverless container\n   - scaleway_container_cron (0..Nx) -- optional scheduled triggers\n\n **Deployment model:** This resource deploys pre-built container images\n from any OCI-compatible registry (Scaleway Container Registry, Docker\n Hub, GHCR, etc.). Unlike ScalewayServerlessFunction which deploys\n source code with a runtime, this resource deploys ready-to-run\n container images.\n\n **Composition pattern:** This is a mid-tier resource (DAG Layer 2).\n Upstream: `image.registry_endpoint` optionally references\n ScalewayContainerRegistry for registry DAG edges.\n `private_network_id` optionally references ScalewayPrivateNetwork\n for VPC connectivity.\n Downstream: `domain_name` output can be referenced by\n ScalewayDnsRecord for custom domain routing.",
+  "protoPackage": "org.openmcf.provider.scaleway.scalewayserverlesscontainer.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/scaleway/scalewayserverlesscontainer/v1/api.proto",
+    "spec": "org/openmcf/provider/scaleway/scalewayserverlesscontainer/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ScalewayServerlessContainerSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region where the container namespace and container are deployed.\n\n Scaleway serverless containers are regional resources.\n Valid regions: \"fr-par\", \"nl-ams\", \"pl-waw\".",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Image",
+        "jsonName": "image",
+        "protoField": "image",
+        "type": {
+          "kind": "message",
+          "messageType": "ScalewayServerlessContainerImage"
+        },
+        "description": "image specifies the container image to deploy.\n\n The image is defined as a structured message with three fields:\n registry endpoint, image name, and tag. The IaC module composes\n these into the full image URL: \"{registry_endpoint}/{name}:{tag}\".\n\n The `registry_endpoint` field supports `StringValueOrRef`, enabling\n infra charts to create a DAG edge from ScalewayContainerRegistry\n to this container. For external registries (Docker Hub, GHCR),\n use a plain `value`.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "RegistrySha256",
+        "jsonName": "registrySha256",
+        "protoField": "registry_sha256",
+        "type": {
+          "kind": "string"
+        },
+        "description": "registry_sha256 is a deployment trigger string.\n\n When this value changes, the IaC module triggers a redeployment\n of the container. This can be any string -- typically the SHA256\n digest of the container image, but it could be a CI build number,\n git commit SHA, or any value that changes when redeployment is\n desired.\n\n Analogous to `zip_hash` on ScalewayServerlessFunction.\n Leave empty to skip change-detection-based redeployment.",
+        "required": false
+      },
+      {
+        "name": "Port",
+        "jsonName": "port",
+        "protoField": "port",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "port is the listening port exposed by the container.\n\n The container must listen on this port for incoming HTTP requests.\n Scaleway routes traffic to this port. Most containers use 8080\n (the default) but any valid port is accepted.",
+        "required": false,
+        "recommendedDefault": "8080"
+      },
+      {
+        "name": "Privacy",
+        "jsonName": "privacy",
+        "protoField": "privacy",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.scaleway.scalewayserverlesscontainer.v1.ScalewayServerlessContainerPrivacy",
+          "enumValues": [
+            "privacy_public",
+            "privacy_private"
+          ]
+        },
+        "description": "privacy controls how the container endpoint is authenticated.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description of the container. Optional, human-readable.",
+        "required": false
+      },
+      {
+        "name": "MemoryLimitMb",
+        "jsonName": "memoryLimitMb",
+        "protoField": "memory_limit_mb",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "memory_limit_mb is the memory allocated to each container instance\n in megabytes.\n\n Determines the memory ceiling for the container. Common values:\n 128, 256, 512, 1024, 2048, 4096. Defaults to 256 MB.",
+        "required": false,
+        "recommendedDefault": "256"
+      },
+      {
+        "name": "CpuLimit",
+        "jsonName": "cpuLimit",
+        "protoField": "cpu_limit",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "cpu_limit is the vCPU allocated to each container instance in\n milliCPU units (1000 = 1 vCPU).\n\n When set to 0 or omitted, Scaleway auto-allocates CPU proportional\n to the memory limit. Set explicitly for workloads with specific\n CPU requirements. Common values: 70, 140, 280, 560, 1120.",
+        "required": false
+      },
+      {
+        "name": "MinScale",
+        "jsonName": "minScale",
+        "protoField": "min_scale",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "min_scale is the minimum number of always-running container instances.\n\n Set to 0 (default) for scale-to-zero behavior -- the container\n stops when idle and incurs no compute charges.\n Set to 1+ for always-warm instances (eliminates cold starts but\n incurs continuous billing).",
+        "required": false
+      },
+      {
+        "name": "MaxScale",
+        "jsonName": "maxScale",
+        "protoField": "max_scale",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "max_scale is the maximum number of concurrent container instances.\n\n The container auto-scales based on incoming workload but never\n exceeds this limit. Defaults to 20 if not specified.",
+        "required": false,
+        "recommendedDefault": "20"
+      },
+      {
+        "name": "TimeoutSeconds",
+        "jsonName": "timeoutSeconds",
+        "protoField": "timeout_seconds",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "timeout_seconds is the maximum time in seconds a single request\n can spend being processed before Scaleway terminates it.\n\n Defaults to 300 seconds (5 minutes) if not specified.",
+        "required": false,
+        "recommendedDefault": "300"
+      },
+      {
+        "name": "HttpOption",
+        "jsonName": "httpOption",
+        "protoField": "http_option",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.scaleway.scalewayserverlesscontainer.v1.ScalewayServerlessContainerHttpOption",
+          "enumValues": [
+            "enabled",
+            "redirected"
+          ]
+        },
+        "description": "http_option controls HTTP/HTTPS behavior for the container endpoint.\n\n Defaults to \"enabled\" (both HTTP and HTTPS allowed) if not specified.",
+        "required": false
+      },
+      {
+        "name": "Protocol",
+        "jsonName": "protocol",
+        "protoField": "protocol",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.scaleway.scalewayserverlesscontainer.v1.ScalewayServerlessContainerProtocol",
+          "enumValues": [
+            "http1",
+            "h2c"
+          ]
+        },
+        "description": "protocol selects the communication protocol between the Scaleway\n gateway and the container.\n\n Defaults to HTTP/1.1 if not specified. Use h2c for gRPC services\n or HTTP/2 backends.",
+        "required": false
+      },
+      {
+        "name": "Commands",
+        "jsonName": "commands",
+        "protoField": "commands",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "commands overrides the default CMD from the container image.\n\n This is equivalent to Docker's CMD instruction. When set, it\n replaces the image's default command entirely.\n\n Example: [\"node\", \"server.js\"]",
+        "required": false
+      },
+      {
+        "name": "Args",
+        "jsonName": "args",
+        "protoField": "args",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "args overrides the default ENTRYPOINT arguments from the container\n image.\n\n These are passed as arguments to the command specified in the\n `commands` field (or the image's default ENTRYPOINT).\n\n Example: [\"--port\", \"8080\", \"--workers\", \"4\"]",
+        "required": false
+      },
+      {
+        "name": "Env",
+        "jsonName": "env",
+        "protoField": "env",
+        "type": {
+          "kind": "message",
+          "messageType": "ScalewayServerlessContainerEnv"
+        },
+        "description": "env groups environment variables and secrets for the container.\n\n Variables are non-secret and visible in logs/dashboards.\n Secrets are encrypted at rest and masked in the Scaleway console.\n\n Modeled as repeated name-value messages (Kubernetes-style) rather\n than maps to preserve sort order and enable future `valueFrom`\n extension. This is a component-local message (NOT shared with\n ScalewayServerlessFunction).",
+        "required": false
+      },
+      {
+        "name": "PrivateNetworkId",
+        "jsonName": "privateNetworkId",
+        "protoField": "private_network_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "private_network_id optionally connects the container to a Scaleway\n Private Network for VPC-internal communication.\n\n When connected, the container can reach resources on the Private\n Network (databases, Redis clusters, other services) without\n traversing the public internet.\n\n Leave unset for containers that only need public internet access.",
+        "required": false,
+        "referenceKind": "ScalewayPrivateNetwork",
+        "referenceFieldPath": "status.outputs.private_network_id"
+      },
+      {
+        "name": "Sandbox",
+        "jsonName": "sandbox",
+        "protoField": "sandbox",
+        "type": {
+          "kind": "string"
+        },
+        "description": "sandbox selects the execution environment for the container.\n\n Available sandboxes depend on the Scaleway platform version.\n Common values: \"v1\" (standard), \"v2\" (enhanced security).\n Leave empty to use the platform default.",
+        "required": false
+      },
+      {
+        "name": "HealthCheck",
+        "jsonName": "healthCheck",
+        "protoField": "health_check",
+        "type": {
+          "kind": "message",
+          "messageType": "ScalewayServerlessContainerHealthCheck"
+        },
+        "description": "health_check configures HTTP health checking for the container.\n\n When configured, Scaleway periodically sends HTTP requests to the\n specified path and considers the container unhealthy after the\n configured number of consecutive failures.\n\n Leave unset to rely on Scaleway's default liveness detection\n (TCP port check).",
+        "required": false
+      },
+      {
+        "name": "ScalingOption",
+        "jsonName": "scalingOption",
+        "protoField": "scaling_option",
+        "type": {
+          "kind": "message",
+          "messageType": "ScalewayServerlessContainerScalingOption"
+        },
+        "description": "scaling_option configures autoscaling thresholds for the container.\n\n These thresholds control when Scaleway adds or removes container\n instances. Only one threshold should typically be set -- Scaleway\n uses the first threshold that is breached.\n\n Leave unset to use Scaleway's default scaling behavior.",
+        "required": false
+      },
+      {
+        "name": "LocalStorageLimitMb",
+        "jsonName": "localStorageLimitMb",
+        "protoField": "local_storage_limit_mb",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "local_storage_limit_mb is the local (ephemeral) storage available\n to each container instance in megabytes.\n\n This storage is lost when the container instance is stopped or\n replaced. Use for temporary files, caches, or build artifacts.\n Leave at 0 or unset to use the platform default.",
+        "required": false
+      },
+      {
+        "name": "Deploy",
+        "jsonName": "deploy",
+        "protoField": "deploy",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "deploy controls whether the container is deployed (started) after\n creation or update.\n\n When true (default), the IaC module triggers deployment immediately\n after provisioning. Set to false to create the container\n infrastructure without starting it -- useful for pre-provisioning\n before a release.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "CronTriggers",
+        "jsonName": "cronTriggers",
+        "protoField": "cron_triggers",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ScalewayServerlessContainerCronTrigger"
+          }
+        },
+        "description": "cron_triggers defines optional scheduled triggers for the container.\n\n Each trigger creates a `scaleway_container_cron` resource that\n invokes the container on the specified schedule with the given\n JSON arguments.\n\n Common patterns:\n   Hourly cleanup:    schedule = \"0 * * * *\"\n   Nightly backup:    schedule = \"0 2 * * *\"\n   Every 5 minutes:   schedule = \"*/5 * * * *\"",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ScalewayServerlessContainerCronTrigger",
+      "description": "ScalewayServerlessContainerCronTrigger defines a scheduled trigger\n that invokes the container on a CRON schedule.\n\n Each trigger creates a separate `scaleway_container_cron` Terraform\n resource linked to the container.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayserverlesscontainer.v1.ScalewayServerlessContainerCronTrigger",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is an optional human-readable identifier for the trigger.\n\n If not provided, Scaleway auto-generates a name. Providing a name\n makes triggers easier to identify in the console and logs.",
+          "required": false
+        },
+        {
+          "name": "Schedule",
+          "jsonName": "schedule",
+          "protoField": "schedule",
+          "type": {
+            "kind": "string"
+          },
+          "description": "schedule is a UNIX CRON expression defining when the container\n is invoked.\n\n Examples:\n   \"0 * * * *\"    -- every hour at minute 0\n   \"0 2 * * *\"    -- daily at 2:00 AM\n   \"*/5 * * * *\"  -- every 5 minutes\n   \"0 0 * * 0\"    -- weekly on Sunday at midnight",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Args",
+          "jsonName": "args",
+          "protoField": "args",
+          "type": {
+            "kind": "string"
+          },
+          "description": "args is a JSON string passed to the container's event object on\n each scheduled invocation.\n\n Must be valid JSON. Use \"{}\" for no arguments.\n\n Example: '{\"task\": \"cleanup\", \"batch_size\": 100}'",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "ScalewayServerlessContainerEnv",
+      "description": "ScalewayServerlessContainerEnv groups environment variables and\n secrets for the container.\n\n This is a component-local message (NOT shared with\n ScalewayServerlessFunction). Each serverless component defines its\n own Env message to enable independent evolution.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayserverlesscontainer.v1.ScalewayServerlessContainerEnv",
+      "fields": [
+        {
+          "name": "Variables",
+          "jsonName": "variables",
+          "protoField": "variables",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "ScalewayServerlessContainerEnvVar"
+            }
+          },
+          "description": "variables are non-secret environment variables.\n\n These are visible in the Scaleway console and may appear in\n container logs. Do not put sensitive values here -- use `secrets`.",
+          "required": false
+        },
+        {
+          "name": "Secrets",
+          "jsonName": "secrets",
+          "protoField": "secrets",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "ScalewayServerlessContainerEnvVar"
+            }
+          },
+          "description": "secrets are encrypted environment variables.\n\n Scaleway stores these encrypted at rest and masks them in the\n console. Use for database URLs, API keys, tokens, and other\n sensitive configuration.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ScalewayServerlessContainerEnvVar",
+      "description": "ScalewayServerlessContainerEnvVar is a single environment variable\n name-value pair.\n\n Modeled as a message (not a map entry) to preserve ordering and\n enable future extension with `valueFrom` for referencing external\n secret stores.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayserverlesscontainer.v1.ScalewayServerlessContainerEnvVar",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is the environment variable name (e.g., \"DATABASE_URL\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "value is the environment variable value.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "ScalewayServerlessContainerHealthCheck",
+      "description": "ScalewayServerlessContainerHealthCheck configures HTTP health\n checking for the container.\n\n Scaleway periodically sends an HTTP GET request to the specified\n path on the container's listening port. If the container returns a\n non-2xx response more than `failure_threshold` times consecutively,\n Scaleway marks the instance as unhealthy and replaces it.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayserverlesscontainer.v1.ScalewayServerlessContainerHealthCheck",
+      "fields": [
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "path is the HTTP path to probe for health checks.\n\n The health check sends an HTTP GET to this path on the\n container's configured port. The container should return\n a 2xx status code when healthy.\n\n Common values: \"/health\", \"/healthz\", \"/ready\", \"/\".",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "FailureThreshold",
+          "jsonName": "failureThreshold",
+          "protoField": "failure_threshold",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "failure_threshold is the number of consecutive health check\n failures before the container instance is considered unhealthy.\n\n A higher threshold tolerates transient failures but takes longer\n to detect actual problems. Typical values: 2-5.",
+          "required": false
+        },
+        {
+          "name": "IntervalSeconds",
+          "jsonName": "intervalSeconds",
+          "protoField": "interval_seconds",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "interval_seconds is the period between health check probes\n in seconds.\n\n Shorter intervals detect failures faster but generate more\n probe traffic. Typical values: 10-60.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ScalewayServerlessContainerImage",
+      "description": "ScalewayServerlessContainerImage specifies the container image to\n deploy, split into registry endpoint, image name, and tag.\n\n The IaC module composes these into the full registry image URL:\n   \"{registry_endpoint}/{name}:{tag}\"\n\n The `registry_endpoint` field uses `StringValueOrRef` to enable\n infra-chart DAG edges from ScalewayContainerRegistry to this\n container. For non-Scaleway registries (Docker Hub, GHCR, ECR),\n provide a plain `value`.\n\n Examples:\n   Scaleway:   endpoint = valueFrom(ScalewayContainerRegistry), name = \"my-app\", tag = \"v1.0\"\n   Docker Hub: endpoint = \"docker.io/library\", name = \"nginx\", tag = \"1.25\"\n   GHCR:       endpoint = \"ghcr.io/my-org\", name = \"my-service\", tag = \"latest\"",
+      "protoType": "org.openmcf.provider.scaleway.scalewayserverlesscontainer.v1.ScalewayServerlessContainerImage",
+      "fields": [
+        {
+          "name": "RegistryEndpoint",
+          "jsonName": "registryEndpoint",
+          "protoField": "registry_endpoint",
+          "type": {
+            "kind": "string"
+          },
+          "description": "registry_endpoint is the base URL of the container registry.\n\n For Scaleway Container Registry, use `valueFrom` to reference\n the endpoint output of a ScalewayContainerRegistry resource.\n For external registries, provide the URL as a plain `value`.\n\n Format examples:\n   \"rg.fr-par.scw.cloud/my-namespace\" (Scaleway)\n   \"docker.io/library\" (Docker Hub)\n   \"ghcr.io/my-org\" (GitHub Container Registry)",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "ScalewayContainerRegistry",
+          "referenceFieldPath": "status.outputs.endpoint"
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is the image name within the registry.\n\n This is the repository path relative to the registry endpoint.\n Examples: \"my-app\", \"backend/api\", \"nginx\".",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Tag",
+          "jsonName": "tag",
+          "protoField": "tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "tag is the image tag to deploy.\n\n Examples: \"latest\", \"v1.2.3\", \"sha-abc1234\", \"production\".\n Use immutable tags (semantic versions, git SHAs) in production\n for reproducible deployments.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "ScalewayServerlessContainerScalingOption",
+      "description": "ScalewayServerlessContainerScalingOption configures autoscaling\n thresholds that determine when Scaleway adds or removes container\n instances.\n\n Set one or more thresholds. Scaleway scales up when any threshold\n is breached and scales down when all thresholds are below target.\n\n These replace the deprecated `max_concurrency` field.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayserverlesscontainer.v1.ScalewayServerlessContainerScalingOption",
+      "fields": [
+        {
+          "name": "ConcurrentRequestsThreshold",
+          "jsonName": "concurrentRequestsThreshold",
+          "protoField": "concurrent_requests_threshold",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "concurrent_requests_threshold is the target number of concurrent\n requests per container instance before scaling up.\n\n When the average concurrent requests across instances exceeds\n this value, Scaleway adds instances (up to max_scale).\n Set to 0 or omit to disable request-based scaling.\n\n Typical values: 10-100 depending on request latency.",
+          "required": false
+        },
+        {
+          "name": "CpuUsageThreshold",
+          "jsonName": "cpuUsageThreshold",
+          "protoField": "cpu_usage_threshold",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "cpu_usage_threshold is the target CPU usage percentage per\n container instance before scaling up.\n\n When average CPU usage exceeds this percentage, Scaleway adds\n instances. Set to 0 or omit to disable CPU-based scaling.\n\n Typical values: 50-80.",
+          "required": false
+        },
+        {
+          "name": "MemoryUsageThreshold",
+          "jsonName": "memoryUsageThreshold",
+          "protoField": "memory_usage_threshold",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "memory_usage_threshold is the target memory usage percentage per\n container instance before scaling up.\n\n When average memory usage exceeds this percentage, Scaleway adds\n instances. Set to 0 or omit to disable memory-based scaling.\n\n Typical values: 60-90.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

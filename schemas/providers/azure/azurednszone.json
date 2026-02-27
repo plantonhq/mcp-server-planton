@@ -1,0 +1,136 @@
+{
+  "name": "AzureDnsZone",
+  "kind": "AzureDnsZone",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "azure-dns-zone",
+  "protoPackage": "org.openmcf.provider.azure.azurednszone.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurednszone/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurednszone/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureDnsZoneSpec",
+    "fields": [
+      {
+        "name": "ZoneName",
+        "jsonName": "zoneName",
+        "protoField": "zone_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The DNS zone name (e.g., \"example.com\"). Do not include a trailing dot.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the DNS Zone will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Records",
+        "jsonName": "records",
+        "protoField": "records",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureDnsRecord"
+          }
+        },
+        "description": "(Optional) DNS records to pre-populate in the zone. Each record includes type, name, values, and TTL.\n If no records are provided, the zone will be created empty (common when external systems manage DNS records).",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureDnsRecord",
+      "description": "**AzureDnsRecord** represents a DNS record to be added to the Azure DNS Zone.\n It includes the record type, the record name (usually a fully qualified domain name ending with a dot),\n one or more record values, and an optional TTL (Time To Live) in seconds.",
+      "protoType": "org.openmcf.provider.azure.azurednszone.v1.AzureDnsRecord",
+      "fields": [
+        {
+          "name": "RecordType",
+          "jsonName": "recordType",
+          "protoField": "record_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.networking.enums.dnsrecordtype.DnsRecordType",
+            "enumValues": [
+              "A",
+              "AAAA",
+              "ALIAS",
+              "CNAME",
+              "MX",
+              "NS",
+              "PTR",
+              "SOA",
+              "SRV",
+              "TXT",
+              "CAA"
+            ]
+          },
+          "description": "The DNS record type (e.g., A, AAAA, CNAME, TXT, MX).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the DNS record. This can be a fully qualified domain name (ending with a dot, e.g., \"www.example.com.\")\n or a relative name within the zone (e.g., \"www\" for \"www.example.com\"). An empty name \"@\" denotes the zone root.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Values",
+          "jsonName": "values",
+          "protoField": "values",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "The list of values for the DNS record. For example, IP addresses for A/AAAA records, or hostnames for CNAME records (each CNAME value should end with a dot).",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "TtlSeconds",
+          "jsonName": "ttlSeconds",
+          "protoField": "ttl_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The Time To Live (TTL) for the DNS record, in seconds.",
+          "required": false,
+          "default": "60",
+          "oneofGroup": "_ttl_seconds"
+        }
+      ]
+    }
+  ]
+}

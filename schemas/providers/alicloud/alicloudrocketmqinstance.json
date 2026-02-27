@@ -1,0 +1,545 @@
+{
+  "name": "AliCloudRocketmqInstance",
+  "kind": "AliCloudRocketmqInstance",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-rocketmq-instance",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudrocketmqinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudrocketmqinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudrocketmqinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudRocketmqInstanceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the RocketMQ instance will be created.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "SeriesCode",
+        "jsonName": "seriesCode",
+        "protoField": "series_code",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance edition series. Determines feature set and throughput ceiling.\n \"standard\" -- cost-effective for light workloads (dev/test).\n \"professional\" -- production workloads with higher throughput.\n \"ultimate\" -- mission-critical workloads with the highest throughput.\n ForceNew: changing this replaces the instance.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "SubSeriesCode",
+        "jsonName": "subSeriesCode",
+        "protoField": "sub_series_code",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance deployment architecture within the chosen series.\n \"cluster_ha\" -- multi-node cluster with high availability.\n \"single_node\" -- single node for development and testing.\n \"serverless\" -- auto-scaling serverless deployment.\n ForceNew: changing this replaces the instance.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC ID where the RocketMQ instance is deployed.\n ForceNew: changing this replaces the instance.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "InstanceName",
+        "jsonName": "instanceName",
+        "protoField": "instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable instance name. 2-64 characters.\n If omitted, defaults to metadata.name.",
+        "required": false
+      },
+      {
+        "name": "Remark",
+        "jsonName": "remark",
+        "protoField": "remark",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance description or remark.",
+        "required": false
+      },
+      {
+        "name": "PaymentType",
+        "jsonName": "paymentType",
+        "protoField": "payment_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Billing method.\n \"PayAsYouGo\" -- pay-as-you-go (post-paid).\n \"Subscription\" -- prepaid with commitment period.\n Default: \"PayAsYouGo\"",
+        "required": false,
+        "default": "PayAsYouGo",
+        "oneofGroup": "_payment_type"
+      },
+      {
+        "name": "Period",
+        "jsonName": "period",
+        "protoField": "period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Subscription period length. Only applicable when payment_type is\n \"Subscription\". Used together with period_unit.",
+        "required": false,
+        "oneofGroup": "_period"
+      },
+      {
+        "name": "PeriodUnit",
+        "jsonName": "periodUnit",
+        "protoField": "period_unit",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Subscription period unit.\n \"Month\" or \"Year\". Only applicable when payment_type is \"Subscription\".",
+        "required": false,
+        "oneofGroup": "_period_unit"
+      },
+      {
+        "name": "AutoRenew",
+        "jsonName": "autoRenew",
+        "protoField": "auto_renew",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable auto-renewal for Subscription instances.",
+        "required": false,
+        "oneofGroup": "_auto_renew"
+      },
+      {
+        "name": "AutoRenewPeriod",
+        "jsonName": "autoRenewPeriod",
+        "protoField": "auto_renew_period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Auto-renewal period. Valid values: 1, 2, 3, 6, 12.\n Only applicable when auto_renew is true.",
+        "required": false,
+        "oneofGroup": "_auto_renew_period"
+      },
+      {
+        "name": "VswitchId",
+        "jsonName": "vswitchId",
+        "protoField": "vswitch_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VSwitch ID for the instance's VPC endpoint. When provided, the instance\n is placed in this VSwitch's availability zone within the VPC.\n For serverless instances, at least two VSwitches are recommended.\n ForceNew: changing this replaces the instance.",
+        "required": false,
+        "referenceKind": "AliCloudVswitch",
+        "referenceFieldPath": "status.outputs.vswitch_id"
+      },
+      {
+        "name": "SecurityGroupId",
+        "jsonName": "securityGroupId",
+        "protoField": "security_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Security group ID to associate with the instance's VPC endpoint.\n ForceNew: changing this replaces the instance.",
+        "required": false
+      },
+      {
+        "name": "InternetInfo",
+        "jsonName": "internetInfo",
+        "protoField": "internet_info",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudRocketmqInternetInfo"
+        },
+        "description": "Internet access configuration. When omitted, internet access is disabled\n and the instance is only accessible within the VPC.",
+        "required": false
+      },
+      {
+        "name": "MsgProcessSpec",
+        "jsonName": "msgProcessSpec",
+        "protoField": "msg_process_spec",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Message processing specification that determines the instance's\n throughput capacity. Examples: \"rmq.s1.micro\", \"rmq.p2.4xlarge\",\n \"rmq.u2.4xlarge\". Required when product_info is set.\n The valid values depend on the selected series_code.",
+        "required": false
+      },
+      {
+        "name": "ProductInfo",
+        "jsonName": "productInfo",
+        "protoField": "product_info",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudRocketmqProductInfo"
+        },
+        "description": "Advanced product configuration for message retention, auto-scaling,\n tracing, and encryption at rest. When omitted, provider defaults apply.",
+        "required": false
+      },
+      {
+        "name": "IpWhitelists",
+        "jsonName": "ipWhitelists",
+        "protoField": "ip_whitelists",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "IP addresses or CIDR blocks allowed to access the instance.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID (per DD05).",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the RocketMQ instance.",
+        "required": false
+      },
+      {
+        "name": "Topics",
+        "jsonName": "topics",
+        "protoField": "topics",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudRocketmqTopic"
+          }
+        },
+        "description": "Topics to create within the instance.",
+        "required": false
+      },
+      {
+        "name": "ConsumerGroups",
+        "jsonName": "consumerGroups",
+        "protoField": "consumer_groups",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudRocketmqConsumerGroup"
+          }
+        },
+        "description": "Consumer groups to create within the instance.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudRocketmqConsumeRetryPolicy",
+      "description": "AliCloudRocketmqConsumeRetryPolicy configures how failed messages are\n retried before being sent to the dead-letter topic.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudrocketmqinstance.v1.AliCloudRocketmqConsumeRetryPolicy",
+      "fields": [
+        {
+          "name": "RetryPolicy",
+          "jsonName": "retryPolicy",
+          "protoField": "retry_policy",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Retry strategy.\n \"DefaultRetryPolicy\" -- exponential backoff (recommended).\n \"FixedRetryPolicy\" -- fixed interval between retries.\n Default: \"DefaultRetryPolicy\"",
+          "required": false,
+          "default": "DefaultRetryPolicy",
+          "oneofGroup": "_retry_policy"
+        },
+        {
+          "name": "MaxRetryTimes",
+          "jsonName": "maxRetryTimes",
+          "protoField": "max_retry_times",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of retry attempts. Range: 0-1000.\n Default: 16 (provider default).",
+          "required": false,
+          "validation": {
+            "max": 1000
+          },
+          "oneofGroup": "_max_retry_times"
+        },
+        {
+          "name": "DeadLetterTargetTopic",
+          "jsonName": "deadLetterTargetTopic",
+          "protoField": "dead_letter_target_topic",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Dead-letter topic name. When a message exhausts all retries, it is\n delivered to this topic for manual investigation.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudRocketmqConsumerGroup",
+      "description": "AliCloudRocketmqConsumerGroup defines a consumer group within the instance.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudrocketmqinstance.v1.AliCloudRocketmqConsumerGroup",
+      "fields": [
+        {
+          "name": "ConsumerGroupId",
+          "jsonName": "consumerGroupId",
+          "protoField": "consumer_group_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Consumer group ID. Must be unique within the instance.\n ForceNew: changing this replaces the consumer group.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DeliveryOrderType",
+          "jsonName": "deliveryOrderType",
+          "protoField": "delivery_order_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Message delivery order type.\n \"Concurrently\" -- messages delivered in parallel (higher throughput).\n \"Orderly\" -- messages delivered in order per message group.",
+          "required": false,
+          "oneofGroup": "_delivery_order_type"
+        },
+        {
+          "name": "Remark",
+          "jsonName": "remark",
+          "protoField": "remark",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description of the consumer group's purpose.",
+          "required": false
+        },
+        {
+          "name": "MaxReceiveTps",
+          "jsonName": "maxReceiveTps",
+          "protoField": "max_receive_tps",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum receive TPS for the consumer group.",
+          "required": false,
+          "oneofGroup": "_max_receive_tps"
+        },
+        {
+          "name": "ConsumeRetryPolicy",
+          "jsonName": "consumeRetryPolicy",
+          "protoField": "consume_retry_policy",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudRocketmqConsumeRetryPolicy"
+          },
+          "description": "Retry policy for failed message consumption. When omitted, defaults to\n DefaultRetryPolicy with 16 retries.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudRocketmqInternetInfo",
+      "description": "AliCloudRocketmqInternetInfo configures public internet access for the\n RocketMQ instance. All fields in this message are ForceNew in the provider.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudrocketmqinstance.v1.AliCloudRocketmqInternetInfo",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable public internet access. When true, the instance gets a public\n endpoint in addition to the VPC endpoint.\n Default: false (internet disabled)",
+          "required": false,
+          "oneofGroup": "_enabled"
+        },
+        {
+          "name": "FlowOutType",
+          "jsonName": "flowOutType",
+          "protoField": "flow_out_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Billing type for public network outbound traffic. Only relevant when\n enabled is true.\n \"payByBandwidth\" -- fixed bandwidth billing (set flow_out_bandwidth).\n \"payByTraffic\" -- usage-based traffic billing.\n Default: \"payByTraffic\"",
+          "required": false,
+          "default": "payByTraffic",
+          "oneofGroup": "_flow_out_type"
+        },
+        {
+          "name": "FlowOutBandwidth",
+          "jsonName": "flowOutBandwidth",
+          "protoField": "flow_out_bandwidth",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Public network bandwidth in Mb/s. Range: 1-1000.\n Only applicable when flow_out_type is \"payByBandwidth\".",
+          "required": false,
+          "oneofGroup": "_flow_out_bandwidth"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudRocketmqProductInfo",
+      "description": "AliCloudRocketmqProductInfo contains advanced product configuration for\n message retention, scaling, tracing, and encryption.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudrocketmqinstance.v1.AliCloudRocketmqProductInfo",
+      "fields": [
+        {
+          "name": "MessageRetentionTime",
+          "jsonName": "messageRetentionTime",
+          "protoField": "message_retention_time",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Duration of message retention in hours. Controls how long messages are\n stored before expiration. Longer retention increases storage costs.",
+          "required": false,
+          "oneofGroup": "_message_retention_time"
+        },
+        {
+          "name": "SendReceiveRatio",
+          "jsonName": "sendReceiveRatio",
+          "protoField": "send_receive_ratio",
+          "type": {
+            "kind": "double"
+          },
+          "description": "Ratio of message send to receive capacity. Range: 0.2-0.5.",
+          "required": false,
+          "oneofGroup": "_send_receive_ratio"
+        },
+        {
+          "name": "AutoScaling",
+          "jsonName": "autoScaling",
+          "protoField": "auto_scaling",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable auto-scaling of throughput capacity.",
+          "required": false,
+          "oneofGroup": "_auto_scaling"
+        },
+        {
+          "name": "TraceOn",
+          "jsonName": "traceOn",
+          "protoField": "trace_on",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable message trace functionality for debugging and monitoring\n message flows.",
+          "required": false,
+          "oneofGroup": "_trace_on"
+        },
+        {
+          "name": "StorageEncryption",
+          "jsonName": "storageEncryption",
+          "protoField": "storage_encryption",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable encryption at rest for stored messages.\n ForceNew: changing this replaces the instance.",
+          "required": false,
+          "oneofGroup": "_storage_encryption"
+        },
+        {
+          "name": "StorageSecretKey",
+          "jsonName": "storageSecretKey",
+          "protoField": "storage_secret_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "KMS key for encryption at rest. Only applicable when\n storage_encryption is true.\n ForceNew: changing this replaces the instance.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudRocketmqTopic",
+      "description": "AliCloudRocketmqTopic defines a topic to create within the instance.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudrocketmqinstance.v1.AliCloudRocketmqTopic",
+      "fields": [
+        {
+          "name": "TopicName",
+          "jsonName": "topicName",
+          "protoField": "topic_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Topic name. Must match ^[%a-zA-Z0-9_-]+$ and be unique within the\n instance. ForceNew: changing this replaces the topic.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "MessageType",
+          "jsonName": "messageType",
+          "protoField": "message_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Message type determines how messages in this topic are processed.\n \"NORMAL\" -- standard messages with no ordering guarantee.\n \"FIFO\" -- messages delivered in strict FIFO order.\n \"DELAY\" -- messages delivered after a configurable delay.\n \"TRANSACTION\" -- messages with two-phase commit semantics.\n Default: \"NORMAL\"\n ForceNew: changing this replaces the topic.",
+          "required": false,
+          "default": "NORMAL",
+          "oneofGroup": "_message_type"
+        },
+        {
+          "name": "Remark",
+          "jsonName": "remark",
+          "protoField": "remark",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description of the topic's purpose.",
+          "required": false
+        },
+        {
+          "name": "MaxSendTps",
+          "jsonName": "maxSendTps",
+          "protoField": "max_send_tps",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum send TPS (transactions per second) for the topic.",
+          "required": false,
+          "oneofGroup": "_max_send_tps"
+        }
+      ]
+    }
+  ]
+}

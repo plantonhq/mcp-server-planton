@@ -1,0 +1,250 @@
+{
+  "name": "GcpBigtableInstance",
+  "kind": "GcpBigtableInstance",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-bigtable-instance",
+  "protoPackage": "org.openmcf.provider.gcp.gcpbigtableinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpbigtableinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpbigtableinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpBigtableInstanceSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the Bigtable instance will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "InstanceName",
+        "jsonName": "instanceName",
+        "protoField": "instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Bigtable instance (also called Instance ID in GCP Console).\n This becomes the GCP resource name and is used by Bigtable client\n libraries to connect. Must be 6-33 characters: lowercase letters,\n numbers, and hyphens only. Must start with a lowercase letter and\n end with a letter or number.\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 6,
+          "maxLength": 33,
+          "pattern": "^[a-z][a-z0-9-]{4,31}[a-z0-9]$"
+        }
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable display name for the instance.\n If not specified, defaults to the instance_name value.",
+        "required": false
+      },
+      {
+        "name": "DeletionProtection",
+        "jsonName": "deletionProtection",
+        "protoField": "deletion_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether deletion protection is enabled. When true, the instance\n cannot be destroyed without first setting this to false.\n Strongly recommended for production instances.\n Default: true.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_deletion_protection"
+      },
+      {
+        "name": "ForceDestroy",
+        "jsonName": "forceDestroy",
+        "protoField": "force_destroy",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to delete all backups in the instance when destroying it.\n Bigtable blocks instance deletion if backups exist unless this is\n set to true. Only relevant during destroy operations.",
+        "required": false
+      },
+      {
+        "name": "Clusters",
+        "jsonName": "clusters",
+        "protoField": "clusters",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "GcpBigtableInstanceCluster"
+          }
+        },
+        "description": "One or more clusters that serve as physical replicas for this instance.\n Each cluster must be in a different zone within the same or different\n regions. At least one cluster is required. Up to 8 clusters can be\n configured across cloud regions for multi-region replication.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpBigtableInstanceCluster",
+      "description": "GcpBigtableInstanceCluster defines the configuration for a single\n Bigtable cluster within the instance. Each cluster serves as an\n independent replica of the instance's data and must be placed in\n a different zone.\n\n Bigtable supports two scaling modes per cluster:\n\n   - Fixed: Set num_nodes to a specific value (e.g., 3 nodes).\n   - Autoscaling: Configure autoscaling_config with CPU/storage targets\n     and min/max node bounds.\n\n These are mutually exclusive. If neither is set, Bigtable automatically\n allocates nodes based on the data footprint, optimized for 50% storage\n utilization.\n\n Important: zone, storage_type, kms_key_name, and node_scaling_factor\n are immutable after creation. Changing them requires deleting and\n recreating the cluster, which recreates the entire instance.",
+      "protoType": "org.openmcf.provider.gcp.gcpbigtableinstance.v1.GcpBigtableInstanceCluster",
+      "fields": [
+        {
+          "name": "ClusterId",
+          "jsonName": "clusterId",
+          "protoField": "cluster_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique identifier for this cluster within the instance.\n Must be 6-30 characters: lowercase letters, numbers, and hyphens only.\n Must start with a lowercase letter and end with a letter or number.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 6,
+            "maxLength": 30,
+            "pattern": "^[a-z][a-z0-9-]{4,28}[a-z0-9]$"
+          }
+        },
+        {
+          "name": "Zone",
+          "jsonName": "zone",
+          "protoField": "zone",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Zone where this cluster will be deployed (e.g., \"us-central1-a\").\n Each cluster in the instance must be in a different zone.\n Zones must be Bigtable-capable (see GCP Bigtable locations).\n Immutable after creation.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "NumNodes",
+          "jsonName": "numNodes",
+          "protoField": "num_nodes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Fixed number of nodes in this cluster. Mutually exclusive with\n autoscaling_config. If neither is set, Bigtable auto-allocates\n nodes based on the data footprint.",
+          "required": false
+        },
+        {
+          "name": "StorageType",
+          "jsonName": "storageType",
+          "protoField": "storage_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Storage type for this cluster.\n SSD: lower latency, recommended for most workloads.\n HDD: lower cost, suitable for large batch-analytics workloads\n where latency is less critical.\n Default: SSD.\n Immutable after creation.",
+          "required": false,
+          "default": "SSD",
+          "oneofGroup": "_storage_type"
+        },
+        {
+          "name": "KmsKeyName",
+          "jsonName": "kmsKeyName",
+          "protoField": "kms_key_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Cloud KMS encryption key to protect data in this cluster (CMEK).\n Format: projects/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key}\n The key region must match the cluster zone's region. All clusters\n within an instance should use the same CMEK key.\n Immutable after creation.",
+          "required": false,
+          "referenceKind": "GcpKmsKey",
+          "referenceFieldPath": "status.outputs.key_id"
+        },
+        {
+          "name": "NodeScalingFactor",
+          "jsonName": "nodeScalingFactor",
+          "protoField": "node_scaling_factor",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Node scaling factor for this cluster. Controls the granularity of\n node scaling: 1X scales in increments of 1 node, 2X scales in\n increments of 2 nodes (for larger workloads that benefit from\n coarser scaling steps). When using 2X, num_nodes, min_nodes, and\n max_nodes must all be specified in increments of 2.\n If not set, GCP defaults to NodeScalingFactor1X.\n Immutable after creation.",
+          "required": false
+        },
+        {
+          "name": "AutoscalingConfig",
+          "jsonName": "autoscalingConfig",
+          "protoField": "autoscaling_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpBigtableInstanceClusterAutoscalingConfig"
+          },
+          "description": "Autoscaling configuration for this cluster. Mutually exclusive with\n num_nodes. When set, Bigtable dynamically adjusts the number of\n nodes based on CPU and storage utilization targets.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpBigtableInstanceClusterAutoscalingConfig",
+      "description": "GcpBigtableInstanceClusterAutoscalingConfig defines the autoscaling\n parameters for a Bigtable cluster. When configured, Bigtable dynamically\n adjusts the number of nodes based on CPU and storage utilization.\n\n Autoscaling is mutually exclusive with fixed num_nodes on the parent\n cluster message. When autoscaling is configured, any num_nodes value\n on the cluster is ignored.",
+      "protoType": "org.openmcf.provider.gcp.gcpbigtableinstance.v1.GcpBigtableInstanceClusterAutoscalingConfig",
+      "fields": [
+        {
+          "name": "MinNodes",
+          "jsonName": "minNodes",
+          "protoField": "min_nodes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of nodes for autoscaling. Must be at least 1.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1
+          }
+        },
+        {
+          "name": "MaxNodes",
+          "jsonName": "maxNodes",
+          "protoField": "max_nodes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of nodes for autoscaling. Must be at least 1 and\n greater than or equal to min_nodes.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1
+          }
+        },
+        {
+          "name": "CpuTarget",
+          "jsonName": "cpuTarget",
+          "protoField": "cpu_target",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Target CPU utilization percentage for autoscaling. Bigtable adds nodes\n when average CPU utilization exceeds this target and removes nodes\n when utilization drops sufficiently below it. Must be between 10 and 80.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 10,
+            "max": 80
+          }
+        },
+        {
+          "name": "StorageTarget",
+          "jsonName": "storageTarget",
+          "protoField": "storage_target",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Target storage utilization per node in GB. When total storage per node\n exceeds this target, Bigtable adds nodes. The valid range depends on\n the cluster's storage_type:\n   - SSD: 2560 to 5120 (2.5 TiB to 5 TiB per node)\n   - HDD: 8192 to 16384 (8 TiB to 16 TiB per node)\n If not set, Bigtable uses the default for the storage type\n (2560 for SSD, 8192 for HDD).",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

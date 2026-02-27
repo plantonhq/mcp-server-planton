@@ -1,0 +1,367 @@
+{
+  "name": "GcpDataprocVirtualCluster",
+  "kind": "GcpDataprocVirtualCluster",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-dataproc-virtual-cluster",
+  "protoPackage": "org.openmcf.provider.gcp.gcpdataprocvirtualcluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpdataprocvirtualcluster/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpdataprocvirtualcluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpDataprocVirtualClusterSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project in which to create the Dataproc virtual cluster.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP region for the Dataproc virtual cluster (e.g., \"us-central1\").\n Must match the region of the target GKE cluster.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ClusterName",
+        "jsonName": "clusterName",
+        "protoField": "cluster_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Dataproc cluster resource in GCP.\n Must be lowercase letters, numbers, and hyphens; start with a letter; end with a letter or number.\n Optional: when empty, defaults to metadata.name.",
+        "required": false,
+        "validation": {
+          "pattern": "^([a-z]([a-z0-9-]{0,38}[a-z0-9])?)?$"
+        }
+      },
+      {
+        "name": "GkeClusterTarget",
+        "jsonName": "gkeClusterTarget",
+        "protoField": "gke_cluster_target",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Fully qualified resource ID of the target GKE cluster.\n Format: projects/{project}/locations/{location}/clusters/{name}\n The GKE cluster must be in the same project and region as this virtual cluster.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpGkeCluster",
+        "referenceFieldPath": "status.outputs.cluster_id"
+      },
+      {
+        "name": "KubernetesNamespace",
+        "jsonName": "kubernetesNamespace",
+        "protoField": "kubernetes_namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes namespace in which the Dataproc virtual cluster will be deployed.\n If not specified, Dataproc creates a namespace using the cluster name.\n The namespace is created automatically if it does not exist.",
+        "required": false,
+        "referenceKind": "KubernetesNamespace",
+        "referenceFieldPath": "spec.name"
+      },
+      {
+        "name": "StagingBucket",
+        "jsonName": "stagingBucket",
+        "protoField": "staging_bucket",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cloud Storage bucket used to stage job dependencies, config files, and\n driver console output. If not specified, a default staging bucket is used.",
+        "required": false,
+        "referenceKind": "GcpGcsBucket",
+        "referenceFieldPath": "status.outputs.bucket_id"
+      },
+      {
+        "name": "SoftwareConfig",
+        "jsonName": "softwareConfig",
+        "protoField": "software_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpDataprocVirtualClusterSoftwareConfig"
+        },
+        "description": "Kubernetes software configuration for the Dataproc virtual cluster.\n Defines component versions (SPARK is mandatory) and optional daemon properties.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "NodePoolTargets",
+        "jsonName": "nodePoolTargets",
+        "protoField": "node_pool_targets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "GcpDataprocVirtualClusterNodePoolTarget"
+          }
+        },
+        "description": "GKE node pool targets that define where Dataproc workloads are scheduled.\n At least one node pool target must be assigned the DEFAULT role.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "AuxiliaryServicesConfig",
+        "jsonName": "auxiliaryServicesConfig",
+        "protoField": "auxiliary_services_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpDataprocVirtualClusterAuxiliaryServicesConfig"
+        },
+        "description": "Optional auxiliary services for the virtual cluster.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpDataprocVirtualClusterAuxiliaryServicesConfig",
+      "description": "GcpDataprocVirtualClusterAuxiliaryServicesConfig configures optional services\n that enhance the virtual cluster.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataprocvirtualcluster.v1.GcpDataprocVirtualClusterAuxiliaryServicesConfig",
+      "fields": [
+        {
+          "name": "MetastoreService",
+          "jsonName": "metastoreService",
+          "protoField": "metastore_service",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Fully qualified resource name of an existing Dataproc Metastore service\n to use as the Hive metastore for the virtual cluster.\n Format: projects/{project}/locations/{location}/services/{service}",
+          "required": false
+        },
+        {
+          "name": "SparkHistoryServerCluster",
+          "jsonName": "sparkHistoryServerCluster",
+          "protoField": "spark_history_server_cluster",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Fully qualified resource name of an existing Dataproc Cluster that serves\n as the Spark History Server for this virtual cluster.\n Format: projects/{project}/regions/{region}/clusters/{cluster}",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocVirtualClusterNodePoolAutoscaling",
+      "description": "GcpDataprocVirtualClusterNodePoolAutoscaling defines autoscaling bounds\n for a GKE node pool used by Dataproc.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataprocvirtualcluster.v1.GcpDataprocVirtualClusterNodePoolAutoscaling",
+      "fields": [
+        {
+          "name": "MinNodeCount",
+          "jsonName": "minNodeCount",
+          "protoField": "min_node_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of nodes in the pool. Must be \u003e= 0.",
+          "required": false
+        },
+        {
+          "name": "MaxNodeCount",
+          "jsonName": "maxNodeCount",
+          "protoField": "max_node_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of nodes in the pool. Must be \u003e= min_node_count and \u003e 0.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocVirtualClusterNodePoolConfig",
+      "description": "GcpDataprocVirtualClusterNodePoolConfig defines the desired shape of a GKE\n node pool used by the Dataproc virtual cluster.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataprocvirtualcluster.v1.GcpDataprocVirtualClusterNodePoolConfig",
+      "fields": [
+        {
+          "name": "Locations",
+          "jsonName": "locations",
+          "protoField": "locations",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Compute Engine zones where node pool nodes will be located.\n All node pools must use the same set of locations.",
+          "required": false
+        },
+        {
+          "name": "Autoscaling",
+          "jsonName": "autoscaling",
+          "protoField": "autoscaling",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpDataprocVirtualClusterNodePoolAutoscaling"
+          },
+          "description": "Autoscaling configuration for this node pool.",
+          "required": false
+        },
+        {
+          "name": "MachineType",
+          "jsonName": "machineType",
+          "protoField": "machine_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Compute Engine machine type for nodes (e.g., \"n1-standard-4\").",
+          "required": false
+        },
+        {
+          "name": "LocalSsdCount",
+          "jsonName": "localSsdCount",
+          "protoField": "local_ssd_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of local SSD disks to attach to each node.",
+          "required": false
+        },
+        {
+          "name": "MinCpuPlatform",
+          "jsonName": "minCpuPlatform",
+          "protoField": "min_cpu_platform",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Minimum CPU platform (e.g., \"Intel Haswell\", \"Intel Sandy Bridge\").",
+          "required": false
+        },
+        {
+          "name": "Preemptible",
+          "jsonName": "preemptible",
+          "protoField": "preemptible",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether nodes are created as preemptible VM instances.\n Preemptible nodes cannot be used in a node pool with the CONTROLLER role\n or the DEFAULT role when CONTROLLER is not separately assigned.",
+          "required": false
+        },
+        {
+          "name": "Spot",
+          "jsonName": "spot",
+          "protoField": "spot",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether nodes are created as Spot VM instances (rebrand of preemptible).\n Same role restrictions as preemptible.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocVirtualClusterNodePoolTarget",
+      "description": "GcpDataprocVirtualClusterNodePoolTarget assigns a GKE node pool to a Dataproc role.\n Roles determine which workload types are scheduled on each node pool.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataprocvirtualcluster.v1.GcpDataprocVirtualClusterNodePoolTarget",
+      "fields": [
+        {
+          "name": "NodePool",
+          "jsonName": "nodePool",
+          "protoField": "node_pool",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Reference to a GKE node pool. Can be a short name (resolved within the\n target GKE cluster) or a fully qualified resource path.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "GcpGkeNodePool",
+          "referenceFieldPath": "status.outputs.node_pool_id"
+        },
+        {
+          "name": "Roles",
+          "jsonName": "roles",
+          "protoField": "roles",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Dataproc roles assigned to this node pool.\n Valid values: \"DEFAULT\", \"CONTROLLER\", \"SPARK_DRIVER\", \"SPARK_EXECUTOR\".\n At least one node pool target across the cluster must have the \"DEFAULT\" role.\n Each role may only be assigned to one node pool target.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "NodePoolConfig",
+          "jsonName": "nodePoolConfig",
+          "protoField": "node_pool_config",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpDataprocVirtualClusterNodePoolConfig"
+          },
+          "description": "Optional node pool configuration. When specified, Dataproc attempts to\n create or verify a node pool matching this shape. If a node pool with the\n same name already exists, it is verified against all specified fields.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpDataprocVirtualClusterSoftwareConfig",
+      "description": "GcpDataprocVirtualClusterSoftwareConfig defines the Kubernetes-level software\n configuration for the Dataproc virtual cluster.",
+      "protoType": "org.openmcf.provider.gcp.gcpdataprocvirtualcluster.v1.GcpDataprocVirtualClusterSoftwareConfig",
+      "fields": [
+        {
+          "name": "ComponentVersion",
+          "jsonName": "componentVersion",
+          "protoField": "component_version",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Component versions to install. Keys are component names from the\n KubernetesComponent enumeration (e.g., \"SPARK\"). Values are version strings\n (e.g., \"3.5-dataproc-17\").\n\n The \"SPARK\" component is mandatory -- the cluster will fail to create without it.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Properties",
+          "jsonName": "properties",
+          "protoField": "properties",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Optional daemon config properties in prefix:property format.\n Example: {\"spark:spark.kubernetes.container.image\": \"custom-image:latest\"}",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

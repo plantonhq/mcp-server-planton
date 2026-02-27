@@ -1,0 +1,191 @@
+{
+  "name": "AwsAlb",
+  "kind": "AwsAlb",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsAlb represents a containerized application deployed on AWS ECS.\n This resource manages ECS services that can run on either Fargate or EC2.",
+  "protoPackage": "org.openmcf.provider.aws.awsalb.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsalb/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsalb/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsAlbSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the ALB will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Subnets",
+        "jsonName": "subnets",
+        "protoField": "subnets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "list of subnet IDs in which to create the ALB. AWS requires at least two subnets\n for ALBs, which also ensures high availability across multiple Availability Zones.\n Typically use private subnets for internal ALBs or public subnets for internet-facing ALBs.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 2
+        },
+        "referenceKind": "AwsVpc"
+      },
+      {
+        "name": "SecurityGroups",
+        "jsonName": "securityGroups",
+        "protoField": "security_groups",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "list of security group IDs to attach to the ALB.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "Internal",
+        "jsonName": "internal",
+        "protoField": "internal",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "indicates whether the ALB is internal or internet-facing.\n If true, the ALB is internal; if false (or not set), it is internet-facing.",
+        "required": false
+      },
+      {
+        "name": "DeleteProtectionEnabled",
+        "jsonName": "deleteProtectionEnabled",
+        "protoField": "delete_protection_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "indicates whether the ALB should have deletion protection enabled.\n This prevents accidental deletion.",
+        "required": false
+      },
+      {
+        "name": "IdleTimeoutSeconds",
+        "jsonName": "idleTimeoutSeconds",
+        "protoField": "idle_timeout_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "sets the idle timeout in seconds for connections to the ALB.\n If omitted, AWS default is 60 seconds.",
+        "required": false,
+        "recommendedDefault": "60"
+      },
+      {
+        "name": "Dns",
+        "jsonName": "dns",
+        "protoField": "dns",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsAlbDns"
+        },
+        "description": "dns configuration allows the resource to manage Route53 DNS if enabled.",
+        "required": false
+      },
+      {
+        "name": "Ssl",
+        "jsonName": "ssl",
+        "protoField": "ssl",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsAlbSsl"
+        },
+        "description": "ssl configuration allows a single toggle for SSL, plus a certificate ARN if enabled.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsAlbDns",
+      "description": "AwsAlbDns defines the Route53 DNS configuration for the ALB.",
+      "protoType": "org.openmcf.provider.aws.awsalb.v1.AwsAlbDns",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "enabled, when set to true, indicates that the ALB resource\n should create DNS records in Route53 .",
+          "required": false
+        },
+        {
+          "name": "Route53ZoneId",
+          "jsonName": "route53ZoneId",
+          "protoField": "route53_zone_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "route53_zone_id is the Route53 Hosted Zone ID where DNS records\n will be created.",
+          "required": false,
+          "referenceKind": "AwsRoute53Zone",
+          "referenceFieldPath": "status.outputs.zone_id"
+        },
+        {
+          "name": "Hostnames",
+          "jsonName": "hostnames",
+          "protoField": "hostnames",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "hostnames is a list of domain names (e.g., [\"app.example.com\"])\n that will point to this ALB.",
+          "required": false,
+          "validation": {
+            "unique": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsAlbSsl",
+      "description": "AwsAlbSsl defines a toggle for SSL, plus a certificate ARN required if enabled is true.",
+      "protoType": "org.openmcf.provider.aws.awsalb.v1.AwsAlbSsl",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "required": false
+        },
+        {
+          "name": "CertificateArn",
+          "jsonName": "certificateArn",
+          "protoField": "certificate_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Validation Removed: \"certificate_arn must be set if ssl.enabled is true\"\n\n Previously, we enforced a message-level CEL expression on AwsAlbSsl:\n   \"!this.enabled || (has(this.certificate_arn.value) || has(this.certificate_arn.value_from))\"\n to require a certificate ARN whenever SSL is enabled.\n\n However, this validation references an external type (`StringValueOrRef`) from\n \"org.openmcf.shared.foreignkey.v1\", which causes issues in certain Java environments\n (see https://github.com/bufbuild/protovalidate-java/issues/118) where cross-package\n type resolution fails without extensive descriptor loading.\n\n Because of that open issue, we have removed the validation rule here. If this is\n eventually resolved upstream or we change our approach to descriptor loading, we may\n restore the rule at a later time.",
+          "required": false,
+          "referenceKind": "AwsCertManagerCert",
+          "referenceFieldPath": "status.outputs.cert_arn"
+        }
+      ]
+    }
+  ]
+}

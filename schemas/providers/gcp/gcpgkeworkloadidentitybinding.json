@@ -1,0 +1,73 @@
+{
+  "name": "GcpGkeWorkloadIdentityBinding",
+  "kind": "GcpGkeWorkloadIdentityBinding",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-gke-workload-identity-binding",
+  "protoPackage": "org.openmcf.provider.gcp.gcpgkeworkloadidentitybinding.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpgkeworkloadidentitybinding/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpgkeworkloadidentitybinding/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpGkeWorkloadIdentityBindingSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The GCP project that hosts the GKE cluster (and therefore the\n Workload-Identity pool \u003cproject\u003e.svc.id.goog).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "ServiceAccountEmail",
+        "jsonName": "serviceAccountEmail",
+        "protoField": "service_account_email",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The email of the Google Service Account to impersonate.\n Example: \"cert-manager@my-project.iam.gserviceaccount.com\"",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpServiceAccount",
+        "referenceFieldPath": "status.outputs.email"
+      },
+      {
+        "name": "KsaNamespace",
+        "jsonName": "ksaNamespace",
+        "protoField": "ksa_namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes namespace of the ServiceAccount running in the cluster.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "KsaName",
+        "jsonName": "ksaName",
+        "protoField": "ksa_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Kubernetes ServiceAccount.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  }
+}

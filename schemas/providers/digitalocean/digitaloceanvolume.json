@@ -1,0 +1,124 @@
+{
+  "name": "DigitalOceanVolume",
+  "kind": "DigitalOceanVolume",
+  "cloudProvider": "digitalocean",
+  "apiVersion": "digital-ocean.openmcf.org/v1",
+  "description": "digital-ocean-volume",
+  "protoPackage": "org.openmcf.provider.digitalocean.digitaloceanvolume.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/digitalocean/digitaloceanvolume/v1/api.proto",
+    "spec": "org/openmcf/provider/digitalocean/digitaloceanvolume/v1/spec.proto"
+  },
+  "spec": {
+    "name": "DigitalOceanVolumeSpec",
+    "fields": [
+      {
+        "name": "VolumeName",
+        "jsonName": "volumeName",
+        "protoField": "volume_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the volume. Must be lowercase letters, numbers, and hyphens only,\n starting with a letter and ending with a letter or number. Maximum 64 characters.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z]([a-z0-9-]*[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "An optional description for the volume.\n Constraints: Maximum 100 characters.",
+        "required": false,
+        "validation": {
+          "maxLength": 100
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.DigitalOceanRegion",
+          "enumValues": [
+            "nyc3",
+            "sfo3",
+            "fra1",
+            "sgp1",
+            "lon1",
+            "tor1",
+            "blr1",
+            "ams3"
+          ]
+        },
+        "description": "The DigitalOcean region where the volume will be created.\n Must match the region of any Droplet that will attach to this volume.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "SizeGib",
+        "jsonName": "sizeGib",
+        "protoField": "size_gib",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "The size of the volume in GiB.\n Constraints: between 1 and 16000 (inclusive).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "FilesystemType",
+        "jsonName": "filesystemType",
+        "protoField": "filesystem_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.digitaloceanvolume.v1.DigitalOceanVolumeFilesystemType",
+          "enumValues": [
+            "ext4",
+            "xfs"
+          ]
+        },
+        "description": "The initial filesystem to format the volume with.\n Allowed values: ext4, xfs, or none (no pre-formatting). Default is none.",
+        "required": false
+      },
+      {
+        "name": "SnapshotId",
+        "jsonName": "snapshotId",
+        "protoField": "snapshot_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "An optional snapshot ID or reference to a volume snapshot to create this volume from.\n If provided, the new volume will be created from the given snapshot (inheriting its region and minimum size).",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "A list of tags to apply to the volume.\n Tags must be unique and consist of letters, numbers, colons, dashes, or underscores.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      }
+    ]
+  }
+}

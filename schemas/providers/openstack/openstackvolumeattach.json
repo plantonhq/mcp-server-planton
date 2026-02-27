@@ -1,0 +1,67 @@
+{
+  "name": "OpenStackVolumeAttach",
+  "kind": "OpenStackVolumeAttach",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackVolumeAttach is a Kubernetes Resource Model (KRM) style resource\n for attaching an OpenStack Cinder volume to a compute instance.\n\n This is a \"join\" resource that connects two independently managed resources:\n   - A volume (created via OpenStackVolume)\n   - An instance (created via OpenStackInstance)\n\n In InfraCharts, this component appears as a visible DAG node with dependency\n edges to both the volume and the instance, making the attachment relationship\n explicit and transparent. The volume must be in \"available\" state and the\n instance must be running before attachment can succeed.\n\n Volume attachments are the standard way to add persistent storage to instances.\n Unlike ephemeral storage, attached volumes persist after instance termination\n and can be detached and reattached to different instances.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackvolumeattach.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackvolumeattach/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackvolumeattach/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackVolumeAttachSpec",
+    "fields": [
+      {
+        "name": "InstanceId",
+        "jsonName": "instanceId",
+        "protoField": "instance_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "instance_id is the ID of the compute instance to attach the volume to.\n This is a required foreign key -- every volume attachment must reference\n exactly one instance.\n Can reference an OpenStackInstance resource's output or be a literal instance UUID.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackInstance",
+        "referenceFieldPath": "status.outputs.instance_id"
+      },
+      {
+        "name": "VolumeId",
+        "jsonName": "volumeId",
+        "protoField": "volume_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "volume_id is the ID of the Cinder volume to attach.\n This is a required foreign key -- every volume attachment must reference\n exactly one volume.\n Can reference an OpenStackVolume resource's output or be a literal volume UUID.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackVolume",
+        "referenceFieldPath": "status.outputs.volume_id"
+      },
+      {
+        "name": "Device",
+        "jsonName": "device",
+        "protoField": "device",
+        "type": {
+          "kind": "string"
+        },
+        "description": "device is the device path where the volume appears inside the instance.\n Example: \"/dev/vdb\", \"/dev/vdc\".\n If omitted, OpenStack (Nova) automatically selects the next available device.\n Computed by OpenStack if not specified.",
+        "required": false
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this attachment.\n If omitted, the region from the OpenStack provider config is used.\n ForceNew: changing the region recreates the attachment.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  }
+}

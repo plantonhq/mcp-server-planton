@@ -1,0 +1,78 @@
+{
+  "name": "DigitalOceanVpc",
+  "kind": "DigitalOceanVpc",
+  "cloudProvider": "digitalocean",
+  "apiVersion": "digital-ocean.openmcf.org/v1",
+  "description": "digital-ocean-vpc",
+  "protoPackage": "org.openmcf.provider.digitalocean.digitaloceanvpc.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/digitalocean/digitaloceanvpc/v1/api.proto",
+    "spec": "org/openmcf/provider/digitalocean/digitaloceanvpc/v1/spec.proto"
+  },
+  "spec": {
+    "name": "DigitalOceanVpcSpec",
+    "fields": [
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "A human-readable description for the VPC.\n Constraints: Maximum 100 characters.",
+        "required": false,
+        "validation": {
+          "maxLength": 100
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.DigitalOceanRegion",
+          "enumValues": [
+            "nyc3",
+            "sfo3",
+            "fra1",
+            "sgp1",
+            "lon1",
+            "tor1",
+            "blr1",
+            "ams3"
+          ]
+        },
+        "description": "The DigitalOcean region where the VPC will be created.\n This determines the geographical location of the VPC.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "IpRangeCidr",
+        "jsonName": "ipRangeCidr",
+        "protoField": "ip_range_cidr",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The IP range for the VPC in CIDR notation (optional).\n Only /16, /20, or /24 CIDR blocks are supported for VPCs on DigitalOcean.\n Example: \"10.10.0.0/16\"\n\n 80/20 Principle: When omitted, DigitalOcean auto-generates a non-conflicting /20 CIDR block (4,096 IPs).\n This is the recommended approach for dev/test environments and when explicit IP planning is not required.\n For production environments with specific IPAM requirements, explicitly specify the CIDR block.",
+        "required": false,
+        "validation": {
+          "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/(16|20|24)$"
+        }
+      },
+      {
+        "name": "IsDefaultForRegion",
+        "jsonName": "isDefaultForRegion",
+        "protoField": "is_default_for_region",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "A boolean indicating whether this VPC should be set as the default for the specified region.\n Only one VPC can be the default for a given region.\n Default: false",
+        "required": false,
+        "recommendedDefault": "false"
+      }
+    ]
+  }
+}

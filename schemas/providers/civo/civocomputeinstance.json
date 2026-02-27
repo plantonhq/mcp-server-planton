@@ -1,0 +1,178 @@
+{
+  "name": "CivoComputeInstance",
+  "kind": "CivoComputeInstance",
+  "cloudProvider": "civo",
+  "apiVersion": "civo.openmcf.org/v1",
+  "description": "civo-compute-instance",
+  "protoPackage": "org.openmcf.provider.civo.civocomputeinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/civo/civocomputeinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/civo/civocomputeinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CivoComputeInstanceSpec",
+    "fields": [
+      {
+        "name": "InstanceName",
+        "jsonName": "instanceName",
+        "protoField": "instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "instance hostname (letters, numbers, dashes, dots; \u003c=63 chars, no trailing dash/dot)",
+        "required": true,
+        "validation": {
+          "required": true,
+          "maxLength": 63,
+          "pattern": "^[a-z0-9]([a-z0-9\\.\\-]*[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.civo.CivoRegion",
+          "enumValues": [
+            "lon1",
+            "lon2",
+            "fra1",
+            "nyc1",
+            "phx1",
+            "mum1"
+          ]
+        },
+        "description": "region code for the instance location",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Size",
+        "jsonName": "size",
+        "protoField": "size",
+        "type": {
+          "kind": "string"
+        },
+        "description": "instance size (flavor) slug, e.g. \"g3.small\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z0-9]([a-z0-9\\.\\-]*[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "Image",
+        "jsonName": "image",
+        "protoField": "image",
+        "type": {
+          "kind": "string"
+        },
+        "description": "base OS image slug for the instance (e.g. \"ubuntu-focal\")",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "Network",
+        "jsonName": "network",
+        "protoField": "network",
+        "type": {
+          "kind": "string"
+        },
+        "description": "target network for the instance (must exist in the same region)",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "CivoVpc",
+        "referenceFieldPath": "status.outputs.network_id"
+      },
+      {
+        "name": "SshKeyIds",
+        "jsonName": "sshKeyIds",
+        "protoField": "ssh_key_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "SSH public key(s) to enable passwordless login (optional; if empty, a password will be set)",
+        "required": false
+      },
+      {
+        "name": "FirewallIds",
+        "jsonName": "firewallIds",
+        "protoField": "firewall_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "firewall(s) to attach to the instance (must belong to the same network)",
+        "required": false,
+        "referenceKind": "CivoFirewall",
+        "referenceFieldPath": "status.outputs.firewall_id"
+      },
+      {
+        "name": "VolumeIds",
+        "jsonName": "volumeIds",
+        "protoField": "volume_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "existing storage volumes to attach to this instance (must reside in same region)",
+        "required": false,
+        "referenceKind": "CivoVolume",
+        "referenceFieldPath": "status.outputs.volume_id"
+      },
+      {
+        "name": "ReservedIpId",
+        "jsonName": "reservedIpId",
+        "protoField": "reserved_ip_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "reserved IP to assign to this instance (optional static public IP address)",
+        "required": false,
+        "referenceKind": "CivoIpAddress",
+        "referenceFieldPath": "status.outputs.reserved_ip_id"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "tags for the instance (for organization, optional)",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "UserData",
+        "jsonName": "userData",
+        "protoField": "user_data",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cloud-init user data script to run on instance boot (\u003c=32 KiB, optional)",
+        "required": false
+      }
+    ]
+  }
+}

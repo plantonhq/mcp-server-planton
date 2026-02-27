@@ -1,0 +1,73 @@
+{
+  "name": "AwsCloudwatchLogGroup",
+  "kind": "AwsCloudwatchLogGroup",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsCloudwatchLogGroup represents a CloudWatch Logs log group — a container\n for log streams that share the same retention, monitoring, and access control\n settings. Log groups are the primary destination for application logs, service\n logs, and operational data across AWS services.",
+  "protoPackage": "org.openmcf.provider.aws.awscloudwatchloggroup.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awscloudwatchloggroup/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awscloudwatchloggroup/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsCloudwatchLogGroupSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "RetentionInDays",
+        "jsonName": "retentionInDays",
+        "protoField": "retention_in_days",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of days to retain log events. After this period, log events are\n automatically deleted. Set to 0 (the default) to retain log events\n indefinitely — they will never expire.\n\n AWS only accepts specific values for this field. Any value not in the\n allowed set will be rejected by the AWS API.\n\n Allowed values: 0 (never expire), 1, 3, 5, 7, 14, 30, 60, 90, 120, 150,\n 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653.\n\n Recommended: Set an explicit retention for cost control. Indefinite retention\n (0) accumulates storage costs over time.",
+        "required": false,
+        "recommendedDefault": "30"
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ARN of the KMS key to use for encrypting log data at rest. When omitted,\n CloudWatch Logs uses its default server-side encryption (SSE-CWL).\n\n Customer-managed KMS keys provide:\n - Key rotation control\n - Cross-account access via key policy\n - CloudTrail audit trail of log data access\n - Compliance with regulations requiring customer-controlled encryption keys\n\n The KMS key must be in the same region as the log group.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "LogGroupClass",
+        "jsonName": "logGroupClass",
+        "protoField": "log_group_class",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The class of the log group, which determines pricing, feature availability,\n and data durability characteristics.\n\n Valid values:\n - \"STANDARD\" — Full feature set including metric filters, subscription\n   filters, Logs Insights, and Contributor Insights. Default when omitted.\n - \"INFREQUENT_ACCESS\" — Reduced cost (~50% cheaper storage) with a subset\n   of features. Supports Logs Insights and managed ingestion to S3, but does\n   NOT support metric filters, subscription filters, or Contributor Insights.\n   Best for high-volume logs accessed infrequently (VPC flow logs, CDN access\n   logs, compliance archives).\n - \"DELIVERY\" — Purpose-built for AWS service log delivery (VPC Flow Logs,\n   CloudTrail, Route53 Resolver). Lowest cost. Retention is managed by AWS\n   and retention_in_days must not be set.\n\n This field is ForceNew: changing it requires replacing the log group.",
+        "required": false
+      },
+      {
+        "name": "DeletionProtectionEnabled",
+        "jsonName": "deletionProtectionEnabled",
+        "protoField": "deletion_protection_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, the log group is protected from deletion. Any attempt to delete\n the log group (including via IaC destroy) will fail until this flag is set\n to false. Useful for protecting production log groups from accidental\n deletion.",
+        "required": false
+      }
+    ]
+  }
+}

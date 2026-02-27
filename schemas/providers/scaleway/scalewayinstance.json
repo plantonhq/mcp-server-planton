@@ -1,0 +1,257 @@
+{
+  "name": "ScalewayInstance",
+  "kind": "ScalewayInstance",
+  "cloudProvider": "scaleway",
+  "apiVersion": "scaleway.openmcf.org/v1",
+  "description": "scaleway-instance",
+  "protoPackage": "org.openmcf.provider.scaleway.scalewayinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/scaleway/scalewayinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/scaleway/scalewayinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ScalewayInstanceSpec",
+    "fields": [
+      {
+        "name": "Zone",
+        "jsonName": "zone",
+        "protoField": "zone",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Scaleway zone where the instance will be created.\n Examples: \"fr-par-1\", \"nl-ams-1\", \"pl-waw-1\"\n\n Instances are zonal resources. The zone determines which physical\n data center the instance runs in. Choose a zone in the same region\n as the Private Network and other connected resources.\n\n This field is required and cannot be changed after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance commercial type (required).\n\n Determines CPU cores, RAM, and local storage allocation. Common types:\n   - Development:  \"DEV1-S\" (2 vCPU, 2 GB), \"DEV1-M\" (3 vCPU, 4 GB)\n   - General:      \"GP1-S\" (8 vCPU, 32 GB), \"GP1-M\" (16 vCPU, 64 GB)\n   - Production:   \"PRO2-S\" (2 vCPU, 8 GB), \"PRO2-M\" (4 vCPU, 16 GB)\n\n See Scaleway pricing page for the full list of available types and their\n specifications. Type can be changed after creation (the instance will be\n stopped, migrated, and restarted automatically).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Image",
+        "jsonName": "image",
+        "protoField": "image",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Base image UUID or label (required).\n\n The image determines the operating system and initial disk contents.\n Can be a full UUID (e.g., \"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\") or\n a human-friendly label (e.g., \"ubuntu_focal\", \"debian_bullseye\",\n \"ubuntu_jammy\", \"centos_stream_9\").\n\n Use labels for quick setup and UUIDs for reproducible deployments.\n The available images depend on the instance zone.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "PublicIp",
+        "jsonName": "publicIp",
+        "protoField": "public_ip",
+        "type": {
+          "kind": "message",
+          "messageType": "ScalewayInstancePublicIp"
+        },
+        "description": "Public IP configuration.\n\n If set, a dedicated Flexible IPv4 address is created and attached to\n the instance. The instance will be reachable from the internet on this\n IP. If omitted, the instance has **no public IP** and is reachable only\n via the Private Network (through a Public Gateway bastion, VPN, or\n Load Balancer).\n\n **When to set**: Development instances, bastion hosts, standalone servers.\n **When to omit**: Production workloads behind a Load Balancer or Public\n Gateway. Keeping instances off the public internet reduces attack surface.",
+        "required": false
+      },
+      {
+        "name": "SecurityGroupId",
+        "jsonName": "securityGroupId",
+        "protoField": "security_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Security group to attach to the instance.\n\n Controls inbound and outbound firewall rules for the instance. Can be\n a literal security group UUID or a reference to a\n ScalewayInstanceSecurityGroup resource's output.\n\n If omitted, Scaleway assigns its default security group (which allows\n all inbound and outbound traffic). For production, always specify an\n explicit security group with a restrictive policy.\n\n In infra charts, this is typically wired via valueFrom:\n\n   securityGroupId:\n     valueFrom:\n       kind: ScalewayInstanceSecurityGroup\n       name: web-sg\n       fieldPath: status.outputs.security_group_id",
+        "required": false,
+        "referenceKind": "ScalewayInstanceSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "PrivateNetworkId",
+        "jsonName": "privateNetworkId",
+        "protoField": "private_network_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Private Network to attach the instance to.\n\n When set, the instance receives a private NIC on this network, enabling\n communication with other resources on the same network (databases,\n load balancers, other instances) using private IPs.\n\n Can be a literal Private Network UUID or a reference to a\n ScalewayPrivateNetwork resource's output.\n\n In infra charts, this is typically wired via valueFrom:\n\n   privateNetworkId:\n     valueFrom:\n       kind: ScalewayPrivateNetwork\n       name: app-network\n       fieldPath: status.outputs.private_network_id\n\n Optional. Omit only for isolated instances that don't need internal\n network connectivity (rare in production).",
+        "required": false,
+        "referenceKind": "ScalewayPrivateNetwork",
+        "referenceFieldPath": "status.outputs.private_network_id"
+      },
+      {
+        "name": "RootVolume",
+        "jsonName": "rootVolume",
+        "protoField": "root_volume",
+        "type": {
+          "kind": "message",
+          "messageType": "ScalewayInstanceRootVolume"
+        },
+        "description": "Root volume configuration.\n\n Controls the boot disk's size, type, and lifecycle behavior. If omitted,\n the image's default root volume settings are used (typically 10-20 GB\n of local SSD depending on the instance type).\n\n Set this when you need a larger root disk, want to use SBS (network-\n attached) storage for the root volume, or need specific IOPS guarantees.",
+        "required": false
+      },
+      {
+        "name": "AdditionalVolumes",
+        "jsonName": "additionalVolumes",
+        "protoField": "additional_volumes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ScalewayInstanceAdditionalVolume"
+          }
+        },
+        "description": "Additional local volumes to create and attach to the instance.\n\n These volumes are created as part of this composite resource and have\n the same lifecycle as the instance -- they are destroyed when the\n instance is terminated. Use these for:\n   - High-performance local caching (l_ssd)\n   - Temporary processing storage (scratch)\n   - Data volumes that don't need to survive instance replacement\n\n For persistent storage that survives instance termination, use\n ScalewayBlockVolume (a separate resource kind) instead.\n\n Optional. Most instances only need the root volume.",
+        "required": false
+      },
+      {
+        "name": "CloudInit",
+        "jsonName": "cloudInit",
+        "protoField": "cloud_init",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cloud-init script for instance bootstrapping.\n\n A cloud-init script (typically starting with `#!/bin/bash` or\n `#cloud-config`) that runs when the instance first boots. Use this\n to install packages, configure services, set up users, or join\n the instance to configuration management systems.\n\n Example:\n   cloudInit: |\n     #!/bin/bash\n     apt-get update \u0026\u0026 apt-get install -y docker.io\n     systemctl enable docker\n\n Maximum size: ~127 KB. For larger bootstrap scripts, use cloud-init\n to download and execute a script from object storage.\n\n Optional. If omitted, the instance boots with the image's defaults.",
+        "required": false
+      },
+      {
+        "name": "State",
+        "jsonName": "state",
+        "protoField": "state",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Desired instance state after creation.\n\n Options:\n   - \"started\" (default) -- Instance is running. Normal operational state.\n   - \"stopped\"  -- Instance is shut down. Not billed for compute but\n                   still billed for attached volumes and IPs.\n   - \"standby\"  -- Instance is suspended to RAM. Faster resume than\n                   \"stopped\" but still billed for RAM reservation.\n\n Use \"stopped\" to pre-provision instances without starting them, or\n to park instances during maintenance windows.",
+        "required": false,
+        "recommendedDefault": "started"
+      },
+      {
+        "name": "Protected",
+        "jsonName": "protected",
+        "protoField": "protected",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Protect the instance against accidental deletion via the Scaleway API.\n\n When true, the instance cannot be deleted through the API (including\n Terraform/Pulumi destroy) without first disabling protection. This is\n a safety net for critical production instances.\n\n Default: false. Enable for production workloads.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ScalewayInstanceAdditionalVolume",
+      "description": "ScalewayInstanceAdditionalVolume defines a local volume to create and\n attach to the instance.\n\n Additional volumes are created as part of this composite resource and\n share the instance's lifecycle. They are automatically formatted and\n attached as block devices when the instance starts.\n\n For persistent block storage with independent lifecycle, use the\n ScalewayBlockVolume resource kind instead.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayinstance.v1.ScalewayInstanceAdditionalVolume",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Volume name.\n\n A descriptive name for the volume. Used in the Scaleway console and\n API for identification. If omitted, a name is auto-generated from\n the resource name and volume index.",
+          "required": false
+        },
+        {
+          "name": "VolumeType",
+          "jsonName": "volumeType",
+          "protoField": "volume_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Volume type (required).\n\n Options:\n   - \"l_ssd\"   -- Local SSD. High performance, tied to the physical\n                   server. Cannot be resized after creation. Destroyed\n                   when the instance is terminated.\n   - \"scratch\" -- Temporary local storage. Same performance as l_ssd\n                   but explicitly ephemeral. Data is lost on instance\n                   stop or restart. Use for temporary processing data.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "recommendedDefault": "l_ssd"
+        },
+        {
+          "name": "SizeInGb",
+          "jsonName": "sizeInGb",
+          "protoField": "size_in_gb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Volume size in GB (required).\n\n The available size depends on the instance type's local storage\n capacity. The total of all local volumes (root + additional) cannot\n exceed the instance type's maximum local storage.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "ScalewayInstancePublicIp",
+      "description": "ScalewayInstancePublicIp configures the dedicated public IP for the instance.\n\n When this message is present in the spec, a Flexible IPv4 address is created\n as a separate resource and attached to the instance. The Flexible IP has an\n independent lifecycle -- if the instance is replaced, the IP can be preserved\n and reassigned, maintaining DNS records and firewall rules.\n\n When absent from the spec, no public IP is created and the instance is\n reachable only via the Private Network.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayinstance.v1.ScalewayInstancePublicIp",
+      "fields": [
+        {
+          "name": "ReverseDns",
+          "jsonName": "reverseDns",
+          "protoField": "reverse_dns",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Reverse DNS hostname for the public IP.\n Example: \"web-01.example.com\"\n\n A matching DNS A record pointing to the public IP must already exist\n before setting this field. Useful for email servers (SPF/DKIM compliance)\n and professional appearance in network logs.\n\n Optional. If omitted, reverse DNS defaults to Scaleway's generated\n hostname.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ScalewayInstanceRootVolume",
+      "description": "ScalewayInstanceRootVolume configures the instance's boot disk.\n\n Every instance has a root volume that contains the operating system. By\n default, the root volume inherits its size and type from the selected image\n and instance type. Use this message to override those defaults.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayinstance.v1.ScalewayInstanceRootVolume",
+      "fields": [
+        {
+          "name": "SizeInGb",
+          "jsonName": "sizeInGb",
+          "protoField": "size_in_gb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Root volume size in GB.\n\n If omitted, uses the image's default root volume size. The minimum\n depends on the image (typically 10 GB). Can only be increased, not\n decreased, after creation.\n\n Set this when the default size is insufficient for your workload.",
+          "required": false
+        },
+        {
+          "name": "VolumeType",
+          "jsonName": "volumeType",
+          "protoField": "volume_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Volume type for the root disk.\n\n Options:\n   - \"l_ssd\"      -- Local SSD. High performance, data stored on the\n                      physical server. Cannot be resized. This is the\n                      default for most instance types.\n   - \"sbs_volume\"  -- SBS (Scaleway Block Storage). Network-attached,\n                      resizable, with independent lifecycle. Choose this\n                      for production workloads that need volume snapshots,\n                      resizing, or persistence across instance replacement.\n\n Changing volume_type after creation **recreates the instance** (data loss\n unless you snapshot first). Choose carefully.",
+          "required": false
+        },
+        {
+          "name": "DeleteOnTermination",
+          "jsonName": "deleteOnTermination",
+          "protoField": "delete_on_termination",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Delete the root volume when the instance is terminated.\n\n Default: true. Set to false to preserve the root volume after instance\n deletion (useful for forensics or data recovery). Only meaningful for\n SBS volumes -- local SSD volumes are always destroyed with the instance.",
+          "required": false
+        },
+        {
+          "name": "SbsIops",
+          "jsonName": "sbsIops",
+          "protoField": "sbs_iops",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "SBS IOPS allocation (only for sbs_volume type).\n\n Specifies the guaranteed I/O operations per second for the root volume.\n Only relevant when volume_type is \"sbs_volume\". If omitted, Scaleway\n uses the default IOPS tier for the volume size.\n\n Higher IOPS = higher cost. Set this only when the default IOPS is\n insufficient for your workload (e.g., database servers).",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

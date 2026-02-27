@@ -1,0 +1,179 @@
+{
+  "name": "Auth0ResourceServer",
+  "kind": "Auth0ResourceServer",
+  "cloudProvider": "auth0",
+  "apiVersion": "auth0.openmcf.org/v1",
+  "description": "Auth0ResourceServer is a deployment component that configures a Resource Server (API) in Auth0.\n Resource Servers represent the APIs that your applications can request access to.\n They are essential for implementing OAuth 2.0 API authorization with Auth0.\n\n This component supports:\n - Defining API identifiers (audiences) for authorization flows\n - Configuring token settings (lifetime, signing algorithm, dialect)\n - Setting up scopes (permissions) for fine-grained access control\n - Enabling RBAC for role-based API access\n\n Example manifest for a simple API:\n ```yaml\n apiVersion: auth0.openmcf.org/v1\n kind: Auth0ResourceServer\n metadata:\n   name: my-api\n   org: my-organization\n spec:\n   identifier: https://api.example.com/\n   name: My Example API\n   signing_alg: RS256\n   token_lifetime: 86400\n   allow_offline_access: true\n   scopes:\n     - name: read:data\n       description: Read access to data\n     - name: write:data\n       description: Write access to data\n ```\n\n Example manifest for API with RBAC enabled:\n ```yaml\n apiVersion: auth0.openmcf.org/v1\n kind: Auth0ResourceServer\n metadata:\n   name: rbac-api\n   org: my-organization\n spec:\n   identifier: https://api.example.com/v2\n   name: My RBAC-Enabled API\n   signing_alg: RS256\n   token_lifetime: 3600\n   enforce_policies: true\n   token_dialect: access_token_authz\n   skip_consent_for_verifiable_first_party_clients: true\n   scopes:\n     - name: read:users\n       description: Read user profiles\n     - name: write:users\n       description: Create and update users\n     - name: delete:users\n       description: Delete users\n ```",
+  "protoPackage": "org.openmcf.provider.auth0.auth0resourceserver.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/auth0/auth0resourceserver/v1/api.proto",
+    "spec": "org/openmcf/provider/auth0/auth0resourceserver/v1/spec.proto"
+  },
+  "spec": {
+    "name": "Auth0ResourceServerSpec",
+    "fields": [
+      {
+        "name": "Identifier",
+        "jsonName": "identifier",
+        "protoField": "identifier",
+        "type": {
+          "kind": "string"
+        },
+        "description": "identifier is the unique identifier for the resource server.\n This value is used as the \"audience\" parameter for authorization calls.\n Typically a URI representing your API (e.g., \"https://api.example.com/\").\n Cannot be changed once set.\n\n Example: \"https://api.mycompany.com/\", \"api.planton.live\"",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "name is a friendly display name for the resource server.\n This is shown in the Auth0 dashboard and consent screens.\n Cannot include `\u003c` or `\u003e` characters.",
+        "required": false
+      },
+      {
+        "name": "SigningAlg",
+        "jsonName": "signingAlg",
+        "protoField": "signing_alg",
+        "type": {
+          "kind": "string"
+        },
+        "description": "signing_alg is the algorithm used to sign access tokens for this API.\n Options:\n - \"RS256\": RSA using SHA-256 (asymmetric, recommended)\n - \"HS256\": HMAC using SHA-256 (symmetric, requires client secret)\n - \"PS256\": RSA-PSS using SHA-256\n Default: RS256",
+        "required": false,
+        "validation": {
+          "enum": [
+            "",
+            "RS256",
+            "HS256",
+            "PS256"
+          ]
+        }
+      },
+      {
+        "name": "AllowOfflineAccess",
+        "jsonName": "allowOfflineAccess",
+        "protoField": "allow_offline_access",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "allow_offline_access indicates whether refresh tokens can be issued for this API.\n When true, applications can request refresh tokens using the \"offline_access\" scope.\n This allows applications to obtain new access tokens without user interaction.\n Default: false",
+        "required": false
+      },
+      {
+        "name": "TokenLifetime",
+        "jsonName": "tokenLifetime",
+        "protoField": "token_lifetime",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "token_lifetime is the duration (in seconds) that access tokens remain valid\n when issued from the token endpoint.\n Range: 0 to 2592000 (30 days)\n Default: 86400 (24 hours)",
+        "required": false,
+        "validation": {
+          "max": 2592000
+        }
+      },
+      {
+        "name": "TokenLifetimeForWeb",
+        "jsonName": "tokenLifetimeForWeb",
+        "protoField": "token_lifetime_for_web",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "token_lifetime_for_web is the duration (in seconds) that access tokens remain valid\n when issued via implicit or hybrid flows.\n This should typically be shorter than token_lifetime for security.\n Cannot be greater than token_lifetime.\n Range: 0 to 2592000 (30 days)\n Default: 7200 (2 hours)",
+        "required": false,
+        "validation": {
+          "max": 2592000
+        }
+      },
+      {
+        "name": "SkipConsentForVerifiableFirstPartyClients",
+        "jsonName": "skipConsentForVerifiableFirstPartyClients",
+        "protoField": "skip_consent_for_verifiable_first_party_clients",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "skip_consent_for_verifiable_first_party_clients indicates whether to skip\n the consent prompt for applications flagged as first-party.\n When true, first-party applications don't show the consent screen to users.\n Default: true",
+        "required": false
+      },
+      {
+        "name": "EnforcePolicies",
+        "jsonName": "enforcePolicies",
+        "protoField": "enforce_policies",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "enforce_policies enables RBAC authorization policies for this API.\n When true, role and permission assignments are evaluated during login.\n This allows you to use Auth0's built-in RBAC to control API access.\n Requires token_dialect to be set to a value that includes permissions.\n Default: false\n\n https://auth0.com/docs/manage-users/access-control/rbac",
+        "required": false
+      },
+      {
+        "name": "TokenDialect",
+        "jsonName": "tokenDialect",
+        "protoField": "token_dialect",
+        "type": {
+          "kind": "string"
+        },
+        "description": "token_dialect determines the format of access tokens issued for this API.\n Options:\n - \"access_token\": Standard Auth0 JWT with claims\n - \"access_token_authz\": Standard Auth0 JWT including RBAC permissions claims\n - \"rfc9068_profile\": IETF JWT Access Token Profile compliant\n - \"rfc9068_profile_authz\": IETF profile with RBAC permissions claims\n\n Use \"_authz\" variants when enforce_policies is true to include permissions in tokens.\n Default: access_token\n\n https://auth0.com/docs/secure/tokens/access-tokens/access-token-profiles",
+        "required": false,
+        "validation": {
+          "enum": [
+            "",
+            "access_token",
+            "access_token_authz",
+            "rfc9068_profile",
+            "rfc9068_profile_authz"
+          ]
+        }
+      },
+      {
+        "name": "Scopes",
+        "jsonName": "scopes",
+        "protoField": "scopes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Auth0ResourceServerScope"
+          }
+        },
+        "description": "scopes defines the permissions that can be granted for this API.\n Each scope represents a specific permission that applications can request.\n Applications request scopes during authorization, and granted scopes\n appear in the access token's \"scope\" claim.\n\n Example scopes:\n - read:users (permission to read user data)\n - write:orders (permission to create/update orders)\n - delete:products (permission to delete products)\n\n https://auth0.com/docs/get-started/apis/api-settings#scopes",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "Auth0ResourceServerScope",
+      "description": "Auth0ResourceServerScope represents a single permission/scope for the API.\n Scopes are used for fine-grained access control, allowing you to define\n what actions applications can perform when accessing your API.",
+      "protoType": "org.openmcf.provider.auth0.auth0resourceserver.v1.Auth0ResourceServerScope",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is the scope identifier used in OAuth flows.\n Should follow the pattern: action:resource (e.g., \"read:users\", \"write:orders\")\n This is what applications request and what appears in access tokens.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "description is a human-readable explanation of what this scope grants.\n Shown on consent screens and in the Auth0 dashboard.\n Example: \"Read access to user profiles\"",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

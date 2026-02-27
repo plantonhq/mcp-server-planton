@@ -1,0 +1,924 @@
+{
+  "name": "KubernetesNamespace",
+  "kind": "KubernetesNamespace",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "*\n **KubernetesNamespace** defines a Kubernetes namespace resource following the Kubernetes Resource Model (KRM).\n This resource represents a complete namespace deployment with resource quotas, network policies,\n and access controls configured according to the \"Namespace-as-a-Service\" pattern.",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetesnamespace.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetesnamespace/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetesnamespace/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesNamespaceSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "The Kubernetes cluster in which the namespace should be created",
+        "required": false
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "*\n The unique name of the namespace.\n This will be used as the Kubernetes namespace metadata.name.\n Must be a valid DNS label (lowercase alphanumeric and hyphens).",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "maxLength": 63
+        }
+      },
+      {
+        "name": "Labels",
+        "jsonName": "labels",
+        "protoField": "labels",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "*\n Additional labels to be applied to the namespace.\n These are merged with standard labels (environment, team, cost-center) for\n cost allocation, monitoring, and governance.",
+        "required": false
+      },
+      {
+        "name": "Annotations",
+        "jsonName": "annotations",
+        "protoField": "annotations",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "*\n Additional annotations to be applied to the namespace.\n Common use cases:\n - linkerd.io/inject: \"enabled\" for service mesh injection\n - janitor/ttl: \"24h\" for ephemeral namespace cleanup\n - scheduler.alpha.kubernetes.io/node-selector: for node affinity",
+        "required": false
+      },
+      {
+        "name": "ResourceProfile",
+        "jsonName": "resourceProfile",
+        "protoField": "resource_profile",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesNamespaceResourceProfile"
+        },
+        "description": "*\n Resource allocation profile for the namespace.\n This abstracts ResourceQuota and LimitRange configuration into T-shirt sizes\n or allows custom specifications for advanced users.",
+        "required": false
+      },
+      {
+        "name": "NetworkConfig",
+        "jsonName": "networkConfig",
+        "protoField": "network_config",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesNamespaceNetworkConfig"
+        },
+        "description": "*\n Network isolation and security configuration.\n Controls ingress/egress network policies to enforce zero-trust networking.",
+        "required": false
+      },
+      {
+        "name": "ServiceMeshConfig",
+        "jsonName": "serviceMeshConfig",
+        "protoField": "service_mesh_config",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesNamespaceServiceMeshConfig"
+        },
+        "description": "*\n Service mesh integration configuration.\n Enables automatic sidecar injection and mesh-specific features.",
+        "required": false
+      },
+      {
+        "name": "PodSecurityStandard",
+        "jsonName": "podSecurityStandard",
+        "protoField": "pod_security_standard",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.kubernetes.kubernetesnamespace.v1.KubernetesNamespacePodSecurityStandard",
+          "enumValues": [
+            "privileged",
+            "baseline",
+            "restricted"
+          ]
+        },
+        "description": "*\n Pod security standards enforcement level.\n Defines the security posture for pods running in the namespace.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNamespaceCpuQuota",
+      "description": "*\n **KubernetesNamespaceCpuQuota** defines CPU resource quotas.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnamespace.v1.KubernetesNamespaceCpuQuota",
+      "fields": [
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Total CPU requests allowed (e.g., \"4\", \"4000m\")",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Total CPU limits allowed (e.g., \"8\", \"8000m\")",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNamespaceCustomQuotas",
+      "description": "*\n **KubernetesNamespaceCustomQuotas** allows explicit specification of resource limits.\n This is for advanced users who need precise control over quotas.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnamespace.v1.KubernetesNamespaceCustomQuotas",
+      "fields": [
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesNamespaceCpuQuota"
+          },
+          "description": "CPU resource limits",
+          "required": false
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesNamespaceMemoryQuota"
+          },
+          "description": "Memory resource limits",
+          "required": false
+        },
+        {
+          "name": "ObjectCounts",
+          "jsonName": "objectCounts",
+          "protoField": "object_counts",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesNamespaceObjectCountQuotas"
+          },
+          "description": "Object count limits (pods, services, configmaps, secrets)",
+          "required": false
+        },
+        {
+          "name": "DefaultLimits",
+          "jsonName": "defaultLimits",
+          "protoField": "default_limits",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesNamespaceDefaultLimits"
+          },
+          "description": "Default resource requests/limits for containers without explicit values",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNamespaceDefaultLimits",
+      "description": "*\n **KubernetesNamespaceDefaultLimits** defines default resource requests/limits.\n These are automatically injected into containers that don't specify their own values.\n This is implemented via LimitRange in Kubernetes.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnamespace.v1.KubernetesNamespaceDefaultLimits",
+      "fields": [
+        {
+          "name": "DefaultCpuRequest",
+          "jsonName": "defaultCpuRequest",
+          "protoField": "default_cpu_request",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Default CPU request (e.g., \"100m\")",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DefaultCpuLimit",
+          "jsonName": "defaultCpuLimit",
+          "protoField": "default_cpu_limit",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Default CPU limit (e.g., \"1000m\")",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DefaultMemoryRequest",
+          "jsonName": "defaultMemoryRequest",
+          "protoField": "default_memory_request",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Default memory request (e.g., \"128Mi\")",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DefaultMemoryLimit",
+          "jsonName": "defaultMemoryLimit",
+          "protoField": "default_memory_limit",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Default memory limit (e.g., \"512Mi\")",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNamespaceMemoryQuota",
+      "description": "*\n **KubernetesNamespaceMemoryQuota** defines memory resource quotas.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnamespace.v1.KubernetesNamespaceMemoryQuota",
+      "fields": [
+        {
+          "name": "Requests",
+          "jsonName": "requests",
+          "protoField": "requests",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Total memory requests allowed (e.g., \"8Gi\", \"8192Mi\")",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Limits",
+          "jsonName": "limits",
+          "protoField": "limits",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Total memory limits allowed (e.g., \"16Gi\", \"16384Mi\")",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNamespaceNetworkConfig",
+      "description": "*\n **KubernetesNamespaceNetworkConfig** defines network isolation and security policies.\n This implements the \"Default Deny\" security pattern with explicit allow rules.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnamespace.v1.KubernetesNamespaceNetworkConfig",
+      "fields": [
+        {
+          "name": "IsolateIngress",
+          "jsonName": "isolateIngress",
+          "protoField": "isolate_ingress",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n Enable ingress network isolation.\n When true, creates a NetworkPolicy that denies all ingress traffic by default.\n Traffic must be explicitly allowed.",
+          "required": false
+        },
+        {
+          "name": "RestrictEgress",
+          "jsonName": "restrictEgress",
+          "protoField": "restrict_egress",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n Enable egress network restriction.\n When true, blocks all egress except to kube-system (DNS) and Kubernetes API.\n This prevents pods from accessing external networks without explicit rules.",
+          "required": false
+        },
+        {
+          "name": "AllowedIngressNamespaces",
+          "jsonName": "allowedIngressNamespaces",
+          "protoField": "allowed_ingress_namespaces",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "*\n Allow ingress from specific namespaces.\n List of namespace names that are allowed to send traffic to this namespace.",
+          "required": false
+        },
+        {
+          "name": "AllowedEgressCidrs",
+          "jsonName": "allowedEgressCidrs",
+          "protoField": "allowed_egress_cidrs",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "*\n Allow egress to specific external CIDR blocks.\n List of CIDR blocks (e.g., \"10.0.0.0/8\", \"192.168.1.0/24\") that pods can access.",
+          "required": false
+        },
+        {
+          "name": "AllowedEgressDomains",
+          "jsonName": "allowedEgressDomains",
+          "protoField": "allowed_egress_domains",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "*\n Allow egress to specific DNS domains.\n List of domains (e.g., \"api.stripe.com\", \"*.github.com\") that pods can access.\n Requires a CNI that supports DNS-based policies (like Calico or Cilium).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNamespaceObjectCountQuotas",
+      "description": "*\n **KubernetesNamespaceObjectCountQuotas** defines limits on Kubernetes object counts.\n This prevents control plane exhaustion from excessive object creation.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnamespace.v1.KubernetesNamespaceObjectCountQuotas",
+      "fields": [
+        {
+          "name": "Pods",
+          "jsonName": "pods",
+          "protoField": "pods",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of pods",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "Services",
+          "jsonName": "services",
+          "protoField": "services",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of services",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "Configmaps",
+          "jsonName": "configmaps",
+          "protoField": "configmaps",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of configmaps",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "Secrets",
+          "jsonName": "secrets",
+          "protoField": "secrets",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of secrets",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "PersistentVolumeClaims",
+          "jsonName": "persistentVolumeClaims",
+          "protoField": "persistent_volume_claims",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of persistent volume claims",
+          "required": false
+        },
+        {
+          "name": "LoadBalancers",
+          "jsonName": "loadBalancers",
+          "protoField": "load_balancers",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of load balancers",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNamespaceResourceProfile",
+      "description": "*\n **KubernetesNamespaceResourceProfile** defines resource limits and quotas for the namespace.\n This abstracts the complexity of ResourceQuota and LimitRange into intuitive profiles.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnamespace.v1.KubernetesNamespaceResourceProfile",
+      "fields": [
+        {
+          "name": "Preset",
+          "jsonName": "preset",
+          "protoField": "preset",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesnamespace.v1.KubernetesNamespaceBuiltInProfile",
+            "enumValues": [
+              "small",
+              "medium",
+              "large",
+              "xlarge"
+            ]
+          },
+          "description": "Pre-defined T-shirt size profiles (small, medium, large, xlarge).\n These provide opinionated defaults for different namespace sizes.",
+          "required": false,
+          "oneofGroup": "profile_config"
+        },
+        {
+          "name": "Custom",
+          "jsonName": "custom",
+          "protoField": "custom",
+          "type": {
+            "kind": "message",
+            "messageType": "KubernetesNamespaceCustomQuotas"
+          },
+          "description": "Custom resource limits for advanced users who need precise control.",
+          "required": false,
+          "oneofGroup": "profile_config"
+        }
+      ]
+    },
+    {
+      "name": "KubernetesNamespaceServiceMeshConfig",
+      "description": "*\n **KubernetesNamespaceServiceMeshConfig** defines service mesh integration.\n This supports automatic sidecar injection and mesh lifecycle management.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesnamespace.v1.KubernetesNamespaceServiceMeshConfig",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "*\n Enable service mesh sidecar injection.\n When true, service mesh proxies are automatically injected into pods.",
+          "required": false
+        },
+        {
+          "name": "MeshType",
+          "jsonName": "meshType",
+          "protoField": "mesh_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesnamespace.v1.KubernetesNamespaceServiceMeshType",
+            "enumValues": [
+              "istio",
+              "linkerd",
+              "consul"
+            ]
+          },
+          "description": "*\n Service mesh type.\n Determines which mesh to use (Istio, Linkerd, etc.).",
+          "required": false
+        },
+        {
+          "name": "RevisionTag",
+          "jsonName": "revisionTag",
+          "protoField": "revision_tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n Mesh revision tag (Istio-specific).\n Allows pointing to a specific control plane version without hardcoding the version.\n Example: \"prod-stable\", \"canary\", \"1-19-5\"\n This enables safe, granular mesh upgrades.",
+          "required": false,
+          "validation": {
+            "maxLength": 63
+          }
+        }
+      ]
+    }
+  ]
+}

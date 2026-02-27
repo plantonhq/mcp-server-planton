@@ -1,0 +1,100 @@
+{
+  "name": "AzurePublicIp",
+  "kind": "AzurePublicIp",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzurePublicIp is the top-level API resource for an Azure Public IP Address.\n Public IPs provide static, internet-routable IPv4 addresses that can be attached\n to load balancers, application gateways, NAT gateways, and virtual machines.",
+  "protoPackage": "org.openmcf.provider.azure.azurepublicip.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurepublicip/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurepublicip/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzurePublicIpSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Public IP will be created.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".\n The Public IP must be in the same region as the resource it will be attached to\n (load balancer, application gateway, NAT gateway, etc.).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Public IP will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Public IP resource.\n Must be unique within the resource group.\n Allowed characters: alphanumeric, underscores, hyphens, and periods.\n Must start with alphanumeric. Length: 1 to 80 characters.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      {
+        "name": "DomainNameLabel",
+        "jsonName": "domainNameLabel",
+        "protoField": "domain_name_label",
+        "type": {
+          "kind": "string"
+        },
+        "description": "An optional DNS label that creates a domain name mapping for this Public IP.\n When set, Azure creates an A record at: {label}.{region}.cloudapp.azure.com\n pointing to this IP address. This provides a stable DNS name even if the IP\n changes (though with Standard SKU + static allocation, IPs are persistent).\n\n Constraints:\n - Must start with a lowercase letter\n - Must end with a lowercase letter or digit\n - May contain only lowercase letters, digits, and hyphens\n - Length: 3 to 63 characters\n - Must be unique within the Azure region",
+        "required": false
+      },
+      {
+        "name": "Zones",
+        "jsonName": "zones",
+        "protoField": "zones",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Availability zones for the Public IP.\n Standard SKU public IPs can be zone-redundant (multiple zones) or zonal (single zone).\n Valid values: \"1\", \"2\", \"3\" (availability zone numbers).\n Examples:\n - [\"1\", \"2\", \"3\"] for zone-redundant (recommended for production)\n - [\"1\"] for zonal (pinned to zone 1)\n - [] or omitted for no zone preference (Azure chooses)\n Note: Zone support depends on the Azure region. Not all regions have 3 zones.",
+        "required": false
+      },
+      {
+        "name": "IdleTimeoutInMinutes",
+        "jsonName": "idleTimeoutInMinutes",
+        "protoField": "idle_timeout_in_minutes",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "The idle timeout in minutes for the Public IP.\n Controls how long Azure keeps idle TCP/UDP connections open before recycling them.\n Higher values are better for long-lived connections (WebSocket, gRPC streaming,\n database connections). Lower values free resources faster for short-lived traffic.\n Range: 4 to 30 minutes.\n Default: 4",
+        "required": false,
+        "validation": {
+          "min": 4,
+          "max": 30
+        },
+        "default": "4",
+        "oneofGroup": "_idle_timeout_in_minutes"
+      }
+    ]
+  }
+}

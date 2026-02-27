@@ -1,0 +1,85 @@
+{
+  "name": "CivoVpc",
+  "kind": "CivoVpc",
+  "cloudProvider": "civo",
+  "apiVersion": "civo.openmcf.org/v1",
+  "description": "civo-vpc",
+  "protoPackage": "org.openmcf.provider.civo.civovpc.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/civo/civovpc/v1/api.proto",
+    "spec": "org/openmcf/provider/civo/civovpc/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CivoVpcSpec",
+    "fields": [
+      {
+        "name": "NetworkName",
+        "jsonName": "networkName",
+        "protoField": "network_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the network (DNS-friendly label).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.civo.CivoRegion",
+          "enumValues": [
+            "lon1",
+            "lon2",
+            "fra1",
+            "nyc1",
+            "phx1",
+            "mum1"
+          ]
+        },
+        "description": "The Civo region where this network will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "IpRangeCidr",
+        "jsonName": "ipRangeCidr",
+        "protoField": "ip_range_cidr",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The IPv4 CIDR range for the network (max /24). If omitted, an available range will be auto-allocated.",
+        "required": false
+      },
+      {
+        "name": "IsDefaultForRegion",
+        "jsonName": "isDefaultForRegion",
+        "protoField": "is_default_for_region",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether this network should be the default for the region (only one default network per region).",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "An optional description for the network (up to 100 characters).",
+        "required": false,
+        "validation": {
+          "maxLength": 100
+        }
+      }
+    ]
+  }
+}

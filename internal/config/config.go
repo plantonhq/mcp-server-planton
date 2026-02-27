@@ -1,210 +1,182 @@
+// Package config provides environment-variable-based configuration for
+// mcp-server-planton.
+//
+// Every configurable value is read from an environment variable with a
+// PLANTON_ prefix. Reasonable defaults are provided for development use.
 package config
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
+	"strings"
 )
 
-// Environment represents the Planton Cloud environment
-type Environment string
-
-// TransportMode represents the MCP server transport mode
-type TransportMode string
+// Transport enumerates the supported communication modes between MCP clients
+// and the MCP server.
+type Transport string
 
 const (
-	TransportStdio TransportMode = "stdio"
-	TransportHTTP  TransportMode = "http"
-	TransportBoth  TransportMode = "both"
+	// TransportStdio communicates over stdin/stdout. This is the primary mode
+	// for local development: the MCP client (Cursor, Claude Desktop, etc.)
+	// spawns the server as a child process.
+	TransportStdio Transport = "stdio"
+
+	// TransportHTTP serves MCP over Streamable HTTP. This is the mode for
+	// remote / shared deployments where multiple users connect over the
+	// network. Each request carries its own Bearer token.
+	TransportHTTP Transport = "http"
+
+	// TransportBoth runs STDIO and HTTP simultaneously. Useful for
+	// development environments where you want both local and remote access.
+	TransportBoth Transport = "both"
 )
+
+// LogFormat selects the structured log output encoding.
+type LogFormat string
 
 const (
-	// EnvironmentEnvVar is the environment variable to set the target environment
-	EnvironmentEnvVar = "PLANTON_CLOUD_ENVIRONMENT"
-
-	// EndpointOverrideEnvVar allows overriding the endpoint regardless of environment
-	EndpointOverrideEnvVar = "PLANTON_APIS_GRPC_ENDPOINT"
-
-	// APIKeyEnvVar is the environment variable for the API key
-	APIKeyEnvVar = "PLANTON_API_KEY"
-
-	// TransportEnvVar specifies the transport mode (stdio, http, or both)
-	TransportEnvVar = "PLANTON_MCP_TRANSPORT"
-
-	// HTTPPortEnvVar specifies the HTTP server port
-	HTTPPortEnvVar = "PLANTON_MCP_HTTP_PORT"
-
-	// HTTPAuthEnabledEnvVar enables bearer token authentication for HTTP transport
-	HTTPAuthEnabledEnvVar = "PLANTON_MCP_HTTP_AUTH_ENABLED"
-
-	// Environment values
-	EnvironmentLive  Environment = "live"
-	EnvironmentTest  Environment = "test"
-	EnvironmentLocal Environment = "local"
-
-	// Endpoints for each environment
-	LocalEndpoint = "localhost:8080"
-	TestEndpoint  = "api.test.planton.cloud:443"
-	LiveEndpoint  = "api.live.planton.ai:443"
-
-	// Default values
-	DefaultTransport = "stdio"
-	DefaultHTTPPort  = "8080"
+	LogFormatText LogFormat = "text"
+	LogFormatJSON LogFormat = "json"
 )
 
-// Config holds the MCP server configuration loaded from environment variables.
-//
-// Unlike agent-fleet-worker (which uses machine account), this server
-// expects PLANTON_API_KEY to be passed via environment by LangGraph or other MCP clients.
+// Well-known Planton API endpoints.
+const (
+	EndpointLive  = "api.live.planton.ai:443"
+	EndpointTest  = "api.test.planton.cloud:443"
+	EndpointLocal = "localhost:8080"
+)
+
+// Config holds all runtime configuration.
 type Config struct {
-	// PlantonAPIKey is the user's API key for authentication with Planton Cloud APIs.
-	// This can be either a JWT token or an API key from the Planton Cloud console.
-	// This is passed by LangGraph via environment when spawning the MCP server.
-	PlantonAPIKey string
+	// ServerAddress is the gRPC dial target for the Planton backend
+	// (e.g. "localhost:8080" or "api.live.planton.ai:443").
+	ServerAddress string
 
-	// PlantonAPIsGRPCEndpoint is the gRPC endpoint for Planton Cloud APIs.
-	// Defaults based on environment or can be overridden.
-	PlantonAPIsGRPCEndpoint string
+	// APIKey optionally authenticates the MCP server's calls to the backend.
+	// In STDIO mode this is loaded once from the environment at startup.
+	// In HTTP mode every inbound request carries its own key via the
+	// Authorization header, so this field is only used for STDIO.
+	// When targeting an unauthenticated backend (e.g. the local dev server),
+	// this may be empty.
+	APIKey string
 
-	// Transport specifies the MCP server transport mode (stdio, http, or both)
-	Transport TransportMode
+	// Transport selects the communication mode: stdio, http, or both.
+	Transport Transport
 
-	// HTTPPort specifies the port for HTTP transport
+	// HTTPPort is the TCP port the HTTP transport listens on.
 	HTTPPort string
 
-	// HTTPAuthEnabled determines if bearer token authentication is required for HTTP
+	// HTTPAuthEnabled controls whether HTTP requests require a valid
+	// Authorization: Bearer token. Defaults to true.
 	HTTPAuthEnabled bool
+
+	// LogFormat controls the structured log encoding: "text" or "json".
+	LogFormat LogFormat
+
+	// LogLevel controls the minimum severity for emitted log records.
+	LogLevel slog.Level
 }
 
-// LoadFromEnv loads configuration from environment variables.
+// LoadFromEnv reads configuration from the process environment.
 //
-// Required environment variables:
-//   - PLANTON_API_KEY: User's API key for authentication (can be JWT token or API key)
-//     Required for STDIO transport mode (used directly for authentication)
-//     Optional for HTTP transport mode (extracted from Authorization header per-request)
+// Environment variables:
 //
-// Optional environment variables:
-//   - PLANTON_APIS_GRPC_ENDPOINT: Override endpoint (takes precedence)
-//   - PLANTON_CLOUD_ENVIRONMENT: Target environment (live, test, local)
-//     Defaults to "live" which uses api.live.planton.cloud:443
-//   - PLANTON_MCP_TRANSPORT: Transport mode (stdio, http, both) - defaults to "stdio"
-//   - PLANTON_MCP_HTTP_PORT: HTTP server port - defaults to "8080"
-//   - PLANTON_MCP_HTTP_AUTH_ENABLED: Enable bearer token auth - defaults to "true"
-//
-// For STDIO mode, PLANTON_API_KEY from environment is used for all gRPC calls.
-// For HTTP mode, PLANTON_API_KEY from Authorization header is extracted per-request,
-// enabling proper multi-user support with Fine-Grained Authorization.
+//	PLANTON_API_KEY               – API key (required for stdio/both; per-request for http)
+//	PLANTON_APIS_GRPC_ENDPOINT    – gRPC address override (takes precedence over environment preset)
+//	PLANTON_CLOUD_ENVIRONMENT     – "live" | "test" | "local" (default "live")
+//	PLANTON_MCP_TRANSPORT         – "stdio" | "http" | "both" (default "stdio")
+//	PLANTON_MCP_HTTP_PORT         – HTTP listen port (default "8080")
+//	PLANTON_MCP_HTTP_AUTH_ENABLED – "true" | "false" (default "true")
+//	PLANTON_MCP_LOG_FORMAT        – "text" | "json" (default "text")
+//	PLANTON_MCP_LOG_LEVEL         – "debug" | "info" | "warn" | "error" (default "info")
 func LoadFromEnv() (*Config, error) {
-	apiKey := os.Getenv(APIKeyEnvVar)
-	transport := getTransport()
-
-	// For STDIO mode, API key is required (used directly for authentication)
-	if transport == TransportStdio && apiKey == "" {
-		return nil, fmt.Errorf(
-			"%s environment variable required for STDIO transport. "+
-				"This should be set by LangGraph when spawning MCP server",
-			APIKeyEnvVar,
-		)
+	logLevel, err := ParseLogLevel(envOr("PLANTON_MCP_LOG_LEVEL", "info"))
+	if err != nil {
+		return nil, err
 	}
 
-	// For HTTP mode, API key is optional (extracted from Authorization header)
-	// If provided, it can be used as a fallback or default key
-	if transport == TransportHTTP && apiKey == "" {
-		// Log that we're in HTTP mode without default API key
-		// This is normal - API keys will come from HTTP Authorization headers
+	cfg := &Config{
+		ServerAddress:   resolveEndpoint(),
+		APIKey:          os.Getenv("PLANTON_API_KEY"),
+		Transport:       Transport(strings.ToLower(envOr("PLANTON_MCP_TRANSPORT", "stdio"))),
+		HTTPPort:        envOr("PLANTON_MCP_HTTP_PORT", "8080"),
+		HTTPAuthEnabled: envOr("PLANTON_MCP_HTTP_AUTH_ENABLED", "true") == "true",
+		LogFormat:       LogFormat(strings.ToLower(envOr("PLANTON_MCP_LOG_FORMAT", "text"))),
+		LogLevel:        logLevel,
 	}
 
-	// For both mode, API key is required for STDIO transport
-	if transport == TransportBoth && apiKey == "" {
-		return nil, fmt.Errorf(
-			"%s environment variable required for STDIO transport in dual-transport mode",
-			APIKeyEnvVar,
-		)
+	if err := cfg.Validate(); err != nil {
+		return nil, err
 	}
-
-	endpoint := getEndpoint()
-	httpPort := getHTTPPort()
-	httpAuthEnabled := getHTTPAuthEnabled()
-
-	return &Config{
-		PlantonAPIKey:           apiKey,
-		PlantonAPIsGRPCEndpoint: endpoint,
-		Transport:               transport,
-		HTTPPort:                httpPort,
-		HTTPAuthEnabled:         httpAuthEnabled,
-	}, nil
+	return cfg, nil
 }
 
-// getEndpoint determines the gRPC endpoint to use based on environment variables.
-// Priority:
-// 1. PLANTON_APIS_GRPC_ENDPOINT (explicit override)
-// 2. PLANTON_CLOUD_ENVIRONMENT (environment-based selection)
-// 3. Default to "live" environment (api.live.planton.cloud:443)
-func getEndpoint() string {
-	// Check for explicit endpoint override first
-	if endpoint := os.Getenv(EndpointOverrideEnvVar); endpoint != "" {
-		return endpoint
-	}
-
-	// Determine environment and return corresponding endpoint
-	env := getEnvironment()
-	switch env {
-	case EnvironmentTest:
-		return TestEndpoint
-	case EnvironmentLocal:
-		return LocalEndpoint
-	case EnvironmentLive:
-		fallthrough
-	default:
-		return LiveEndpoint
-	}
-}
-
-// getEnvironment returns the configured environment, defaulting to "live"
-func getEnvironment() Environment {
-	envStr := os.Getenv(EnvironmentEnvVar)
-	if envStr == "" {
-		return EnvironmentLive
-	}
-
-	env := Environment(envStr)
-	switch env {
-	case EnvironmentLive, EnvironmentTest, EnvironmentLocal:
-		return env
-	default:
-		return EnvironmentLive
-	}
-}
-
-// getTransport returns the configured transport mode, defaulting to "stdio"
-func getTransport() TransportMode {
-	transportStr := os.Getenv(TransportEnvVar)
-	if transportStr == "" {
-		return TransportStdio
-	}
-
-	transport := TransportMode(transportStr)
-	switch transport {
+// Validate checks invariants that should hold before the server starts.
+func (c *Config) Validate() error {
+	switch c.Transport {
 	case TransportStdio, TransportHTTP, TransportBoth:
-		return transport
 	default:
-		return TransportStdio
+		return fmt.Errorf("invalid PLANTON_MCP_TRANSPORT %q: must be stdio, http, or both", c.Transport)
+	}
+
+	if c.ServerAddress == "" {
+		return fmt.Errorf("server address must not be empty — set PLANTON_APIS_GRPC_ENDPOINT or PLANTON_CLOUD_ENVIRONMENT")
+	}
+
+	switch c.LogFormat {
+	case LogFormatText, LogFormatJSON:
+	default:
+		return fmt.Errorf("invalid PLANTON_MCP_LOG_FORMAT %q: must be text or json", c.LogFormat)
+	}
+
+	needsKey := c.Transport == TransportStdio || c.Transport == TransportBoth
+	if needsKey && c.APIKey == "" {
+		return fmt.Errorf("PLANTON_API_KEY is required when transport is %q", c.Transport)
+	}
+
+	return nil
+}
+
+// ParseLogLevel converts a human-friendly level name to slog.Level.
+func ParseLogLevel(s string) (slog.Level, error) {
+	switch strings.ToLower(s) {
+	case "debug":
+		return slog.LevelDebug, nil
+	case "info":
+		return slog.LevelInfo, nil
+	case "warn":
+		return slog.LevelWarn, nil
+	case "error":
+		return slog.LevelError, nil
+	default:
+		return 0, fmt.Errorf("invalid PLANTON_MCP_LOG_LEVEL %q: must be debug, info, warn, or error", s)
 	}
 }
 
-// getHTTPPort returns the configured HTTP port, defaulting to "8080"
-func getHTTPPort() string {
-	port := os.Getenv(HTTPPortEnvVar)
-	if port == "" {
-		return DefaultHTTPPort
+// resolveEndpoint determines the gRPC endpoint using the following priority:
+//  1. PLANTON_APIS_GRPC_ENDPOINT (explicit override)
+//  2. PLANTON_CLOUD_ENVIRONMENT  (preset: live, test, local)
+//  3. Default to the live endpoint
+func resolveEndpoint() string {
+	if ep := os.Getenv("PLANTON_APIS_GRPC_ENDPOINT"); ep != "" {
+		return ep
 	}
-	return port
+	switch strings.ToLower(os.Getenv("PLANTON_CLOUD_ENVIRONMENT")) {
+	case "test":
+		return EndpointTest
+	case "local":
+		return EndpointLocal
+	default:
+		return EndpointLive
+	}
 }
 
-// getHTTPAuthEnabled returns whether HTTP authentication is enabled, defaulting to true
-func getHTTPAuthEnabled() bool {
-	authStr := os.Getenv(HTTPAuthEnabledEnvVar)
-	if authStr == "" {
-		return true // Default to enabled for security
+// envOr returns the value of the given environment variable, or fallback if
+// the variable is unset or empty.
+func envOr(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
 	}
-	return authStr == "true" || authStr == "1"
+	return fallback
 }

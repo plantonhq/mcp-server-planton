@@ -1,0 +1,439 @@
+{
+  "name": "AwsFsxOpenzfsFileSystem",
+  "kind": "AwsFsxOpenzfsFileSystem",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-fsx-openzfs-file-system",
+  "protoPackage": "org.openmcf.provider.aws.awsfsxopenzfsfilesystem.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsfsxopenzfsfilesystem/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsfsxopenzfsfilesystem/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsFsxOpenzfsFileSystemSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DeploymentType",
+        "jsonName": "deploymentType",
+        "protoField": "deployment_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Deployment type controlling availability and performance characteristics.\n ForceNew — cannot be changed after creation.\n\n - \"SINGLE_AZ_1\": first-generation single-AZ. Lower throughput ceiling.\n   Supported throughput: 64, 128, 256, 512, 1024, 2048, 3072, 4096 MB/s.\n - \"SINGLE_AZ_2\": latest single-AZ with higher throughput and more features.\n   Recommended for most workloads. Supported throughput: 160, 320, 640,\n   1280, 2560, 3840, 5120, 7680, 10240 MB/s.\n - \"MULTI_AZ_1\": multi-AZ with automatic failover. Requires two subnets in\n   different AZs, a preferred_subnet_id, and route_table_ids. Same throughput\n   range as SINGLE_AZ_2.\n\n Default: SINGLE_AZ_2",
+        "required": false,
+        "default": "SINGLE_AZ_2",
+        "oneofGroup": "_deployment_type"
+      },
+      {
+        "name": "StorageCapacityGib",
+        "jsonName": "storageCapacityGib",
+        "protoField": "storage_capacity_gib",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Storage capacity in GiB. Required.\n\n Valid range: 64–524288 GiB. Choose based on data size and throughput needs.\n Storage can be increased after creation but never decreased.",
+        "required": false,
+        "validation": {
+          "min": 64
+        }
+      },
+      {
+        "name": "ThroughputCapacity",
+        "jsonName": "throughputCapacity",
+        "protoField": "throughput_capacity",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Throughput capacity in MB/s. Required.\n\n Valid values depend on deployment type:\n - SINGLE_AZ_1: 64, 128, 256, 512, 1024, 2048, 3072, 4096\n - SINGLE_AZ_2 / MULTI_AZ_1: 160, 320, 640, 1280, 2560, 3840, 5120, 7680, 10240\n\n Can be changed after creation to scale performance up or down.",
+        "required": false
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Subnet IDs for the file system's network interfaces. Required. ForceNew.\n\n - SINGLE_AZ_1 / SINGLE_AZ_2: exactly one subnet.\n - MULTI_AZ_1: exactly two subnets in different availability zones.\n\n All compute resources mounting this file system must have network\n connectivity to these subnets.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        },
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Security groups for the file system's network interfaces. ForceNew.\n\n Must allow NFS traffic between the file system and its clients:\n - TCP port 111 (portmapper)\n - TCP port 2049 (NFS)\n - TCP ports 20001-20003 (NFS mount)\n\n Up to 50 security groups.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "PreferredSubnetId",
+        "jsonName": "preferredSubnetId",
+        "protoField": "preferred_subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Preferred subnet for the active file server in a MULTI_AZ_1 deployment.\n ForceNew. Required when deployment_type is MULTI_AZ_1. Must be one of the\n subnets specified in subnet_ids.\n\n In a failover event, the standby file server in the other subnet takes over.\n Ignored for SINGLE_AZ deployments.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[0].id"
+      },
+      {
+        "name": "EndpointIpAddressRange",
+        "jsonName": "endpointIpAddressRange",
+        "protoField": "endpoint_ip_address_range",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IP address range for the file system endpoints in a MULTI_AZ_1 deployment.\n ForceNew. Must be a CIDR block within the VPC's CIDR range that does not\n overlap with any existing subnets. AWS assigns floating IPs from this range\n for seamless failover.\n\n Ignored for SINGLE_AZ deployments.",
+        "required": false
+      },
+      {
+        "name": "RouteTableIds",
+        "jsonName": "routeTableIds",
+        "protoField": "route_table_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Route table IDs that need routes to the file system in a MULTI_AZ_1\n deployment. AWS automatically manages the routes. Up to 50 route tables.\n\n Ignored for SINGLE_AZ deployments.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed KMS key ARN for encryption at rest. ForceNew — the KMS key\n cannot be changed after creation. When omitted, the file system uses the\n AWS-managed FSx key. All OpenZFS file systems are encrypted at rest by\n default; this field upgrades to a customer-managed key.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "DiskIopsConfiguration",
+        "jsonName": "diskIopsConfiguration",
+        "protoField": "disk_iops_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsFsxOpenzfsFileSystemDiskIopsConfiguration"
+        },
+        "description": "SSD IOPS configuration for the file system. Controls the total provisioned\n IOPS. When omitted, AWS uses AUTOMATIC mode which scales IOPS with storage.",
+        "required": false
+      },
+      {
+        "name": "RootVolumeConfiguration",
+        "jsonName": "rootVolumeConfiguration",
+        "protoField": "root_volume_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsFsxOpenzfsFileSystemRootVolumeConfiguration"
+        },
+        "description": "Configuration for the file system's root volume. The root volume is\n automatically created with the file system and serves as the default NFS\n mount target. Settings here control compression, NFS access, quotas, and\n record size for the root volume.\n\n When omitted, the root volume uses defaults: no compression, no NFS access\n restrictions, 128 KiB record size.",
+        "required": false
+      },
+      {
+        "name": "AutomaticBackupRetentionDays",
+        "jsonName": "automaticBackupRetentionDays",
+        "protoField": "automatic_backup_retention_days",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of days to retain automatic backups. Range: 0-90. Set to 0 to\n disable automatic backups.\n\n Default: 0 (no automatic backups)",
+        "required": false,
+        "default": "0",
+        "oneofGroup": "_automatic_backup_retention_days"
+      },
+      {
+        "name": "DailyAutomaticBackupStartTime",
+        "jsonName": "dailyAutomaticBackupStartTime",
+        "protoField": "daily_automatic_backup_start_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Daily UTC time to start automatic backups, in HH:MM format (e.g., \"05:00\").\n If not specified and backups are enabled, AWS chooses a default window.",
+        "required": false
+      },
+      {
+        "name": "CopyTagsToBackups",
+        "jsonName": "copyTagsToBackups",
+        "protoField": "copy_tags_to_backups",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Copy tags from the file system to backups.",
+        "required": false
+      },
+      {
+        "name": "CopyTagsToVolumes",
+        "jsonName": "copyTagsToVolumes",
+        "protoField": "copy_tags_to_volumes",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Copy tags from the file system to volumes. When true, tags are propagated\n to the root volume and any child volumes created on this file system.",
+        "required": false
+      },
+      {
+        "name": "SkipFinalBackup",
+        "jsonName": "skipFinalBackup",
+        "protoField": "skip_final_backup",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Skip creating a final backup when the file system is deleted.\n\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_skip_final_backup"
+      },
+      {
+        "name": "WeeklyMaintenanceStartTime",
+        "jsonName": "weeklyMaintenanceStartTime",
+        "protoField": "weekly_maintenance_start_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Weekly UTC maintenance window in the format \"d:HH:MM\" where d is the day of\n the week (1=Monday, 7=Sunday). Example: \"1:05:00\" for Monday at 05:00 UTC.\n If not specified, AWS chooses a default window.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsFsxOpenzfsFileSystemDiskIopsConfiguration",
+      "description": "AwsFsxOpenzfsFileSystemDiskIopsConfiguration controls the SSD IOPS provisioned\n for the file system. In AUTOMATIC mode, IOPS scale with storage capacity. In\n USER_PROVISIONED mode, you specify the exact IOPS independently of storage.",
+      "protoType": "org.openmcf.provider.aws.awsfsxopenzfsfilesystem.v1.AwsFsxOpenzfsFileSystemDiskIopsConfiguration",
+      "fields": [
+        {
+          "name": "Mode",
+          "jsonName": "mode",
+          "protoField": "mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IOPS provisioning mode.\n\n - \"AUTOMATIC\": IOPS scale automatically based on storage capacity.\n   Provides 3 IOPS per GiB of storage, up to the deployment type limit.\n - \"USER_PROVISIONED\": you specify the exact IOPS via the `iops` field.\n   Allows higher performance independent of storage size but at extra cost.\n\n Default: AUTOMATIC",
+          "required": false,
+          "default": "AUTOMATIC",
+          "oneofGroup": "_mode"
+        },
+        {
+          "name": "Iops",
+          "jsonName": "iops",
+          "protoField": "iops",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Total SSD IOPS provisioned. Only valid when mode is \"USER_PROVISIONED\".\n\n Valid ranges depend on deployment type:\n - SINGLE_AZ_1: up to 160,000\n - SINGLE_AZ_2 / MULTI_AZ_1: up to 400,000",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsFsxOpenzfsFileSystemNfsClientConfiguration",
+      "description": "AwsFsxOpenzfsFileSystemNfsClientConfiguration defines NFS access control for\n a specific set of clients identified by IP address, CIDR range, or wildcard.",
+      "protoType": "org.openmcf.provider.aws.awsfsxopenzfsfilesystem.v1.AwsFsxOpenzfsFileSystemNfsClientConfiguration",
+      "fields": [
+        {
+          "name": "Clients",
+          "jsonName": "clients",
+          "protoField": "clients",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Client specification: an IP address, CIDR block, or wildcard (*).\n\n Examples: \"*\" (all clients), \"10.0.0.0/16\", \"192.168.1.100\"",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Options",
+          "jsonName": "options",
+          "protoField": "options",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "NFS mount options for the specified clients. At least one option is required.\n\n Common options:\n - \"rw\" (read-write) or \"ro\" (read-only)\n - \"crossmnt\" (allow traversal into child volumes)\n - \"root_squash\" (map root to anonymous) or \"no_root_squash\"\n - \"sync\" or \"async\"\n\n Up to 20 options.",
+          "required": false,
+          "validation": {
+            "minItems": 1,
+            "maxItems": 20
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsFsxOpenzfsFileSystemNfsExports",
+      "description": "AwsFsxOpenzfsFileSystemNfsExports defines the NFS export configuration for a\n volume. Each client configuration specifies an IP range and the NFS mount\n options for that range.",
+      "protoType": "org.openmcf.provider.aws.awsfsxopenzfsfilesystem.v1.AwsFsxOpenzfsFileSystemNfsExports",
+      "fields": [
+        {
+          "name": "ClientConfigurations",
+          "jsonName": "clientConfigurations",
+          "protoField": "client_configurations",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsFsxOpenzfsFileSystemNfsClientConfiguration"
+            }
+          },
+          "description": "NFS client configurations. Each entry defines which clients can access the\n volume and with what mount options. Up to 25 client configurations.",
+          "required": false,
+          "validation": {
+            "maxItems": 25
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsFsxOpenzfsFileSystemRootVolumeConfiguration",
+      "description": "AwsFsxOpenzfsFileSystemRootVolumeConfiguration defines the configuration for\n the file system's root volume. The root volume is the default NFS mount target\n and is always created with the file system. These settings control data\n compression, NFS exports, access control, and storage quotas.",
+      "protoType": "org.openmcf.provider.aws.awsfsxopenzfsfilesystem.v1.AwsFsxOpenzfsFileSystemRootVolumeConfiguration",
+      "fields": [
+        {
+          "name": "DataCompressionType",
+          "jsonName": "dataCompressionType",
+          "protoField": "data_compression_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Data compression type applied to all data on the root volume. Reduces\n storage consumption and can improve throughput for compressible data.\n\n - \"NONE\": no compression (default).\n - \"ZSTD\": Zstandard compression. Best compression ratio.\n - \"LZ4\": LZ4 compression. Faster with lower CPU overhead.\n\n Default: NONE",
+          "required": false,
+          "default": "NONE",
+          "oneofGroup": "_data_compression_type"
+        },
+        {
+          "name": "NfsExports",
+          "jsonName": "nfsExports",
+          "protoField": "nfs_exports",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsFsxOpenzfsFileSystemNfsExports"
+          },
+          "description": "NFS export configuration for the root volume. Controls which clients can\n mount the volume and with what permissions. When omitted, the volume uses\n default NFS settings (accessible from within the VPC).",
+          "required": false
+        },
+        {
+          "name": "ReadOnly",
+          "jsonName": "readOnly",
+          "protoField": "read_only",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the root volume is read-only. When true, clients can mount the\n volume but cannot write to it. Useful for shared reference data.",
+          "required": false
+        },
+        {
+          "name": "RecordSizeKib",
+          "jsonName": "recordSizeKib",
+          "protoField": "record_size_kib",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "ZFS record size in KiB. Affects read/write performance characteristics.\n Larger record sizes are better for sequential I/O (analytics, streaming).\n Smaller record sizes are better for random I/O (databases, OLTP).\n\n Valid values: 4, 8, 16, 32, 64, 128, 256, 512, 1024.\n\n Default: 128",
+          "required": false,
+          "default": "128",
+          "oneofGroup": "_record_size_kib"
+        },
+        {
+          "name": "UserAndGroupQuotas",
+          "jsonName": "userAndGroupQuotas",
+          "protoField": "user_and_group_quotas",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsFsxOpenzfsFileSystemUserAndGroupQuota"
+            }
+          },
+          "description": "Per-user and per-group storage quotas for the root volume. Limits how much\n storage individual users or groups can consume. Up to 100 quota entries.",
+          "required": false
+        },
+        {
+          "name": "CopyTagsToSnapshots",
+          "jsonName": "copyTagsToSnapshots",
+          "protoField": "copy_tags_to_snapshots",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Copy tags from the root volume to snapshots created from it.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsFsxOpenzfsFileSystemUserAndGroupQuota",
+      "description": "AwsFsxOpenzfsFileSystemUserAndGroupQuota defines a storage quota for a\n specific user or group on the volume. Quotas limit how much storage\n individual users or groups can consume.",
+      "protoType": "org.openmcf.provider.aws.awsfsxopenzfsfilesystem.v1.AwsFsxOpenzfsFileSystemUserAndGroupQuota",
+      "fields": [
+        {
+          "name": "Id",
+          "jsonName": "id",
+          "protoField": "id",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The numeric user ID (UID) or group ID (GID). Range: 0-2147483647.\n\n Common values: 0 (root), 1000+ (regular users/groups).",
+          "required": false
+        },
+        {
+          "name": "StorageCapacityQuotaGib",
+          "jsonName": "storageCapacityQuotaGib",
+          "protoField": "storage_capacity_quota_gib",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Storage capacity quota in GiB. The maximum amount of storage this user or\n group can consume on the volume. Range: 0-2147483647.\n\n Set to 0 to remove quota restrictions for this user/group.",
+          "required": false
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Quota type: \"USER\" for per-user quota, \"GROUP\" for per-group quota.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

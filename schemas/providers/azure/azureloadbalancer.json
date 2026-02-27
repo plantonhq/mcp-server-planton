@@ -1,0 +1,389 @@
+{
+  "name": "AzureLoadBalancer",
+  "kind": "AzureLoadBalancer",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureLoadBalancer is the top-level API resource for an Azure Load Balancer.\n Azure Load Balancer is a Layer 4 (TCP/UDP) load balancer that distributes\n traffic across healthy backend instances using health probes and configurable\n routing rules. Supports both public and internal configurations.",
+  "protoPackage": "org.openmcf.provider.azure.azureloadbalancer.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azureloadbalancer/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azureloadbalancer/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureLoadBalancerSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Load Balancer will be created.\n Must match the region of the backend resources (VMs, VMSS, AKS).\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Load Balancer will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Load Balancer.\n Must be unique within the resource group.\n Allowed characters: alphanumeric, underscores, hyphens, and periods.\n Must start with alphanumeric. Length: 1 to 80 characters.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      {
+        "name": "PublicIpId",
+        "jsonName": "publicIpId",
+        "protoField": "public_ip_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The ID of a public IP address to use for the frontend configuration.\n Set this for a **public (internet-facing)** load balancer.\n Mutually exclusive with `subnet_id` -- exactly one must be set.\n\n Can be a literal Azure resource ID or a reference to an AzurePublicIp output.\n The referenced public IP must use Standard SKU (hardcoded in AzurePublicIp).",
+        "required": false,
+        "referenceKind": "AzurePublicIp",
+        "referenceFieldPath": "status.outputs.public_ip_id"
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The ID of a subnet to use for the frontend configuration.\n Set this for an **internal (private VNet)** load balancer.\n Mutually exclusive with `public_ip_id` -- exactly one must be set.\n\n Can be a literal Azure resource ID or a reference to an AzureSubnet output.",
+        "required": false,
+        "referenceKind": "AzureSubnet",
+        "referenceFieldPath": "status.outputs.subnet_id"
+      },
+      {
+        "name": "PrivateIpAddress",
+        "jsonName": "privateIpAddress",
+        "protoField": "private_ip_address",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Optional static private IP address for an internal load balancer.\n Only valid when `subnet_id` is set. The IP must fall within the subnet's\n address range.\n\n If omitted, Azure dynamically allocates a private IP from the subnet.\n Use a static IP when DNS resolution, firewall rules, or service discovery\n require a predictable address.",
+        "required": false
+      },
+      {
+        "name": "BackendPools",
+        "jsonName": "backendPools",
+        "protoField": "backend_pools",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureBackendPool"
+          }
+        },
+        "description": "Backend address pools that receive load-balanced traffic.\n At least one pool is required. Each pool is created as a separate\n `azurerm_lb_backend_address_pool` resource.\n\n Pool membership (adding VMs, VMSS instances, or NICs) is managed outside\n this component -- via AKS node pools, VMSS configurations, or NIC-to-pool\n associations. This keeps the LB definition focused on routing topology.\n\n For the common case, a single pool named \"default\" is sufficient.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "HealthProbes",
+        "jsonName": "healthProbes",
+        "protoField": "health_probes",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureHealthProbe"
+          }
+        },
+        "description": "Health probes that check backend instance availability.\n At least one probe is required. Each probe is created as a separate resource.\n\n Probes run at `interval_in_seconds` intervals. After `number_of_probes`\n consecutive failures, the backend is marked unhealthy and removed from\n the rotation. Healthy backends are automatically re-added.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Rules",
+        "jsonName": "rules",
+        "protoField": "rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureLoadBalancingRule"
+          }
+        },
+        "description": "Load balancing rules that define how traffic is routed from the frontend\n to backend pools. At least one rule is required.\n\n Each rule maps a frontend port/protocol combination to a backend pool\n and health probe. The frontend IP configuration name is auto-derived\n from `metadata.name` (as \"{name}-frontend\") and does not need to be\n specified in rules.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureBackendPool",
+      "description": "AzureBackendPool defines a backend address pool on the load balancer.\n Pools are named containers that hold references to backend instances.\n The actual instance membership is managed externally (via VMSS, AKS, or NIC binding).",
+      "protoType": "org.openmcf.provider.azure.azureloadbalancer.v1.AzureBackendPool",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the backend pool.\n Must be unique within the load balancer. Used by load balancing rules\n to target traffic to this pool.\n Examples: \"default\", \"web-servers\", \"api-pool\".",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 80
+          }
+        }
+      ]
+    },
+    {
+      "name": "AzureHealthProbe",
+      "description": "AzureHealthProbe defines how the load balancer checks backend health.\n Unhealthy backends are removed from the rotation until they recover.",
+      "protoType": "org.openmcf.provider.azure.azureloadbalancer.v1.AzureHealthProbe",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the health probe.\n Must be unique within the load balancer. Referenced by load balancing rules.\n Examples: \"http-probe\", \"tcp-8080-probe\", \"https-health\".",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The protocol used for the health probe.\n Uses Azure's exact API values for provider authenticity.\n\n Valid values:\n - \"Tcp\" -- TCP connection check (port open = healthy)\n - \"Http\" -- HTTP GET to `request_path` (200 OK = healthy)\n - \"Https\" -- HTTPS GET to `request_path` (200 OK = healthy)",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The port number to probe on the backend instances.\n Range: 1 to 65535.\n Examples: 80 (HTTP), 443 (HTTPS), 8080 (app), 3306 (MySQL).",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "RequestPath",
+          "jsonName": "requestPath",
+          "protoField": "request_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The URI path for HTTP/HTTPS probes.\n Required when protocol is \"Http\" or \"Https\", ignored for \"Tcp\".\n The probe sends a GET request to this path and expects HTTP 200.\n Examples: \"/health\", \"/api/healthz\", \"/ready\".",
+          "required": false
+        },
+        {
+          "name": "IntervalInSeconds",
+          "jsonName": "intervalInSeconds",
+          "protoField": "interval_in_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The interval between probe attempts, in seconds.\n Lower values detect failures faster but generate more probe traffic.\n Default: 15 seconds. Minimum: 5 seconds.",
+          "required": false,
+          "validation": {
+            "min": 5
+          },
+          "default": "15",
+          "oneofGroup": "_interval_in_seconds"
+        },
+        {
+          "name": "NumberOfProbes",
+          "jsonName": "numberOfProbes",
+          "protoField": "number_of_probes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of consecutive probe failures before marking a backend unhealthy.\n After this many failures, the backend is removed from rotation.\n Default: 2 (Azure default). Minimum: 1.",
+          "required": false,
+          "validation": {
+            "min": 1
+          },
+          "default": "2",
+          "oneofGroup": "_number_of_probes"
+        }
+      ]
+    },
+    {
+      "name": "AzureLoadBalancingRule",
+      "description": "AzureLoadBalancingRule defines how traffic arriving at the frontend is\n distributed to a backend pool. Each rule maps a frontend port/protocol\n to a backend port and references a health probe for backend health checks.",
+      "protoType": "org.openmcf.provider.azure.azureloadbalancer.v1.AzureLoadBalancingRule",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the load balancing rule.\n Must be unique within the load balancer.\n Examples: \"http-rule\", \"https-rule\", \"tcp-3306-rule\".",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The transport protocol for the rule.\n Uses Azure's exact API values.\n\n Valid values:\n - \"Tcp\" -- TCP traffic\n - \"Udp\" -- UDP traffic\n - \"All\" -- all protocols (HA ports rule, requires frontend_port = 0 and backend_port = 0)",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "FrontendPort",
+          "jsonName": "frontendPort",
+          "protoField": "frontend_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The port on the frontend (public IP or internal IP) that receives traffic.\n Range: 0 to 65534. Use 0 for HA ports (protocol \"All\").",
+          "required": false,
+          "validation": {
+            "max": 65534
+          }
+        },
+        {
+          "name": "BackendPort",
+          "jsonName": "backendPort",
+          "protoField": "backend_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The port on the backend instances that receives forwarded traffic.\n Range: 0 to 65535. Use 0 for HA ports (protocol \"All\").",
+          "required": false,
+          "validation": {
+            "max": 65535
+          }
+        },
+        {
+          "name": "BackendPoolName",
+          "jsonName": "backendPoolName",
+          "protoField": "backend_pool_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the backend pool to route traffic to.\n Must match a pool name defined in `backend_pools`.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ProbeName",
+          "jsonName": "probeName",
+          "protoField": "probe_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the health probe to use for backend health checks.\n Must match a probe name defined in `health_probes`.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "IdleTimeoutInMinutes",
+          "jsonName": "idleTimeoutInMinutes",
+          "protoField": "idle_timeout_in_minutes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The TCP idle timeout in minutes. Connections idle longer than this are closed.\n Default: 4 minutes. Range: 4 to 100 minutes.\n Higher values suit long-lived connections (WebSocket, database pools).",
+          "required": false,
+          "validation": {
+            "min": 4,
+            "max": 100
+          },
+          "default": "4",
+          "oneofGroup": "_idle_timeout_in_minutes"
+        },
+        {
+          "name": "EnableFloatingIp",
+          "jsonName": "enableFloatingIp",
+          "protoField": "enable_floating_ip",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable floating IP (Direct Server Return).\n When enabled, Azure does not rewrite the destination IP in packets --\n the backend receives the original frontend IP. Required for SQL AlwaysOn\n availability groups and some HA clustering scenarios.\n Default: false.",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_enable_floating_ip"
+        },
+        {
+          "name": "DisableOutboundSnat",
+          "jsonName": "disableOutboundSnat",
+          "protoField": "disable_outbound_snat",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Disable outbound SNAT for this rule's backend pool.\n By default, Standard LB provides SNAT for outbound traffic from backends.\n Disable this when using explicit outbound rules or a NAT Gateway for\n outbound connectivity, to avoid SNAT port exhaustion.\n Default: false.",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_disable_outbound_snat"
+        }
+      ]
+    }
+  ]
+}

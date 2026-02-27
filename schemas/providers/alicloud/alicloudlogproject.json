@@ -1,0 +1,204 @@
+{
+  "name": "AliCloudLogProject",
+  "kind": "AliCloudLogProject",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-log-project",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudlogproject.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudlogproject/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudlogproject/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudLogProjectSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the SLS project will be created.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ProjectName",
+        "jsonName": "projectName",
+        "protoField": "project_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SLS project name. Must be globally unique within Alibaba Cloud.\n 3-63 characters, lowercase letters, digits, and hyphens only.\n Must start and end with a letter or digit.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 3,
+          "maxLength": 63
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the project.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the project is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the SLS project.",
+        "required": false
+      },
+      {
+        "name": "LogStores",
+        "jsonName": "logStores",
+        "protoField": "log_stores",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudLogStore"
+          }
+        },
+        "description": "Log stores to create within this project.\n Each log store is an independent unit of log collection and storage.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudLogStore",
+      "description": "AliCloudLogStore defines a log store within an SLS project.\n A log store is the basic unit for collecting, storing, and querying log data.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudlogproject.v1.AliCloudLogStore",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Log store name. Must be unique within the project.\n 3-63 characters, lowercase letters, digits, hyphens, and underscores.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 3,
+            "maxLength": 63
+          }
+        },
+        {
+          "name": "RetentionDays",
+          "jsonName": "retentionDays",
+          "protoField": "retention_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Data retention period in days. Range: 1-3650.\n Set to 3650 for permanent retention.\n Default: 30",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 3650
+          },
+          "default": "30",
+          "oneofGroup": "_retention_days"
+        },
+        {
+          "name": "ShardCount",
+          "jsonName": "shardCount",
+          "protoField": "shard_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of shards for the log store. More shards = higher write throughput.\n Default: 2",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 256
+          },
+          "default": "2",
+          "oneofGroup": "_shard_count"
+        },
+        {
+          "name": "AutoSplit",
+          "jsonName": "autoSplit",
+          "protoField": "auto_split",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable automatic shard splitting when write throughput exceeds shard capacity.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_auto_split"
+        },
+        {
+          "name": "MaxSplitShardCount",
+          "jsonName": "maxSplitShardCount",
+          "protoField": "max_split_shard_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of shards after auto-splitting. Only effective when auto_split is true.\n Default: 64",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 256
+          },
+          "default": "64",
+          "oneofGroup": "_max_split_shard_count"
+        },
+        {
+          "name": "EnableIndex",
+          "jsonName": "enableIndex",
+          "protoField": "enable_index",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Create a full-text search index for this log store.\n When true, a default full-text index is created with case-insensitive matching\n and standard tokenization, making logs immediately searchable.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_enable_index"
+        },
+        {
+          "name": "AppendMeta",
+          "jsonName": "appendMeta",
+          "protoField": "append_meta",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Automatically append log receive time and client IP as metadata fields.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_append_meta"
+        }
+      ]
+    }
+  ]
+}

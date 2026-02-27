@@ -1,0 +1,230 @@
+{
+  "name": "AliCloudNatGateway",
+  "kind": "AliCloudNatGateway",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-nat-gateway",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudnatgateway.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudnatgateway/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudnatgateway/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudNatGatewaySpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the NAT Gateway will be created.\n Must match the region of the VPC and VSwitch.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC ID that the NAT Gateway belongs to.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "VswitchId",
+        "jsonName": "vswitchId",
+        "protoField": "vswitch_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VSwitch ID where the Enhanced NAT Gateway is placed.\n The NAT Gateway consumes an IP from this VSwitch. Must be in the same VPC\n as vpc_id. Required for Enhanced NAT Gateways (the default and recommended\n type).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVswitch",
+        "referenceFieldPath": "status.outputs.vswitch_id"
+      },
+      {
+        "name": "NatGatewayName",
+        "jsonName": "natGatewayName",
+        "protoField": "nat_gateway_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "NAT Gateway name. 2-128 characters; must start with a letter or Chinese\n character; can contain digits, underscores, periods, and hyphens.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 128
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the NAT Gateway's purpose.",
+        "required": false
+      },
+      {
+        "name": "NatType",
+        "jsonName": "natType",
+        "protoField": "nat_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "NAT Gateway type. \"Enhanced\" is the modern standard with higher\n performance and VSwitch placement support. \"Normal\" is legacy.\n Default: \"Enhanced\"",
+        "required": false,
+        "default": "Enhanced",
+        "oneofGroup": "_nat_type"
+      },
+      {
+        "name": "PaymentType",
+        "jsonName": "paymentType",
+        "protoField": "payment_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Billing method for the NAT Gateway.\n \"PayAsYouGo\" for on-demand billing, \"Subscription\" for reserved pricing.\n Default: \"PayAsYouGo\"",
+        "required": false,
+        "default": "PayAsYouGo",
+        "oneofGroup": "_payment_type"
+      },
+      {
+        "name": "InternetChargeType",
+        "jsonName": "internetChargeType",
+        "protoField": "internet_charge_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Metering method for the NAT Gateway.\n \"PayByLcu\" bills based on actual capacity units (recommended for most\n workloads). \"PayBySpec\" bills based on a fixed specification tier.\n Default: \"PayByLcu\"",
+        "required": false,
+        "default": "PayByLcu",
+        "oneofGroup": "_internet_charge_type"
+      },
+      {
+        "name": "Specification",
+        "jsonName": "specification",
+        "protoField": "specification",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Fixed specification tier for the NAT Gateway. Only applicable when\n internet_charge_type is \"PayBySpec\". Ignored when \"PayByLcu\".\n Valid values: \"Small\" (1Gbps), \"Middle\" (5Gbps), \"Large\" (10Gbps),\n \"XLarge.1\" (20Gbps).",
+        "required": false,
+        "oneofGroup": "_specification"
+      },
+      {
+        "name": "DeletionProtection",
+        "jsonName": "deletionProtection",
+        "protoField": "deletion_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable deletion protection to prevent accidental deletion via the console\n or API. Must be explicitly disabled before the NAT Gateway can be deleted.",
+        "required": false,
+        "oneofGroup": "_deletion_protection"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the NAT Gateway resource.",
+        "required": false
+      },
+      {
+        "name": "EipId",
+        "jsonName": "eipId",
+        "protoField": "eip_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "EIP allocation ID to associate with this NAT Gateway.\n The IaC module resolves the EIP's public IP address internally via a data\n source lookup and uses it for all SNAT entries. The EIP must already exist\n (create one with AliCloudEipAddress).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudEipAddress",
+        "referenceFieldPath": "status.outputs.eip_id"
+      },
+      {
+        "name": "SnatEntries",
+        "jsonName": "snatEntries",
+        "protoField": "snat_entries",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudSnatEntry"
+          }
+        },
+        "description": "SNAT entries that map private network sources to the NAT Gateway's EIP.\n Each entry enables outbound internet access for traffic originating from\n the specified VSwitch or CIDR block.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudSnatEntry",
+      "description": "AliCloudSnatEntry defines a single SNAT rule mapping a private traffic\n source to the NAT Gateway's associated EIP for outbound internet access.\n\n Specify exactly one of source_vswitch_id or source_cidr:\n   - source_vswitch_id: NATs all traffic from a VSwitch (the common 80% case).\n   - source_cidr: NATs traffic from a specific CIDR (for fine-grained control).\n\n These are mutually exclusive in the provider. If neither is set, the\n provider will reject the SNAT entry.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudnatgateway.v1.AliCloudSnatEntry",
+      "fields": [
+        {
+          "name": "SourceVswitchId",
+          "jsonName": "sourceVswitchId",
+          "protoField": "source_vswitch_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VSwitch whose traffic should be NATed through the EIP.\n Use this for the common case of enabling internet access for an entire\n VSwitch. Mutually exclusive with source_cidr.",
+          "required": false,
+          "referenceKind": "AliCloudVswitch",
+          "referenceFieldPath": "status.outputs.vswitch_id"
+        },
+        {
+          "name": "SourceCidr",
+          "jsonName": "sourceCidr",
+          "protoField": "source_cidr",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Source CIDR block whose traffic should be NATed. Use this for fine-grained\n control when you want to NAT only a subset of a VSwitch's address space.\n Mutually exclusive with source_vswitch_id.\n Example: \"10.0.1.0/24\"",
+          "required": false
+        },
+        {
+          "name": "SnatEntryName",
+          "jsonName": "snatEntryName",
+          "protoField": "snat_entry_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable name for this SNAT entry. 2-128 characters.\n If omitted, a name is generated from the NAT Gateway name and entry index.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

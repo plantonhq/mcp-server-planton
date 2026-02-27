@@ -1,0 +1,119 @@
+{
+  "name": "OpenStackNetwork",
+  "kind": "OpenStackNetwork",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackNetwork is a Kubernetes Resource Model (KRM) style resource for managing\n Neutron networks in OpenStack.\n\n Networks are the foundational networking primitive in OpenStack, providing isolated\n Layer 2 broadcast domains. All other networking resources (subnets, ports, routers,\n security groups) attach to or reference a network.",
+  "protoPackage": "org.openmcf.provider.openstack.openstacknetwork.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstacknetwork/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstacknetwork/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackNetworkSpec",
+    "fields": [
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description is a human-readable description of the network.\n This is stored on the OpenStack resource and visible in Horizon and API responses.",
+        "required": false
+      },
+      {
+        "name": "AdminStateUp",
+        "jsonName": "adminStateUp",
+        "protoField": "admin_state_up",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "admin_state_up controls the administrative state of the network.\n When false, the network is administratively down and will not forward traffic.\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_admin_state_up"
+      },
+      {
+        "name": "Shared",
+        "jsonName": "shared",
+        "protoField": "shared",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "shared indicates whether this network is shared across all tenants/projects.\n Creating shared networks typically requires admin privileges.\n Most tenant users should leave this as false (the default).",
+        "required": false
+      },
+      {
+        "name": "External",
+        "jsonName": "external",
+        "protoField": "external",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "external indicates whether this is an external (provider) network.\n External networks are used for floating IP allocation and router gateways.\n Creating external networks typically requires admin privileges.",
+        "required": false
+      },
+      {
+        "name": "Mtu",
+        "jsonName": "mtu",
+        "protoField": "mtu",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "mtu is the Maximum Transmission Unit value for the network, in bytes.\n Common values: 1500 (standard Ethernet), 1450 (VXLAN overlay), 9000 (jumbo frames).\n If omitted or set to 0, OpenStack uses the default MTU for the network type.",
+        "required": false
+      },
+      {
+        "name": "DnsDomain",
+        "jsonName": "dnsDomain",
+        "protoField": "dns_domain",
+        "type": {
+          "kind": "string"
+        },
+        "description": "dns_domain is the DNS domain associated with the network.\n When set, ports on this network can have DNS names auto-assigned.\n Must end with a dot (.) if specified (e.g., \"my-network.example.com.\").\n Requires the dns-integration extension in Neutron.",
+        "required": false,
+        "validation": {
+          "pattern": "^$|\\.$"
+        }
+      },
+      {
+        "name": "PortSecurityEnabled",
+        "jsonName": "portSecurityEnabled",
+        "protoField": "port_security_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "port_security_enabled controls whether port security is enforced on ports\n created on this network. When enabled, only traffic matching the port's\n security groups and allowed address pairs is permitted.\n If omitted, the OpenStack deployment's default is used (typically true).",
+        "required": false,
+        "oneofGroup": "_port_security_enabled"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "tags are string tags to associate with the network in OpenStack.\n Tags are stored on the OpenStack resource and can be used for filtering\n and organization in the OpenStack API and Horizon dashboard.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this network.\n If omitted, the region from the OpenStack provider config is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  }
+}

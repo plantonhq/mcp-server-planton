@@ -1,0 +1,316 @@
+---
+title: Start MCP Server Sub-Project
+description: Action rule to bootstrap a focused sub-project within an existing parent project. Sub-projects tackle a specific aspect of a larger effort with their own task tracking while inheriting parent context.
+tags: [action, projects, sub-projects, bootstrap]
+globs: []
+---
+
+# Start MCP Server Sub-Project
+
+## Rule Type
+**ACTION RULE** - This rule performs actions and creates files.
+
+## Purpose
+Bootstrap a **focused sub-project** within an existing parent project. Sub-projects are used when a specific area of a larger project needs dedicated tracking, its own task breakdown, and focused attention -- without leaving the parent project's context.
+
+## When to Use Sub-Projects
+
+### Use a Sub-Project When:
+- A parent project already exists and you need to zoom into a specific area
+- One aspect of the larger project is complex enough to warrant its own task tracking
+- You want parallel workstreams within the same project
+- A detour or prerequisite emerges mid-project that needs structured tracking
+- Examples: "The auth refactor project needs a sub-project for migrating the token store", "The MCP tools project needs a sub-project for the deployment handler"
+
+### Do NOT Use a Sub-Project When:
+- There is no parent project -- use `@start-mcp-server-new-project` instead
+- The work is small and fits as a task within the parent -- just add a task
+- The work is completely independent of the parent -- create a separate project
+
+## Sub-Project Structure
+
+Sub-projects live inside the parent project's directory:
+
+```
+_projects/
+└── YYYY-MM/
+    └── YYYYMMDD.NN.parent-project/
+        ├── README.md
+        ├── next-task.md
+        ├── tasks/
+        │   └── ...
+        ├── sub-projects/                          # Sub-projects directory
+        │   └── SP01.sub-project-name/             # Sequenced sub-project
+        │       ├── README.md                      # Sub-project overview (links to parent)
+        │       ├── next-task.md                   # Quick resume for this sub-project
+        │       ├── tasks.md                       # All sub-project tasks in one file
+        │       └── notes.md                       # Sub-project specific notes
+        └── ...
+```
+
+Sub-projects use a lightweight structure (4 files, like a quick project) because they inherit knowledge folders from the parent.
+
+## Interview Process
+
+### Prerequisites
+1. **Identify the parent project** -- ask the developer which existing project this belongs to, or detect it from context (e.g., the developer is already working in a project)
+
+### Questions
+
+#### 1. Parent Project (Required)
+```
+Which existing project should this sub-project belong to?
+(e.g., '_projects/2026-02/20260226.01.mcp-tools-expansion/')
+```
+
+#### 2. Sub-Project Name (Required)
+```
+What would you like to name this sub-project?
+(Use kebab-case, e.g., 'deployment-handler', 'auth-token-migration')
+It will be auto-numbered as SP01, SP02, etc.
+```
+
+#### 3. Brief Description (Required)
+```
+Briefly describe what this sub-project will accomplish (1-2 sentences):
+```
+
+#### 4. Primary Goal (Required)
+```
+What is the specific goal of this sub-project?
+(e.g., "Implement the deployment listing MCP tool handler")
+```
+
+#### 5. Affected Components (Required)
+```
+Which components or areas will this sub-project touch?
+(e.g., "internal/handlers/deployment.go", "internal/tools/deployment.go")
+```
+
+#### 6. Task Breakdown (Optional)
+```
+Do you have specific tasks in mind, or should I suggest a breakdown?
+```
+
+#### 7. Relationship to Parent (Optional)
+```
+How does this sub-project relate to the parent's current tasks?
+(e.g., "This is a prerequisite for parent task T03", "This runs in parallel with T02")
+```
+
+## Bootstrap Process
+
+After gathering information:
+
+1. **Determine the next sub-project sequence number**:
+   - Scan the parent's `sub-projects/` directory
+   - Find existing `SP##.*` directories
+   - Increment to the next number
+
+2. **Create the sub-project directory and files**:
+
+```bash
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+cd "$repo_root"
+
+PARENT_PATH="<parent-project-path>"
+SP_NAME="<sub-project-name>"
+SP_DESC="<description>"
+SP_GOAL="<goal>"
+SP_COMPONENTS="<components>"
+SP_TASKS="<task1;task2;task3>"
+
+# Determine next sequence number
+SP_NUM=$(ls -d "${PARENT_PATH}/sub-projects/SP"* 2>/dev/null | wc -l | tr -d ' ')
+SP_NUM=$((SP_NUM + 1))
+SP_NUM_PADDED=$(printf "%02d" $SP_NUM)
+
+SP_DIR="${PARENT_PATH}/sub-projects/SP${SP_NUM_PADDED}.${SP_NAME}"
+mkdir -p "$SP_DIR"
+```
+
+3. **Create the 4 core files manually** (since there's no dedicated bootstrap script for sub-projects yet):
+
+### README.md
+```markdown
+# Sub-Project SP{NN}: {name}
+
+**Parent Project**: [{parent-name}](../../README.md)
+**Created**: {date}
+**Status**: In Progress
+
+## Goal
+{goal}
+
+## Description
+{description}
+
+## Affected Components
+{components}
+
+## Relationship to Parent
+{relationship}
+
+## Quick Links
+- [Tasks](tasks.md) - Task breakdown and progress
+- [Notes](notes.md) - Quick notes and learnings
+- [Resume](next-task.md) - Drag this into chat to resume
+- [Parent Project](../../README.md) - Back to parent
+
+## Sub-Project Type
+This is a focused sub-project within a larger effort. It uses lightweight tracking
+(4 files) and inherits knowledge folders from the parent project.
+```
+
+### tasks.md
+```markdown
+# Tasks: SP{NN} {name}
+
+**Parent Project**: [{parent-name}](../../README.md)
+**Created**: {date}
+
+## Status Legend
+- **TODO** - Not started yet
+- **IN PROGRESS** - Currently working on this
+- **DONE** - Completed
+
+---
+
+{generated task sections with status markers}
+
+## Completion Checklist
+- [ ] All tasks marked DONE
+- [ ] Changes tested and validated
+- [ ] Parent project tasks updated to reflect this work
+- [ ] Notes captured for any learnings
+```
+
+### notes.md
+```markdown
+# Notes: SP{NN} {name}
+
+**Parent Project**: [{parent-name}](../../README.md)
+**Created**: {date}
+
+---
+
+## Notes
+
+[Add timestamped notes as you work]
+```
+
+### next-task.md
+```markdown
+# Next Task: SP{NN} {name}
+
+## Quick Resume
+Drop this file into your conversation to resume work on this sub-project.
+
+## Sub-Project Overview
+**Name**: SP{NN} {name}
+**Parent**: {parent-name} ({parent-path})
+**Goal**: {goal}
+**Components**: {components}
+
+## Essential Files
+- Tasks: {abs-path}/tasks.md
+- Notes: {abs-path}/notes.md
+- README: {abs-path}/README.md
+- Parent README: {parent-path}/README.md
+
+## Parent Context
+Also review parent project knowledge folders:
+- Design Decisions: {parent-path}/design-decisions/
+- Coding Guidelines: {parent-path}/coding-guidelines/
+- Wrong Assumptions: {parent-path}/wrong-assumptions/
+
+## Resume Checklist
+1. [ ] Check tasks.md for current status
+2. [ ] Review notes.md for context
+3. [ ] Check parent project for any updates
+4. [ ] Continue with current task
+```
+
+## After Creation
+
+1. **Update the parent project's README.md** to reference the new sub-project:
+   - Add a "Sub-Projects" section if one doesn't exist
+   - List the new sub-project with a link
+
+2. **Update the parent's current task** (if applicable):
+   - Note that a sub-project was spawned
+   - Reference the sub-project path
+
+3. **Present to the developer**:
+   ```
+   Sub-project created at: {parent-path}/sub-projects/SP{NN}.{name}/
+
+   Created files:
+   - README.md (links back to parent)
+   - tasks.md (task tracking)
+   - notes.md (quick notes)
+   - next-task.md (drag into chat to resume)
+
+   Parent project updated with sub-project reference.
+
+   To resume this sub-project later: drag next-task.md into any chat
+   To return to parent project: drag the parent's next-task.md instead
+
+   How would you like to proceed?
+   ```
+
+## Task Breakdown Guidelines for Sub-Projects
+
+Sub-project tasks should be focused and concrete (2-4 tasks):
+
+### For Handler Implementation:
+1. Define types and interfaces
+2. Implement core logic
+3. Wire up and test
+
+### For Migration/Refactor:
+1. Analyze current state
+2. Implement changes
+3. Validate and test
+
+### For Bug Investigation:
+1. Reproduce and trace root cause
+2. Implement fix
+3. Verify fix and add regression test
+
+### For API/Protocol Work:
+1. Define schema/contract
+2. Implement endpoint/handler
+3. Test with client
+
+## Completing a Sub-Project
+
+When all sub-project tasks are done:
+
+1. Mark all tasks as DONE in `tasks.md`
+2. Add a completion note in `notes.md` with summary of what was accomplished
+3. Update the parent project:
+   - Mark the related parent task as complete (if applicable)
+   - Add a note in the parent referencing the completed sub-project
+4. Inform the developer:
+   ```
+   Sub-project SP{NN} {name} is complete!
+
+   Summary: {what was accomplished}
+   
+   Parent project has been updated. Returning to parent context.
+   
+   What would you like to work on next in the parent project?
+   ```
+
+## Important Notes
+
+- Sub-projects inherit the parent's knowledge folders (design-decisions, coding-guidelines, etc.)
+- If a sub-project needs its own design decision, document it in the parent's `design-decisions/` folder
+- Sub-projects should be short-lived and focused -- if they grow too large, consider promoting to a standalone project
+- Always keep the parent project aware of sub-project status changes
+
+## Related Rules
+
+- `@_projects/_rules/next-mcp-server-project/start-mcp-server-new-project` - For standalone multi-day projects
+- `@_projects/_rules/next-mcp-server-quick-project/start-mcp-server-quick-project` - For standalone quick projects

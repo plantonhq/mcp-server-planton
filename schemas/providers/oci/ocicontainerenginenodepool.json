@@ -1,0 +1,567 @@
+{
+  "name": "OciContainerEngineNodePool",
+  "kind": "OciContainerEngineNodePool",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciContainerEngineNodePool is the top-level resource representing an Oracle\n Cloud Infrastructure Container Engine for Kubernetes (OKE) node pool.",
+  "protoPackage": "org.openmcf.provider.oci.ocicontainerenginenodepool.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocicontainerenginenodepool/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocicontainerenginenodepool/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciContainerEngineNodePoolSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the node pool will be created.\n Changing this after creation forces node pool recreation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "ClusterId",
+        "jsonName": "clusterId",
+        "protoField": "cluster_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the OKE cluster to which this node pool is attached.\n Changing this after creation forces node pool recreation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciContainerEngineCluster",
+        "referenceFieldPath": "status.outputs.clusterId"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable name for the node pool shown in the OCI Console.\n Falls back to metadata.name if not provided.",
+        "required": false
+      },
+      {
+        "name": "KubernetesVersion",
+        "jsonName": "kubernetesVersion",
+        "protoField": "kubernetes_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Kubernetes version for the nodes. When omitted, inherits the cluster's\n Kubernetes version. Set explicitly to pin a specific version or to\n perform a rolling version upgrade of worker nodes independently of the\n control plane.\n Example: \"v1.28.2\".",
+        "required": false
+      },
+      {
+        "name": "NodeShape",
+        "jsonName": "nodeShape",
+        "protoField": "node_shape",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Compute shape for all nodes in this pool.\n Example: \"VM.Standard.E4.Flex\", \"VM.Standard.A1.Flex\", \"VM.GPU.A10.1\".\n For flex shapes, also set node_shape_config to specify OCPUs and memory.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "NodeShapeConfig",
+        "jsonName": "nodeShapeConfig",
+        "protoField": "node_shape_config",
+        "type": {
+          "kind": "message",
+          "messageType": "NodeShapeConfig"
+        },
+        "description": "Shape configuration for flex shapes. Required when node_shape is a\n flex shape (e.g., VM.Standard.E4.Flex). Ignored for fixed shapes.",
+        "required": false
+      },
+      {
+        "name": "NodeSourceDetails",
+        "jsonName": "nodeSourceDetails",
+        "protoField": "node_source_details",
+        "type": {
+          "kind": "message",
+          "messageType": "NodeSourceDetails"
+        },
+        "description": "OS image and boot volume configuration for nodes.\n When omitted, OKE uses the default Oracle Linux image for the cluster's\n Kubernetes version.",
+        "required": false
+      },
+      {
+        "name": "NodeConfigDetails",
+        "jsonName": "nodeConfigDetails",
+        "protoField": "node_config_details",
+        "type": {
+          "kind": "message",
+          "messageType": "NodeConfigDetails"
+        },
+        "description": "Node placement, sizing, networking, and encryption configuration.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "SshPublicKey",
+        "jsonName": "sshPublicKey",
+        "protoField": "ssh_public_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SSH public key installed on each node for debug access.\n The corresponding private key allows SSH to nodes via their private IP\n (or public IP if the subnet allows it).",
+        "required": false
+      },
+      {
+        "name": "InitialNodeLabels",
+        "jsonName": "initialNodeLabels",
+        "protoField": "initial_node_labels",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "NodeLabel"
+          }
+        },
+        "description": "Kubernetes labels applied to each node after it joins the cluster.\n Commonly used for scheduling constraints (nodeSelector, affinity rules).\n Example: [{ key: \"workload-type\", value: \"gpu\" }]",
+        "required": false
+      },
+      {
+        "name": "NodeMetadata",
+        "jsonName": "nodeMetadata",
+        "protoField": "node_metadata",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Key/value pairs added to each underlying OCI compute instance at launch.\n Used for cloud-init user data and instance metadata configuration.",
+        "required": false
+      },
+      {
+        "name": "NodeEvictionSettings",
+        "jsonName": "nodeEvictionSettings",
+        "protoField": "node_eviction_settings",
+        "type": {
+          "kind": "message",
+          "messageType": "NodeEvictionSettings"
+        },
+        "description": "Controls graceful node eviction behavior during node pool operations\n (scale-down, version upgrades, shape changes).",
+        "required": false
+      },
+      {
+        "name": "NodePoolCyclingDetails",
+        "jsonName": "nodePoolCyclingDetails",
+        "protoField": "node_pool_cycling_details",
+        "type": {
+          "kind": "message",
+          "messageType": "NodePoolCyclingDetails"
+        },
+        "description": "Rolling update strategy for node pool operations. Controls how many\n nodes can be replaced simultaneously during upgrades.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "NodeConfigDetails",
+      "description": "NodeConfigDetails controls node placement across availability domains,\n pool sizing, network security groups, encryption, and pod networking.",
+      "protoType": "org.openmcf.provider.oci.ocicontainerenginenodepool.v1.OciContainerEngineNodePoolSpec.NodeConfigDetails",
+      "fields": [
+        {
+          "name": "PlacementConfigs",
+          "jsonName": "placementConfigs",
+          "protoField": "placement_configs",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "PlacementConfig"
+            }
+          },
+          "description": "Placement configurations determining which availability domains and\n subnets receive nodes. Provide one entry per AD for regional subnets,\n or one entry per AD-specific subnet.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "Size",
+          "jsonName": "size",
+          "protoField": "size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Desired number of nodes in this pool. OKE distributes nodes across\n the placement configs as evenly as possible.",
+          "required": false
+        },
+        {
+          "name": "NsgIds",
+          "jsonName": "nsgIds",
+          "protoField": "nsg_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OCIDs of network security groups applied to the node VNICs.",
+          "required": false,
+          "referenceKind": "OciSecurityGroup",
+          "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+        },
+        {
+          "name": "KmsKeyId",
+          "jsonName": "kmsKeyId",
+          "protoField": "kms_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the KMS key for encrypting boot volumes at rest.\n default_kind will be updated when OciKmsKey (R25) is implemented.",
+          "required": false
+        },
+        {
+          "name": "IsPvEncryptionInTransitEnabled",
+          "jsonName": "isPvEncryptionInTransitEnabled",
+          "protoField": "is_pv_encryption_in_transit_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to enable in-transit encryption for the data volume's\n paravirtualized attachment. Applies to both boot and block volumes.",
+          "required": false
+        },
+        {
+          "name": "PodNetworkOptionDetails",
+          "jsonName": "podNetworkOptionDetails",
+          "protoField": "pod_network_option_details",
+          "type": {
+            "kind": "message",
+            "messageType": "PodNetworkOptionDetails"
+          },
+          "description": "Pod networking configuration. Required when the cluster uses\n OCI VCN-native pod networking (oci_vcn_ip_native CNI).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "NodeEvictionSettings",
+      "description": "NodeEvictionSettings controls how OKE drains pods from nodes during\n pool operations (scale-down, upgrades, shape changes).",
+      "protoType": "org.openmcf.provider.oci.ocicontainerenginenodepool.v1.OciContainerEngineNodePoolSpec.NodeEvictionSettings",
+      "fields": [
+        {
+          "name": "EvictionGraceDuration",
+          "jsonName": "evictionGraceDuration",
+          "protoField": "eviction_grace_duration",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Maximum time OKE will attempt to evict pods before giving up.\n ISO 8601 duration format. Default: PT60M. Range: PT0M to PT60M.\n PT0M means delete the node immediately without cordon and drain.",
+          "required": false
+        },
+        {
+          "name": "IsForceActionAfterGraceDuration",
+          "jsonName": "isForceActionAfterGraceDuration",
+          "protoField": "is_force_action_after_grace_duration",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to proceed with the node action if not all pods can be\n evicted within the grace period.",
+          "required": false,
+          "oneofGroup": "_is_force_action_after_grace_duration"
+        },
+        {
+          "name": "IsForceDeleteAfterGraceDuration",
+          "jsonName": "isForceDeleteAfterGraceDuration",
+          "protoField": "is_force_delete_after_grace_duration",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to delete the underlying compute instance if pods cannot\n be fully evicted within the grace period.",
+          "required": false,
+          "oneofGroup": "_is_force_delete_after_grace_duration"
+        }
+      ]
+    },
+    {
+      "name": "NodeLabel",
+      "description": "NodeLabel is a key/value pair applied as a Kubernetes label to each\n node after it joins the cluster.",
+      "protoType": "org.openmcf.provider.oci.ocicontainerenginenodepool.v1.OciContainerEngineNodePoolSpec.NodeLabel",
+      "fields": [
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "NodePoolCyclingDetails",
+      "description": "NodePoolCyclingDetails controls the rolling update strategy when\n nodes need to be replaced (e.g., during Kubernetes version upgrades\n or shape changes).",
+      "protoType": "org.openmcf.provider.oci.ocicontainerenginenodepool.v1.OciContainerEngineNodePoolSpec.NodePoolCyclingDetails",
+      "fields": [
+        {
+          "name": "IsNodeCyclingEnabled",
+          "jsonName": "isNodeCyclingEnabled",
+          "protoField": "is_node_cycling_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether node cycling is enabled for this pool.",
+          "required": false
+        },
+        {
+          "name": "MaximumSurge",
+          "jsonName": "maximumSurge",
+          "protoField": "maximum_surge",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Maximum additional nodes that can be temporarily created during\n cycling. Accepts an integer (\"1\") or percentage (\"25%\").\n Default: \"1\".",
+          "required": false
+        },
+        {
+          "name": "MaximumUnavailable",
+          "jsonName": "maximumUnavailable",
+          "protoField": "maximum_unavailable",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Maximum nodes that can be unavailable during cycling.\n Accepts an integer (\"0\") or percentage (\"25%\").\n Default: \"0\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "NodeShapeConfig",
+      "description": "NodeShapeConfig specifies CPU and memory for flex compute shapes.\n Flex shapes allow independent scaling of OCPUs and memory within the\n shape's supported range. For example, VM.Standard.E4.Flex supports\n 1-64 OCPUs and 1-1024 GB memory (up to 64 GB per OCPU).",
+      "protoType": "org.openmcf.provider.oci.ocicontainerenginenodepool.v1.OciContainerEngineNodePoolSpec.NodeShapeConfig",
+      "fields": [
+        {
+          "name": "Ocpus",
+          "jsonName": "ocpus",
+          "protoField": "ocpus",
+          "type": {
+            "kind": "float"
+          },
+          "description": "Number of OCPUs allocated to each node.\n Example: 2.0 for a 2-OCPU flex instance.",
+          "required": false
+        },
+        {
+          "name": "MemoryInGbs",
+          "jsonName": "memoryInGbs",
+          "protoField": "memory_in_gbs",
+          "type": {
+            "kind": "float"
+          },
+          "description": "Memory in gigabytes allocated to each node.\n Example: 32.0 for 32 GB of RAM.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "NodeSourceDetails",
+      "description": "NodeSourceDetails specifies the OS image for nodes.\n The source_type is always \"IMAGE\" (the only supported type) and is\n hardcoded by the IaC modules -- only image_id and boot volume size\n are user-configurable.",
+      "protoType": "org.openmcf.provider.oci.ocicontainerenginenodepool.v1.OciContainerEngineNodePoolSpec.NodeSourceDetails",
+      "fields": [
+        {
+          "name": "ImageId",
+          "jsonName": "imageId",
+          "protoField": "image_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the OCI platform image or custom image for the node OS.\n Use `oci ce node-pool-options get` to list available images for\n a given Kubernetes version.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "BootVolumeSizeInGbs",
+          "jsonName": "bootVolumeSizeInGbs",
+          "protoField": "boot_volume_size_in_gbs",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Boot volume size in gigabytes. Minimum 50 GB. When omitted, uses\n the image's default boot volume size (typically 50 GB).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "PlacementConfig",
+      "description": "PlacementConfig determines where nodes are placed within OCI's\n availability domain and fault domain topology.",
+      "protoType": "org.openmcf.provider.oci.ocicontainerenginenodepool.v1.OciContainerEngineNodePoolSpec.PlacementConfig",
+      "fields": [
+        {
+          "name": "AvailabilityDomain",
+          "jsonName": "availabilityDomain",
+          "protoField": "availability_domain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Availability domain name where nodes will be launched.\n Example: \"Uocm:PHX-AD-1\".",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "SubnetId",
+          "jsonName": "subnetId",
+          "protoField": "subnet_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the subnet in which to place nodes in this AD.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "OciSubnet",
+          "referenceFieldPath": "status.outputs.subnetId"
+        },
+        {
+          "name": "FaultDomains",
+          "jsonName": "faultDomains",
+          "protoField": "fault_domains",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Fault domains within the AD to constrain node placement.\n When omitted, OKE distributes nodes across all fault domains.\n Example: [\"FAULT-DOMAIN-1\", \"FAULT-DOMAIN-2\"]",
+          "required": false
+        },
+        {
+          "name": "CapacityReservationId",
+          "jsonName": "capacityReservationId",
+          "protoField": "capacity_reservation_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of a compute capacity reservation to use for nodes in this AD.",
+          "required": false
+        },
+        {
+          "name": "PreemptibleNodeConfig",
+          "jsonName": "preemptibleNodeConfig",
+          "protoField": "preemptible_node_config",
+          "type": {
+            "kind": "message",
+            "messageType": "PreemptibleNodeConfig"
+          },
+          "description": "Preemptible node configuration. When set, nodes in this placement\n use preemptible (spot) instances that can be reclaimed by OCI.\n Suitable for fault-tolerant and batch workloads.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "PodNetworkOptionDetails",
+      "description": "PodNetworkOptionDetails configures CNI-level pod networking for the\n node pool. Required for VCN-native pod networking where each pod\n gets a VCN IP address.",
+      "protoType": "org.openmcf.provider.oci.ocicontainerenginenodepool.v1.OciContainerEngineNodePoolSpec.PodNetworkOptionDetails",
+      "fields": [
+        {
+          "name": "CniType",
+          "jsonName": "cniType",
+          "protoField": "cni_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocicontainerenginenodepool.v1.CniType",
+            "enumValues": [
+              "flannel_overlay",
+              "oci_vcn_ip_native"
+            ]
+          },
+          "description": "CNI plugin type. Must match the cluster's CNI configuration.",
+          "required": false
+        },
+        {
+          "name": "MaxPodsPerNode",
+          "jsonName": "maxPodsPerNode",
+          "protoField": "max_pods_per_node",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of pods per node. Limited by the number of VNICs\n attachable to the node shape. Only applicable for oci_vcn_ip_native.",
+          "required": false
+        },
+        {
+          "name": "PodNsgIds",
+          "jsonName": "podNsgIds",
+          "protoField": "pod_nsg_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OCIDs of NSGs applied to pod VNICs. Only applicable for\n oci_vcn_ip_native.",
+          "required": false,
+          "referenceKind": "OciSecurityGroup",
+          "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+        },
+        {
+          "name": "PodSubnetIds",
+          "jsonName": "podSubnetIds",
+          "protoField": "pod_subnet_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OCIDs of subnets for pod IP allocation. Only applicable for\n oci_vcn_ip_native. Can be the same as or different from the node\n subnets.",
+          "required": false,
+          "referenceKind": "OciSubnet",
+          "referenceFieldPath": "status.outputs.subnetId"
+        }
+      ]
+    },
+    {
+      "name": "PreemptibleNodeConfig",
+      "description": "PreemptibleNodeConfig enables preemptible (spot) instances for a\n placement config. Preemptible nodes are terminated when OCI reclaims\n capacity. The preemption action is always TERMINATE (the only\n supported action); IaC modules hardcode this.",
+      "protoType": "org.openmcf.provider.oci.ocicontainerenginenodepool.v1.OciContainerEngineNodePoolSpec.PreemptibleNodeConfig",
+      "fields": [
+        {
+          "name": "IsPreserveBootVolume",
+          "jsonName": "isPreserveBootVolume",
+          "protoField": "is_preserve_boot_volume",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to preserve the boot volume when the preemptible instance\n is terminated. Defaults to false (boot volume is deleted).",
+          "required": false,
+          "oneofGroup": "_is_preserve_boot_volume"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,637 @@
+{
+  "name": "AwsEcsService",
+  "kind": "AwsEcsService",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsEcsService represents a containerized application deployed on AWS ECS.\n This resource manages ECS services that can run on either Fargate or EC2.",
+  "protoPackage": "org.openmcf.provider.aws.awsecsservice.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsecsservice/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsecsservice/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsEcsServiceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ClusterArn",
+        "jsonName": "clusterArn",
+        "protoField": "cluster_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cluster_arn is the ARN of the ECS cluster where this service will run.\n This must already exist (created by a separate EcsCluster resource or otherwise).\n Example: \"arn:aws:ecs:us-east-1:123456789012:cluster/my-mixed-cluster\"",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsEcsCluster",
+        "referenceFieldPath": "status.outputs.cluster_arn"
+      },
+      {
+        "name": "Container",
+        "jsonName": "container",
+        "protoField": "container",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsEcsServiceContainer"
+        },
+        "description": "AWS ECS Service container configuration.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Network",
+        "jsonName": "network",
+        "protoField": "network",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsEcsServiceNetwork"
+        },
+        "description": "ECS service network configuration.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Iam",
+        "jsonName": "iam",
+        "protoField": "iam",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsEcsServiceIam"
+        },
+        "description": "IAM configuration for the ECS service.",
+        "required": false
+      },
+      {
+        "name": "Alb",
+        "jsonName": "alb",
+        "protoField": "alb",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsEcsServiceAlb"
+        },
+        "description": "alb defines how an ALB fronts traffic to this ECS service, supporting path- or hostname-based routing.",
+        "required": false
+      },
+      {
+        "name": "HealthCheckGracePeriodSeconds",
+        "jsonName": "healthCheckGracePeriodSeconds",
+        "protoField": "health_check_grace_period_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "health_check_grace_period_seconds is the number of seconds ECS will ignore ALB health check failures\n during container startup. This prevents a race condition where the ALB marks a task unhealthy\n before the application has finished booting. Recommended: 60-120 seconds for typical apps.\n Only valid when alb.enabled = true.",
+        "required": false,
+        "default": "60",
+        "oneofGroup": "_health_check_grace_period_seconds"
+      },
+      {
+        "name": "Autoscaling",
+        "jsonName": "autoscaling",
+        "protoField": "autoscaling",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsEcsServiceAutoscaling"
+        },
+        "description": "autoscaling configuration for the ECS service using target tracking.\n When enabled, AWS Application Auto Scaling automatically adjusts the desired task count\n based on CPU or memory utilization.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsEcsServiceAlb",
+      "description": "AwsEcsServiceAlb indicates how an ALB fronts this ECS service, supporting path- or hostname-based routing.",
+      "protoType": "org.openmcf.provider.aws.awsecsservice.v1.AwsEcsServiceAlb",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "enabled controls whether an ALB is used. If false, no ALB is attached.",
+          "required": false
+        },
+        {
+          "name": "Arn",
+          "jsonName": "arn",
+          "protoField": "arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "arn is the ARN of the ALB. Required if enabled = true.",
+          "required": false,
+          "referenceKind": "AwsAlb",
+          "referenceFieldPath": "status.outputs.load_balancer_arn"
+        },
+        {
+          "name": "RoutingType",
+          "jsonName": "routingType",
+          "protoField": "routing_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "routingType can be \"path\" or \"hostname\" if enabled.\n If \"path\", specify a path (e.g. \"/my-service\").\n If \"hostname\", specify a hostname (e.g. \"api.example.com\").",
+          "required": false,
+          "validation": {
+            "enum": [
+              "path",
+              "hostname"
+            ]
+          }
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "path is used if routingType = \"path\".",
+          "required": false
+        },
+        {
+          "name": "Hostname",
+          "jsonName": "hostname",
+          "protoField": "hostname",
+          "type": {
+            "kind": "string"
+          },
+          "description": "hostname is used if routingType = \"hostname\".",
+          "required": false
+        },
+        {
+          "name": "ListenerPort",
+          "jsonName": "listenerPort",
+          "protoField": "listener_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "listener_port is the port on the ALB to forward traffic to.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "recommendedDefault": "80"
+        },
+        {
+          "name": "ListenerPriority",
+          "jsonName": "listenerPriority",
+          "protoField": "listener_priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "listener_priority is the priority of the ALB listener rule.\n Lower numbers have higher priority. This value should be unique across all rules for this ALB.",
+          "required": false,
+          "default": "100",
+          "oneofGroup": "_listener_priority"
+        },
+        {
+          "name": "HealthCheck",
+          "jsonName": "healthCheck",
+          "protoField": "health_check",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsEcsServiceHealthCheck"
+          },
+          "description": "health_check overrides the default target-group health check.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsEcsServiceAutoscaling",
+      "description": "AwsEcsServiceAutoscaling defines target tracking auto scaling configuration for the ECS service.\n AWS Application Auto Scaling automatically adjusts the desired task count to maintain\n the target metric (CPU or memory utilization).",
+      "protoType": "org.openmcf.provider.aws.awsecsservice.v1.AwsEcsServiceAutoscaling",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "enabled controls whether autoscaling is configured for this service.",
+          "required": false
+        },
+        {
+          "name": "MinTasks",
+          "jsonName": "minTasks",
+          "protoField": "min_tasks",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "min_tasks is the minimum number of tasks to maintain.\n Must be \u003e= 1 and \u003c= max_tasks.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "MaxTasks",
+          "jsonName": "maxTasks",
+          "protoField": "max_tasks",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "max_tasks is the maximum number of tasks to scale to.\n Must be \u003e= min_tasks.",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "TargetCpuPercent",
+          "jsonName": "targetCpuPercent",
+          "protoField": "target_cpu_percent",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "target_cpu_percent is the target average CPU utilization (as a percentage) across all tasks.\n AWS will scale out when CPU exceeds this threshold and scale in when it drops below.\n Recommended: 70-75 for production workloads.\n Example: 75 means target 75% CPU utilization.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 100
+          },
+          "default": "75",
+          "oneofGroup": "_target_cpu_percent"
+        },
+        {
+          "name": "TargetMemoryPercent",
+          "jsonName": "targetMemoryPercent",
+          "protoField": "target_memory_percent",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "target_memory_percent is the target average memory utilization (as a percentage) across all tasks.\n Similar to target_cpu_percent but for memory.\n This is optional; most services scale on CPU alone.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 100
+          },
+          "oneofGroup": "_target_memory_percent"
+        }
+      ]
+    },
+    {
+      "name": "AwsEcsServiceContainer",
+      "description": "AwsEcsServiceContainer is a wrapper for the container spec.",
+      "protoType": "org.openmcf.provider.aws.awsecsservice.v1.AwsEcsServiceContainer",
+      "fields": [
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsEcsServiceContainerImage"
+          },
+          "description": "container image",
+          "required": false
+        },
+        {
+          "name": "Env",
+          "jsonName": "env",
+          "protoField": "env",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsEcsServiceContainerEnv"
+          },
+          "description": "container environment variables, secrets, and environment files",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "container_port is the port inside the container that should be exposed to receive traffic.\n This is optional if the service doesn't need inbound requests (e.g., a background worker).\n Example: 80 for HTTP",
+          "required": false
+        },
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "replicas is the number of task replicas to run for this service.\n higher values improve availability at increased cost.",
+          "required": false,
+          "recommendedDefault": "1"
+        },
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "cpu is the amount of vCPU (in CPU units) to allocate for the entire task.\n Valid Fargate values include 256, 512, 1024, 2048, etc., subject to ECS constraints.\n Example: 512",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "memory is the total MiB of RAM for the task.\n Valid values depend on CPU. For example, 512 CPU can pair with 1024–4096 MiB.\n Example: 1024",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Logging",
+          "jsonName": "logging",
+          "protoField": "logging",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsEcsServiceContainerLogging"
+          },
+          "description": "logging controls whether CloudWatch log configuration is injected automatically.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsEcsServiceContainerEnv",
+      "description": "AwsEcsServiceContainerEnv is a wrapper for environment variables, secrets, and files.",
+      "protoType": "org.openmcf.provider.aws.awsecsservice.v1.AwsEcsServiceContainerEnv",
+      "fields": [
+        {
+          "name": "Variables",
+          "jsonName": "variables",
+          "protoField": "variables",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "map of environment variables to be set in the container.\n The key is the name of the variable, and the value is the value to be set.",
+          "required": false
+        },
+        {
+          "name": "Secrets",
+          "jsonName": "secrets",
+          "protoField": "secrets",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "map of environment secrets to be set in the container.\n The key is the name of the variable, and the value is the value to be set.\n The value can be a plaintext value or a reference to a secret in AWS Secrets Manager or SSM Parameter Store.",
+          "required": false
+        },
+        {
+          "name": "S3Files",
+          "jsonName": "s3Files",
+          "protoField": "s3_files",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "s3_files is a list of S3 URIs whose contents are loaded as environment variables\n via the ECS \"environmentFiles\" feature.",
+          "required": false,
+          "validation": {
+            "unique": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsEcsServiceContainerImage",
+      "description": "AwsEcsServiceContainerImage represents the container image information.",
+      "protoType": "org.openmcf.provider.aws.awsecsservice.v1.AwsEcsServiceContainerImage",
+      "fields": [
+        {
+          "name": "Repo",
+          "jsonName": "repo",
+          "protoField": "repo",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The repository of the image (e.g., \"gcr.io/project/image\").",
+          "required": false
+        },
+        {
+          "name": "Tag",
+          "jsonName": "tag",
+          "protoField": "tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The tag of the image (e.g., \"latest\" or \"1.0.0\").",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsEcsServiceContainerLogging",
+      "description": "AwsEcsServiceContainerLogging controls CloudWatch logging for the container.",
+      "protoType": "org.openmcf.provider.aws.awsecsservice.v1.AwsEcsServiceContainerLogging",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "If true (default), the module auto-creates a CloudWatch Log Group\n named \"/ecs/\u003cserviceName\u003e\" with 30-day retention and configures\n the awslogs driver.",
+          "required": false,
+          "recommendedDefault": "true"
+        }
+      ]
+    },
+    {
+      "name": "AwsEcsServiceHealthCheck",
+      "description": "AwsEcsServiceHealthCheck defines ALB target-group health check settings.",
+      "protoType": "org.openmcf.provider.aws.awsecsservice.v1.AwsEcsServiceHealthCheck",
+      "fields": [
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "protocol can be HTTP, HTTPS, or TCP.",
+          "required": false,
+          "validation": {
+            "enum": [
+              "HTTP",
+              "HTTPS",
+              "TCP"
+            ]
+          }
+        },
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "path to ping (HTTP/HTTPS only), defaults to \"/\".",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "string"
+          },
+          "description": "port may be \"traffic-port\" or an explicit port number as string.",
+          "required": false
+        },
+        {
+          "name": "Interval",
+          "jsonName": "interval",
+          "protoField": "interval",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "interval between checks in seconds. AWS default is 30.",
+          "required": false
+        },
+        {
+          "name": "Timeout",
+          "jsonName": "timeout",
+          "protoField": "timeout",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "timeout per check in seconds. AWS default is 5.",
+          "required": false
+        },
+        {
+          "name": "HealthyThreshold",
+          "jsonName": "healthyThreshold",
+          "protoField": "healthy_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "number of successes before a target is considered healthy. AWS default is 5.",
+          "required": false
+        },
+        {
+          "name": "UnhealthyThreshold",
+          "jsonName": "unhealthyThreshold",
+          "protoField": "unhealthy_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "number of failures before a target is considered unhealthy. AWS default is 2.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsEcsServiceIam",
+      "description": "AWS ECS Service IAM configuration",
+      "protoType": "org.openmcf.provider.aws.awsecsservice.v1.AwsEcsServiceIam",
+      "fields": [
+        {
+          "name": "TaskExecutionRoleArn",
+          "jsonName": "taskExecutionRoleArn",
+          "protoField": "task_execution_role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "task_execution_role_arn is the IAM role used by ECS to pull private images and write logs.\n If omitted, a default \"ecsTaskExecutionRole\" may be assumed, but it must already exist.\n Example: \"arn:aws:iam::123456789012:role/ecsTaskExecutionRole\"",
+          "required": false,
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        },
+        {
+          "name": "TaskRoleArn",
+          "jsonName": "taskRoleArn",
+          "protoField": "task_role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "task_role_arn is the IAM role your container uses if it needs AWS permissions.\n Omit if your container does not call AWS APIs.\n Example: \"arn:aws:iam::123456789012:role/myAppTaskRole\"",
+          "required": false,
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        }
+      ]
+    },
+    {
+      "name": "AwsEcsServiceNetwork",
+      "description": "AwsEcsServiceNetwork defines the networking configuration for the ECS service.",
+      "protoType": "org.openmcf.provider.aws.awsecsservice.v1.AwsEcsServiceNetwork",
+      "fields": [
+        {
+          "name": "Subnets",
+          "jsonName": "subnets",
+          "protoField": "subnets",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "subnets is a list of VPC subnet IDs where the Fargate tasks will run.\n Typically private subnets for production, often at least two for high availability.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsVpc"
+        },
+        {
+          "name": "SecurityGroups",
+          "jsonName": "securityGroups",
+          "protoField": "security_groups",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "security_groups is a list of security group IDs to apply to each task's ENI.\n If not provided, ECS may use the default VPC security group, which is not ideal for production.",
+          "required": false,
+          "referenceKind": "AwsSecurityGroup",
+          "referenceFieldPath": "status.outputs.security_group_id"
+        }
+      ]
+    }
+  ]
+}

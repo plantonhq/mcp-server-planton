@@ -1,0 +1,50 @@
+{
+  "name": "AwsGlueCatalogDatabase",
+  "kind": "AwsGlueCatalogDatabase",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsGlueCatalogDatabase is the Kubernetes-style resource envelope for an AWS\n Glue Data Catalog database.",
+  "protoPackage": "org.openmcf.provider.aws.awsgluecatalogdatabase.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsgluecatalogdatabase/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsgluecatalogdatabase/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsGlueCatalogDatabaseSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the database. Helps teams understand the\n purpose and contents of this catalog namespace.\n\n Maximum 2048 characters (enforced by the AWS API).\n\n Examples:\n - \"Sales analytics data lake — raw and curated tables from the sales pipeline\"\n - \"Clickstream events from web and mobile applications\"",
+        "required": false
+      },
+      {
+        "name": "LocationUri",
+        "jsonName": "locationUri",
+        "protoField": "location_uri",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Default S3 URI for tables created in this database. When a Glue Crawler or\n CREATE TABLE statement does not specify a location, this path is used as the\n base directory.\n\n Format: \"s3://bucket-name/optional-prefix/\"\n\n When omitted, each table must specify its own storage location explicitly.\n Setting this is recommended for organized data lakes where all tables in a\n database share a common S3 prefix.\n\n This is a plain string (not StringValueOrRef) because it is an S3 URI with\n a user-defined path prefix, not a direct resource identifier.",
+        "required": false
+      }
+    ]
+  }
+}

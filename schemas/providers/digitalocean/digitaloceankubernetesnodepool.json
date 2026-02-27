@@ -1,0 +1,189 @@
+{
+  "name": "DigitalOceanKubernetesNodePool",
+  "kind": "DigitalOceanKubernetesNodePool",
+  "cloudProvider": "digitalocean",
+  "apiVersion": "digital-ocean.openmcf.org/v1",
+  "description": "digital-ocean-kubernetes-node-pool",
+  "protoPackage": "org.openmcf.provider.digitalocean.digitaloceankubernetesnodepool.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/digitalocean/digitaloceankubernetesnodepool/v1/api.proto",
+    "spec": "org/openmcf/provider/digitalocean/digitaloceankubernetesnodepool/v1/spec.proto"
+  },
+  "spec": {
+    "name": "DigitalOceanKubernetesNodePoolSpec",
+    "fields": [
+      {
+        "name": "NodePoolName",
+        "jsonName": "nodePoolName",
+        "protoField": "node_pool_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "A name for the node pool. Must be unique within the Kubernetes cluster.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Cluster",
+        "jsonName": "cluster",
+        "protoField": "cluster",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to the DigitalOcean Kubernetes Cluster in which to create this node pool.\n Accepts the cluster's name or a reference to the DigitalOceanKubernetesCluster resource.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "DigitalOceanKubernetesCluster",
+        "referenceFieldPath": "metadata.name"
+      },
+      {
+        "name": "Size",
+        "jsonName": "size",
+        "protoField": "size",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The slug identifier for the Droplet size to use for each node (e.g., \"s-4vcpu-8gb\").\n This defines the CPU and memory of the nodes in the pool.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "NodeCount",
+        "jsonName": "nodeCount",
+        "protoField": "node_count",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "The number of nodes to provision in the pool.\n Must be at least 1. If auto_scale is enabled, this acts as the initial desired node count.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "AutoScale",
+        "jsonName": "autoScale",
+        "protoField": "auto_scale",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable auto-scaling for this node pool.\n If true, the platform will manage node count between min_nodes and max_nodes.",
+        "required": false
+      },
+      {
+        "name": "MinNodes",
+        "jsonName": "minNodes",
+        "protoField": "min_nodes",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Minimum number of nodes when auto-scaling is enabled.\n Required if auto_scale is true.",
+        "required": false
+      },
+      {
+        "name": "MaxNodes",
+        "jsonName": "maxNodes",
+        "protoField": "max_nodes",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Maximum number of nodes when auto-scaling is enabled.\n Required if auto_scale is true.",
+        "required": false
+      },
+      {
+        "name": "Labels",
+        "jsonName": "labels",
+        "protoField": "labels",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Kubernetes labels to apply to all nodes in this pool.\n Labels are key-value pairs used for node selection and workload scheduling.\n Example: {\"workload\": \"web\", \"env\": \"production\"}",
+        "required": false
+      },
+      {
+        "name": "Taints",
+        "jsonName": "taints",
+        "protoField": "taints",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "DigitalOceanKubernetesNodePoolTaint"
+          }
+        },
+        "description": "Kubernetes taints to apply to all nodes in this pool.\n Taints prevent pods from being scheduled on these nodes unless they have matching tolerations.\n Commonly used for workload isolation (e.g., GPU nodes, dedicated system pools).",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "A list of DigitalOcean tags to apply to the node pool Droplets.\n Tags are used for cost attribution and organizational purposes in DigitalOcean's billing and management.\n Note: This is different from Kubernetes labels. Tags affect DO billing, labels affect K8s scheduling.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "DigitalOceanKubernetesNodePoolTaint",
+      "description": "DigitalOcean Kubernetes Node Pool Taint\n Taints prevent pods from being scheduled on nodes unless they tolerate the taint.",
+      "protoType": "org.openmcf.provider.digitalocean.digitaloceankubernetesnodepool.v1.DigitalOceanKubernetesNodePoolTaint",
+      "fields": [
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The taint key (e.g., \"nvidia.com/gpu\", \"workload\", \"dedicated\")",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The taint value (e.g., \"true\", \"gpu\", \"system\")",
+          "required": false
+        },
+        {
+          "name": "Effect",
+          "jsonName": "effect",
+          "protoField": "effect",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The taint effect: NoSchedule, PreferNoSchedule, or NoExecute\n - NoSchedule: Pods that don't tolerate this taint will not be scheduled on the node\n - PreferNoSchedule: Kubernetes will try to avoid scheduling pods that don't tolerate this taint\n - NoExecute: Pods that don't tolerate this taint will be evicted if already running",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    }
+  ]
+}

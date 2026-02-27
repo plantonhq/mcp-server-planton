@@ -1,0 +1,138 @@
+{
+  "name": "OpenStackSecurityGroupRule",
+  "kind": "OpenStackSecurityGroupRule",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackSecurityGroupRule is a Kubernetes Resource Model (KRM) style resource\n for managing standalone OpenStack Neutron security group rules.\n\n A standalone security group rule is independently managed and visible as its\n own node in InfraChart DAG visualizations. Both security_group_id and\n remote_group_id support StringValueOrRef for cross-resource FK resolution,\n unlike inline rules in OpenStackSecurityGroup.rules[] which use plain strings.\n\n Use this component for:\n   - Cross-security-group rules where remote_group_id needs DAG resolution\n   - Rules that need independent lifecycle management\n   - InfraCharts where rule dependencies must be visually explicit\n\n Use inline rules (OpenStackSecurityGroup.rules[]) for:\n   - Self-contained security groups where all rules are co-managed\n   - Simpler configurations without cross-SG references",
+  "protoPackage": "org.openmcf.provider.openstack.openstacksecuritygrouprule.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstacksecuritygrouprule/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstacksecuritygrouprule/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackSecurityGroupRuleSpec",
+    "fields": [
+      {
+        "name": "SecurityGroupId",
+        "jsonName": "securityGroupId",
+        "protoField": "security_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "security_group_id is the ID of the security group this rule belongs to.\n This is a required foreign key -- every standalone rule must reference\n exactly one security group.\n Can reference an OpenStackSecurityGroup resource's output or be a literal UUID.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "Direction",
+        "jsonName": "direction",
+        "protoField": "direction",
+        "type": {
+          "kind": "string"
+        },
+        "description": "direction specifies whether the rule applies to incoming or outgoing traffic.\n Must be \"ingress\" or \"egress\".",
+        "required": false,
+        "validation": {
+          "enum": [
+            "ingress",
+            "egress"
+          ]
+        }
+      },
+      {
+        "name": "Ethertype",
+        "jsonName": "ethertype",
+        "protoField": "ethertype",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ethertype specifies the layer-3 protocol type for the rule.\n Must be \"IPv4\" or \"IPv6\".",
+        "required": false,
+        "validation": {
+          "enum": [
+            "IPv4",
+            "IPv6"
+          ]
+        }
+      },
+      {
+        "name": "Protocol",
+        "jsonName": "protocol",
+        "protoField": "protocol",
+        "type": {
+          "kind": "string"
+        },
+        "description": "protocol is the IP protocol for the rule.\n Common values: \"tcp\", \"udp\", \"icmp\", \"icmpv6\".\n Also accepts any IANA protocol name or number (0-255).\n If omitted, the rule applies to all protocols.",
+        "required": false
+      },
+      {
+        "name": "PortRangeMin",
+        "jsonName": "portRangeMin",
+        "protoField": "port_range_min",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "port_range_min is the minimum port number for the rule.\n For TCP/UDP: the start of the port range (0-65535).\n For ICMP: the ICMP type (0-255). Type 0 = Echo Reply, Type 8 = Echo Request.\n Must be set together with port_range_max. Requires protocol to be set.",
+        "required": false,
+        "oneofGroup": "_port_range_min"
+      },
+      {
+        "name": "PortRangeMax",
+        "jsonName": "portRangeMax",
+        "protoField": "port_range_max",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "port_range_max is the maximum port number for the rule.\n For TCP/UDP: the end of the port range (0-65535).\n For ICMP: the ICMP code (0-255). Code 0 is valid and commonly used.\n Must be set together with port_range_min. Requires protocol to be set.",
+        "required": false,
+        "oneofGroup": "_port_range_max"
+      },
+      {
+        "name": "RemoteIpPrefix",
+        "jsonName": "remoteIpPrefix",
+        "protoField": "remote_ip_prefix",
+        "type": {
+          "kind": "string"
+        },
+        "description": "remote_ip_prefix restricts the rule to traffic from/to a specific CIDR.\n For ingress: the source IP range. For egress: the destination IP range.\n Example: \"0.0.0.0/0\" (all IPv4), \"10.0.0.0/8\" (private range), \"203.0.113.0/24\".\n Mutually exclusive with remote_group_id.",
+        "required": false
+      },
+      {
+        "name": "RemoteGroupId",
+        "jsonName": "remoteGroupId",
+        "protoField": "remote_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "remote_group_id restricts the rule to traffic from/to instances in another\n security group (or the same security group for self-referencing rules).\n This is an optional foreign key to OpenStackSecurityGroup -- the key advantage\n of standalone rules over inline rules, enabling InfraChart DAG wiring for\n cross-security-group references.\n Mutually exclusive with remote_ip_prefix.",
+        "required": false,
+        "referenceKind": "OpenStackSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description is a human-readable description of the rule.\n Stored on the OpenStack rule resource and visible in Horizon and API responses.",
+        "required": false
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this rule.\n If omitted, the region from the OpenStack provider config is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  }
+}

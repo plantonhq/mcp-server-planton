@@ -1,0 +1,141 @@
+{
+  "name": "AwsEventBridgeBus",
+  "kind": "AwsEventBridgeBus",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsEventBridgeBus is the Kubernetes-style resource envelope for an AWS\n EventBridge custom event bus.",
+  "protoPackage": "org.openmcf.provider.aws.awseventbridgebus.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awseventbridgebus/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awseventbridgebus/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsEventBridgeBusSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the event bus.\n Maximum length is 512 characters.",
+        "required": false,
+        "validation": {
+          "maxLength": 512
+        }
+      },
+      {
+        "name": "KmsKeyIdentifier",
+        "jsonName": "kmsKeyIdentifier",
+        "protoField": "kms_key_identifier",
+        "type": {
+          "kind": "string"
+        },
+        "description": "KMS key identifier for encrypting events on this bus. Accepts a KMS key\n ARN, key ID, key alias, or key alias ARN. When omitted, events are\n encrypted with an AWS-owned key at no additional cost.\n\n Accepts a direct value or a reference to an AwsKmsKey resource.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "EventSourceName",
+        "jsonName": "eventSourceName",
+        "protoField": "event_source_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Partner event source name. Set this only when creating a bus for a SaaS\n partner integration (e.g., Datadog, Zendesk, PagerDuty).\n\n The value must match the pattern: aws.partner/{partner}/{...} and the bus\n name (`metadata.name`) must match this value exactly.\n\n This field is immutable — changing it forces bus replacement.",
+        "required": false
+      },
+      {
+        "name": "DeadLetterConfig",
+        "jsonName": "deadLetterConfig",
+        "protoField": "dead_letter_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsEventBridgeBusDeadLetterConfig"
+        },
+        "description": "Dead letter queue configuration for the event bus. When set, events that\n fail delivery to any rule target on this bus are routed to the specified\n SQS queue for investigation and reprocessing.\n\n This is the bus-level DLQ — it catches events that cannot be delivered\n to ANY target on any rule attached to this bus. Individual rules can also\n have their own DLQ configuration (configured on AwsEventBridgeRule).",
+        "required": false
+      },
+      {
+        "name": "LogConfig",
+        "jsonName": "logConfig",
+        "protoField": "log_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsEventBridgeBusLogConfig"
+        },
+        "description": "Logging configuration for the event bus. When set, EventBridge writes\n event delivery logs to CloudWatch Logs. Useful for debugging event\n routing, monitoring delivery failures, and auditing event traffic.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsEventBridgeBusDeadLetterConfig",
+      "description": "AwsEventBridgeBusDeadLetterConfig configures a dead letter queue for the event bus.\n Events that fail delivery to any rule target are routed to the specified queue.",
+      "protoType": "org.openmcf.provider.aws.awseventbridgebus.v1.AwsEventBridgeBusDeadLetterConfig",
+      "fields": [
+        {
+          "name": "Arn",
+          "jsonName": "arn",
+          "protoField": "arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of the SQS queue to use as the dead letter queue. The queue must\n exist in the same AWS account and region as the event bus.\n\n Accepts a direct ARN or a reference to an AwsSqsQueue resource.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsSqsQueue",
+          "referenceFieldPath": "status.outputs.queue_arn"
+        }
+      ]
+    },
+    {
+      "name": "AwsEventBridgeBusLogConfig",
+      "description": "AwsEventBridgeBusLogConfig configures logging for the event bus.\n When enabled, EventBridge sends event delivery logs to CloudWatch Logs.",
+      "protoType": "org.openmcf.provider.aws.awseventbridgebus.v1.AwsEventBridgeBusLogConfig",
+      "fields": [
+        {
+          "name": "Level",
+          "jsonName": "level",
+          "protoField": "level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Logging level. Controls which events are logged.\n\n Valid values:\n - \"OFF\"   — no logging\n - \"ERROR\" — log only delivery failures\n - \"INFO\"  — log delivery successes and failures\n - \"TRACE\" — log all events including matched/unmatched (most verbose)\n\n When the log_config block is provided, this field is required.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "IncludeDetail",
+          "jsonName": "includeDetail",
+          "protoField": "include_detail",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Whether to include the full event detail in log entries.\n\n Valid values:\n - \"NONE\" — exclude event detail from logs (smaller log volume)\n - \"FULL\" — include complete event detail in each log entry\n\n Default behavior when omitted: \"NONE\".",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

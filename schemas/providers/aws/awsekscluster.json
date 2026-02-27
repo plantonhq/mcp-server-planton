@@ -1,0 +1,119 @@
+{
+  "name": "AwsEksCluster",
+  "kind": "AwsEksCluster",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-eks-cluster",
+  "protoPackage": "org.openmcf.provider.aws.awsekscluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsekscluster/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsekscluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsEksClusterSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "subnet_ids is the list of subnet IDs (in the cluster's VPC) where the EKS control plane will attach network interfaces.\n Provide at least two subnets in distinct Availability Zones for high availability.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 2
+        },
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "ClusterRoleArn",
+        "jsonName": "clusterRoleArn",
+        "protoField": "cluster_role_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cluster_role_arn is the ARN of an IAM role for the EKS cluster to use when interacting with AWS services.\n This role must have the AmazonEKSClusterPolicy attached.\n Example: \"arn:aws:iam::123456789012:role/EksClusterServiceRole\"",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsIamRole",
+        "referenceFieldPath": "status.outputs.role_arn"
+      },
+      {
+        "name": "Version",
+        "jsonName": "version",
+        "protoField": "version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "version is the Kubernetes version of the cluster control plane to deploy (e.g., \"1.25\").\n Must match the pattern ^1\\.(2[4-9]|3[0-9])$ (for example, \"1.24\", \"1.25\", etc.). If not set, the latest supported version is used.",
+        "required": false
+      },
+      {
+        "name": "DisablePublicEndpoint",
+        "jsonName": "disablePublicEndpoint",
+        "protoField": "disable_public_endpoint",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "disable_public_endpoint determines if the cluster's API endpoint should be private-only.\n If false (default), the cluster API endpoint is publicly accessible; if true, the endpoint is accessible only within the VPC.",
+        "required": false
+      },
+      {
+        "name": "PublicAccessCidrs",
+        "jsonName": "publicAccessCidrs",
+        "protoField": "public_access_cidrs",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "public_access_cidrs restricts which IPv4 CIDR blocks can access the cluster's public API endpoint.\n If this list is empty, AWS defaults to 0.0.0.0/0 (all IPv4 addresses). Each entry must be a valid IPv4 CIDR (e.g., \"203.0.113.0/24\").",
+        "required": false
+      },
+      {
+        "name": "EnableControlPlaneLogs",
+        "jsonName": "enableControlPlaneLogs",
+        "protoField": "enable_control_plane_logs",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "enable_control_plane_logs, if true, enables all control plane log types for the cluster (API, audit, authenticator, controller manager, scheduler) to CloudWatch.\n Default is false, meaning control plane logging is disabled unless explicitly enabled.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyArn",
+        "jsonName": "kmsKeyArn",
+        "protoField": "kms_key_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "kms_key_arn is an optional KMS Key ARN to use for envelope encryption of Kubernetes secrets.\n If provided, this customer-managed KMS key will encrypt secrets; if not set, the cluster uses the default AWS-managed EKS key.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      }
+    ]
+  }
+}

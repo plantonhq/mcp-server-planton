@@ -1,0 +1,336 @@
+{
+  "name": "OpenStackInstance",
+  "kind": "OpenStackInstance",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackInstance is a Kubernetes Resource Model (KRM) style resource\n for managing OpenStack Compute instances.\n\n An instance is a virtual machine running on an OpenStack cloud. It is the\n fundamental compute resource -- every developer workload, application server,\n database, and CI runner is an instance.\n\n Instances bind together networking (networks/ports), storage (images/volumes),\n access control (keypairs/security groups), and placement (server groups/AZs)\n into a running virtual machine.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackInstanceSpec",
+    "fields": [
+      {
+        "name": "FlavorName",
+        "jsonName": "flavorName",
+        "protoField": "flavor_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "flavor_name is the human-readable name of the instance flavor (e.g., \"m1.medium\").\n This is the most common way to specify instance size.\n Mutually exclusive with flavor_id.",
+        "required": false
+      },
+      {
+        "name": "FlavorId",
+        "jsonName": "flavorId",
+        "protoField": "flavor_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "flavor_id is the UUID of the instance flavor.\n Use when you need to reference a specific flavor by ID rather than name.\n Mutually exclusive with flavor_name.",
+        "required": false
+      },
+      {
+        "name": "ImageName",
+        "jsonName": "imageName",
+        "protoField": "image_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "image_name is the name of the Glance image to boot from (e.g., \"ubuntu-22.04\").\n This is the most common way to specify the boot image.\n Optional when using block_device with a boot volume.",
+        "required": false
+      },
+      {
+        "name": "ImageId",
+        "jsonName": "imageId",
+        "protoField": "image_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "image_id is the UUID of the Glance image to boot from.\n Alternative to image_name for UUID-based image references.\n Optional when using block_device with a boot volume.",
+        "required": false
+      },
+      {
+        "name": "KeyPair",
+        "jsonName": "keyPair",
+        "protoField": "key_pair",
+        "type": {
+          "kind": "string"
+        },
+        "description": "key_pair is the name of the SSH keypair to inject into the instance.\n Can reference an OpenStackKeypair resource's output name (via value_from\n for InfraChart DAG wiring) or be a literal keypair name.\n Optional: instances without SSH keys rely on other access methods\n (e.g., console, cloud-init password).",
+        "required": false,
+        "referenceKind": "OpenStackKeypair",
+        "referenceFieldPath": "status.outputs.name"
+      },
+      {
+        "name": "Networks",
+        "jsonName": "networks",
+        "protoField": "networks",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "InstanceNetwork"
+          }
+        },
+        "description": "networks defines the network attachments for the instance.\n Each entry connects the instance to a network (via UUID) or attaches\n a pre-provisioned port (via port). At least one network is required.",
+        "required": false
+      },
+      {
+        "name": "SecurityGroups",
+        "jsonName": "securityGroups",
+        "protoField": "security_groups",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "security_groups is the list of security group names to apply to the instance.\n Each entry can reference an OpenStackSecurityGroup resource's output name\n (via value_from) or be a literal security group name.\n If omitted, OpenStack applies the default security group.\n\n Note: the Compute API uses security group NAMES (not UUIDs). The FK\n resolves to status.outputs.name, not status.outputs.security_group_id.\n The literal value must be a security group name, not a UUID.",
+        "required": false,
+        "referenceKind": "OpenStackSecurityGroup",
+        "referenceFieldPath": "status.outputs.name"
+      },
+      {
+        "name": "BlockDevice",
+        "jsonName": "blockDevice",
+        "protoField": "block_device",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "BlockDevice"
+          }
+        },
+        "description": "block_device defines block device mappings for the instance.\n Use this for boot-from-volume (persistent root disk) or attaching\n additional volumes at launch time.\n When using block_device with boot_index=0, image_name/image_id are optional.",
+        "required": false
+      },
+      {
+        "name": "UserData",
+        "jsonName": "userData",
+        "protoField": "user_data",
+        "type": {
+          "kind": "string"
+        },
+        "description": "user_data is the cloud-init configuration or script to run at first boot.\n Accepts cloud-config YAML, shell scripts, or any cloud-init format.\n The value is base64-encoded before being passed to the instance.\n ForceNew: changing user_data recreates the instance.",
+        "required": false
+      },
+      {
+        "name": "Metadata",
+        "jsonName": "metadata",
+        "protoField": "metadata",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "metadata is a map of key-value pairs to attach to the instance.\n Metadata is visible in the OpenStack API and Horizon dashboard.\n Can be updated without recreating the instance.",
+        "required": false
+      },
+      {
+        "name": "ConfigDrive",
+        "jsonName": "configDrive",
+        "protoField": "config_drive",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "config_drive enables the config drive for metadata delivery.\n When true, a small read-only disk is attached containing instance\n metadata, user_data, and network config. Useful when DHCP is not\n available or for environments requiring metadata on a local disk.\n ForceNew: changing config_drive recreates the instance.",
+        "required": false,
+        "oneofGroup": "_config_drive"
+      },
+      {
+        "name": "ServerGroupId",
+        "jsonName": "serverGroupId",
+        "protoField": "server_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "server_group_id is the UUID of the server group for placement control.\n Can reference an OpenStackServerGroup resource's output (via value_from\n for InfraChart DAG wiring) or be a literal server group UUID.\n Maps to scheduler_hints.group in the Terraform/Pulumi resources.\n ForceNew: changing the server group recreates the instance.",
+        "required": false,
+        "referenceKind": "OpenStackServerGroup",
+        "referenceFieldPath": "status.outputs.server_group_id"
+      },
+      {
+        "name": "AvailabilityZone",
+        "jsonName": "availabilityZone",
+        "protoField": "availability_zone",
+        "type": {
+          "kind": "string"
+        },
+        "description": "availability_zone specifies the AZ where the instance should be launched.\n If omitted, Nova selects an AZ based on its scheduling algorithms.\n ForceNew: changing the AZ recreates the instance.\n Example: \"nova\", \"az1\", \"az:host:node\"",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "tags are string tags to associate with the instance in OpenStack.\n Tags are stored on the OpenStack resource and can be used for filtering\n and organization in the OpenStack API and Horizon dashboard.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this instance.\n If omitted, the region from the OpenStack provider config is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "BlockDevice",
+      "description": "BlockDevice defines a block device mapping for a compute instance.\n\n Block device mappings control the instance's storage: the boot device,\n additional volumes, and ephemeral storage. The most common pattern is\n boot-from-volume (source_type=image, destination_type=volume) for\n persistent root disks.",
+      "protoType": "org.openmcf.provider.openstack.openstackinstance.v1.BlockDevice",
+      "fields": [
+        {
+          "name": "SourceType",
+          "jsonName": "sourceType",
+          "protoField": "source_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "source_type is the type of the source for this block device.\n Required.\n   \"image\"    - boot from a Glance image (most common)\n   \"volume\"   - attach an existing Cinder volume\n   \"snapshot\" - create from a volume snapshot\n   \"blank\"    - create an empty volume (for additional storage)",
+          "required": false,
+          "validation": {
+            "minLength": 1,
+            "enum": [
+              "blank",
+              "image",
+              "snapshot",
+              "volume"
+            ]
+          }
+        },
+        {
+          "name": "Uuid",
+          "jsonName": "uuid",
+          "protoField": "uuid",
+          "type": {
+            "kind": "string"
+          },
+          "description": "uuid is the UUID of the source (image, volume, or snapshot).\n Required when source_type is not \"blank\".",
+          "required": false
+        },
+        {
+          "name": "DestinationType",
+          "jsonName": "destinationType",
+          "protoField": "destination_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "destination_type controls where the block device is created.\n   \"local\"  - ephemeral storage on the hypervisor (default for image)\n   \"volume\" - persistent Cinder volume (recommended for production)",
+          "required": false
+        },
+        {
+          "name": "BootIndex",
+          "jsonName": "bootIndex",
+          "protoField": "boot_index",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "boot_index determines the boot order.\n   0  - this is the boot device\n  -1  - not bootable (data volume)\n   N  - boot priority (lower = higher priority)",
+          "required": false
+        },
+        {
+          "name": "VolumeSize",
+          "jsonName": "volumeSize",
+          "protoField": "volume_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "volume_size is the size of the block device in GB.\n Required for image-to-volume and blank-to-local mappings.",
+          "required": false
+        },
+        {
+          "name": "DeleteOnTermination",
+          "jsonName": "deleteOnTermination",
+          "protoField": "delete_on_termination",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "delete_on_termination controls whether the volume is deleted when\n the instance is terminated. Default: false (volume persists).",
+          "required": false
+        },
+        {
+          "name": "VolumeType",
+          "jsonName": "volumeType",
+          "protoField": "volume_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "volume_type specifies the Cinder volume type (e.g., \"SSD\", \"HDD\").\n Only meaningful when destination_type is \"volume\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "InstanceNetwork",
+      "description": "InstanceNetwork defines a network attachment for a compute instance.\n\n Each entry connects the instance to a network either by specifying the\n network UUID (auto-creates a port) or by attaching a pre-provisioned port\n (for stable network identity, pre-assigned IPs, or multiple security groups).",
+      "protoType": "org.openmcf.provider.openstack.openstackinstance.v1.InstanceNetwork",
+      "fields": [
+        {
+          "name": "Uuid",
+          "jsonName": "uuid",
+          "protoField": "uuid",
+          "type": {
+            "kind": "string"
+          },
+          "description": "uuid is the network UUID to attach the instance to.\n OpenStack auto-creates a port on this network for the instance.\n Can reference an OpenStackNetwork resource's output (via value_from).\n Mutually exclusive with port.",
+          "required": false,
+          "referenceKind": "OpenStackNetwork",
+          "referenceFieldPath": "status.outputs.network_id"
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "string"
+          },
+          "description": "port is the UUID of a pre-provisioned port to attach to the instance.\n Use when you need stable MAC/IP addresses, specific security groups,\n or other port-level configuration.\n Can reference an OpenStackNetworkPort resource's output (via value_from).\n Mutually exclusive with uuid.",
+          "required": false,
+          "referenceKind": "OpenStackNetworkPort",
+          "referenceFieldPath": "status.outputs.port_id"
+        },
+        {
+          "name": "FixedIpV4",
+          "jsonName": "fixedIpV4",
+          "protoField": "fixed_ip_v4",
+          "type": {
+            "kind": "string"
+          },
+          "description": "fixed_ip_v4 requests a specific IPv4 address on the network.\n Only meaningful when uuid is used (not port -- port has its own fixed_ips).\n If omitted, an available IP from the subnet's allocation pool is assigned.",
+          "required": false
+        },
+        {
+          "name": "AccessNetwork",
+          "jsonName": "accessNetwork",
+          "protoField": "access_network",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "access_network marks this network as the instance's access network.\n The access network determines which IP appears in access_ip_v4 output.\n Only one network should be marked as access_network.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

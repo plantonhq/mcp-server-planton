@@ -1,0 +1,118 @@
+{
+  "name": "AliCloudRamPolicy",
+  "kind": "AliCloudRamPolicy",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-ram-policy",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudrampolicy.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudrampolicy/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudrampolicy/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudRamPolicySpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region for provider endpoint configuration.\n RAM is a global service, but the provider requires a region for API routing.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "PolicyName",
+        "jsonName": "policyName",
+        "protoField": "policy_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "RAM policy name. Must be unique within the Alibaba Cloud account.\n 1-128 characters: English letters, digits, and hyphens (-).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of what this policy allows or denies.\n Maximum 1024 characters.",
+        "required": false,
+        "validation": {
+          "maxLength": 1024
+        }
+      },
+      {
+        "name": "PolicyDocument",
+        "jsonName": "policyDocument",
+        "protoField": "policy_document",
+        "type": {
+          "kind": "string"
+        },
+        "description": "JSON IAM policy document defining the permissions.\n Maximum 6144 bytes. Must be valid JSON conforming to the Alibaba Cloud\n RAM policy structure with Version, Statement, Effect, Action, and Resource.\n\n Example granting read-only access to a specific OSS bucket:\n   {\"Version\":\"1\",\"Statement\":[{\"Effect\":\"Allow\",\n    \"Action\":[\"oss:GetObject\",\"oss:ListObjects\"],\n    \"Resource\":[\"acs:oss:*:*:my-bucket/*\"]}]}",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "RotateStrategy",
+        "jsonName": "rotateStrategy",
+        "protoField": "rotate_strategy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Strategy for handling policy versions when the 5-version limit is reached.\n \"None\" (default): update fails if the limit is reached; you must manually\n   delete old versions.\n \"DeleteOldestNonDefaultVersionWhenLimitExceeded\": automatically deletes\n   the oldest non-default version to make room.",
+        "required": false,
+        "validation": {
+          "enum": [
+            "None",
+            "DeleteOldestNonDefaultVersionWhenLimitExceeded"
+          ]
+        },
+        "oneofGroup": "_rotate_strategy"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags applied to the RAM policy for organizational and cost-tracking purposes.",
+        "required": false
+      },
+      {
+        "name": "Force",
+        "jsonName": "force",
+        "protoField": "force",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Force-delete the policy even if it is still attached to roles, users, or groups.\n When true, the policy is detached from all entities and all non-default versions\n are deleted before the policy itself is removed.\n When false (default), deletion fails if the policy is still attached.\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_force"
+      }
+    ]
+  }
+}

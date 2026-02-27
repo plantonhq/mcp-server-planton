@@ -1,0 +1,96 @@
+{
+  "name": "CloudflareD1Database",
+  "kind": "CloudflareD1Database",
+  "cloudProvider": "cloudflare",
+  "apiVersion": "cloudflare.openmcf.org/v1",
+  "description": "cloudflare-d1-database",
+  "protoPackage": "org.openmcf.provider.cloudflare.cloudflared1database.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/cloudflare/cloudflared1database/v1/api.proto",
+    "spec": "org/openmcf/provider/cloudflare/cloudflared1database/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CloudflareD1DatabaseSpec",
+    "fields": [
+      {
+        "name": "AccountId",
+        "jsonName": "accountId",
+        "protoField": "account_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The Cloudflare account ID in which to create the database.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "DatabaseName",
+        "jsonName": "databaseName",
+        "protoField": "database_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The unique name for the D1 database.\n Must be unique within the account.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "maxLength": 64
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.cloudflare.cloudflared1database.v1.CloudflareD1Region",
+          "enumValues": [
+            "weur",
+            "eeur",
+            "apac",
+            "oc",
+            "wnam",
+            "enam"
+          ]
+        },
+        "description": "(Optional) The Cloudflare region where the D1 database will be hosted.\n This maps to the primary_location_hint property in the Cloudflare API.\n Valid values: weur, eeur, apac, oc, wnam, enam.\n If omitted, Cloudflare selects a default location based on your account settings.",
+        "required": false
+      },
+      {
+        "name": "ReadReplication",
+        "jsonName": "readReplication",
+        "protoField": "read_replication",
+        "type": {
+          "kind": "message",
+          "messageType": "CloudflareD1ReadReplication"
+        },
+        "description": "(Optional) Configures D1 Read Replication (Beta).\n Enables automatic read replication across multiple regions for lower global read latency.\n WARNING: Enabling replication requires application-level code changes to use the D1 Sessions API.\n Failing to use the Sessions API will cause data consistency errors.\n If omitted, replication is disabled.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "CloudflareD1ReadReplication",
+      "description": "CloudflareD1ReadReplication configures D1 Read Replication (Beta).\n Read replication creates read-only replicas in multiple regions to reduce global read latency.",
+      "protoType": "org.openmcf.provider.cloudflare.cloudflared1database.v1.CloudflareD1ReadReplication",
+      "fields": [
+        {
+          "name": "Mode",
+          "jsonName": "mode",
+          "protoField": "mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "(Required if read_replication is set) The replication mode.\n Valid values: \"auto\" (enable automatic read replication), \"disabled\" (disable replication).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,649 @@
+{
+  "name": "AliCloudApplicationLoadBalancer",
+  "kind": "AliCloudApplicationLoadBalancer",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-application-load-balancer",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudapplicationloadbalancer.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudapplicationloadbalancer/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudapplicationloadbalancer/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudApplicationLoadBalancerSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the ALB will be created.\n Must match the region of the VPC and VSwitches.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC ID that the ALB belongs to. The ALB, all zone-mapping VSwitches,\n and server groups must reside in the same VPC.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "LoadBalancerName",
+        "jsonName": "loadBalancerName",
+        "protoField": "load_balancer_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ALB name. 2-128 characters; must start with a letter; can contain\n digits, underscores, periods, and hyphens.\n If omitted, defaults to the metadata.name.",
+        "required": false
+      },
+      {
+        "name": "AddressType",
+        "jsonName": "addressType",
+        "protoField": "address_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Network type of the ALB.\n \"Internet\" creates a public-facing ALB with a DNS name resolvable\n from the internet. \"Intranet\" creates a VPC-internal ALB.\n Default: \"Internet\"",
+        "required": false,
+        "default": "Internet",
+        "oneofGroup": "_address_type"
+      },
+      {
+        "name": "LoadBalancerEdition",
+        "jsonName": "loadBalancerEdition",
+        "protoField": "load_balancer_edition",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ALB edition that determines feature availability and performance.\n \"Basic\" supports basic L7 load balancing.\n \"Standard\" adds advanced features (WAF integration, custom routing).\n \"StandardWithWaf\" includes integrated WAF protection.\n Default: \"Standard\"",
+        "required": false,
+        "default": "Standard",
+        "oneofGroup": "_load_balancer_edition"
+      },
+      {
+        "name": "ZoneMappings",
+        "jsonName": "zoneMappings",
+        "protoField": "zone_mappings",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudApplicationLoadBalancerZoneMapping"
+          }
+        },
+        "description": "Availability zone mappings. Each mapping places an ALB node in a zone\n with a VSwitch for IP allocation. ALB requires at least 2 zones for\n high availability.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 2
+        }
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the ALB is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "AccessLogConfig",
+        "jsonName": "accessLogConfig",
+        "protoField": "access_log_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudApplicationLoadBalancerAccessLogConfig"
+        },
+        "description": "Access log configuration for shipping ALB access logs to SLS (Log Service).\n When configured, all listener access logs are sent to the specified\n SLS log project and log store.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the ALB resource.",
+        "required": false
+      },
+      {
+        "name": "ServerGroups",
+        "jsonName": "serverGroups",
+        "protoField": "server_groups",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudApplicationLoadBalancerServerGroup"
+          }
+        },
+        "description": "Server groups that define backend targets for the ALB.\n Each server group has its own health check, protocol, and session\n stickiness configuration. Listeners reference server groups by name.\n\n Server groups are created empty -- backend membership is managed\n externally (by ACK ingress, SAE, or manual attachment).",
+        "required": false
+      },
+      {
+        "name": "Listeners",
+        "jsonName": "listeners",
+        "protoField": "listeners",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudApplicationLoadBalancerListener"
+          }
+        },
+        "description": "Listeners that define how the ALB accepts incoming traffic.\n Each listener binds to a port and protocol and forwards traffic to a\n server group via default_actions. HTTPS listeners require a certificate.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudApplicationLoadBalancerAccessLogConfig",
+      "description": "AliCloudApplicationLoadBalancerAccessLogConfig configures access log delivery to SLS.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudapplicationloadbalancer.v1.AliCloudApplicationLoadBalancerAccessLogConfig",
+      "fields": [
+        {
+          "name": "LogProject",
+          "jsonName": "logProject",
+          "protoField": "log_project",
+          "type": {
+            "kind": "string"
+          },
+          "description": "SLS log project name. Must already exist in the same region as the ALB.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "LogStore",
+          "jsonName": "logStore",
+          "protoField": "log_store",
+          "type": {
+            "kind": "string"
+          },
+          "description": "SLS log store name within the log project.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "AliCloudApplicationLoadBalancerHealthCheckConfig",
+      "description": "AliCloudApplicationLoadBalancerHealthCheckConfig defines how the ALB probes backend servers.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudapplicationloadbalancer.v1.AliCloudApplicationLoadBalancerHealthCheckConfig",
+      "fields": [
+        {
+          "name": "HealthCheckEnabled",
+          "jsonName": "healthCheckEnabled",
+          "protoField": "health_check_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether health checks are enabled for this server group.\n When disabled, all servers are considered healthy.",
+          "required": false
+        },
+        {
+          "name": "HealthCheckProtocol",
+          "jsonName": "healthCheckProtocol",
+          "protoField": "health_check_protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol used for health check probes.\n Default: \"HTTP\"",
+          "required": false,
+          "default": "HTTP",
+          "oneofGroup": "_health_check_protocol"
+        },
+        {
+          "name": "HealthCheckPath",
+          "jsonName": "healthCheckPath",
+          "protoField": "health_check_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URL path for HTTP/HTTPS health check probes. Must start with \"/\".\n Ignored for TCP probes.\n Example: \"/health\", \"/api/healthz\"",
+          "required": false
+        },
+        {
+          "name": "HealthCheckHost",
+          "jsonName": "healthCheckHost",
+          "protoField": "health_check_host",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Domain name used in the Host header of HTTP/HTTPS health check probes.\n If omitted, the server's IP address is used.",
+          "required": false
+        },
+        {
+          "name": "HealthCheckMethod",
+          "jsonName": "healthCheckMethod",
+          "protoField": "health_check_method",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP method for health check probes.\n Default: \"HEAD\"",
+          "required": false,
+          "default": "HEAD",
+          "oneofGroup": "_health_check_method"
+        },
+        {
+          "name": "HealthCheckConnectPort",
+          "jsonName": "healthCheckConnectPort",
+          "protoField": "health_check_connect_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Backend port used for health checks. 0 means use the port of the\n backend server (the default).\n Range: 0-65535. Default: 0",
+          "required": false,
+          "validation": {
+            "max": 65535
+          },
+          "default": "0",
+          "oneofGroup": "_health_check_connect_port"
+        },
+        {
+          "name": "HealthCheckInterval",
+          "jsonName": "healthCheckInterval",
+          "protoField": "health_check_interval",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Interval between health check probes, in seconds.\n Range: 1-50. Default: 2",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 50
+          },
+          "default": "2",
+          "oneofGroup": "_health_check_interval"
+        },
+        {
+          "name": "HealthCheckTimeout",
+          "jsonName": "healthCheckTimeout",
+          "protoField": "health_check_timeout",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum time to wait for a health check response, in seconds.\n Range: 1-300. Default: 5",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 300
+          },
+          "default": "5",
+          "oneofGroup": "_health_check_timeout"
+        },
+        {
+          "name": "HealthyThreshold",
+          "jsonName": "healthyThreshold",
+          "protoField": "healthy_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive successful probes before a server is marked healthy.\n Range: 2-10. Default: 3",
+          "required": false,
+          "validation": {
+            "min": 2,
+            "max": 10
+          },
+          "default": "3",
+          "oneofGroup": "_healthy_threshold"
+        },
+        {
+          "name": "UnhealthyThreshold",
+          "jsonName": "unhealthyThreshold",
+          "protoField": "unhealthy_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive failed probes before a server is marked unhealthy.\n Range: 2-10. Default: 3",
+          "required": false,
+          "validation": {
+            "min": 2,
+            "max": 10
+          },
+          "default": "3",
+          "oneofGroup": "_unhealthy_threshold"
+        },
+        {
+          "name": "HealthCheckCodes",
+          "jsonName": "healthCheckCodes",
+          "protoField": "health_check_codes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "HTTP status codes that indicate a healthy response.\n Only applicable when health_check_protocol is HTTP or HTTPS.\n Examples: [\"http_2xx\"], [\"http_2xx\", \"http_3xx\"]",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudApplicationLoadBalancerListener",
+      "description": "AliCloudApplicationLoadBalancerListener defines how the ALB accepts incoming traffic on a\n specific port and protocol.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudapplicationloadbalancer.v1.AliCloudApplicationLoadBalancerListener",
+      "fields": [
+        {
+          "name": "ListenerPort",
+          "jsonName": "listenerPort",
+          "protoField": "listener_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port on which the listener accepts traffic.\n Range: 1-65535. Common values: 80 (HTTP), 443 (HTTPS).",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "ListenerProtocol",
+          "jsonName": "listenerProtocol",
+          "protoField": "listener_protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol for this listener.\n \"HTTP\" for unencrypted HTTP traffic.\n \"HTTPS\" for TLS-encrypted traffic (requires certificate_id).\n \"QUIC\" for HTTP/3 over QUIC.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "DefaultActionServerGroupName",
+          "jsonName": "defaultActionServerGroupName",
+          "protoField": "default_action_server_group_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the server group that receives traffic from this listener.\n Must match a name in the server_groups list. The listener creates a\n default ForwardGroup action routing all traffic to this server group.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ListenerDescription",
+          "jsonName": "listenerDescription",
+          "protoField": "listener_description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description of this listener's purpose.\n 2-256 characters.",
+          "required": false
+        },
+        {
+          "name": "CertificateId",
+          "jsonName": "certificateId",
+          "protoField": "certificate_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Server certificate ID for HTTPS and QUIC listeners.\n Required when listener_protocol is \"HTTPS\" or \"QUIC\".\n Obtain from Alibaba Cloud Certificate Management Service (CAS).",
+          "required": false
+        },
+        {
+          "name": "SecurityPolicyId",
+          "jsonName": "securityPolicyId",
+          "protoField": "security_policy_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "TLS security policy that defines the supported TLS versions and cipher\n suites. Only applicable for HTTPS and QUIC listeners.\n Examples: \"tls_cipher_policy_1_0\", \"tls_cipher_policy_1_2_strict\"",
+          "required": false
+        },
+        {
+          "name": "GzipEnabled",
+          "jsonName": "gzipEnabled",
+          "protoField": "gzip_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to enable gzip compression for HTTP responses.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_gzip_enabled"
+        },
+        {
+          "name": "Http2Enabled",
+          "jsonName": "http2Enabled",
+          "protoField": "http2_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to enable HTTP/2 for this listener.\n Only applicable for HTTPS listeners.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_http2_enabled"
+        },
+        {
+          "name": "IdleTimeout",
+          "jsonName": "idleTimeout",
+          "protoField": "idle_timeout",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Connection idle timeout in seconds. Connections idle longer are closed.\n Range: 1-60. Default: 60",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 60
+          },
+          "default": "60",
+          "oneofGroup": "_idle_timeout"
+        },
+        {
+          "name": "RequestTimeout",
+          "jsonName": "requestTimeout",
+          "protoField": "request_timeout",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Request timeout in seconds. The ALB returns 504 if the backend does\n not respond within this period.\n Range: 1-180. Default: 60",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 180
+          },
+          "default": "60",
+          "oneofGroup": "_request_timeout"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudApplicationLoadBalancerServerGroup",
+      "description": "AliCloudApplicationLoadBalancerServerGroup defines a backend target group with health check\n and session stickiness configuration. Server groups are created empty --\n backend membership is managed externally.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudapplicationloadbalancer.v1.AliCloudApplicationLoadBalancerServerGroup",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Server group name. 2-128 characters; must start with a letter.\n Used by listeners to reference this server group via\n default_action_server_group_name.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 2,
+            "maxLength": 128
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Backend protocol for communication between the ALB and servers.\n Default: \"HTTP\"",
+          "required": false,
+          "default": "HTTP",
+          "oneofGroup": "_protocol"
+        },
+        {
+          "name": "Scheduler",
+          "jsonName": "scheduler",
+          "protoField": "scheduler",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Scheduling algorithm for distributing requests across servers.\n \"Wrr\" -- Weighted Round Robin (default, distributes by weight).\n \"Wlc\" -- Weighted Least Connections (routes to least-busy server).\n \"Sch\" -- Source IP Consistent Hashing (same client IP to same server).\n Default: \"Wrr\"",
+          "required": false,
+          "default": "Wrr",
+          "oneofGroup": "_scheduler"
+        },
+        {
+          "name": "HealthCheckConfig",
+          "jsonName": "healthCheckConfig",
+          "protoField": "health_check_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudApplicationLoadBalancerHealthCheckConfig"
+          },
+          "description": "Health check configuration. Required for every server group.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "StickySessionConfig",
+          "jsonName": "stickySessionConfig",
+          "protoField": "sticky_session_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudApplicationLoadBalancerStickySessionConfig"
+          },
+          "description": "Session stickiness configuration. When enabled, requests from the same\n client are routed to the same backend server.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudApplicationLoadBalancerStickySessionConfig",
+      "description": "AliCloudApplicationLoadBalancerStickySessionConfig defines session stickiness behavior.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudapplicationloadbalancer.v1.AliCloudApplicationLoadBalancerStickySessionConfig",
+      "fields": [
+        {
+          "name": "StickySessionEnabled",
+          "jsonName": "stickySessionEnabled",
+          "protoField": "sticky_session_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether session stickiness is enabled.",
+          "required": false
+        },
+        {
+          "name": "StickySessionType",
+          "jsonName": "stickySessionType",
+          "protoField": "sticky_session_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Session stickiness method.\n \"Insert\" -- ALB inserts a cookie (SERVERID) into responses.\n \"Server\" -- ALB uses a cookie set by the backend server.",
+          "required": false,
+          "oneofGroup": "_sticky_session_type"
+        },
+        {
+          "name": "Cookie",
+          "jsonName": "cookie",
+          "protoField": "cookie",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Cookie name when sticky_session_type is \"Server\".\n The ALB reads this cookie from backend responses to identify the server.",
+          "required": false
+        },
+        {
+          "name": "CookieTimeout",
+          "jsonName": "cookieTimeout",
+          "protoField": "cookie_timeout",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Cookie timeout in seconds when sticky_session_type is \"Insert\".\n Range: 1-86400. Default: 1000",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 86400
+          },
+          "default": "1000",
+          "oneofGroup": "_cookie_timeout"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudApplicationLoadBalancerZoneMapping",
+      "description": "AliCloudApplicationLoadBalancerZoneMapping associates an availability zone with a VSwitch.\n The ALB places a node in each mapped zone for high availability.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudapplicationloadbalancer.v1.AliCloudApplicationLoadBalancerZoneMapping",
+      "fields": [
+        {
+          "name": "ZoneId",
+          "jsonName": "zoneId",
+          "protoField": "zone_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Availability zone ID within the region.\n Examples: \"cn-hangzhou-a\", \"cn-hangzhou-b\", \"us-west-1-a\".",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "VswitchId",
+          "jsonName": "vswitchId",
+          "protoField": "vswitch_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VSwitch ID in this availability zone. The ALB allocates an IP from\n this VSwitch. Must belong to the same VPC as the ALB's vpc_id.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AliCloudVswitch",
+          "referenceFieldPath": "status.outputs.vswitch_id"
+        }
+      ]
+    }
+  ]
+}

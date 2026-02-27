@@ -1,0 +1,161 @@
+{
+  "name": "CivoDatabase",
+  "kind": "CivoDatabase",
+  "cloudProvider": "civo",
+  "apiVersion": "civo.openmcf.org/v1",
+  "description": "civo-database",
+  "protoPackage": "org.openmcf.provider.civo.civodatabase.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/civo/civodatabase/v1/api.proto",
+    "spec": "org/openmcf/provider/civo/civodatabase/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CivoDatabaseSpec",
+    "fields": [
+      {
+        "name": "DbInstanceName",
+        "jsonName": "dbInstanceName",
+        "protoField": "db_instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "A human-readable name for the database instance.\n This name must be unique within the chosen Civo region.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "maxLength": 64
+        }
+      },
+      {
+        "name": "Engine",
+        "jsonName": "engine",
+        "protoField": "engine",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.civo.civodatabase.v1.CivoDatabaseEngine",
+          "enumValues": [
+            "mysql",
+            "postgres"
+          ]
+        },
+        "description": "The database engine for the instance (MySQL or PostgreSQL).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "EngineVersion",
+        "jsonName": "engineVersion",
+        "protoField": "engine_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The engine version for the database.\n For example: \"8.0\" for MySQL 8.0, \"14\" for PostgreSQL 14.\n Only major (and optionally minor) version numbers are expected.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[0-9]+(\\.[0-9]+)?$"
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.civo.CivoRegion",
+          "enumValues": [
+            "lon1",
+            "lon2",
+            "fra1",
+            "nyc1",
+            "phx1",
+            "mum1"
+          ]
+        },
+        "description": "The Civo region where the database will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "SizeSlug",
+        "jsonName": "sizeSlug",
+        "protoField": "size_slug",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The plan or size identifier for the database instance (e.g., \"g3.db.small\").\n This defines CPU, memory, and base storage for the instance.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Replicas",
+        "jsonName": "replicas",
+        "protoField": "replicas",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "The number of replica nodes to add to the database (0 means no replicas, just the primary).\n Typically use 0, 2, or 4 for a total of 1, 3, or 5 nodes in the cluster.",
+        "required": false
+      },
+      {
+        "name": "NetworkId",
+        "jsonName": "networkId",
+        "protoField": "network_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The target private network for the database instance.\n Provide a literal network UUID or a reference to a CivoNetwork resource.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "CivoVpc",
+        "referenceFieldPath": "status.outputs.network_id"
+      },
+      {
+        "name": "FirewallIds",
+        "jsonName": "firewallIds",
+        "protoField": "firewall_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "(Optional) Firewall rules to attach to this database instance.\n Provide one or more firewall IDs or references to CivoFirewall resources for access control.",
+        "required": false,
+        "referenceKind": "CivoFirewall",
+        "referenceFieldPath": "status.outputs.firewall_id"
+      },
+      {
+        "name": "StorageGib",
+        "jsonName": "storageGib",
+        "protoField": "storage_gib",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "(Optional) Custom storage size in GiB for the database, if different from the default provided by size_slug.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "(Optional) Tags to assign to the database instance for organizational purposes.",
+        "required": false
+      }
+    ]
+  }
+}

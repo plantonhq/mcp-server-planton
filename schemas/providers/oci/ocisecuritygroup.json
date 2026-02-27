@@ -1,0 +1,422 @@
+{
+  "name": "OciSecurityGroup",
+  "kind": "OciSecurityGroup",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciSecurityGroup is the top-level resource representing an Oracle\n Cloud Infrastructure Network Security Group with inline security rules.",
+  "protoPackage": "org.openmcf.provider.oci.ocisecuritygroup.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocisecuritygroup/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocisecuritygroup/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciSecurityGroupSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the NSG will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "VcnId",
+        "jsonName": "vcnId",
+        "protoField": "vcn_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the VCN that this NSG belongs to. Changing this forces recreation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciVcn",
+        "referenceFieldPath": "status.outputs.vcnId"
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable name shown in the OCI Console.\n Falls back to metadata.name if not provided.",
+        "required": false
+      },
+      {
+        "name": "IngressRules",
+        "jsonName": "ingressRules",
+        "protoField": "ingress_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "IngressRule"
+          }
+        },
+        "description": "Inbound security rules. Each rule defines traffic that is allowed TO\n resources associated with this NSG.",
+        "required": false
+      },
+      {
+        "name": "EgressRules",
+        "jsonName": "egressRules",
+        "protoField": "egress_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "EgressRule"
+          }
+        },
+        "description": "Outbound security rules. Each rule defines traffic that is allowed FROM\n resources associated with this NSG.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "EgressRule",
+      "description": "EgressRule defines a single outbound security rule.",
+      "protoType": "org.openmcf.provider.oci.ocisecuritygroup.v1.OciSecurityGroupSpec.EgressRule",
+      "fields": [
+        {
+          "name": "Destination",
+          "jsonName": "destination",
+          "protoField": "destination",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Traffic destination: a CIDR block, a service CIDR label, or the OCID of\n another NSG.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DestinationType",
+          "jsonName": "destinationType",
+          "protoField": "destination_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocisecuritygroup.v1.TargetType",
+            "enumValues": [
+              "cidr_block",
+              "service_cidr_block",
+              "network_security_group"
+            ]
+          },
+          "description": "Interpretation of the destination field. Defaults to cidr_block when unset.",
+          "required": false
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocisecuritygroup.v1.Protocol",
+            "enumValues": [
+              "all",
+              "icmp",
+              "tcp",
+              "udp",
+              "icmpv6"
+            ]
+          },
+          "description": "Transport protocol for this rule.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional human-readable description.",
+          "required": false
+        },
+        {
+          "name": "Stateless",
+          "jsonName": "stateless",
+          "protoField": "stateless",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true the rule is stateless. When false (the default) the rule is stateful.",
+          "required": false
+        },
+        {
+          "name": "TcpOptions",
+          "jsonName": "tcpOptions",
+          "protoField": "tcp_options",
+          "type": {
+            "kind": "message",
+            "messageType": "TcpOptions"
+          },
+          "description": "TCP port constraints. Only valid when protocol is tcp.",
+          "required": false
+        },
+        {
+          "name": "UdpOptions",
+          "jsonName": "udpOptions",
+          "protoField": "udp_options",
+          "type": {
+            "kind": "message",
+            "messageType": "UdpOptions"
+          },
+          "description": "UDP port constraints. Only valid when protocol is udp.",
+          "required": false
+        },
+        {
+          "name": "IcmpOptions",
+          "jsonName": "icmpOptions",
+          "protoField": "icmp_options",
+          "type": {
+            "kind": "message",
+            "messageType": "IcmpOptions"
+          },
+          "description": "ICMP type/code constraints. Only valid when protocol is icmp or icmpv6.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "IcmpOptions",
+      "description": "IcmpOptions constrains ICMP traffic by type and optionally code.",
+      "protoType": "org.openmcf.provider.oci.ocisecuritygroup.v1.OciSecurityGroupSpec.IcmpOptions",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "ICMP message type (e.g. 3 for \"Destination Unreachable\", 8 for \"Echo\").",
+          "required": false
+        },
+        {
+          "name": "Code",
+          "jsonName": "code",
+          "protoField": "code",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "ICMP message code. When omitted, all codes for the given type are matched.\n Use optional so that code=0 (a valid ICMP code) is distinguishable from \"not set\".",
+          "required": false,
+          "oneofGroup": "_code"
+        }
+      ]
+    },
+    {
+      "name": "IngressRule",
+      "description": "IngressRule defines a single inbound security rule.",
+      "protoType": "org.openmcf.provider.oci.ocisecuritygroup.v1.OciSecurityGroupSpec.IngressRule",
+      "fields": [
+        {
+          "name": "Source",
+          "jsonName": "source",
+          "protoField": "source",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Traffic source: a CIDR block (e.g. \"10.0.0.0/16\"), a service CIDR label\n (e.g. \"all-iad-services-in-oracle-services-network\"), or the OCID of\n another NSG.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "SourceType",
+          "jsonName": "sourceType",
+          "protoField": "source_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocisecuritygroup.v1.TargetType",
+            "enumValues": [
+              "cidr_block",
+              "service_cidr_block",
+              "network_security_group"
+            ]
+          },
+          "description": "Interpretation of the source field. Defaults to cidr_block when unset.",
+          "required": false
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocisecuritygroup.v1.Protocol",
+            "enumValues": [
+              "all",
+              "icmp",
+              "tcp",
+              "udp",
+              "icmpv6"
+            ]
+          },
+          "description": "Transport protocol for this rule.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional human-readable description.",
+          "required": false
+        },
+        {
+          "name": "Stateless",
+          "jsonName": "stateless",
+          "protoField": "stateless",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true the rule is stateless (return traffic must be explicitly\n allowed). When false (the default) the rule is stateful.",
+          "required": false
+        },
+        {
+          "name": "TcpOptions",
+          "jsonName": "tcpOptions",
+          "protoField": "tcp_options",
+          "type": {
+            "kind": "message",
+            "messageType": "TcpOptions"
+          },
+          "description": "TCP port constraints. Only valid when protocol is tcp.",
+          "required": false
+        },
+        {
+          "name": "UdpOptions",
+          "jsonName": "udpOptions",
+          "protoField": "udp_options",
+          "type": {
+            "kind": "message",
+            "messageType": "UdpOptions"
+          },
+          "description": "UDP port constraints. Only valid when protocol is udp.",
+          "required": false
+        },
+        {
+          "name": "IcmpOptions",
+          "jsonName": "icmpOptions",
+          "protoField": "icmp_options",
+          "type": {
+            "kind": "message",
+            "messageType": "IcmpOptions"
+          },
+          "description": "ICMP type/code constraints. Only valid when protocol is icmp or icmpv6.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "PortRange",
+      "description": "PortRange defines a contiguous range of L4 port numbers.\n Set min == max to specify a single port.",
+      "protoType": "org.openmcf.provider.oci.ocisecuritygroup.v1.OciSecurityGroupSpec.PortRange",
+      "fields": [
+        {
+          "name": "Min",
+          "jsonName": "min",
+          "protoField": "min",
+          "type": {
+            "kind": "int32"
+          },
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "Max",
+          "jsonName": "max",
+          "protoField": "max",
+          "type": {
+            "kind": "int32"
+          },
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          }
+        }
+      ]
+    },
+    {
+      "name": "TcpOptions",
+      "description": "TcpOptions constrains TCP traffic by destination and/or source port range.\n At least one range should be provided; when omitted, all ports are allowed.",
+      "protoType": "org.openmcf.provider.oci.ocisecuritygroup.v1.OciSecurityGroupSpec.TcpOptions",
+      "fields": [
+        {
+          "name": "DestinationPortRange",
+          "jsonName": "destinationPortRange",
+          "protoField": "destination_port_range",
+          "type": {
+            "kind": "message",
+            "messageType": "PortRange"
+          },
+          "required": false
+        },
+        {
+          "name": "SourcePortRange",
+          "jsonName": "sourcePortRange",
+          "protoField": "source_port_range",
+          "type": {
+            "kind": "message",
+            "messageType": "PortRange"
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "UdpOptions",
+      "description": "UdpOptions constrains UDP traffic by destination and/or source port range.",
+      "protoType": "org.openmcf.provider.oci.ocisecuritygroup.v1.OciSecurityGroupSpec.UdpOptions",
+      "fields": [
+        {
+          "name": "DestinationPortRange",
+          "jsonName": "destinationPortRange",
+          "protoField": "destination_port_range",
+          "type": {
+            "kind": "message",
+            "messageType": "PortRange"
+          },
+          "required": false
+        },
+        {
+          "name": "SourcePortRange",
+          "jsonName": "sourcePortRange",
+          "protoField": "source_port_range",
+          "type": {
+            "kind": "message",
+            "messageType": "PortRange"
+          },
+          "required": false
+        }
+      ]
+    }
+  ]
+}

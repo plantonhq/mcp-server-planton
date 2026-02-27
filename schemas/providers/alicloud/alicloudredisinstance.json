@@ -1,0 +1,380 @@
+{
+  "name": "AliCloudRedisInstance",
+  "kind": "AliCloudRedisInstance",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-redis-instance",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudredisinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudredisinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudredisinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudRedisInstanceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the Redis instance will be created.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VswitchId",
+        "jsonName": "vswitchId",
+        "protoField": "vswitch_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VSwitch ID where the Redis instance is placed. The instance inherits the\n VPC and availability zone from the VSwitch.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVswitch",
+        "referenceFieldPath": "status.outputs.vswitch_id"
+      },
+      {
+        "name": "InstanceClass",
+        "jsonName": "instanceClass",
+        "protoField": "instance_class",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance specification class that determines memory capacity and\n performance tier. Examples: \"redis.master.small.default\",\n \"redis.master.large.default\", \"redis.sharding.mid.default\".\n See Alibaba Cloud documentation for the full list of instance classes.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Password",
+        "jsonName": "password",
+        "protoField": "password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance authentication password. 8-32 characters, must contain at least\n three of: uppercase letters, lowercase letters, digits, special characters.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 8,
+          "maxLength": 32
+        }
+      },
+      {
+        "name": "EngineVersion",
+        "jsonName": "engineVersion",
+        "protoField": "engine_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Redis engine version. Alibaba Cloud KVStore supports multiple versions.\n Default: \"7.0\"",
+        "required": false,
+        "default": "7.0",
+        "oneofGroup": "_engine_version"
+      },
+      {
+        "name": "InstanceType",
+        "jsonName": "instanceType",
+        "protoField": "instance_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "KVStore engine type. \"Redis\" is the default and recommended engine.\n \"Memcache\" is supported but rare; the component is named RedisInstance\n because Redis represents 95%+ of KVStore usage.\n Default: \"Redis\"",
+        "required": false,
+        "default": "Redis",
+        "oneofGroup": "_instance_type"
+      },
+      {
+        "name": "DbInstanceName",
+        "jsonName": "dbInstanceName",
+        "protoField": "db_instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance display name. 2-256 characters.\n If omitted, defaults to the metadata.name.",
+        "required": false
+      },
+      {
+        "name": "ZoneId",
+        "jsonName": "zoneId",
+        "protoField": "zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Primary availability zone ID. If omitted, Alibaba Cloud selects a zone\n from the VSwitch's region.\n Examples: \"cn-hangzhou-a\", \"cn-shanghai-b\".",
+        "required": false
+      },
+      {
+        "name": "SecondaryZoneId",
+        "jsonName": "secondaryZoneId",
+        "protoField": "secondary_zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Secondary availability zone for multi-zone high availability deployments.\n When set, the standby node runs in this zone for cross-AZ failover.\n Must differ from zone_id.",
+        "required": false
+      },
+      {
+        "name": "PaymentType",
+        "jsonName": "paymentType",
+        "protoField": "payment_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Billing method. \"PostPaid\" for pay-as-you-go, \"PrePaid\" for subscription.\n Default: \"PostPaid\"",
+        "required": false,
+        "default": "PostPaid",
+        "oneofGroup": "_payment_type"
+      },
+      {
+        "name": "SecurityIps",
+        "jsonName": "securityIps",
+        "protoField": "security_ips",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "IP addresses or CIDR blocks allowed to access the Redis instance.\n Default: [\"127.0.0.1\"] (no access). Set to [\"0.0.0.0/0\"] to allow all\n (not recommended for production).",
+        "required": false
+      },
+      {
+        "name": "SecurityGroupId",
+        "jsonName": "securityGroupId",
+        "protoField": "security_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Security group ID to associate with the Redis instance. Multiple\n security group IDs can be provided as a comma-separated string.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the instance is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the Redis instance.",
+        "required": false
+      },
+      {
+        "name": "ShardCount",
+        "jsonName": "shardCount",
+        "protoField": "shard_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of data shards for cluster (sharding) instances. Setting this to\n a value \u003e 1 creates a cluster-mode Redis instance. Cluster mode is\n recommended for large-scale caching workloads that exceed the memory\n capacity or throughput of a single node.\n Valid range depends on the instance class; common values: 1, 2, 4, 8, 16, 32.",
+        "required": false,
+        "validation": {
+          "min": 1
+        },
+        "oneofGroup": "_shard_count"
+      },
+      {
+        "name": "ReadOnlyCount",
+        "jsonName": "readOnlyCount",
+        "protoField": "read_only_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of read-only replicas in the primary zone (1-9). Read replicas\n enable read scaling by distributing read traffic across multiple nodes.\n Only available for master-slave and cluster instances.",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 9
+        },
+        "oneofGroup": "_read_only_count"
+      },
+      {
+        "name": "SslEnable",
+        "jsonName": "sslEnable",
+        "protoField": "ssl_enable",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SSL/TLS encryption for client connections.\n \"Enable\" turns on SSL. \"Disable\" turns off SSL.\n \"Update\" rotates the SSL certificate.",
+        "required": false,
+        "oneofGroup": "_ssl_enable"
+      },
+      {
+        "name": "TdeStatus",
+        "jsonName": "tdeStatus",
+        "protoField": "tde_status",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Transparent Data Encryption (TDE) status. Once enabled, TDE cannot be\n disabled. Encrypts data at rest at the storage level.",
+        "required": false,
+        "oneofGroup": "_tde_status"
+      },
+      {
+        "name": "EncryptionKey",
+        "jsonName": "encryptionKey",
+        "protoField": "encryption_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Custom KMS key ID for TDE encryption. When set with tde_status = Enabled,\n uses a customer-managed key instead of the service-managed default.",
+        "required": false
+      },
+      {
+        "name": "VpcAuthMode",
+        "jsonName": "vpcAuthMode",
+        "protoField": "vpc_auth_mode",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC authentication mode. \"Open\" requires password authentication for\n VPC-internal connections. \"Close\" disables password authentication for\n VPC-internal connections (connections from within the VPC don't need a\n password). Default: \"Open\"",
+        "required": false,
+        "default": "Open",
+        "oneofGroup": "_vpc_auth_mode"
+      },
+      {
+        "name": "Config",
+        "jsonName": "config",
+        "protoField": "config",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Redis configuration parameters as key-value pairs. Allows tuning Redis\n engine settings such as maxmemory-policy, timeout, hz, etc.\n Refer to Alibaba Cloud documentation for valid parameter names.",
+        "required": false
+      },
+      {
+        "name": "InstanceReleaseProtection",
+        "jsonName": "instanceReleaseProtection",
+        "protoField": "instance_release_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable release protection to prevent accidental deletion via the\n console or API.",
+        "required": false,
+        "oneofGroup": "_instance_release_protection"
+      },
+      {
+        "name": "MaintainStartTime",
+        "jsonName": "maintainStartTime",
+        "protoField": "maintain_start_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Maintenance window start time in UTC format (e.g., \"02:00Z\").\n The Redis service may perform minor version upgrades or patches\n during this window.",
+        "required": false
+      },
+      {
+        "name": "MaintainEndTime",
+        "jsonName": "maintainEndTime",
+        "protoField": "maintain_end_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Maintenance window end time in UTC format (e.g., \"06:00Z\").",
+        "required": false
+      },
+      {
+        "name": "BackupPeriod",
+        "jsonName": "backupPeriod",
+        "protoField": "backup_period",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Backup days of the week. Each entry is a day name.\n Examples: [\"Monday\", \"Wednesday\", \"Friday\"].",
+        "required": false
+      },
+      {
+        "name": "BackupTime",
+        "jsonName": "backupTime",
+        "protoField": "backup_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Backup time window in UTC. Format: \"HH:mmZ-HH:mmZ\".\n Example: \"02:00Z-03:00Z\".",
+        "required": false
+      },
+      {
+        "name": "PrivateConnectionPrefix",
+        "jsonName": "privateConnectionPrefix",
+        "protoField": "private_connection_prefix",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Custom prefix for the private connection string.\n When set, the private connection domain uses this prefix instead of\n the auto-generated one.",
+        "required": false
+      },
+      {
+        "name": "AutoRenew",
+        "jsonName": "autoRenew",
+        "protoField": "auto_renew",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Auto-renewal for PrePaid instances. Ignored for PostPaid instances.",
+        "required": false,
+        "oneofGroup": "_auto_renew"
+      },
+      {
+        "name": "AutoRenewPeriod",
+        "jsonName": "autoRenewPeriod",
+        "protoField": "auto_renew_period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Auto-renewal period in months (1-12). Only applicable when auto_renew\n is true and payment_type is \"PrePaid\".",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 12
+        },
+        "oneofGroup": "_auto_renew_period"
+      },
+      {
+        "name": "Period",
+        "jsonName": "period",
+        "protoField": "period",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Subscription period in months. Only applicable when payment_type\n is \"PrePaid\". Valid values: 1-9, 12, 24, 36.",
+        "required": false,
+        "oneofGroup": "_period"
+      }
+    ]
+  }
+}

@@ -1,0 +1,302 @@
+{
+  "name": "ScalewayKapsulePool",
+  "kind": "ScalewayKapsulePool",
+  "cloudProvider": "scaleway",
+  "apiVersion": "scaleway.openmcf.org/v1",
+  "description": "scaleway-kapsule-pool",
+  "protoPackage": "org.openmcf.provider.scaleway.scalewaykapsulepool.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/scaleway/scalewaykapsulepool/v1/api.proto",
+    "spec": "org/openmcf/provider/scaleway/scalewaykapsulepool/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ScalewayKapsulePoolSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Scaleway region where the pool will be created.\n\n Must match the parent cluster's region. All nodes in this pool will\n be placed in zones within this region.\n\n Examples: \"fr-par\", \"nl-ams\", \"pl-waw\"\n\n IMPORTANT: Cannot be changed after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ClusterId",
+        "jsonName": "clusterId",
+        "protoField": "cluster_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to the Kapsule cluster in which to create this node pool.\n\n Can be a literal cluster ID or a reference to a ScalewayKapsuleCluster\n resource's output. In infra charts, this is wired via `valueFrom`.\n\n IMPORTANT: Cannot be changed after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "ScalewayKapsuleCluster",
+        "referenceFieldPath": "status.outputs.cluster_id"
+      },
+      {
+        "name": "NodeType",
+        "jsonName": "nodeType",
+        "protoField": "node_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance type for worker nodes (required).\n\n Determines CPU, RAM, and local storage for each node. Common types:\n   - Development:  \"DEV1-M\" (3 vCPU, 4 GB RAM)\n   - General:      \"GP1-XS\" (4 vCPU, 16 GB RAM), \"GP1-S\" (8 vCPU, 32 GB)\n   - Production:   \"PRO2-S\" (2 vCPU, 8 GB), \"PRO2-M\" (4 vCPU, 16 GB)\n\n See Scaleway pricing page for the full catalog. Instances with\n insufficient memory (DEV1-S, PLAY2-PICO, STARDUST) are not eligible.\n\n IMPORTANT: Cannot be changed after creation. To change instance types,\n create a new pool and migrate workloads.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Size",
+        "jsonName": "size",
+        "protoField": "size",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of nodes in the pool (required).\n\n When autoscaling is disabled, this is the fixed pool size. When\n autoscaling is enabled, this is the initial size -- the autoscaler\n will adjust between min_size and max_size based on workload demands.\n\n Minimum: 1 (a pool must have at least one node).\n\n Note: When autoscaling is enabled, updates to this field are ignored\n by the provider -- the autoscaler controls the actual size.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "min": 1
+        }
+      },
+      {
+        "name": "AutoScale",
+        "jsonName": "autoScale",
+        "protoField": "auto_scale",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable the cluster autoscaler for this pool.\n\n When true, Kubernetes automatically adds or removes nodes based on\n pending pod resource requests. Requires min_size and max_size to\n be configured. The autoscaler's behavior (delays, thresholds) is\n controlled by the cluster-level `autoscaler_config` on the parent\n ScalewayKapsuleCluster.\n\n Default: false (fixed-size pool).",
+        "required": false
+      },
+      {
+        "name": "MinSize",
+        "jsonName": "minSize",
+        "protoField": "min_size",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Minimum number of nodes when autoscaling is enabled.\n\n The autoscaler will not scale below this number, even if all nodes\n are underutilized. Set to at least 1 for availability.\n\n Only meaningful when auto_scale is true.",
+        "required": false
+      },
+      {
+        "name": "MaxSize",
+        "jsonName": "maxSize",
+        "protoField": "max_size",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum number of nodes when autoscaling is enabled.\n\n The autoscaler will not scale above this number, even if pods are\n pending. Controls cost ceiling.\n\n Only meaningful when auto_scale is true.",
+        "required": false
+      },
+      {
+        "name": "Autohealing",
+        "jsonName": "autohealing",
+        "protoField": "autohealing",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable autohealing for this pool.\n\n When true, Scaleway automatically detects and replaces unhealthy\n nodes. A node is considered unhealthy if its kubelet stops\n reporting status for a configurable period.\n\n Recommended for production pools.",
+        "required": false
+      },
+      {
+        "name": "ContainerRuntime",
+        "jsonName": "containerRuntime",
+        "protoField": "container_runtime",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Container runtime for pool nodes.\n\n Options:\n   - \"containerd\" (default, recommended) -- Industry-standard container\n     runtime. Required for Kubernetes 1.24+.\n\n IMPORTANT: Cannot be changed after creation.",
+        "required": false,
+        "recommendedDefault": "containerd"
+      },
+      {
+        "name": "RootVolumeType",
+        "jsonName": "rootVolumeType",
+        "protoField": "root_volume_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Root volume type for pool nodes.\n\n Controls the storage backing each node's root filesystem. Options\n depend on the instance type and availability zone.\n\n IMPORTANT: Cannot be changed after creation.",
+        "required": false
+      },
+      {
+        "name": "RootVolumeSizeInGb",
+        "jsonName": "rootVolumeSizeInGb",
+        "protoField": "root_volume_size_in_gb",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Root volume size in GB for pool nodes.\n\n If omitted, uses the default size for the instance type. Increase\n for workloads that pull many large container images or need\n significant local ephemeral storage.\n\n IMPORTANT: Cannot be changed after creation.",
+        "required": false
+      },
+      {
+        "name": "PublicIpDisabled",
+        "jsonName": "publicIpDisabled",
+        "protoField": "public_ip_disabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Disable public IP addresses on pool nodes.\n\n When true, nodes have only private IPs (from the cluster's Private\n Network). This is the recommended security posture for production:\n nodes are not reachable from the internet.\n\n Requires a Public Gateway or NAT on the Private Network so nodes\n can reach external registries and APIs.\n\n IMPORTANT: Cannot be changed after creation.",
+        "required": false
+      },
+      {
+        "name": "Zone",
+        "jsonName": "zone",
+        "protoField": "zone",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Zone within the region to place pool nodes.\n\n Optional. If omitted, Scaleway chooses the zone automatically.\n Use this for zone-specific placement (e.g., \"fr-par-1\", \"fr-par-2\").\n\n All nodes in this pool will be in the specified zone. For multi-AZ\n deployments, create separate pools in different zones.\n\n IMPORTANT: Cannot be changed after creation.",
+        "required": false
+      },
+      {
+        "name": "PlacementGroupId",
+        "jsonName": "placementGroupId",
+        "protoField": "placement_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Placement group ID for anti-affinity scheduling.\n\n Associates pool nodes with a Scaleway Instance placement group. Use\n placement groups to spread nodes across different hypervisors for\n higher availability.\n\n Must be a valid placement group UUID. Placement groups are created\n separately via the Scaleway console or API.\n\n IMPORTANT: Cannot be changed after creation.",
+        "required": false
+      },
+      {
+        "name": "KubernetesLabels",
+        "jsonName": "kubernetesLabels",
+        "protoField": "kubernetes_labels",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Kubernetes labels to apply to all nodes in this pool.\n\n Labels are key-value pairs used for node selection and workload\n scheduling. Pods use `nodeSelector` or node affinity rules to\n target nodes with specific labels.\n\n Example: {\"workload\": \"gpu\", \"team\": \"ml\", \"tier\": \"compute\"}\n\n Implementation: Labels are applied via Scaleway's Cloud Controller\n Manager tag convention. Each label generates a pool tag in the\n format `noprefix={key}={value}`, which the CCM syncs to K8s nodes\n as the label `{key}={value}`.",
+        "required": false
+      },
+      {
+        "name": "Taints",
+        "jsonName": "taints",
+        "protoField": "taints",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ScalewayKapsulePoolTaint"
+          }
+        },
+        "description": "Kubernetes taints to apply to all nodes in this pool.\n\n Taints prevent pods from being scheduled on these nodes unless they\n have matching tolerations. Commonly used for workload isolation\n (e.g., GPU nodes, dedicated system pools, batch processing).\n\n Implementation: Taints are applied via Scaleway's Cloud Controller\n Manager tag convention. Each taint generates a pool tag in the\n format `taint=noprefix={key}={value}:{Effect}`, which the CCM\n syncs to K8s nodes as the taint `{key}={value}:{Effect}`.",
+        "required": false
+      },
+      {
+        "name": "UpgradePolicy",
+        "jsonName": "upgradePolicy",
+        "protoField": "upgrade_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "ScalewayKapsulePoolUpgradePolicy"
+        },
+        "description": "Node pool upgrade policy for rolling updates.\n\n Controls how nodes are replaced during Kubernetes version upgrades\n or pool configuration changes.\n\n Optional. If omitted, Scaleway uses defaults (max_surge=0,\n max_unavailable=1 -- one node at a time).",
+        "required": false
+      },
+      {
+        "name": "KubeletArgs",
+        "jsonName": "kubeletArgs",
+        "protoField": "kubelet_args",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Custom kubelet arguments for pool nodes.\n\n Power-user escape hatch for setting kubelet flags not exposed as\n first-class fields. Example: {\"maxPods\": \"150\"}.\n\n WARNING: Use with caution. Incorrect kubelet arguments can prevent\n nodes from joining the cluster or cause instability.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ScalewayKapsulePoolTaint",
+      "description": "ScalewayKapsulePoolTaint represents a Kubernetes taint to apply to all\n nodes in the pool.\n\n Taints work together with tolerations to ensure that pods are not\n scheduled onto inappropriate nodes. A taint on a node instructs the\n scheduler to avoid placing pods that don't tolerate the taint.",
+      "protoType": "org.openmcf.provider.scaleway.scalewaykapsulepool.v1.ScalewayKapsulePoolTaint",
+      "fields": [
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The taint key.\n\n Examples: \"nvidia.com/gpu\", \"dedicated\", \"workload\", \"node-role\"",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The taint value.\n\n Examples: \"true\", \"gpu\", \"batch\", \"system\"",
+          "required": false
+        },
+        {
+          "name": "Effect",
+          "jsonName": "effect",
+          "protoField": "effect",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The taint effect.\n\n Must be one of:\n   - \"NoSchedule\" -- Pods that don't tolerate this taint will not be\n     scheduled on the node. Existing pods are not evicted.\n   - \"PreferNoSchedule\" -- Kubernetes will try to avoid scheduling\n     pods that don't tolerate this taint, but it's not guaranteed.\n   - \"NoExecute\" -- Pods that don't tolerate this taint will be\n     evicted if already running, and not scheduled if pending.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "ScalewayKapsulePoolUpgradePolicy",
+      "description": "ScalewayKapsulePoolUpgradePolicy controls how nodes are replaced\n during pool upgrades.\n\n During a Kubernetes version upgrade or pool reconfiguration, nodes\n are replaced one or more at a time according to this policy.",
+      "protoType": "org.openmcf.provider.scaleway.scalewaykapsulepool.v1.ScalewayKapsulePoolUpgradePolicy",
+      "fields": [
+        {
+          "name": "MaxSurge",
+          "jsonName": "maxSurge",
+          "protoField": "max_surge",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of extra nodes created during an upgrade.\n\n Surge nodes are temporary workers that accept workloads while\n existing nodes are drained and replaced. Higher values speed up\n upgrades but temporarily increase cost.\n\n Default: 0 (no surge nodes).",
+          "required": false
+        },
+        {
+          "name": "MaxUnavailable",
+          "jsonName": "maxUnavailable",
+          "protoField": "max_unavailable",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of nodes that can be unavailable simultaneously\n during an upgrade.\n\n Controls the disruption budget. Setting this to 1 means nodes\n are replaced one at a time (safest but slowest).\n\n Default: 1.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

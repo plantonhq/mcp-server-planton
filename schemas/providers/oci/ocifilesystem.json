@@ -1,0 +1,330 @@
+{
+  "name": "OciFileSystem",
+  "kind": "OciFileSystem",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciFileSystem is the top-level resource representing an OCI File Storage\n file system with a dedicated mount target and NFS exports.",
+  "protoPackage": "org.openmcf.provider.oci.ocifilesystem.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocifilesystem/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocifilesystem/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciFileSystemSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the file system and mount target\n will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "AvailabilityDomain",
+        "jsonName": "availabilityDomain",
+        "protoField": "availability_domain",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Availability domain where the file system and mount target are created.\n Both must reside in the same AD. Example: \"Uocm:US-ASHBURN-AD-1\".\n Changing this forces recreation of all resources.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Display name for the file system. When omitted, OCI generates one.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of a KMS master encryption key for server-side encryption.\n When unset, Oracle-managed keys are used.",
+        "required": false
+      },
+      {
+        "name": "FilesystemSnapshotPolicyId",
+        "jsonName": "filesystemSnapshotPolicyId",
+        "protoField": "filesystem_snapshot_policy_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of a filesystem snapshot policy to attach for automated snapshots.\n The policy must exist in the same availability domain.",
+        "required": false
+      },
+      {
+        "name": "MountTarget",
+        "jsonName": "mountTarget",
+        "protoField": "mount_target",
+        "type": {
+          "kind": "message",
+          "messageType": "MountTarget"
+        },
+        "description": "Configuration for the dedicated NFS mount target. The mount target\n provides the network endpoint (IP address) that clients use to\n mount the file system via NFS.\n\n Note: OCI's default service limit is 2 mount targets per availability\n domain. Request a limit increase if deploying more than 2 file systems\n in the same AD.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Exports",
+        "jsonName": "exports",
+        "protoField": "exports",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Export"
+          }
+        },
+        "description": "NFS export paths. Each export makes the file system accessible at\n a specific path on the mount target. At least one export is required.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "Export",
+      "description": "Export defines an NFS export path that connects the file system to\n the mount target. Clients mount the file system using:\n   mount -t nfs \u003cmount_target_ip\u003e:\u003cpath\u003e /local/mount/point",
+      "protoType": "org.openmcf.provider.oci.ocifilesystem.v1.OciFileSystemSpec.Export",
+      "fields": [
+        {
+          "name": "Path",
+          "jsonName": "path",
+          "protoField": "path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "NFS export path. Must start with '/' and be unique within the\n mount target's export set. Example: \"/shared-data\".\n Changing this forces recreation.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ExportOptions",
+          "jsonName": "exportOptions",
+          "protoField": "export_options",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "ExportOption"
+            }
+          },
+          "description": "NFS access control rules. Each rule specifies a source CIDR\n and its permissions. When omitted, OCI applies default access.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ExportOption",
+      "description": "ExportOption defines NFS access control for a source CIDR range.",
+      "protoType": "org.openmcf.provider.oci.ocifilesystem.v1.OciFileSystemSpec.ExportOption",
+      "fields": [
+        {
+          "name": "Source",
+          "jsonName": "source",
+          "protoField": "source",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Source IP address or CIDR block allowed to access this export.\n Use \"0.0.0.0/0\" for unrestricted access within the network.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Access",
+          "jsonName": "access",
+          "protoField": "access",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocifilesystem.v1.Access",
+            "enumValues": [
+              "read_write",
+              "read_only"
+            ]
+          },
+          "description": "NFS access level for this source.",
+          "required": false
+        },
+        {
+          "name": "IdentitySquash",
+          "jsonName": "identitySquash",
+          "protoField": "identity_squash",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocifilesystem.v1.IdentitySquash",
+            "enumValues": [
+              "no_squash",
+              "root_squash",
+              "all_squash"
+            ]
+          },
+          "description": "Identity squashing mode for NFS requests from this source.",
+          "required": false
+        },
+        {
+          "name": "RequirePrivilegedSourcePort",
+          "jsonName": "requirePrivilegedSourcePort",
+          "protoField": "require_privileged_source_port",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, only connections from privileged source ports\n (\u003c 1024) are allowed. Standard for UNIX NFS clients.",
+          "required": false
+        },
+        {
+          "name": "IsAnonymousAccessAllowed",
+          "jsonName": "isAnonymousAccessAllowed",
+          "protoField": "is_anonymous_access_allowed",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, anonymous (unauthenticated) access is allowed.",
+          "required": false
+        },
+        {
+          "name": "AnonymousUid",
+          "jsonName": "anonymousUid",
+          "protoField": "anonymous_uid",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "UNIX UID to map anonymous or squashed users to.\n Typically 65534 (nobody). Stored as Int64 string in OCI API.",
+          "required": false
+        },
+        {
+          "name": "AnonymousGid",
+          "jsonName": "anonymousGid",
+          "protoField": "anonymous_gid",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "UNIX GID to map anonymous or squashed users to.\n Typically 65534 (nogroup). Stored as Int64 string in OCI API.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "MountTarget",
+      "description": "MountTarget configures the NFS endpoint that provides network access\n to the file system. Created in the specified subnet with an assigned\n or auto-allocated private IP address.",
+      "protoType": "org.openmcf.provider.oci.ocifilesystem.v1.OciFileSystemSpec.MountTarget",
+      "fields": [
+        {
+          "name": "SubnetId",
+          "jsonName": "subnetId",
+          "protoField": "subnet_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the subnet where the mount target will be created.\n The subnet determines the VCN and availability domain for\n NFS access. Changing this forces recreation.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "OciSubnet",
+          "referenceFieldPath": "status.outputs.subnetId"
+        },
+        {
+          "name": "DisplayName",
+          "jsonName": "displayName",
+          "protoField": "display_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Display name for the mount target. When omitted, OCI generates one.",
+          "required": false
+        },
+        {
+          "name": "HostnameLabel",
+          "jsonName": "hostnameLabel",
+          "protoField": "hostname_label",
+          "type": {
+            "kind": "string"
+          },
+          "description": "DNS hostname label for the mount target within the VCN's DNS.\n When combined with the subnet and VCN DNS labels, produces an\n FQDN like \u003chostname\u003e.\u003csubnet\u003e.\u003cvcn\u003e.oraclevcn.com.\n Changing this forces recreation.",
+          "required": false
+        },
+        {
+          "name": "IpAddress",
+          "jsonName": "ipAddress",
+          "protoField": "ip_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specific private IP address to assign. Must be available in the\n subnet's CIDR. When omitted, OCI auto-assigns from the subnet.\n Changing this forces recreation.",
+          "required": false
+        },
+        {
+          "name": "NsgIds",
+          "jsonName": "nsgIds",
+          "protoField": "nsg_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "OCIDs of network security groups to associate with the mount target.\n Controls NFS traffic (port 2049/TCP, 111/TCP for portmapper).",
+          "required": false,
+          "referenceKind": "OciSecurityGroup",
+          "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+        },
+        {
+          "name": "RequestedThroughput",
+          "jsonName": "requestedThroughput",
+          "protoField": "requested_throughput",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Requested throughput in Mbps for the mount target. When omitted,\n OCI uses the default throughput tier.",
+          "required": false
+        },
+        {
+          "name": "MaxFsStatBytes",
+          "jsonName": "maxFsStatBytes",
+          "protoField": "max_fs_stat_bytes",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Maximum NFS capacity in bytes reported to clients via statfs.\n Configures the auto-created export set. When omitted, the actual\n file system metered size is reported.",
+          "required": false
+        },
+        {
+          "name": "MaxFsStatFiles",
+          "jsonName": "maxFsStatFiles",
+          "protoField": "max_fs_stat_files",
+          "type": {
+            "kind": "int64"
+          },
+          "description": "Maximum file count reported to clients via statfs.\n Configures the auto-created export set. When omitted, the actual\n count is reported.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

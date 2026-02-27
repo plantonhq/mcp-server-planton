@@ -1,0 +1,476 @@
+{
+  "name": "GcpCloudRun",
+  "kind": "GcpCloudRun",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-cloud-run",
+  "protoPackage": "org.openmcf.provider.gcp.gcpcloudrun.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpcloudrun/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpcloudrun/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpCloudRunSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project ID where the Cloud Run service will be created.\n Can be a direct value or a reference to a GcpProject resource.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Region where the service is deployed, for example \"us-central1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z]+-[a-z]+[0-9]$"
+        }
+      },
+      {
+        "name": "ServiceName",
+        "jsonName": "serviceName",
+        "protoField": "service_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Cloud Run service to create on GCP.\n If not specified, defaults to metadata.name.",
+        "required": false,
+        "validation": {
+          "maxLength": 63,
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "ServiceAccount",
+        "jsonName": "serviceAccount",
+        "protoField": "service_account",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Service account email that the Cloud Run service runs as.\n If not specified, uses the default Compute Engine service account.",
+        "required": false,
+        "validation": {
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$"
+        }
+      },
+      {
+        "name": "Container",
+        "jsonName": "container",
+        "protoField": "container",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudRunContainer"
+        },
+        "description": "Container configuration for the Cloud Run service.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "MaxConcurrency",
+        "jsonName": "maxConcurrency",
+        "protoField": "max_concurrency",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum concurrent requests handled by one instance.",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 1000
+        },
+        "recommendedDefault": "80"
+      },
+      {
+        "name": "TimeoutSeconds",
+        "jsonName": "timeoutSeconds",
+        "protoField": "timeout_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Request timeout in seconds (1-3600). Default is 300 (5 minutes).",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 3600
+        },
+        "recommendedDefault": "300"
+      },
+      {
+        "name": "Ingress",
+        "jsonName": "ingress",
+        "protoField": "ingress",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.gcp.gcpcloudrun.v1.GcpCloudRunIngress",
+          "enumValues": [
+            "INGRESS_TRAFFIC_ALL",
+            "INGRESS_TRAFFIC_INTERNAL_ONLY",
+            "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+          ]
+        },
+        "description": "Ingress settings control which traffic sources can reach the service.",
+        "required": false,
+        "recommendedDefault": "INGRESS_TRAFFIC_ALL"
+      },
+      {
+        "name": "AllowUnauthenticated",
+        "jsonName": "allowUnauthenticated",
+        "protoField": "allow_unauthenticated",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "If true, the service is publicly invokable by unauthenticated callers.",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "VpcAccess",
+        "jsonName": "vpcAccess",
+        "protoField": "vpc_access",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudRunVpcAccess"
+        },
+        "description": "VPC access configuration for private resource access.",
+        "required": false
+      },
+      {
+        "name": "ExecutionEnvironment",
+        "jsonName": "executionEnvironment",
+        "protoField": "execution_environment",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.gcp.gcpcloudrun.v1.GcpCloudRunExecutionEnvironment",
+          "enumValues": [
+            "EXECUTION_ENVIRONMENT_GEN1",
+            "EXECUTION_ENVIRONMENT_GEN2"
+          ]
+        },
+        "description": "Execution environment generation (GEN1 or GEN2).\n GEN2 offers full Linux compatibility but slower cold starts.",
+        "required": false,
+        "recommendedDefault": "EXECUTION_ENVIRONMENT_GEN2"
+      },
+      {
+        "name": "Dns",
+        "jsonName": "dns",
+        "protoField": "dns",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpCloudRunDns"
+        },
+        "description": "Custom DNS mapping for the Cloud Run service.",
+        "required": false
+      },
+      {
+        "name": "DeleteProtection",
+        "jsonName": "deleteProtection",
+        "protoField": "delete_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "If true, prevents accidental deletion of the Cloud Run service.\n When enabled, the service cannot be deleted until this flag is set to false.",
+        "required": false,
+        "recommendedDefault": "false"
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpCloudRunContainer",
+      "description": "GcpCloudRunContainer groups image, resources, environment, and port settings\n for the Cloud Run container.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudrun.v1.GcpCloudRunContainer",
+      "fields": [
+        {
+          "name": "Image",
+          "jsonName": "image",
+          "protoField": "image",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudRunContainerImage"
+          },
+          "description": "Container image URI, for example \"us-docker.pkg.dev/prj/registry/app:1.0.0\".",
+          "required": false
+        },
+        {
+          "name": "Env",
+          "jsonName": "env",
+          "protoField": "env",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudRunContainerEnv"
+          },
+          "description": "Environment variables and secrets injected into the container.",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Container port that receives HTTP traffic.  Defaults to 8080 if unset.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "Cpu",
+          "jsonName": "cpu",
+          "protoField": "cpu",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "vCPU units allocated per instance.  Allowed values: 1, 2, 4.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "recommendedDefault": "1"
+        },
+        {
+          "name": "Memory",
+          "jsonName": "memory",
+          "protoField": "memory",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Memory in MiB allocated per instance.  Valid range 128 – 32768.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 128,
+            "max": 32768
+          },
+          "recommendedDefault": "512"
+        },
+        {
+          "name": "Replicas",
+          "jsonName": "replicas",
+          "protoField": "replicas",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpCloudRunContainerReplicas"
+          },
+          "description": "Minimum and maximum number of container instances.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudRunContainerEnv",
+      "description": "GcpCloudRunContainerEnv defines plain environment variables and secrets.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudrun.v1.GcpCloudRunContainerEnv",
+      "fields": [
+        {
+          "name": "Variables",
+          "jsonName": "variables",
+          "protoField": "variables",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Plain environment variables injected as KEY=VALUE pairs.",
+          "required": false
+        },
+        {
+          "name": "Secrets",
+          "jsonName": "secrets",
+          "protoField": "secrets",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Secret Manager references injected as KEY=projects/*/secrets/*:version.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudRunContainerImage",
+      "description": "GcpCloudRunContainerImage specifies the repository and tag of the container\n image.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudrun.v1.GcpCloudRunContainerImage",
+      "fields": [
+        {
+          "name": "Repo",
+          "jsonName": "repo",
+          "protoField": "repo",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Image repository, for example \"us-docker.pkg.dev/prj/registry/app\".",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Tag",
+          "jsonName": "tag",
+          "protoField": "tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Image tag, for example \"1.0.0\".  Using a fixed tag improves repeatability.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudRunContainerReplicas",
+      "description": "/ GcpCloudRunContainerReplicas defines the minimum and maximum number of container instances",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudrun.v1.GcpCloudRunContainerReplicas",
+      "fields": [
+        {
+          "name": "Min",
+          "jsonName": "min",
+          "protoField": "min",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of container instances that remain warm.",
+          "required": false,
+          "recommendedDefault": "0"
+        },
+        {
+          "name": "Max",
+          "jsonName": "max",
+          "protoField": "max",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of container instances Cloud Run may scale out to.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudRunDns",
+      "description": "GcpCloudRunDns configures optional custom-domain mapping.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudrun.v1.GcpCloudRunDns",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enables or disables custom-domain mapping.",
+          "required": false
+        },
+        {
+          "name": "Hostnames",
+          "jsonName": "hostnames",
+          "protoField": "hostnames",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Fully-qualified hostnames routed to the Cloud Run service.",
+          "required": false,
+          "validation": {
+            "unique": true
+          }
+        },
+        {
+          "name": "ManagedZone",
+          "jsonName": "managedZone",
+          "protoField": "managed_zone",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Cloud DNS managed zone used for domain-verification records.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpCloudRunVpcAccess",
+      "description": "GcpCloudRunVpcAccess configures Direct VPC Egress for accessing private resources.",
+      "protoType": "org.openmcf.provider.gcp.gcpcloudrun.v1.GcpCloudRunVpcAccess",
+      "fields": [
+        {
+          "name": "Network",
+          "jsonName": "network",
+          "protoField": "network",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VPC network name for Direct VPC Egress.\n Can be a direct value or a reference to a GcpVpc resource.",
+          "required": false,
+          "referenceKind": "GcpVpc",
+          "referenceFieldPath": "status.outputs.network_name"
+        },
+        {
+          "name": "Subnet",
+          "jsonName": "subnet",
+          "protoField": "subnet",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VPC subnet name for Direct VPC Egress.\n Can be a direct value or a reference to a GcpSubnetwork resource.",
+          "required": false,
+          "referenceKind": "GcpSubnetwork",
+          "referenceFieldPath": "status.outputs.subnetwork_name"
+        },
+        {
+          "name": "Egress",
+          "jsonName": "egress",
+          "protoField": "egress",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Egress setting: \"ALL_TRAFFIC\" or \"PRIVATE_RANGES_ONLY\"\n If \"ALL_TRAFFIC\", all egress goes through VPC\n If \"PRIVATE_RANGES_ONLY\", only private IP traffic uses VPC",
+          "required": false,
+          "validation": {
+            "enum": [
+              "",
+              "ALL_TRAFFIC",
+              "PRIVATE_RANGES_ONLY"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

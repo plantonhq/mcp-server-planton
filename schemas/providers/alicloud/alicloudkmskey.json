@@ -1,0 +1,153 @@
+{
+  "name": "AliCloudKmsKey",
+  "kind": "AliCloudKmsKey",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-kms-key",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudkmskey.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudkmskey/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudkmskey/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudKmsKeySpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the KMS key will be created.\n The key can only be used by resources in the same region.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the key's intended use.",
+        "required": false
+      },
+      {
+        "name": "KeySpec",
+        "jsonName": "keySpec",
+        "protoField": "key_spec",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cryptographic algorithm for the key material.\n\n Symmetric keys (ENCRYPT/DECRYPT):\n   \"Aliyun_AES_256\" -- AES-256 (default, recommended for most use cases)\n   \"Aliyun_AES_128\" -- AES-128 (Dedicated KMS only)\n   \"Aliyun_AES_192\" -- AES-192 (Dedicated KMS only)\n   \"Aliyun_SM4\"     -- Chinese national standard SM4\n\n Asymmetric keys (SIGN/VERIFY):\n   \"RSA_2048\"  -- RSA 2048-bit\n   \"RSA_3072\"  -- RSA 3072-bit\n   \"EC_P256\"   -- NIST P-256 elliptic curve\n   \"EC_P256K\"  -- secp256k1 elliptic curve\n   \"EC_SM2\"    -- Chinese national standard SM2\n\n This field is immutable after creation (ForceNew in the provider).\n Default: \"Aliyun_AES_256\"",
+        "required": false,
+        "default": "Aliyun_AES_256",
+        "oneofGroup": "_key_spec"
+      },
+      {
+        "name": "KeyUsage",
+        "jsonName": "keyUsage",
+        "protoField": "key_usage",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Intended cryptographic operation for the key.\n\n \"ENCRYPT/DECRYPT\" -- symmetric encryption/decryption (use with AES/SM4 key specs).\n \"SIGN/VERIFY\"     -- asymmetric signing/verification (use with RSA/EC key specs).\n\n This field is immutable after creation (ForceNew in the provider).\n Default: \"ENCRYPT/DECRYPT\"",
+        "required": false,
+        "default": "ENCRYPT/DECRYPT",
+        "oneofGroup": "_key_usage"
+      },
+      {
+        "name": "ProtectionLevel",
+        "jsonName": "protectionLevel",
+        "protoField": "protection_level",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Protection level for the key material.\n\n \"SOFTWARE\" -- key material is protected by software-based cryptographic\n   modules. Suitable for most workloads.\n \"HSM\" -- key material is stored and used exclusively within a Hardware\n   Security Module. Required for regulatory compliance in some industries.\n\n This field is immutable after creation (ForceNew in the provider).\n Default: \"SOFTWARE\"",
+        "required": false,
+        "default": "SOFTWARE",
+        "oneofGroup": "_protection_level"
+      },
+      {
+        "name": "AutomaticRotation",
+        "jsonName": "automaticRotation",
+        "protoField": "automatic_rotation",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable automatic key rotation.\n\n When enabled, Alibaba Cloud periodically generates new key material for\n the CMK according to rotation_interval. Previous key versions remain\n available for decryption, but new encrypt operations use the latest version.\n\n Automatic rotation is only supported for symmetric keys (Aliyun_AES_*,\n Aliyun_SM4). Asymmetric keys (RSA_*, EC_*) do not support rotation.\n\n When set to true, rotation_interval must also be provided.\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_automatic_rotation"
+      },
+      {
+        "name": "RotationInterval",
+        "jsonName": "rotationInterval",
+        "protoField": "rotation_interval",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Period between automatic rotations.\n\n Accepted formats: \"Nd\" for days (e.g., \"365d\"), \"Ns\" for seconds\n (e.g., \"604800s\"), \"Nh\" for hours (e.g., \"8760h\").\n\n Required when automatic_rotation is true. Ignored when false.\n Common production value: \"365d\" (annual rotation).",
+        "required": false
+      },
+      {
+        "name": "PendingWindowInDays",
+        "jsonName": "pendingWindowInDays",
+        "protoField": "pending_window_in_days",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of days to wait before permanently deleting the key after a\n deletion request. During this window the key enters PendingDeletion\n state and can be recovered by cancelling the deletion.\n\n Range: 7-366 days.\n Default: 30",
+        "required": false,
+        "validation": {
+          "min": 7,
+          "max": 366
+        },
+        "default": "30",
+        "oneofGroup": "_pending_window_in_days"
+      },
+      {
+        "name": "DeletionProtection",
+        "jsonName": "deletionProtection",
+        "protoField": "deletion_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable deletion protection to prevent accidental key deletion.\n\n When enabled, any attempt to delete the key will be rejected until\n deletion protection is explicitly disabled. Strongly recommended for\n production encryption keys -- losing a KMS key means permanent,\n irrecoverable data loss for any data encrypted with it.\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_deletion_protection"
+      },
+      {
+        "name": "DeletionProtectionDescription",
+        "jsonName": "deletionProtectionDescription",
+        "protoField": "deletion_protection_description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reason for enabling deletion protection. Provides an audit trail for\n why the key is protected. Only meaningful when deletion_protection\n is true.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the KMS key.",
+        "required": false
+      }
+    ]
+  }
+}

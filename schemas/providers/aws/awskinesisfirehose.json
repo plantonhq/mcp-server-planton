@@ -1,0 +1,1278 @@
+{
+  "name": "AwsKinesisFirehose",
+  "kind": "AwsKinesisFirehose",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsKinesisFirehose is the Kubernetes-style resource envelope for an Amazon\n Kinesis Data Firehose delivery stream.",
+  "protoPackage": "org.openmcf.provider.aws.awskinesisfirehose.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awskinesisfirehose/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awskinesisfirehose/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsKinesisFirehoseSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "KinesisStreamSource",
+        "jsonName": "kinesisStreamSource",
+        "protoField": "kinesis_stream_source",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsKinesisFirehoseKinesisStreamSource"
+        },
+        "description": "Kinesis Data Stream source configuration. When set, Firehose reads from\n the specified stream instead of accepting Direct PUT calls. The entire\n source configuration is ForceNew -- it cannot be changed after creation.\n\n When a Kinesis source is configured, server-side encryption (sse_enabled)\n must NOT be set -- the source stream handles its own encryption.",
+        "required": false
+      },
+      {
+        "name": "SseEnabled",
+        "jsonName": "sseEnabled",
+        "protoField": "sse_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable server-side encryption for data at rest in the delivery stream\n buffer. Only valid for Direct PUT sources -- when using a Kinesis stream\n source, encryption is handled by the source stream.\n\n When true and sse_kms_key_arn is absent, uses the AWS-owned CMK.\n When true and sse_kms_key_arn is present, uses a customer-managed CMK.",
+        "required": false
+      },
+      {
+        "name": "SseKmsKeyArn",
+        "jsonName": "sseKmsKeyArn",
+        "protoField": "sse_kms_key_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed KMS key ARN for server-side encryption. When set,\n Firehose uses this key instead of the AWS-owned CMK. Requires\n sse_enabled to be true.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "ExtendedS3",
+        "jsonName": "extendedS3",
+        "protoField": "extended_s3",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsKinesisFirehoseExtendedS3Destination"
+        },
+        "description": "Extended S3 destination for data lake storage. Supports compression,\n Lambda transformation, dynamic partitioning, and Parquet/ORC format\n conversion via AWS Glue Data Catalog. The most feature-rich destination.",
+        "required": false,
+        "oneofGroup": "destination_config"
+      },
+      {
+        "name": "Opensearch",
+        "jsonName": "opensearch",
+        "protoField": "opensearch",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsKinesisFirehoseOpenSearchDestination"
+        },
+        "description": "OpenSearch destination for direct indexing into an Amazon OpenSearch\n Service domain. Supports index rotation, VPC delivery, and Lambda\n transformation. Failed documents are backed up to S3.",
+        "required": false,
+        "oneofGroup": "destination_config"
+      },
+      {
+        "name": "HttpEndpoint",
+        "jsonName": "httpEndpoint",
+        "protoField": "http_endpoint",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsKinesisFirehoseHttpEndpointDestination"
+        },
+        "description": "HTTP endpoint destination for delivery to any HTTPS endpoint. Supports\n custom headers, content encoding, and Lambda transformation. Commonly\n used for third-party integrations (Datadog, New Relic, Sumo Logic).\n Failed deliveries are backed up to S3.",
+        "required": false,
+        "oneofGroup": "destination_config"
+      },
+      {
+        "name": "Redshift",
+        "jsonName": "redshift",
+        "protoField": "redshift",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsKinesisFirehoseRedshiftDestination"
+        },
+        "description": "Redshift destination for data warehouse loading. Firehose stages data\n in S3, then issues a Redshift COPY command to load it. Supports Lambda\n transformation and optional S3 backup of source records.",
+        "required": false,
+        "oneofGroup": "destination_config"
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsKinesisFirehoseBufferingHints",
+      "description": "AwsKinesisFirehoseBufferingHints controls when Firehose flushes buffered data\n to the destination. Firehose delivers when EITHER the buffer size OR the\n buffer interval is reached -- whichever comes first.",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseBufferingHints",
+      "fields": [
+        {
+          "name": "IntervalInSeconds",
+          "jsonName": "intervalInSeconds",
+          "protoField": "interval_in_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Buffer interval in seconds. Firehose flushes when this time elapses since\n the last flush, even if the buffer size threshold has not been reached.\n\n Range: 0-900 seconds. Default varies by destination (typically 300).\n Lower values reduce delivery latency; higher values improve batching\n efficiency and reduce S3 object count.\n\n Note: Some destinations have tighter limits (e.g., Splunk max 60s).\n For the v1 destinations, 0-900 is valid for all.",
+          "required": false
+        },
+        {
+          "name": "SizeInMbs",
+          "jsonName": "sizeInMbs",
+          "protoField": "size_in_mbs",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Buffer size in MiB. Firehose flushes when the accumulated data reaches\n this threshold.\n\n Range: 1-128 MiB. Default varies by destination (typically 5 MiB).\n Larger buffers produce fewer, larger objects (better for query engines);\n smaller buffers provide faster delivery.\n\n Note: Some destinations have tighter limits (e.g., OpenSearch max 100 MiB,\n HTTP endpoint max 64 MiB). AWS validates at the API level.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseCloudwatchLogging",
+      "description": "AwsKinesisFirehoseCloudwatchLogging configures delivery error logging to\n Amazon CloudWatch Logs. When enabled, Firehose publishes error information\n for troubleshooting delivery failures.",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseCloudwatchLogging",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable CloudWatch error logging for this delivery target.",
+          "required": false
+        },
+        {
+          "name": "LogGroupName",
+          "jsonName": "logGroupName",
+          "protoField": "log_group_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "CloudWatch Logs log group name where errors are published.\n Required when enabled is true.",
+          "required": false
+        },
+        {
+          "name": "LogStreamName",
+          "jsonName": "logStreamName",
+          "protoField": "log_stream_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "CloudWatch Logs log stream name within the log group.\n Required when enabled is true.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseDataFormatConversion",
+      "description": "AwsKinesisFirehoseDataFormatConversion configures conversion from JSON input\n to columnar formats (Apache Parquet or Apache ORC) using an AWS Glue Data\n Catalog schema. Columnar formats dramatically improve query performance\n (10-100x faster for analytical queries) and reduce storage costs (60-90%\n compression ratio).\n\n Prerequisites:\n - An AWS Glue Data Catalog database and table with the schema definition\n - The Firehose IAM role must have glue:GetTable and glue:GetTableVersions\n   permissions on the Glue catalog",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseDataFormatConversion",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable data format conversion. When true, output_format and schema are\n required.",
+          "required": false
+        },
+        {
+          "name": "InputFormat",
+          "jsonName": "inputFormat",
+          "protoField": "input_format",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Input data format for deserialization. Firehose reads incoming JSON\n records using this deserializer.\n\n Valid values:\n - \"OPENX_JSON\" (default) -- OpenX JSON SerDe. Handles most JSON formats\n   including nested objects. Recommended for general use.\n - \"HIVE_JSON\" -- Apache Hive JSON SerDe. Use for Hive-compatible JSON\n   with custom timestamp formats.",
+          "required": false
+        },
+        {
+          "name": "OutputFormat",
+          "jsonName": "outputFormat",
+          "protoField": "output_format",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Output columnar format for serialization. Records are converted from\n JSON to this format before writing to S3.\n\n Valid values:\n - \"PARQUET\" -- Apache Parquet format. Best for read-heavy analytical\n   workloads (Athena, Spark, Presto). Excellent compression, predicate\n   pushdown, and columnar pruning.\n - \"ORC\" -- Apache ORC format. Best for Hive workloads. ACID support,\n   bloom filters, and built-in indexing.",
+          "required": false
+        },
+        {
+          "name": "ParquetCompression",
+          "jsonName": "parquetCompression",
+          "protoField": "parquet_compression",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Compression for Parquet output. Only used when output_format is \"PARQUET\".\n Valid values: \"SNAPPY\" (default), \"GZIP\", \"UNCOMPRESSED\".",
+          "required": false
+        },
+        {
+          "name": "OrcCompression",
+          "jsonName": "orcCompression",
+          "protoField": "orc_compression",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Compression for ORC output. Only used when output_format is \"ORC\".\n Valid values: \"SNAPPY\" (default), \"ZLIB\", \"NONE\".",
+          "required": false
+        },
+        {
+          "name": "Schema",
+          "jsonName": "schema",
+          "protoField": "schema",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseGlueSchemaConfig"
+          },
+          "description": "AWS Glue Data Catalog schema reference. Defines the table schema used\n for converting JSON records to the columnar format. Required when\n data format conversion is enabled.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseDynamicPartitioning",
+      "description": "AwsKinesisFirehoseDynamicPartitioning configures dynamic partitioning for the\n Extended S3 destination. When enabled, Firehose extracts partition keys from\n record fields and uses them to construct S3 prefixes, creating a partitioned\n data layout for efficient query engines (Athena, Spark, Presto).\n\n The entire dynamic partitioning configuration is ForceNew -- it cannot be\n enabled or disabled after the delivery stream is created.",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseDynamicPartitioning",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable dynamic partitioning. ForceNew -- cannot be changed after creation.\n When enabled, configure partition key expressions in the S3 prefix using\n !{partitionKeyFromQuery:...} or !{partitionKeyFromLambda:...} syntax.",
+          "required": false
+        },
+        {
+          "name": "RetryDurationInSeconds",
+          "jsonName": "retryDurationInSeconds",
+          "protoField": "retry_duration_in_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Duration in seconds that Firehose retries delivery when a partition key\n expression fails or the S3 PutObject call is throttled.\n Range: 0-7200. Default: 300 seconds.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseExtendedS3Destination",
+      "description": "AwsKinesisFirehoseExtendedS3Destination configures delivery to Amazon S3 with\n advanced features: Lambda transformation, dynamic partitioning, Parquet/ORC\n format conversion, compression, and S3 backup of source records.\n\n This is the most feature-rich destination and the most common (~60% of all\n Firehose delivery streams). Use it for data lakes, log archives, analytics\n pipelines, and any scenario where data needs to land in S3.",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseExtendedS3Destination",
+      "fields": [
+        {
+          "name": "BucketArn",
+          "jsonName": "bucketArn",
+          "protoField": "bucket_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 bucket ARN where records are delivered.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsS3Bucket",
+          "referenceFieldPath": "status.outputs.bucket_arn"
+        },
+        {
+          "name": "RoleArn",
+          "jsonName": "roleArn",
+          "protoField": "role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM role ARN granting Firehose write access to the S3 bucket, KMS key\n (if encrypted), Lambda function (if processing), and Glue catalog (if\n format conversion is enabled).",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        },
+        {
+          "name": "Prefix",
+          "jsonName": "prefix",
+          "protoField": "prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 key prefix prepended to every delivered object. Supports Firehose\n expression syntax for dynamic prefixes:\n   \"data/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/\"\n\n When dynamic partitioning is enabled, use partitioning keys:\n   \"data/customer=!{partitionKeyFromQuery:customer_id}/\"",
+          "required": false
+        },
+        {
+          "name": "ErrorOutputPrefix",
+          "jsonName": "errorOutputPrefix",
+          "protoField": "error_output_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 key prefix for records that fail transformation or delivery.",
+          "required": false
+        },
+        {
+          "name": "CompressionFormat",
+          "jsonName": "compressionFormat",
+          "protoField": "compression_format",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Compression format applied before writing to S3. When data format\n conversion is enabled, compression is applied to the converted\n (Parquet/ORC) output -- in that case, use the format-native compression\n (configured in data_format_conversion) and leave this as UNCOMPRESSED.\n\n Valid values: \"UNCOMPRESSED\", \"GZIP\", \"ZIP\", \"Snappy\", \"HADOOP_SNAPPY\".\n Default: \"UNCOMPRESSED\".",
+          "required": false
+        },
+        {
+          "name": "KmsKeyArn",
+          "jsonName": "kmsKeyArn",
+          "protoField": "kms_key_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Customer-managed KMS key ARN for S3 server-side encryption (SSE-KMS).",
+          "required": false,
+          "referenceKind": "AwsKmsKey",
+          "referenceFieldPath": "status.outputs.key_arn"
+        },
+        {
+          "name": "Buffering",
+          "jsonName": "buffering",
+          "protoField": "buffering",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseBufferingHints"
+          },
+          "description": "Buffering hints for S3 delivery. Default: 300s interval, 5 MiB size.",
+          "required": false
+        },
+        {
+          "name": "CustomTimeZone",
+          "jsonName": "customTimeZone",
+          "protoField": "custom_time_zone",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IANA time zone for S3 prefix timestamp expressions.\n Default: \"UTC\". Example: \"US/Eastern\", \"Europe/London\".",
+          "required": false
+        },
+        {
+          "name": "FileExtension",
+          "jsonName": "fileExtension",
+          "protoField": "file_extension",
+          "type": {
+            "kind": "string"
+          },
+          "description": "File extension appended to delivered S3 objects (e.g., \".json\", \".parquet\").\n Must start with a period. When data format conversion is enabled, the\n extension is typically set to match the output format.",
+          "required": false
+        },
+        {
+          "name": "S3BackupMode",
+          "jsonName": "s3BackupMode",
+          "protoField": "s3_backup_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 backup mode for source records. When \"Enabled\", a copy of the original\n (pre-transformation) records is written to s3_backup in addition to the\n primary destination. Useful for auditing and reprocessing.\n\n Valid values: \"Disabled\" (default), \"Enabled\".",
+          "required": false
+        },
+        {
+          "name": "S3Backup",
+          "jsonName": "s3Backup",
+          "protoField": "s3_backup",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseS3Config"
+          },
+          "description": "S3 configuration for source record backup. Required when s3_backup_mode\n is \"Enabled\".",
+          "required": false
+        },
+        {
+          "name": "Processing",
+          "jsonName": "processing",
+          "protoField": "processing",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseLambdaProcessing"
+          },
+          "description": "Lambda-based record transformation. Applied before compression and\n format conversion.",
+          "required": false
+        },
+        {
+          "name": "Logging",
+          "jsonName": "logging",
+          "protoField": "logging",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseCloudwatchLogging"
+          },
+          "description": "CloudWatch error logging for S3 delivery failures.",
+          "required": false
+        },
+        {
+          "name": "DynamicPartitioning",
+          "jsonName": "dynamicPartitioning",
+          "protoField": "dynamic_partitioning",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseDynamicPartitioning"
+          },
+          "description": "Dynamic partitioning configuration. Enables partitioning delivered data\n by record fields (e.g., customer_id, event_type) for efficient querying\n with Athena, Spark, or Presto. ForceNew -- cannot be enabled/disabled\n after creation.",
+          "required": false
+        },
+        {
+          "name": "DataFormatConversion",
+          "jsonName": "dataFormatConversion",
+          "protoField": "data_format_conversion",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseDataFormatConversion"
+          },
+          "description": "Data format conversion from JSON to columnar formats (Parquet or ORC)\n using an AWS Glue Data Catalog schema. Dramatically improves query\n performance and reduces storage cost for analytics workloads.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseGlueSchemaConfig",
+      "description": "AwsKinesisFirehoseGlueSchemaConfig references an AWS Glue Data Catalog table\n that defines the schema for data format conversion. The table must exist in\n the Glue catalog before the delivery stream is created.",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseGlueSchemaConfig",
+      "fields": [
+        {
+          "name": "DatabaseName",
+          "jsonName": "databaseName",
+          "protoField": "database_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Glue Data Catalog database name containing the table.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "TableName",
+          "jsonName": "tableName",
+          "protoField": "table_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Glue Data Catalog table name defining the record schema.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "RoleArn",
+          "jsonName": "roleArn",
+          "protoField": "role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM role ARN granting Firehose permission to access the Glue catalog.\n Must have glue:GetTable and glue:GetTableVersions permissions.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        },
+        {
+          "name": "CatalogId",
+          "jsonName": "catalogId",
+          "protoField": "catalog_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Glue Data Catalog ID (AWS account ID). When omitted, defaults to the\n current AWS account.",
+          "required": false
+        },
+        {
+          "name": "Region",
+          "jsonName": "region",
+          "protoField": "region",
+          "type": {
+            "kind": "string"
+          },
+          "description": "AWS region of the Glue catalog. When omitted, defaults to the delivery\n stream's region.",
+          "required": false
+        },
+        {
+          "name": "VersionId",
+          "jsonName": "versionId",
+          "protoField": "version_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Table version to use. Default: \"LATEST\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseHttpEndpointDestination",
+      "description": "AwsKinesisFirehoseHttpEndpointDestination configures delivery to any HTTPS\n endpoint. This is the most flexible destination, commonly used for\n third-party analytics platforms (Datadog, New Relic, Sumo Logic), custom\n APIs, and webhook-based integrations.\n\n The endpoint must accept HTTPS POST requests. Firehose sends records as\n JSON arrays in the request body and expects an HTTP 200 response.\n Failed deliveries are backed up to S3.",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseHttpEndpointDestination",
+      "fields": [
+        {
+          "name": "Url",
+          "jsonName": "url",
+          "protoField": "url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTPS URL of the destination endpoint. Must start with \"https://\".\n Maximum length: 1000 characters.\n\n Examples:\n - \"https://http-intake.logs.datadoghq.com/v1/input\"\n - \"https://api.honeycomb.io/1/kinesis_events/your-dataset\"\n - \"https://my-api.example.com/firehose\"",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable name for the endpoint. Appears in the AWS Console and\n CloudWatch metrics. Maximum 256 characters.",
+          "required": false
+        },
+        {
+          "name": "AccessKey",
+          "jsonName": "accessKey",
+          "protoField": "access_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Access key for endpoint authentication. The value is sent in the\n X-Amz-Firehose-Access-Key header. Sensitive -- treated as a secret.\n Maximum 4096 characters.",
+          "required": false
+        },
+        {
+          "name": "RoleArn",
+          "jsonName": "roleArn",
+          "protoField": "role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM role ARN granting Firehose permission to deliver to the endpoint\n and write to the S3 backup bucket.",
+          "required": false,
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        },
+        {
+          "name": "Buffering",
+          "jsonName": "buffering",
+          "protoField": "buffering",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseBufferingHints"
+          },
+          "description": "Buffering hints for HTTP delivery. Default: 300s interval, 5 MiB.",
+          "required": false
+        },
+        {
+          "name": "RetryDurationInSeconds",
+          "jsonName": "retryDurationInSeconds",
+          "protoField": "retry_duration_in_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Retry duration in seconds for failed HTTP deliveries (non-2xx responses\n or timeouts). Range: 0-7200. Default: 300 seconds.",
+          "required": false
+        },
+        {
+          "name": "S3BackupMode",
+          "jsonName": "s3BackupMode",
+          "protoField": "s3_backup_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 backup mode. Controls when records are written to S3.\n\n Valid values:\n - \"FailedDataOnly\" (default) -- only records that fail HTTP delivery\n   are backed up to S3.\n - \"AllData\" -- all records are backed up to S3 in addition to being\n   sent to the HTTP endpoint.",
+          "required": false
+        },
+        {
+          "name": "S3Config",
+          "jsonName": "s3Config",
+          "protoField": "s3_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseS3Config"
+          },
+          "description": "S3 configuration for backing up failed (or all) records. Required.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Processing",
+          "jsonName": "processing",
+          "protoField": "processing",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseLambdaProcessing"
+          },
+          "description": "Lambda-based record transformation before HTTP delivery.",
+          "required": false
+        },
+        {
+          "name": "Logging",
+          "jsonName": "logging",
+          "protoField": "logging",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseCloudwatchLogging"
+          },
+          "description": "CloudWatch error logging for HTTP delivery failures.",
+          "required": false
+        },
+        {
+          "name": "RequestConfig",
+          "jsonName": "requestConfig",
+          "protoField": "request_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseRequestConfig"
+          },
+          "description": "Request configuration for customizing the HTTP request format.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseKinesisStreamSource",
+      "description": "AwsKinesisFirehoseKinesisStreamSource configures Firehose to read from an\n existing Kinesis Data Stream. Firehose acts as a consumer with automatic\n checkpointing, retry, and backpressure handling.\n\n The entire source configuration is ForceNew -- all fields require replacing\n the delivery stream if changed.",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseKinesisStreamSource",
+      "fields": [
+        {
+          "name": "StreamArn",
+          "jsonName": "streamArn",
+          "protoField": "stream_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of the Kinesis Data Stream to read from. Firehose creates an internal\n consumer and reads all shards. The stream must exist before the delivery\n stream is created.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsKinesisStream",
+          "referenceFieldPath": "status.outputs.stream_arn"
+        },
+        {
+          "name": "RoleArn",
+          "jsonName": "roleArn",
+          "protoField": "role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM role ARN that grants Firehose permission to read from the Kinesis\n stream. The role must have kinesis:GetRecords, kinesis:GetShardIterator,\n kinesis:DescribeStream, and kinesis:ListShards permissions.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseLambdaProcessing",
+      "description": "AwsKinesisFirehoseLambdaProcessing configures an AWS Lambda function to\n transform records before delivery. This is a simplified model covering the\n dominant use case (~95% of processing configurations use Lambda).\n\n In the IaC modules, this is mapped to the generic processor model with\n type=\"Lambda\" and typed parameter name/value pairs.",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseLambdaProcessing",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable Lambda-based record transformation.",
+          "required": false
+        },
+        {
+          "name": "LambdaArn",
+          "jsonName": "lambdaArn",
+          "protoField": "lambda_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of the Lambda function that transforms records. The function receives\n batches of records and returns transformed records with a status\n (Ok, Dropped, ProcessingFailed) per record.\n\n Required when enabled is true.",
+          "required": false,
+          "referenceKind": "AwsLambda",
+          "referenceFieldPath": "status.outputs.function_arn"
+        },
+        {
+          "name": "BufferSizeInMbs",
+          "jsonName": "bufferSizeInMbs",
+          "protoField": "buffer_size_in_mbs",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Buffer size in MiB that Firehose accumulates before invoking Lambda.\n Range: 1-3 MiB. Default: 3 MiB.\n\n Smaller buffers invoke Lambda more frequently with smaller batches.\n Larger buffers (up to 3 MiB) are more efficient and reduce Lambda\n invocation costs.",
+          "required": false
+        },
+        {
+          "name": "BufferIntervalInSeconds",
+          "jsonName": "bufferIntervalInSeconds",
+          "protoField": "buffer_interval_in_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Buffer interval in seconds. Firehose invokes Lambda when this interval\n elapses, even if the buffer size threshold has not been reached.\n Range: 60-900 seconds. Default: 60 seconds.",
+          "required": false
+        },
+        {
+          "name": "NumberOfRetries",
+          "jsonName": "numberOfRetries",
+          "protoField": "number_of_retries",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of times Firehose retries a failed Lambda invocation before\n writing the record to the error output prefix.\n Range: 0-300. Default: 3.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseOpenSearchDestination",
+      "description": "AwsKinesisFirehoseOpenSearchDestination configures delivery to an Amazon\n OpenSearch Service domain. Firehose indexes records directly into the\n specified index with configurable rotation, buffering, and retry behavior.\n Failed documents are always backed up to S3.\n\n Supports both public and VPC-deployed OpenSearch domains. For VPC domains,\n configure vpc_config to enable Firehose to create ENIs in the VPC.",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseOpenSearchDestination",
+      "fields": [
+        {
+          "name": "DomainArn",
+          "jsonName": "domainArn",
+          "protoField": "domain_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of the OpenSearch domain. Mutually exclusive with cluster_endpoint.\n Use this for domains managed within the same AWS account.",
+          "required": false,
+          "referenceKind": "AwsOpenSearchDomain",
+          "referenceFieldPath": "status.outputs.domain_arn"
+        },
+        {
+          "name": "ClusterEndpoint",
+          "jsonName": "clusterEndpoint",
+          "protoField": "cluster_endpoint",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OpenSearch cluster endpoint URL. Mutually exclusive with domain_arn.\n Use this for cross-account domains or non-standard endpoints.\n Format: \"https://search-domain-xxxx.us-east-1.es.amazonaws.com\"",
+          "required": false
+        },
+        {
+          "name": "IndexName",
+          "jsonName": "indexName",
+          "protoField": "index_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the OpenSearch index to deliver records to. Required.\n When index_rotation_period is set, this becomes the index prefix and\n Firehose appends a timestamp suffix (e.g., \"logs-2026-02-15\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "RoleArn",
+          "jsonName": "roleArn",
+          "protoField": "role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM role ARN granting Firehose permission to write to OpenSearch.\n Must have es:ESHttpPut and es:ESHttpGet permissions on the domain.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        },
+        {
+          "name": "IndexRotationPeriod",
+          "jsonName": "indexRotationPeriod",
+          "protoField": "index_rotation_period",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Index rotation period. Firehose appends a timestamp suffix to index_name\n and creates a new index at each rotation boundary.\n\n Valid values: \"NoRotation\", \"OneHour\", \"OneDay\" (default), \"OneWeek\", \"OneMonth\".\n\n \"NoRotation\" writes all records to the same index (use for small, static datasets).\n \"OneDay\" is recommended for most log and analytics use cases.",
+          "required": false
+        },
+        {
+          "name": "TypeName",
+          "jsonName": "typeName",
+          "protoField": "type_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OpenSearch document type name. Only relevant for Elasticsearch 6.x and\n earlier (OpenSearch does not use document types). Leave empty for\n OpenSearch domains.",
+          "required": false
+        },
+        {
+          "name": "Buffering",
+          "jsonName": "buffering",
+          "protoField": "buffering",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseBufferingHints"
+          },
+          "description": "Buffering hints for OpenSearch delivery. Default: 300s interval, 5 MiB.\n Max size: 100 MiB for OpenSearch destinations.",
+          "required": false
+        },
+        {
+          "name": "RetryDurationInSeconds",
+          "jsonName": "retryDurationInSeconds",
+          "protoField": "retry_duration_in_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Retry duration in seconds for failed OpenSearch index requests.\n Range: 0-7200. Default: 300 seconds.\n Set to 0 to disable retries (failed documents go directly to S3 backup).",
+          "required": false
+        },
+        {
+          "name": "S3BackupMode",
+          "jsonName": "s3BackupMode",
+          "protoField": "s3_backup_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 backup mode for documents. Controls when records are written to S3.\n\n Valid values:\n - \"FailedDocumentsOnly\" (default) -- only documents that fail indexing\n   are backed up to S3.\n - \"AllDocuments\" -- all documents are backed up to S3 in addition to\n   being indexed in OpenSearch.",
+          "required": false
+        },
+        {
+          "name": "S3Config",
+          "jsonName": "s3Config",
+          "protoField": "s3_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseS3Config"
+          },
+          "description": "S3 configuration for backing up failed (or all) documents. Required.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Processing",
+          "jsonName": "processing",
+          "protoField": "processing",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseLambdaProcessing"
+          },
+          "description": "Lambda-based record transformation before indexing.",
+          "required": false
+        },
+        {
+          "name": "Logging",
+          "jsonName": "logging",
+          "protoField": "logging",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseCloudwatchLogging"
+          },
+          "description": "CloudWatch error logging for OpenSearch delivery failures.",
+          "required": false
+        },
+        {
+          "name": "VpcConfig",
+          "jsonName": "vpcConfig",
+          "protoField": "vpc_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseVpcConfig"
+          },
+          "description": "VPC configuration for delivering to VPC-deployed OpenSearch domains.\n ForceNew -- the VPC config cannot be changed after creation.\n When absent, Firehose delivers over the public internet.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseRedshiftDestination",
+      "description": "AwsKinesisFirehoseRedshiftDestination configures delivery to an Amazon\n Redshift data warehouse. Firehose stages records in an intermediate S3\n bucket, then issues a Redshift COPY command to bulk-load the data into\n the target table.\n\n This two-stage process (S3 staging -\u003e COPY) is the standard Redshift\n ingestion pattern and provides excellent throughput for large data volumes.\n\n Prerequisites:\n - A Redshift cluster accessible from Firehose (public or via VPC)\n - The target database and table must exist\n - An S3 staging bucket with appropriate IAM permissions",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseRedshiftDestination",
+      "fields": [
+        {
+          "name": "ClusterJdbcurl",
+          "jsonName": "clusterJdbcurl",
+          "protoField": "cluster_jdbcurl",
+          "type": {
+            "kind": "string"
+          },
+          "description": "JDBC URL of the Redshift cluster. Format:\n   \"jdbc:redshift://\u003cendpoint\u003e:\u003cport\u003e/\u003cdatabase\u003e\"\n Example: \"jdbc:redshift://my-cluster.abcdef.us-east-1.redshift.amazonaws.com:5439/mydb\"",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "RoleArn",
+          "jsonName": "roleArn",
+          "protoField": "role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM role ARN granting Firehose permission to COPY from S3 to Redshift\n and write to the S3 staging bucket. Must have:\n - S3 read access to the staging bucket\n - Redshift COPY permission",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        },
+        {
+          "name": "DataTableName",
+          "jsonName": "dataTableName",
+          "protoField": "data_table_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the target Redshift table for the COPY command.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "DataTableColumns",
+          "jsonName": "dataTableColumns",
+          "protoField": "data_table_columns",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Comma-separated list of column names for the COPY command. When set,\n only the specified columns are loaded. When absent, COPY loads into\n all columns in table order.",
+          "required": false
+        },
+        {
+          "name": "CopyOptions",
+          "jsonName": "copyOptions",
+          "protoField": "copy_options",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Additional COPY command options (e.g., \"JSON 'auto'\", \"GZIP\",\n \"DELIMITER ','\", \"IGNOREHEADER 1\"). Appended to the COPY command.",
+          "required": false
+        },
+        {
+          "name": "Username",
+          "jsonName": "username",
+          "protoField": "username",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Redshift database username for authentication.",
+          "required": false
+        },
+        {
+          "name": "Password",
+          "jsonName": "password",
+          "protoField": "password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Redshift database password for authentication. Sensitive.\n Consider using AWS Secrets Manager for production workloads (not\n supported in v1 -- use direct credentials).",
+          "required": false
+        },
+        {
+          "name": "S3Config",
+          "jsonName": "s3Config",
+          "protoField": "s3_config",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseS3Config"
+          },
+          "description": "S3 configuration for the intermediate staging bucket. Firehose writes\n data to this S3 location, then issues a COPY command to load it into\n Redshift. This is NOT a backup -- it's the primary data path.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "RetryDurationInSeconds",
+          "jsonName": "retryDurationInSeconds",
+          "protoField": "retry_duration_in_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Retry duration in seconds for failed Redshift COPY commands.\n Range: 0-7200. Default: 3600 seconds (1 hour).\n Redshift COPY can be slow, so a longer default is appropriate.",
+          "required": false
+        },
+        {
+          "name": "S3BackupMode",
+          "jsonName": "s3BackupMode",
+          "protoField": "s3_backup_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 backup mode for source records (in addition to the staging S3).\n When \"Enabled\", a copy of the original records is written to\n s3_backup. Useful for auditing and reprocessing.\n\n Valid values: \"Disabled\" (default), \"Enabled\".",
+          "required": false
+        },
+        {
+          "name": "S3Backup",
+          "jsonName": "s3Backup",
+          "protoField": "s3_backup",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseS3Config"
+          },
+          "description": "S3 configuration for source record backup. Required when\n s3_backup_mode is \"Enabled\".",
+          "required": false
+        },
+        {
+          "name": "Processing",
+          "jsonName": "processing",
+          "protoField": "processing",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseLambdaProcessing"
+          },
+          "description": "Lambda-based record transformation before staging to S3.",
+          "required": false
+        },
+        {
+          "name": "Logging",
+          "jsonName": "logging",
+          "protoField": "logging",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseCloudwatchLogging"
+          },
+          "description": "CloudWatch error logging for Redshift COPY failures.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseRequestAttribute",
+      "description": "AwsKinesisFirehoseRequestAttribute is a key-value pair sent as a custom\n HTTP header with every request to the HTTP endpoint.",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseRequestAttribute",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Header name.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Header value.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseRequestConfig",
+      "description": "AwsKinesisFirehoseRequestConfig customizes the HTTP request sent to the\n endpoint. Allows setting content encoding and custom headers.",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseRequestConfig",
+      "fields": [
+        {
+          "name": "ContentEncoding",
+          "jsonName": "contentEncoding",
+          "protoField": "content_encoding",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Content encoding for the HTTP request body.\n Valid values: \"NONE\" (default), \"GZIP\".\n GZIP reduces payload size but adds CPU overhead.",
+          "required": false
+        },
+        {
+          "name": "CommonAttributes",
+          "jsonName": "commonAttributes",
+          "protoField": "common_attributes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AwsKinesisFirehoseRequestAttribute"
+            }
+          },
+          "description": "Custom key-value pairs sent as HTTP headers with every request.\n Use this for endpoint-specific metadata (e.g., dataset name,\n environment identifier, API version).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseS3Config",
+      "description": "AwsKinesisFirehoseS3Config defines the S3 configuration used for backup or\n error delivery. All non-S3 destinations (OpenSearch, HTTP endpoint, Redshift)\n require an S3 configuration to store failed records. Redshift also uses S3\n as an intermediate staging area for COPY operations.",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseS3Config",
+      "fields": [
+        {
+          "name": "BucketArn",
+          "jsonName": "bucketArn",
+          "protoField": "bucket_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 bucket ARN where records are delivered.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsS3Bucket",
+          "referenceFieldPath": "status.outputs.bucket_arn"
+        },
+        {
+          "name": "RoleArn",
+          "jsonName": "roleArn",
+          "protoField": "role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM role ARN that grants Firehose permission to write to the S3 bucket.\n The role must have s3:PutObject, s3:AbortMultipartUpload,\n s3:GetBucketLocation, and s3:ListBucket permissions.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        },
+        {
+          "name": "Prefix",
+          "jsonName": "prefix",
+          "protoField": "prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 key prefix prepended to delivered objects. Supports Firehose expression\n syntax for dynamic prefixes (e.g., \"errors/year=!{timestamp:yyyy}/\").",
+          "required": false
+        },
+        {
+          "name": "ErrorOutputPrefix",
+          "jsonName": "errorOutputPrefix",
+          "protoField": "error_output_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "S3 key prefix for error output. When Firehose cannot deliver or transform\n a record, it writes to this prefix. Uses the same expression syntax as prefix.",
+          "required": false
+        },
+        {
+          "name": "CompressionFormat",
+          "jsonName": "compressionFormat",
+          "protoField": "compression_format",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Compression format for delivered objects. Applied before writing to S3.\n Valid values: \"UNCOMPRESSED\", \"GZIP\", \"ZIP\", \"Snappy\", \"HADOOP_SNAPPY\".\n Default: \"UNCOMPRESSED\".",
+          "required": false
+        },
+        {
+          "name": "KmsKeyArn",
+          "jsonName": "kmsKeyArn",
+          "protoField": "kms_key_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Customer-managed KMS key ARN for S3 server-side encryption (SSE-KMS).\n When absent, S3 uses its default encryption settings (SSE-S3 or bucket\n default encryption).",
+          "required": false,
+          "referenceKind": "AwsKmsKey",
+          "referenceFieldPath": "status.outputs.key_arn"
+        },
+        {
+          "name": "Buffering",
+          "jsonName": "buffering",
+          "protoField": "buffering",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseBufferingHints"
+          },
+          "description": "Buffering hints for S3 delivery.",
+          "required": false
+        },
+        {
+          "name": "Logging",
+          "jsonName": "logging",
+          "protoField": "logging",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsKinesisFirehoseCloudwatchLogging"
+          },
+          "description": "CloudWatch logging configuration for S3 delivery errors.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsKinesisFirehoseVpcConfig",
+      "description": "AwsKinesisFirehoseVpcConfig configures VPC delivery for OpenSearch\n destinations. When set, Firehose creates ENIs in the specified subnets\n to deliver data within the VPC. The entire VPC configuration is ForceNew.",
+      "protoType": "org.openmcf.provider.aws.awskinesisfirehose.v1.AwsKinesisFirehoseVpcConfig",
+      "fields": [
+        {
+          "name": "SubnetIds",
+          "jsonName": "subnetIds",
+          "protoField": "subnet_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Subnet IDs where Firehose creates ENIs for VPC delivery. Provide at\n least one subnet. For high availability, use subnets in multiple AZs.",
+          "required": false,
+          "referenceKind": "AwsVpc",
+          "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+        },
+        {
+          "name": "SecurityGroupIds",
+          "jsonName": "securityGroupIds",
+          "protoField": "security_group_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Security group IDs applied to the ENIs. Must allow outbound HTTPS (443)\n traffic to the OpenSearch domain.",
+          "required": false,
+          "referenceKind": "AwsSecurityGroup",
+          "referenceFieldPath": "status.outputs.security_group_id"
+        },
+        {
+          "name": "RoleArn",
+          "jsonName": "roleArn",
+          "protoField": "role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IAM role ARN for Firehose to manage VPC ENIs. The role must have\n ec2:CreateNetworkInterface, ec2:DescribeNetworkInterfaces,\n ec2:DeleteNetworkInterface, and ec2:DescribeVpcs permissions.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        }
+      ]
+    }
+  ]
+}

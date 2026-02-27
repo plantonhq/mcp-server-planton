@@ -1,0 +1,164 @@
+{
+  "name": "OciKmsVault",
+  "kind": "OciKmsVault",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciKmsVault is the top-level resource representing an OCI KMS Vault\n that provides an HSM-backed container for encryption keys.",
+  "protoPackage": "org.openmcf.provider.oci.ocikmsvault.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocikmsvault/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocikmsvault/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciKmsVaultSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the vault will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Display name for the vault. When omitted, the metadata name is used.",
+        "required": false
+      },
+      {
+        "name": "VaultType",
+        "jsonName": "vaultType",
+        "protoField": "vault_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.oci.ocikmsvault.v1.VaultType",
+          "enumValues": [
+            "default_vault",
+            "virtual_private",
+            "external"
+          ]
+        },
+        "description": "Type of vault to create. Cannot be changed after creation.\n   - default_vault:  shared HSM partition (lower cost)\n   - virtual_private: dedicated HSM partition (higher throughput)\n   - external:        external key manager via IDCS OAuth (BYOK/EKMS)",
+        "required": false
+      },
+      {
+        "name": "ExternalKeyManagerMetadata",
+        "jsonName": "externalKeyManagerMetadata",
+        "protoField": "external_key_manager_metadata",
+        "type": {
+          "kind": "message",
+          "messageType": "ExternalKeyManagerMetadata"
+        },
+        "description": "Configuration for an external key manager. Required when vault_type\n is external; must not be set otherwise. All sub-fields within this\n message are immutable after creation (ForceNew).",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ExternalKeyManagerMetadata",
+      "description": "ExternalKeyManagerMetadata configures the connection to an external\n key manager for EXTERNAL vault type. All fields are immutable after\n creation.",
+      "protoType": "org.openmcf.provider.oci.ocikmsvault.v1.OciKmsVaultSpec.ExternalKeyManagerMetadata",
+      "fields": [
+        {
+          "name": "ExternalVaultEndpointUrl",
+          "jsonName": "externalVaultEndpointUrl",
+          "protoField": "external_vault_endpoint_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URI of the vault on the external key manager system.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "OauthMetadata",
+          "jsonName": "oauthMetadata",
+          "protoField": "oauth_metadata",
+          "type": {
+            "kind": "message",
+            "messageType": "OAuthMetadata"
+          },
+          "description": "OAuth credentials for authenticating with Oracle IDCS to reach\n the external key manager.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "PrivateEndpointId",
+          "jsonName": "privateEndpointId",
+          "protoField": "private_endpoint_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the KMS private endpoint used to connect to the external\n key manager over a private network path.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "OAuthMetadata",
+      "description": "OAuthMetadata holds the IDCS OAuth credentials for authenticating\n with an external key manager.",
+      "protoType": "org.openmcf.provider.oci.ocikmsvault.v1.OciKmsVaultSpec.ExternalKeyManagerMetadata.OAuthMetadata",
+      "fields": [
+        {
+          "name": "ClientAppId",
+          "jsonName": "clientAppId",
+          "protoField": "client_app_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Application ID of the client app registered in IDCS.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ClientAppSecret",
+          "jsonName": "clientAppSecret",
+          "protoField": "client_app_secret",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Secret of the client app registered in IDCS. This value is\n sensitive and will not be returned by the API after creation.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "IdcsAccountNameUrl",
+          "jsonName": "idcsAccountNameUrl",
+          "protoField": "idcs_account_name_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Base URL of the IDCS account (e.g., \"https://idcs-xxx.identity.oraclecloud.com\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

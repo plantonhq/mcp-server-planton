@@ -1,0 +1,180 @@
+{
+  "name": "AwsS3ObjectSet",
+  "kind": "AwsS3ObjectSet",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-s3-object-set",
+  "protoPackage": "org.openmcf.provider.aws.awss3objectset.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awss3objectset/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awss3objectset/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsS3ObjectSetSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Bucket",
+        "jsonName": "bucket",
+        "protoField": "bucket",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The target S3 bucket where objects will be uploaded.\n Can be a literal bucket name or a reference to an AwsS3Bucket component.\n When referencing an AwsS3Bucket, the bucket_id is resolved from status.outputs.bucket_id.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsS3Bucket",
+        "referenceFieldPath": "status.outputs.bucket_id"
+      },
+      {
+        "name": "Objects",
+        "jsonName": "objects",
+        "protoField": "objects",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsS3Object"
+          }
+        },
+        "description": "The list of S3 objects to upload to the target bucket.\n At least one object must be specified.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags applied to all objects in the set.\n Individual object tags are merged with these, with object-level tags taking precedence.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsS3Object",
+      "description": "AwsS3Object defines a single S3 object to be uploaded.",
+      "protoType": "org.openmcf.provider.aws.awss3objectset.v1.AwsS3Object",
+      "fields": [
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The S3 object key (path within the bucket).\n Examples: \"config/app.json\", \"assets/logo.png\", \"data/seed.csv\"",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Content",
+          "jsonName": "content",
+          "protoField": "content",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Inline UTF-8 text content for the object.\n Suitable for configuration files, JSON, YAML, HTML, and other text formats.",
+          "required": false,
+          "oneofGroup": "source"
+        },
+        {
+          "name": "ContentBase64",
+          "jsonName": "contentBase64",
+          "protoField": "content_base64",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Base64-encoded binary content for the object.\n Suitable for images, compiled assets, or any binary data.",
+          "required": false,
+          "oneofGroup": "source"
+        },
+        {
+          "name": "ContentType",
+          "jsonName": "contentType",
+          "protoField": "content_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The MIME content type of the object (e.g., \"application/json\", \"text/html\", \"image/png\").\n Default: application/octet-stream",
+          "required": false,
+          "default": "application/octet-stream",
+          "oneofGroup": "_content_type"
+        },
+        {
+          "name": "CacheControl",
+          "jsonName": "cacheControl",
+          "protoField": "cache_control",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The caching behavior for the object.\n Example: \"max-age=86400\" for 24-hour caching, \"no-cache\" for no caching.",
+          "required": false
+        },
+        {
+          "name": "ContentEncoding",
+          "jsonName": "contentEncoding",
+          "protoField": "content_encoding",
+          "type": {
+            "kind": "string"
+          },
+          "description": "How the content is encoded (e.g., \"gzip\", \"br\").\n Set this if the content has been pre-compressed.",
+          "required": false
+        },
+        {
+          "name": "Tags",
+          "jsonName": "tags",
+          "protoField": "tags",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Tags specific to this object. Merged with set-level tags (object tags take precedence).",
+          "required": false
+        },
+        {
+          "name": "Acl",
+          "jsonName": "acl",
+          "protoField": "acl",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The canned ACL for this object (e.g., \"private\", \"public-read\").\n If not specified, inherits the bucket's default ACL.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,402 @@
+{
+  "name": "GcpFilestoreInstance",
+  "kind": "GcpFilestoreInstance",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-filestore-instance",
+  "protoPackage": "org.openmcf.provider.gcp.gcpfilestoreinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpfilestoreinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpfilestoreinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpFilestoreInstanceSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP project where the Filestore instance will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "InstanceName",
+        "jsonName": "instanceName",
+        "protoField": "instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the Filestore instance. This becomes the GCP resource name.\n Must start with a lowercase letter, contain only lowercase letters, numbers,\n and hyphens, and be 1-63 characters long.\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 63,
+          "pattern": "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+        }
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Location where the instance will be deployed.\n For BASIC_HDD, BASIC_SSD, STANDARD, PREMIUM, HIGH_SCALE_SSD, and ZONAL\n tiers: specify a zone (e.g., \"us-central1-a\").\n For ENTERPRISE and REGIONAL tiers: specify a region (e.g., \"us-central1\").\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Tier",
+        "jsonName": "tier",
+        "protoField": "tier",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Service tier controlling performance, availability, and pricing.\n STANDARD / BASIC_HDD: cost-effective HDD-backed (1 TiB minimum).\n PREMIUM / BASIC_SSD: mid-tier SSD-backed (2.5 TiB minimum).\n HIGH_SCALE_SSD: legacy high-performance SSD (10 TiB minimum).\n ZONAL: modern single-zone SSD with IOPS tuning (1 TiB minimum).\n REGIONAL: multi-zone SSD with HA (1 TiB minimum).\n ENTERPRISE: highest tier, regional HA (1 TiB minimum).\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "enum": [
+            "STANDARD",
+            "PREMIUM",
+            "BASIC_HDD",
+            "BASIC_SSD",
+            "HIGH_SCALE_SSD",
+            "ZONAL",
+            "REGIONAL",
+            "ENTERPRISE"
+          ]
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the instance.",
+        "required": false
+      },
+      {
+        "name": "Protocol",
+        "jsonName": "protocol",
+        "protoField": "protocol",
+        "type": {
+          "kind": "string"
+        },
+        "description": "NFS protocol version.\n NFS_V3 (default): NFSv3. Broad compatibility, no built-in auth.\n NFS_V4_1: NFSv4.1. Supports Kerberos security. Available on\n   HIGH_SCALE_SSD, ZONAL, REGIONAL, and ENTERPRISE tiers.\n Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyName",
+        "jsonName": "kmsKeyName",
+        "protoField": "kms_key_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cloud KMS key for customer-managed encryption at rest (CMEK).\n Format: projects/{project}/locations/{location}/keyRings/{keyRing}/cryptoKeys/{key}\n If not specified, data is encrypted with Google-managed keys.\n Immutable after creation.",
+        "required": false,
+        "referenceKind": "GcpKmsKey",
+        "referenceFieldPath": "status.outputs.key_id"
+      },
+      {
+        "name": "DeletionProtectionEnabled",
+        "jsonName": "deletionProtectionEnabled",
+        "protoField": "deletion_protection_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether deletion protection is enabled. When true, the instance cannot\n be deleted until this flag is set to false.",
+        "required": false
+      },
+      {
+        "name": "DeletionProtectionReason",
+        "jsonName": "deletionProtectionReason",
+        "protoField": "deletion_protection_reason",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reason for enabling deletion protection. Informational only.",
+        "required": false
+      },
+      {
+        "name": "FileShare",
+        "jsonName": "fileShare",
+        "protoField": "file_share",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpFilestoreInstanceFileShare"
+        },
+        "description": "File share configuration. Each Filestore instance has exactly one file share.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "NetworkConfig",
+        "jsonName": "networkConfig",
+        "protoField": "network_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpFilestoreInstanceNetworkConfig"
+        },
+        "description": "VPC network configuration. Each Filestore instance connects to exactly one network.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "PerformanceConfig",
+        "jsonName": "performanceConfig",
+        "protoField": "performance_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpFilestoreInstancePerformanceConfig"
+        },
+        "description": "Performance configuration for IOPS tuning.\n Available on ZONAL, REGIONAL, and ENTERPRISE tiers.\n If not specified, the instance uses the default performance for its tier.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpFilestoreInstanceFileShare",
+      "description": "GcpFilestoreInstanceFileShare defines the single file share on a Filestore\n instance. Each Filestore instance supports exactly one file share.\n\n The file share name becomes part of the NFS mount path:\n   mount \u003cinstance-ip\u003e:/\u003cfile_share_name\u003e /mnt/nfs\n\n Capacity minimums depend on the instance tier:\n   - BASIC_HDD / STANDARD: 1 TiB (1024 GiB)\n   - BASIC_SSD / PREMIUM: 2.5 TiB (2560 GiB)\n   - HIGH_SCALE_SSD: 10 TiB (10240 GiB)\n   - ZONAL / REGIONAL / ENTERPRISE: 1 TiB (1024 GiB)",
+      "protoType": "org.openmcf.provider.gcp.gcpfilestoreinstance.v1.GcpFilestoreInstanceFileShare",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the file share. Becomes the NFS export path.\n Must start with a letter, followed by letters, numbers, or underscores.\n Maximum 16 characters.\n Immutable after creation.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "maxLength": 16,
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_]{0,15}$"
+          }
+        },
+        {
+          "name": "CapacityGb",
+          "jsonName": "capacityGb",
+          "protoField": "capacity_gb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Capacity of the file share in GiB.\n Minimum 1024 GiB (1 TiB) for most tiers. BASIC_SSD/PREMIUM requires\n 2560 GiB minimum. HIGH_SCALE_SSD requires 10240 GiB minimum.\n The GCP API enforces tier-specific minimums.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1024
+          }
+        },
+        {
+          "name": "NfsExportOptions",
+          "jsonName": "nfsExportOptions",
+          "protoField": "nfs_export_options",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "GcpFilestoreInstanceNfsExportOption"
+            }
+          },
+          "description": "NFS export options controlling client access to the file share.\n Maximum 10 export options per file share.\n If empty, all clients are allowed with READ_WRITE access and NO_ROOT_SQUASH.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpFilestoreInstanceFixedIops",
+      "description": "GcpFilestoreInstanceFixedIops configures a fixed IOPS provisioning model\n where the instance always has the same IOPS regardless of capacity changes.",
+      "protoType": "org.openmcf.provider.gcp.gcpfilestoreinstance.v1.GcpFilestoreInstanceFixedIops",
+      "fields": [
+        {
+          "name": "MaxIops",
+          "jsonName": "maxIops",
+          "protoField": "max_iops",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The number of IOPS to provision. Must be a multiple of 1000.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1000
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpFilestoreInstanceIopsPerTb",
+      "description": "GcpFilestoreInstanceIopsPerTb configures a dynamic IOPS provisioning model\n where IOPS scales proportionally with instance capacity.\n Effective IOPS = capacity_tb * max_iops_per_tb, rounded to nearest 1000.",
+      "protoType": "org.openmcf.provider.gcp.gcpfilestoreinstance.v1.GcpFilestoreInstanceIopsPerTb",
+      "fields": [
+        {
+          "name": "MaxIopsPerTb",
+          "jsonName": "maxIopsPerTb",
+          "protoField": "max_iops_per_tb",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum IOPS per terabyte of capacity.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpFilestoreInstanceNetworkConfig",
+      "description": "GcpFilestoreInstanceNetworkConfig defines the VPC network configuration\n for a Filestore instance. Each instance connects to exactly one VPC network.\n\n The network configuration is immutable after creation. Changing it requires\n replacing the instance.",
+      "protoType": "org.openmcf.provider.gcp.gcpfilestoreinstance.v1.GcpFilestoreInstanceNetworkConfig",
+      "fields": [
+        {
+          "name": "Network",
+          "jsonName": "network",
+          "protoField": "network",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VPC network to which the Filestore instance is connected.\n Immutable after creation.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "GcpVpc",
+          "referenceFieldPath": "status.outputs.network_self_link"
+        },
+        {
+          "name": "ConnectMode",
+          "jsonName": "connectMode",
+          "protoField": "connect_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Network connection mode.\n DIRECT_PEERING (default): VPC peering. Simplest setup.\n PRIVATE_SERVICE_ACCESS: uses a private services connection. Required for\n   Shared VPC and some enterprise network configurations.\n PRIVATE_SERVICE_CONNECT: uses Private Service Connect endpoints.\n Immutable after creation.",
+          "required": false
+        },
+        {
+          "name": "ReservedIpRange",
+          "jsonName": "reservedIpRange",
+          "protoField": "reserved_ip_range",
+          "type": {
+            "kind": "string"
+          },
+          "description": "A /29 CIDR block for internal IP addresses reserved for this instance.\n Must be unique and non-overlapping with existing subnets in the VPC.\n If not specified, GCP automatically selects an unused range.\n Immutable after creation.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "GcpFilestoreInstanceNfsExportOption",
+      "description": "GcpFilestoreInstanceNfsExportOption defines access controls for an NFS\n export on a Filestore file share. Each export option specifies which clients\n can access the share, with what permissions, and how root users are mapped.\n\n Up to 10 export options can be defined per file share. IP ranges must not\n overlap across export options within the same file share.",
+      "protoType": "org.openmcf.provider.gcp.gcpfilestoreinstance.v1.GcpFilestoreInstanceNfsExportOption",
+      "fields": [
+        {
+          "name": "IpRanges",
+          "jsonName": "ipRanges",
+          "protoField": "ip_ranges",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "List of IPv4 addresses or CIDR ranges that are allowed to mount\n the file share. If empty, all clients are allowed.\n Maximum 64 IP ranges/addresses across all export options per file share.",
+          "required": false
+        },
+        {
+          "name": "AccessMode",
+          "jsonName": "accessMode",
+          "protoField": "access_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Access mode for the export.\n READ_WRITE (default): clients can read and write.\n READ_ONLY: clients can only read.",
+          "required": false
+        },
+        {
+          "name": "SquashMode",
+          "jsonName": "squashMode",
+          "protoField": "squash_mode",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Root squash mode for the export.\n NO_ROOT_SQUASH (default): root users on clients have root access on the file share.\n ROOT_SQUASH: root users on clients are mapped to anon_uid/anon_gid.",
+          "required": false
+        },
+        {
+          "name": "AnonUid",
+          "jsonName": "anonUid",
+          "protoField": "anon_uid",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Anonymous user ID used when squash_mode is ROOT_SQUASH.\n Defaults to 65534 (nobody) if not specified.\n Only valid when squash_mode is ROOT_SQUASH.",
+          "required": false,
+          "oneofGroup": "_anon_uid"
+        },
+        {
+          "name": "AnonGid",
+          "jsonName": "anonGid",
+          "protoField": "anon_gid",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Anonymous group ID used when squash_mode is ROOT_SQUASH.\n Defaults to 65534 (nogroup) if not specified.\n Only valid when squash_mode is ROOT_SQUASH.",
+          "required": false,
+          "oneofGroup": "_anon_gid"
+        }
+      ]
+    },
+    {
+      "name": "GcpFilestoreInstancePerformanceConfig",
+      "description": "GcpFilestoreInstancePerformanceConfig defines the IOPS performance model\n for a Filestore instance. Only one of fixed_iops or iops_per_tb may be set.\n\n If not specified, the instance uses the default performance characteristics\n for its tier.\n\n Performance configuration is available on ZONAL, REGIONAL, and ENTERPRISE tiers.",
+      "protoType": "org.openmcf.provider.gcp.gcpfilestoreinstance.v1.GcpFilestoreInstancePerformanceConfig",
+      "fields": [
+        {
+          "name": "FixedIops",
+          "jsonName": "fixedIops",
+          "protoField": "fixed_iops",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpFilestoreInstanceFixedIops"
+          },
+          "description": "Fixed IOPS provisioning. IOPS remains constant regardless of capacity.\n Mutually exclusive with iops_per_tb.",
+          "required": false
+        },
+        {
+          "name": "IopsPerTb",
+          "jsonName": "iopsPerTb",
+          "protoField": "iops_per_tb",
+          "type": {
+            "kind": "message",
+            "messageType": "GcpFilestoreInstanceIopsPerTb"
+          },
+          "description": "Dynamic IOPS provisioning. IOPS scales with instance capacity.\n Mutually exclusive with fixed_iops.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

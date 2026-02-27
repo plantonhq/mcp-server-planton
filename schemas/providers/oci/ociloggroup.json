@@ -1,0 +1,200 @@
+{
+  "name": "OciLogGroup",
+  "kind": "OciLogGroup",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciLogGroup is the top-level resource representing an OCI Logging\n log group -- an organizational container for related logs with\n bundled service and custom log sub-resources.",
+  "protoPackage": "org.openmcf.provider.oci.ociloggroup.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ociloggroup/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ociloggroup/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciLogGroupSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the log group will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Description for the log group.",
+        "required": false
+      },
+      {
+        "name": "Logs",
+        "jsonName": "logs",
+        "protoField": "logs",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Log"
+          }
+        },
+        "description": "Logs within this group. Each log is identified by its display_name,\n which is used as the resource key in IaC modules and must be unique\n within the log group.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "Log",
+      "description": "Log defines an individual log within the group.\n Service logs auto-collect from OCI services and require a\n configuration block specifying the source. Custom logs accept\n entries pushed via the Logging Ingestion API and do not require\n configuration.",
+      "protoType": "org.openmcf.provider.oci.ociloggroup.v1.OciLogGroupSpec.Log",
+      "fields": [
+        {
+          "name": "DisplayName",
+          "jsonName": "displayName",
+          "protoField": "display_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Display name for the log. Must be unique within the log group.\n Used as the for_each key in IaC modules.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "LogType",
+          "jsonName": "logType",
+          "protoField": "log_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ociloggroup.v1.LogType",
+            "enumValues": [
+              "custom",
+              "service"
+            ]
+          },
+          "description": "Type of log. Must be explicitly set.\n custom: entries pushed via Logging Ingestion API.\n service: auto-collected from an OCI service.",
+          "required": false
+        },
+        {
+          "name": "IsEnabled",
+          "jsonName": "isEnabled",
+          "protoField": "is_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the log is enabled. When nil, OCI defaults to true.",
+          "required": false,
+          "oneofGroup": "_is_enabled"
+        },
+        {
+          "name": "RetentionDuration",
+          "jsonName": "retentionDuration",
+          "protoField": "retention_duration",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Retention period in days, in 30-day increments (30, 60, 90, 120,\n 150, 180). When nil, OCI defaults to 30 days.",
+          "required": false,
+          "oneofGroup": "_retention_duration"
+        },
+        {
+          "name": "Configuration",
+          "jsonName": "configuration",
+          "protoField": "configuration",
+          "type": {
+            "kind": "message",
+            "messageType": "ServiceLogConfiguration"
+          },
+          "description": "Source configuration for service logs. Required when log_type is\n service; ignored for custom logs.\n\n The provider nests this as configuration \u003e source, but we flatten\n by removing the source wrapper (it is the only child alongside an\n optional compartment override). source_type is hardcoded to\n \"OCISERVICE\" in IaC modules (the only valid value).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ServiceLogConfiguration",
+      "description": "ServiceLogConfiguration identifies which OCI service, resource,\n and log category to auto-collect logs from.",
+      "protoType": "org.openmcf.provider.oci.ociloggroup.v1.OciLogGroupSpec.Log.ServiceLogConfiguration",
+      "fields": [
+        {
+          "name": "Service",
+          "jsonName": "service",
+          "protoField": "service",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCI service generating the log.\n Examples: \"objectstorage\", \"flowlogs\", \"apigateway\",\n \"loadbalancer\", \"functionsInvoke\".",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Resource",
+          "jsonName": "resource",
+          "protoField": "resource",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the resource emitting logs. Polymorphic -- could be a\n VCN (for flow logs), a bucket (for object storage), an API\n gateway, etc. StringValueOrRef without default_kind because\n the resource type varies; valueFrom enables composability\n with any OpenMCF component.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Category",
+          "jsonName": "category",
+          "protoField": "category",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Log category within the service.\n Examples: \"write\", \"read\", \"all\" (object storage);\n \"access\" (API gateway); \"invoke\" (functions).",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Parameters",
+          "jsonName": "parameters",
+          "protoField": "parameters",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Additional parameters for the log source. Pass-through to OCI.",
+          "required": false
+        },
+        {
+          "name": "CompartmentId",
+          "jsonName": "compartmentId",
+          "protoField": "compartment_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional compartment override for source resource lookup.\n When omitted, the log group's compartment is used.",
+          "required": false,
+          "referenceKind": "OciCompartment",
+          "referenceFieldPath": "status.outputs.compartmentId"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,298 @@
+{
+  "name": "DigitalOceanAppPlatformService",
+  "kind": "DigitalOceanAppPlatformService",
+  "cloudProvider": "digitalocean",
+  "apiVersion": "digital-ocean.openmcf.org/v1",
+  "description": "digital-ocean-app-platform-service",
+  "protoPackage": "org.openmcf.provider.digitalocean.digitaloceanappplatformservice.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/digitalocean/digitaloceanappplatformservice/v1/api.proto",
+    "spec": "org/openmcf/provider/digitalocean/digitaloceanappplatformservice/v1/spec.proto"
+  },
+  "spec": {
+    "name": "DigitalOceanAppPlatformServiceSpec",
+    "fields": [
+      {
+        "name": "ServiceName",
+        "jsonName": "serviceName",
+        "protoField": "service_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "name of the app (must be unique within the user's DigitalOcean account).\n Constraints: should be DNS-friendly (e.g., lowercase alphanumeric and hyphens), maximum 63 characters.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "maxLength": 63,
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.DigitalOceanRegion",
+          "enumValues": [
+            "nyc3",
+            "sfo3",
+            "fra1",
+            "sgp1",
+            "lon1",
+            "tor1",
+            "blr1",
+            "ams3"
+          ]
+        },
+        "description": "region in which to deploy the app (DigitalOcean data center region slug).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ServiceType",
+        "jsonName": "serviceType",
+        "protoField": "service_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.digitaloceanappplatformservice.v1.DigitalOceanAppPlatformServiceType",
+          "enumValues": [
+            "web_service",
+            "worker",
+            "job"
+          ]
+        },
+        "description": "type of service being deployed (e.g., a web service that receives HTTP traffic, a background worker, or a one-off job).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "GitSource",
+        "jsonName": "gitSource",
+        "protoField": "git_source",
+        "type": {
+          "kind": "message",
+          "messageType": "DigitalOceanAppPlatformGitSource"
+        },
+        "description": "git repository source configuration (for App Platform to build and deploy from source code).",
+        "required": false,
+        "oneofGroup": "source"
+      },
+      {
+        "name": "ImageSource",
+        "jsonName": "imageSource",
+        "protoField": "image_source",
+        "type": {
+          "kind": "message",
+          "messageType": "DigitalOceanAppPlatformRegistrySource"
+        },
+        "description": "container image source configuration (deploy a pre-built image, typically from DigitalOcean Container Registry).",
+        "required": false,
+        "oneofGroup": "source"
+      },
+      {
+        "name": "InstanceSizeSlug",
+        "jsonName": "instanceSizeSlug",
+        "protoField": "instance_size_slug",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.digitaloceanappplatformservice.v1.DigitalOceanAppPlatformInstanceSize",
+          "enumValues": [
+            "basic_xxs",
+            "basic_xs",
+            "basic_s",
+            "basic_m",
+            "basic_l",
+            "professional_xs",
+            "professional_s",
+            "professional_m",
+            "professional_l",
+            "professional_xl"
+          ]
+        },
+        "description": "instance_size_slug specifies the instance size (plan) for this service.\n Determines the CPU/memory allocated per instance. Common options include \"basic-xxs\", \"basic-xs\", \"basic-s\", \"basic-m\", and professional tiers.\n Default (if not specified by user): \"basic-xxs\".",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "recommendedDefault": "basic-xxs"
+      },
+      {
+        "name": "InstanceCount",
+        "jsonName": "instanceCount",
+        "protoField": "instance_count",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "instance_count is the number of instances (containers) to run for this service.\n Default: 1.",
+        "required": false,
+        "recommendedDefault": "1"
+      },
+      {
+        "name": "EnableAutoscale",
+        "jsonName": "enableAutoscale",
+        "protoField": "enable_autoscale",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "enable_autoscale controls whether to use auto-scaling for this service.\n If true, the service will automatically scale between the specified min and max instance counts based on load.\n Default: false (manual scaling).",
+        "required": false
+      },
+      {
+        "name": "MinInstanceCount",
+        "jsonName": "minInstanceCount",
+        "protoField": "min_instance_count",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "min_instance_count specifies the minimum number of instances to run when auto-scaling is enabled.\n Required if enable_autoscale = true.",
+        "required": false
+      },
+      {
+        "name": "MaxInstanceCount",
+        "jsonName": "maxInstanceCount",
+        "protoField": "max_instance_count",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "max_instance_count specifies the maximum number of instances to run when auto-scaling is enabled.\n Required if enable_autoscale = true.",
+        "required": false
+      },
+      {
+        "name": "Env",
+        "jsonName": "env",
+        "protoField": "env",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "env is a map of environment variables to set in the app's runtime environment.\n Keys are variable names and values are their corresponding values.",
+        "required": false
+      },
+      {
+        "name": "CustomDomain",
+        "jsonName": "customDomain",
+        "protoField": "custom_domain",
+        "type": {
+          "kind": "string"
+        },
+        "description": "custom_domain is an optional custom domain to use for the app, in addition to the default ondigitalocean.app hostname.\n Provide a reference to a DigitalOceanDnsZone resource (typically its domain name). The system will create the necessary DNS records.",
+        "required": false,
+        "referenceKind": "DigitalOceanDnsZone",
+        "referenceFieldPath": "spec.domain_name"
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "DigitalOceanAppPlatformGitSource",
+      "description": "DigitalOceanAppPlatformGitSource describes a git repository source for building and deploying the app.",
+      "protoType": "org.openmcf.provider.digitalocean.digitaloceanappplatformservice.v1.DigitalOceanAppPlatformGitSource",
+      "fields": [
+        {
+          "name": "RepoUrl",
+          "jsonName": "repoUrl",
+          "protoField": "repo_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "repo_url is the URL of the git repository (HTTPS or git) containing the source code.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Branch",
+          "jsonName": "branch",
+          "protoField": "branch",
+          "type": {
+            "kind": "string"
+          },
+          "description": "branch specifies the git branch to deploy from.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "BuildCommand",
+          "jsonName": "buildCommand",
+          "protoField": "build_command",
+          "type": {
+            "kind": "string"
+          },
+          "description": "build_command optionally overrides the default build command for the app.\n Example: \"npm run build\". If not provided, DigitalOcean will auto-detect build steps or use defaults.",
+          "required": false
+        },
+        {
+          "name": "RunCommand",
+          "jsonName": "runCommand",
+          "protoField": "run_command",
+          "type": {
+            "kind": "string"
+          },
+          "description": "run_command optionally overrides the start command for the app.\n Example: \"npm start\". If not provided, defaults are inferred from the build or Dockerfile.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "DigitalOceanAppPlatformRegistrySource",
+      "description": "DigitalOceanAppPlatformRegistrySource describes a container image source from DigitalOcean Container Registry (DOCR).",
+      "protoType": "org.openmcf.provider.digitalocean.digitaloceanappplatformservice.v1.DigitalOceanAppPlatformRegistrySource",
+      "fields": [
+        {
+          "name": "Registry",
+          "jsonName": "registry",
+          "protoField": "registry",
+          "type": {
+            "kind": "string"
+          },
+          "description": "registry is a reference to a DigitalOceanContainerRegistry resource that hosts the image.\n This typically provides the registry URL and ensures credentials are available for pulling the image.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "DigitalOceanContainerRegistry",
+          "referenceFieldPath": "status.outputs.registry_url"
+        },
+        {
+          "name": "Repository",
+          "jsonName": "repository",
+          "protoField": "repository",
+          "type": {
+            "kind": "string"
+          },
+          "description": "repository is the name of the repository in the registry containing the image.\n For example, \"myapp/backend\".",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Tag",
+          "jsonName": "tag",
+          "protoField": "tag",
+          "type": {
+            "kind": "string"
+          },
+          "description": "tag is the image tag to deploy.\n For example, \"latest\" or a specific version like \"v1.0.0\".",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    }
+  ]
+}

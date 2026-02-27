@@ -1,0 +1,276 @@
+{
+  "name": "AliCloudCdnDomain",
+  "kind": "AliCloudCdnDomain",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-cdn-domain",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudcdndomain.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudcdndomain/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudcdndomain/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudCdnDomainSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region for provider initialization.\n CDN is a global service, but the provider requires a region for API calls.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "DomainName",
+        "jsonName": "domainName",
+        "protoField": "domain_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The accelerated domain name (e.g., \"cdn.example.com\").\n Must be a valid domain name between 1 and 63 characters.\n Cannot be changed after creation (ForceNew).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 63
+        }
+      },
+      {
+        "name": "CdnType",
+        "jsonName": "cdnType",
+        "protoField": "cdn_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The type of content the CDN accelerates.\n Cannot be changed after creation (ForceNew).\n   - \"web\"      : images, small files, and web pages\n   - \"download\" : large file downloads (software, games)\n   - \"video\"    : on-demand and live video streaming",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Scope",
+        "jsonName": "scope",
+        "protoField": "scope",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Geographic scope for CDN acceleration.\n   - \"domestic\" : mainland China only\n   - \"overseas\" : outside mainland China\n   - \"global\"   : worldwide\n If omitted, the Alibaba Cloud API defaults to \"domestic\".",
+        "required": false
+      },
+      {
+        "name": "Sources",
+        "jsonName": "sources",
+        "protoField": "sources",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudCdnDomainSource"
+          }
+        },
+        "description": "Origin server sources for the CDN domain. At least one source is required.\n Multiple sources enable failover and load distribution via priority and weight.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "CertificateConfig",
+        "jsonName": "certificateConfig",
+        "protoField": "certificate_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudCdnDomainCertificateConfig"
+        },
+        "description": "HTTPS certificate configuration.\n If omitted, the CDN domain serves content over HTTP only.",
+        "required": false
+      },
+      {
+        "name": "CheckUrl",
+        "jsonName": "checkUrl",
+        "protoField": "check_url",
+        "type": {
+          "kind": "string"
+        },
+        "description": "URL used by the CDN service to verify that the origin is reachable.\n Alibaba Cloud sends a request to this URL during domain creation.\n If omitted, no health check is performed during creation.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for access control and cost attribution.\n If omitted, the domain is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the CDN domain.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudCdnDomainCertificateConfig",
+      "description": "AliCloudCdnDomainCertificateConfig configures HTTPS for the CDN domain.\n When provided, the CDN edge nodes serve content over HTTPS using the\n specified certificate.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudcdndomain.v1.AliCloudCdnDomainCertificateConfig",
+      "fields": [
+        {
+          "name": "CertName",
+          "jsonName": "certName",
+          "protoField": "cert_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Display name of the certificate.",
+          "required": false
+        },
+        {
+          "name": "CertType",
+          "jsonName": "certType",
+          "protoField": "cert_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The type of certificate.\n   - \"upload\" : upload your own certificate and private key\n   - \"cas\"    : use a certificate from Alibaba Cloud Certificate Management Service\n   - \"free\"   : use a free DV certificate issued by Alibaba Cloud",
+          "required": false
+        },
+        {
+          "name": "CertId",
+          "jsonName": "certId",
+          "protoField": "cert_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Certificate ID from Alibaba Cloud Certificate Management Service.\n Required when cert_type is \"cas\".",
+          "required": false
+        },
+        {
+          "name": "CertRegion",
+          "jsonName": "certRegion",
+          "protoField": "cert_region",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The region of the CAS certificate.\n Only relevant when cert_type is \"cas\".\n Supports \"cn-hangzhou\" (domestic) and \"ap-southeast-1\" (international).\n Defaults to \"cn-hangzhou\" in the provider.",
+          "required": false
+        },
+        {
+          "name": "ServerCertificate",
+          "jsonName": "serverCertificate",
+          "protoField": "server_certificate",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PEM-encoded certificate content.\n Required when cert_type is \"upload\".",
+          "required": false
+        },
+        {
+          "name": "PrivateKey",
+          "jsonName": "privateKey",
+          "protoField": "private_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "PEM-encoded private key content.\n Required when cert_type is \"upload\".",
+          "required": false
+        },
+        {
+          "name": "ServerCertificateStatus",
+          "jsonName": "serverCertificateStatus",
+          "protoField": "server_certificate_status",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Whether HTTPS is enabled on the CDN domain.\n   - \"on\"  : HTTPS enabled (default when certificate_config is provided)\n   - \"off\" : HTTPS disabled",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudCdnDomainSource",
+      "description": "AliCloudCdnDomainSource defines a single origin server for the CDN domain.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudcdndomain.v1.AliCloudCdnDomainSource",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The type of origin source.\n   - \"ipaddr\"  : origin is an IP address\n   - \"domain\"  : origin is a domain name\n   - \"oss\"     : origin is an Alibaba Cloud OSS bucket\n   - \"common\"  : origin is a common source (L2 CDN)",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Content",
+          "jsonName": "content",
+          "protoField": "content",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The address of the origin server.\n For \"ipaddr\": an IP address (e.g., \"1.2.3.4\").\n For \"domain\": a domain name (e.g., \"origin.example.com\").\n For \"oss\": the OSS bucket domain (e.g., \"my-bucket.oss-cn-hangzhou.aliyuncs.com\").\n Each source's content must be unique within the sources list.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The port number for origin requests.\n Typically 80 for HTTP or 443 for HTTPS.\n If omitted, defaults to 80.",
+          "required": false
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Priority of this origin source. Lower values indicate higher priority.\n Valid range: 0-100. If omitted, defaults to 20.\n Use 20 for primary sources and 30 for standby sources.",
+          "required": false
+        },
+        {
+          "name": "Weight",
+          "jsonName": "weight",
+          "protoField": "weight",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Weight of this origin source for load balancing across multiple origins.\n Valid range: 0-100. If omitted, defaults to 10.\n Only effective when multiple sources share the same priority.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

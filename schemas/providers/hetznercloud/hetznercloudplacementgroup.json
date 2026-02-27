@@ -1,0 +1,33 @@
+{
+  "name": "HetznerCloudPlacementGroup",
+  "kind": "HetznerCloudPlacementGroup",
+  "cloudProvider": "hetznercloud",
+  "apiVersion": "hetzner-cloud.openmcf.org/v1",
+  "description": "hetznercloud-placement-group",
+  "protoPackage": "org.openmcf.provider.hetznercloud.hetznercloudplacementgroup.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/hetznercloud/hetznercloudplacementgroup/v1/api.proto",
+    "spec": "org/openmcf/provider/hetznercloud/hetznercloudplacementgroup/v1/spec.proto"
+  },
+  "spec": {
+    "name": "HetznerCloudPlacementGroupSpec",
+    "fields": [
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.hetznercloud.hetznercloudplacementgroup.v1.Type",
+          "enumValues": [
+            "spread"
+          ]
+        },
+        "description": "Placement group strategy type.\n\n Hetzner Cloud currently supports only \"spread\", which distributes\n servers across different physical hosts for fault tolerance.\n\n Default: spread",
+        "required": false,
+        "default": "spread",
+        "oneofGroup": "_type"
+      }
+    ]
+  }
+}

@@ -1,0 +1,190 @@
+{
+  "name": "AwsServerlessElasticache",
+  "kind": "AwsServerlessElasticache",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-serverless-elasticache",
+  "protoPackage": "org.openmcf.provider.aws.awsserverlesselasticache.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsserverlesselasticache/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsserverlesselasticache/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsServerlessElasticacheSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Engine",
+        "jsonName": "engine",
+        "protoField": "engine",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cache engine to use. Values: \"redis\", \"valkey\", \"memcached\".\n Switching between redis and valkey is an in-place update. Switching\n to/from memcached forces recreation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "MajorEngineVersion",
+        "jsonName": "majorEngineVersion",
+        "protoField": "major_engine_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Major engine version. Examples: \"7\", \"8\" for Redis/Valkey; \"1.6\" for\n Memcached. Leave empty to use the provider default for the chosen engine.",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the serverless cache.",
+        "required": false
+      },
+      {
+        "name": "DataStorageMaxGb",
+        "jsonName": "dataStorageMaxGb",
+        "protoField": "data_storage_max_gb",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum data storage in GB. AWS auto-scales storage up to this limit.\n Range: 1–5000. Leave as 0 to use the AWS default for the engine.",
+        "required": false,
+        "validation": {
+          "max": 5000
+        }
+      },
+      {
+        "name": "DataStorageMinGb",
+        "jsonName": "dataStorageMinGb",
+        "protoField": "data_storage_min_gb",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Minimum data storage in GB. AWS guarantees at least this capacity is\n always provisioned. Range: 1–5000. Leave as 0 to use the AWS default.",
+        "required": false,
+        "validation": {
+          "max": 5000
+        }
+      },
+      {
+        "name": "EcpuMax",
+        "jsonName": "ecpuMax",
+        "protoField": "ecpu_max",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum ElastiCache Processing Units per second. AWS auto-scales compute\n up to this limit. Range: 1000–15000000. Leave as 0 for AWS default.",
+        "required": false,
+        "validation": {
+          "max": 15000000
+        }
+      },
+      {
+        "name": "EcpuMin",
+        "jsonName": "ecpuMin",
+        "protoField": "ecpu_min",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Minimum ElastiCache Processing Units per second. AWS guarantees at least\n this compute capacity. Range: 1000–15000000. Leave as 0 for AWS default.",
+        "required": false,
+        "validation": {
+          "max": 15000000
+        }
+      },
+      {
+        "name": "SubnetIds",
+        "jsonName": "subnetIds",
+        "protoField": "subnet_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Subnet IDs for the serverless cache's VPC endpoint. The cache creates\n VPC endpoints in these subnets. ForceNew — changing this destroys and\n recreates the cache.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "VPC security groups to attach to the serverless cache endpoint.\n Controls network-level access.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Customer-managed KMS key ARN for at-rest encryption. When set, ElastiCache\n Serverless uses this key instead of the AWS-managed key. ForceNew —\n changing this destroys and recreates the cache.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "DailySnapshotTime",
+        "jsonName": "dailySnapshotTime",
+        "protoField": "daily_snapshot_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Daily automatic snapshot time in UTC. Format: \"HH:mm\" (e.g., \"05:00\").\n Only valid for Redis/Valkey engines. Memcached has no persistence.",
+        "required": false
+      },
+      {
+        "name": "SnapshotRetentionLimit",
+        "jsonName": "snapshotRetentionLimit",
+        "protoField": "snapshot_retention_limit",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of days to retain automatic snapshots. Range: 0–35. 0 disables\n snapshots. Only valid for Redis/Valkey engines.",
+        "required": false,
+        "validation": {
+          "max": 35
+        }
+      },
+      {
+        "name": "UserGroupId",
+        "jsonName": "userGroupId",
+        "protoField": "user_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Redis ACL user group ID for fine-grained access control. Only valid for\n Redis/Valkey engines. Memcached has no authentication mechanism.",
+        "required": false
+      }
+    ]
+  }
+}

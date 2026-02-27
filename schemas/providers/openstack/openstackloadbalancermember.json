@@ -1,0 +1,120 @@
+{
+  "name": "OpenStackLoadBalancerMember",
+  "kind": "OpenStackLoadBalancerMember",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackLoadBalancerMember is a Kubernetes Resource Model (KRM) style resource\n for managing Octavia pool members in OpenStack.\n\n A member represents a backend server in a load balancer pool. It defines the\n IP address and port where the backend listens, along with an optional weight\n for weighted load distribution. Members can be on the same subnet as the VIP\n or on a different subnet (cross-subnet routing via Octavia).",
+  "protoPackage": "org.openmcf.provider.openstack.openstackloadbalancermember.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackloadbalancermember/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackloadbalancermember/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackLoadBalancerMemberSpec",
+    "fields": [
+      {
+        "name": "PoolId",
+        "jsonName": "poolId",
+        "protoField": "pool_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The pool to add this member to.\n ForceNew: changing this requires recreating the member.\n\n FK: OpenStackLoadBalancerPool.status.outputs.pool_id",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackLoadBalancerPool",
+        "referenceFieldPath": "status.outputs.pool_id"
+      },
+      {
+        "name": "Address",
+        "jsonName": "address",
+        "protoField": "address",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The IP address of the backend server.\n This is the actual IP that receives forwarded traffic from the load balancer.\n ForceNew: changing this requires recreating the member.\n\n This is a plain string (not StringValueOrRef) because member backends can be\n any IP -- VMs, containers, bare metal, or external services.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ProtocolPort",
+        "jsonName": "protocolPort",
+        "protoField": "protocol_port",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Required) The port on the backend server that accepts traffic.\n ForceNew: changing this requires recreating the member.\n Must be between 1 and 65535.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The subnet where the member resides.\n Used by Octavia for L3 routing when the member is on a different subnet\n than the VIP. ForceNew: changing this requires recreating the member.\n\n FK: OpenStackSubnet.status.outputs.subnet_id",
+        "required": false,
+        "referenceKind": "OpenStackSubnet",
+        "referenceFieldPath": "status.outputs.subnet_id"
+      },
+      {
+        "name": "Weight",
+        "jsonName": "weight",
+        "protoField": "weight",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Optional) Weight of this member for weighted load balancing.\n A member with weight 0 receives no traffic (useful for draining).\n Valid range: 0-256. Default: 1 (set by Octavia when unspecified).\n\n Uses optional int32 because proto3 int32 defaults to 0, which means\n \"disabled member\" in Octavia. optional lets us distinguish \"not set\"\n (Octavia picks default 1) from \"explicitly 0\" (drain).",
+        "required": false,
+        "oneofGroup": "_weight"
+      },
+      {
+        "name": "AdminStateUp",
+        "jsonName": "adminStateUp",
+        "protoField": "admin_state_up",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "(Optional) Administrative state of the member.\n When false, the member is removed from the pool's rotation. Default: true.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_admin_state_up"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "(Optional) Tags applied to the member in OpenStack.\n Must be unique within this resource.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Override the region from the provider configuration.",
+        "required": false
+      }
+    ]
+  }
+}

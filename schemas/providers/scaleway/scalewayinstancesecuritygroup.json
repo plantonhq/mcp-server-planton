@@ -1,0 +1,218 @@
+{
+  "name": "ScalewayInstanceSecurityGroup",
+  "kind": "ScalewayInstanceSecurityGroup",
+  "cloudProvider": "scaleway",
+  "apiVersion": "scaleway.openmcf.org/v1",
+  "description": "scaleway-instance-security-group",
+  "protoPackage": "org.openmcf.provider.scaleway.scalewayinstancesecuritygroup.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/scaleway/scalewayinstancesecuritygroup/v1/api.proto",
+    "spec": "org/openmcf/provider/scaleway/scalewayinstancesecuritygroup/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ScalewayInstanceSecurityGroupSpec",
+    "fields": [
+      {
+        "name": "Zone",
+        "jsonName": "zone",
+        "protoField": "zone",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Scaleway zone where the security group will be created.\n Examples: \"fr-par-1\", \"nl-ams-1\", \"pl-waw-1\"\n\n Security groups are zonal resources. The zone must match the zone of\n the Instances that will use this security group.\n\n This field is required and cannot be changed after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Optional human-readable description of the security group's purpose.\n Example: \"Web tier firewall -- allows HTTP/HTTPS inbound, all outbound\"",
+        "required": false
+      },
+      {
+        "name": "Stateful",
+        "jsonName": "stateful",
+        "protoField": "stateful",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the security group is stateful.\n\n When true (default), return traffic for accepted connections is\n automatically permitted. For example, if an inbound rule accepts TCP\n port 80, the outbound response packets are automatically allowed\n without needing an explicit outbound rule.\n\n Set to false only for advanced use cases such as high-throughput\n stateless routing or network appliances where you need full control\n over both directions.\n\n Default: true",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "InboundDefaultPolicy",
+        "jsonName": "inboundDefaultPolicy",
+        "protoField": "inbound_default_policy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Default policy for inbound traffic that matches no rule.\n\n Possible values:\n   - \"accept\" -- Allow all inbound traffic unless a rule drops it.\n                 Use this when you want a denylist model (block specific traffic).\n   - \"drop\"   -- Drop all inbound traffic unless a rule accepts it.\n                 Use this when you want an allowlist model (only permit specific traffic).\n\n Default: \"accept\"\n\n Recommendation: Use \"drop\" for production workloads and define explicit\n accept rules for known traffic patterns (SSH, HTTP, HTTPS, etc.).",
+        "required": false,
+        "recommendedDefault": "accept"
+      },
+      {
+        "name": "OutboundDefaultPolicy",
+        "jsonName": "outboundDefaultPolicy",
+        "protoField": "outbound_default_policy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Default policy for outbound traffic that matches no rule.\n\n Possible values:\n   - \"accept\" -- Allow all outbound traffic unless a rule drops it.\n   - \"drop\"   -- Drop all outbound traffic unless a rule accepts it.\n\n Default: \"accept\"\n\n Recommendation: Keep as \"accept\" unless you need strict egress control.\n Most workloads need unrestricted outbound access for package updates,\n DNS resolution, and API calls.",
+        "required": false,
+        "recommendedDefault": "accept"
+      },
+      {
+        "name": "EnableDefaultSecurity",
+        "jsonName": "enableDefaultSecurity",
+        "protoField": "enable_default_security",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable Scaleway's default SMTP security.\n\n When true (default), outbound SMTP traffic on ports 25, 465, and 587\n is blocked to prevent spam abuse. This is a Scaleway account-level\n protection that applies on top of your rules.\n\n Set to false ONLY if your Scaleway account is authorized for SMTP\n sending and the Instance needs to send email directly. Most workloads\n should use a third-party email service (e.g., SendGrid, Mailgun)\n instead of direct SMTP.\n\n Default: true",
+        "required": false,
+        "recommendedDefault": "true"
+      },
+      {
+        "name": "InboundRules",
+        "jsonName": "inboundRules",
+        "protoField": "inbound_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ScalewaySecurityGroupInboundRule"
+          }
+        },
+        "description": "Inbound (ingress) rules: traffic allowed or dropped TO instances.\n\n Rules are evaluated in order -- the first matching rule wins.\n Traffic that matches no rule is handled by inbound_default_policy.\n\n When inbound_default_policy is \"drop\", define accept rules for\n traffic you want to permit (allowlist model).\n When inbound_default_policy is \"accept\", define drop rules for\n traffic you want to block (denylist model).",
+        "required": false
+      },
+      {
+        "name": "OutboundRules",
+        "jsonName": "outboundRules",
+        "protoField": "outbound_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ScalewaySecurityGroupOutboundRule"
+          }
+        },
+        "description": "Outbound (egress) rules: traffic allowed or dropped FROM instances.\n\n Rules are evaluated in order -- the first matching rule wins.\n Traffic that matches no rule is handled by outbound_default_policy.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ScalewaySecurityGroupInboundRule",
+      "description": "ScalewaySecurityGroupInboundRule defines a single inbound firewall rule.\n\n Each rule specifies a combination of action, protocol, port(s), and\n source IP range. The action determines whether matching traffic is\n accepted or dropped.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayinstancesecuritygroup.v1.ScalewaySecurityGroupInboundRule",
+      "fields": [
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action to take when traffic matches this rule.\n\n Possible values: \"accept\" or \"drop\".\n This field is required.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "pattern": "^(accept|drop)$"
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP protocol for this rule.\n\n Possible values: \"TCP\", \"UDP\", \"ICMP\", \"ANY\".\n Note: Scaleway uses uppercase protocol names.\n\n Default: \"TCP\" (if omitted).",
+          "required": false,
+          "recommendedDefault": "TCP"
+        },
+        {
+          "name": "PortRange",
+          "jsonName": "portRange",
+          "protoField": "port_range",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Port or port range for this rule.\n\n Formats:\n   - Single port: \"80\", \"443\", \"22\"\n   - Port range:  \"8000-9000\", \"30000-32767\"\n\n If omitted, the rule applies to ALL ports.\n Ignored when protocol is \"ICMP\".",
+          "required": false
+        },
+        {
+          "name": "IpRange",
+          "jsonName": "ipRange",
+          "protoField": "ip_range",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Source IP range in CIDR notation.\n\n Examples: \"0.0.0.0/0\" (all IPv4), \"203.0.113.10/32\" (single host),\n           \"10.0.0.0/8\" (private range)\n\n If omitted, the rule applies to ALL source IPs.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ScalewaySecurityGroupOutboundRule",
+      "description": "ScalewaySecurityGroupOutboundRule defines a single outbound firewall rule.\n\n Each rule specifies a combination of action, protocol, port(s), and\n destination IP range.",
+      "protoType": "org.openmcf.provider.scaleway.scalewayinstancesecuritygroup.v1.ScalewaySecurityGroupOutboundRule",
+      "fields": [
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action to take when traffic matches this rule.\n\n Possible values: \"accept\" or \"drop\".\n This field is required.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "pattern": "^(accept|drop)$"
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP protocol for this rule.\n\n Possible values: \"TCP\", \"UDP\", \"ICMP\", \"ANY\".\n Note: Scaleway uses uppercase protocol names.\n\n Default: \"TCP\" (if omitted).",
+          "required": false,
+          "recommendedDefault": "TCP"
+        },
+        {
+          "name": "PortRange",
+          "jsonName": "portRange",
+          "protoField": "port_range",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Port or port range for this rule.\n\n Formats:\n   - Single port: \"443\", \"53\"\n   - Port range:  \"1024-65535\"\n\n If omitted, the rule applies to ALL ports.\n Ignored when protocol is \"ICMP\".",
+          "required": false
+        },
+        {
+          "name": "IpRange",
+          "jsonName": "ipRange",
+          "protoField": "ip_range",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Destination IP range in CIDR notation.\n\n Examples: \"0.0.0.0/0\" (all IPv4), \"10.0.0.0/8\" (private range)\n\n If omitted, the rule applies to ALL destination IPs.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

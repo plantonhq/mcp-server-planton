@@ -1,0 +1,82 @@
+{
+  "name": "OpenStackRoleAssignment",
+  "kind": "OpenStackRoleAssignment",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackRoleAssignment is a Kubernetes Resource Model (KRM) style resource\n for managing OpenStack Identity role assignments.\n\n A role assignment binds a role to a principal (user or group) on a scope\n (project or domain). This is the fundamental authorization mechanism in\n OpenStack.\n\n Role assignments do not have a natural \"name\" in the OpenStack API --\n metadata.name provides KRM identity only.\n\n Note: This is an admin-level operation requiring appropriate permissions.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackroleassignment.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackroleassignment/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackroleassignment/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackRoleAssignmentSpec",
+    "fields": [
+      {
+        "name": "RoleId",
+        "jsonName": "roleId",
+        "protoField": "role_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "role_id is the UUID of the role to assign.\n Required. ForceNew: changing the role recreates the assignment.\n Roles are admin-managed Keystone objects (e.g., \"admin\", \"member\", \"reader\").\n Use `openstack role list` to find available role UUIDs.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "project_id is the project to assign the role on.\n Mutually exclusive with domain_id (exactly one must be set).\n ForceNew: changing the scope recreates the assignment.\n Can reference an OpenStackProject resource's output or be a literal UUID.",
+        "required": false,
+        "referenceKind": "OpenStackProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "DomainId",
+        "jsonName": "domainId",
+        "protoField": "domain_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "domain_id is the domain to assign the role on.\n Mutually exclusive with project_id (exactly one must be set).\n ForceNew: changing the scope recreates the assignment.\n Domains are admin-managed Keystone objects -- this is a plain UUID string.",
+        "required": false
+      },
+      {
+        "name": "UserId",
+        "jsonName": "userId",
+        "protoField": "user_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "user_id is the UUID of the user to assign the role to.\n Mutually exclusive with group_id (exactly one must be set).\n ForceNew: changing the principal recreates the assignment.\n Users are admin-managed Keystone objects -- this is a plain UUID string.",
+        "required": false
+      },
+      {
+        "name": "GroupId",
+        "jsonName": "groupId",
+        "protoField": "group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "group_id is the UUID of the group to assign the role to.\n Mutually exclusive with user_id (exactly one must be set).\n ForceNew: changing the principal recreates the assignment.\n Groups are admin-managed Keystone objects -- this is a plain UUID string.",
+        "required": false
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config.\n If omitted, the region from the OpenStack provider config is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  }
+}

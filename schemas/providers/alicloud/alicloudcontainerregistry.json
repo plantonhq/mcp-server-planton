@@ -1,0 +1,162 @@
+{
+  "name": "AliCloudContainerRegistry",
+  "kind": "AliCloudContainerRegistry",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-container-registry",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudcontainerregistry.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudcontainerregistry/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudcontainerregistry/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudContainerRegistrySpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the registry instance will be created.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "InstanceName",
+        "jsonName": "instanceName",
+        "protoField": "instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Registry instance name. This is the human-readable identifier for the\n ACR Enterprise Edition instance.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "InstanceType",
+        "jsonName": "instanceType",
+        "protoField": "instance_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Tier of the ACR Enterprise Edition instance.\n Basic: suitable for individual developers or small teams.\n Standard: suitable for small and medium enterprises.\n Advanced: suitable for large enterprises with geo-replication needs.\n\n The instance type is immutable after creation (ForceNew in the provider).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "PaymentType",
+        "jsonName": "paymentType",
+        "protoField": "payment_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Payment model for the registry instance.\n Subscription: pre-paid monthly/yearly billing (lower cost for long-term use).\n PayAsYouGo: post-paid usage-based billing (flexible for dev/test).\n\n Immutable after creation (ForceNew in the provider).\n Default: \"Subscription\"",
+        "required": false,
+        "default": "Subscription",
+        "oneofGroup": "_payment_type"
+      },
+      {
+        "name": "Period",
+        "jsonName": "period",
+        "protoField": "period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Subscription period in months. Only applies when payment_type is\n \"Subscription\". Common values: 1, 3, 6, 12.",
+        "required": false
+      },
+      {
+        "name": "Password",
+        "jsonName": "password",
+        "protoField": "password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Login password for the registry instance. Used for authenticating\n docker login / image push and pull operations.\n 8-32 characters.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the instance is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Namespaces",
+        "jsonName": "namespaces",
+        "protoField": "namespaces",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudContainerRegistryNamespace"
+          }
+        },
+        "description": "Namespaces to create within the registry instance.\n Namespaces are the top-level organizational units for container images.\n Images are addressed as: {registry-endpoint}/{namespace}/{repo}:{tag}",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudContainerRegistryNamespace",
+      "description": "AliCloudContainerRegistryNamespace defines a namespace within the ACR\n Enterprise Edition instance.\n\n Namespaces group related image repositories. A typical pattern is one\n namespace per team or application (e.g., \"platform\", \"frontend\", \"backend\").",
+      "protoType": "org.openmcf.provider.alicloud.alicloudcontainerregistry.v1.AliCloudContainerRegistryNamespace",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Namespace name. 2-120 characters; can contain lowercase letters, digits,\n underscores, hyphens, and periods. Cannot start or end with a delimiter.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 2,
+            "maxLength": 120
+          }
+        },
+        {
+          "name": "AutoCreate",
+          "jsonName": "autoCreate",
+          "protoField": "auto_create",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, image repositories are automatically created within this\n namespace when an image is pushed to a repository that does not yet exist.\n This is convenient for CI/CD pipelines that push to dynamic repository names.\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_auto_create"
+        },
+        {
+          "name": "DefaultVisibility",
+          "jsonName": "defaultVisibility",
+          "protoField": "default_visibility",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Default visibility for repositories auto-created within this namespace.\n PUBLIC: anyone can pull images (no authentication required).\n PRIVATE: only authenticated users with access can pull images.\n Default: \"PRIVATE\"",
+          "required": false,
+          "default": "PRIVATE",
+          "oneofGroup": "_default_visibility"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "name": "AzureVpc",
+  "kind": "AzureVpc",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "azure-vpc",
+  "protoPackage": "org.openmcf.provider.azure.azurevpc.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurevpc/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurevpc/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureVpcSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Azure region in which to create the Virtual Network (e.g., \"eastus\", \"westeurope\").",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Virtual Network will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "AddressSpaceCidr",
+        "jsonName": "addressSpaceCidr",
+        "protoField": "address_space_cidr",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The CIDR block defining the address space for the Virtual Network.\n Example: \"10.0.0.0/16\" would allow IP addresses from 10.0.0.0 to 10.0.255.255.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "NodesSubnetCidr",
+        "jsonName": "nodesSubnetCidr",
+        "protoField": "nodes_subnet_cidr",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The CIDR block for the primary subnet that AKS cluster nodes will use.\n This should be a subset of the address_space_cidr range.\n Example: \"10.0.0.0/18\" would allocate the first half of a /16 address space to the nodes subnet.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "IsNatGatewayEnabled",
+        "jsonName": "isNatGatewayEnabled",
+        "protoField": "is_nat_gateway_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Toggle to enable a NAT Gateway for the nodes subnet to allow outbound Internet connectivity.\n If set to true, a NAT Gateway resource will be created and associated with the subnet.\n Defaults to false (no NAT Gateway).",
+        "required": false
+      },
+      {
+        "name": "DnsPrivateZoneLinks",
+        "jsonName": "dnsPrivateZoneLinks",
+        "protoField": "dns_private_zone_links",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "A list of Azure Private DNS zone resource IDs to link to this Virtual Network.\n Each entry should be the full resource ID of an existing Private DNS zone that needs to be resolved within the VNet.\n This field is optional and primarily for advanced scenarios.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Arbitrary tags to apply to the Virtual Network (and related resources like subnets).\n Tags are key-value pairs for Azure resource tagging.",
+        "required": false
+      }
+    ]
+  }
+}

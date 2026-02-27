@@ -1,0 +1,269 @@
+{
+  "name": "AliCloudNasFileSystem",
+  "kind": "AliCloudNasFileSystem",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-nas-file-system",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudnasfilesystem.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudnasfilesystem/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudnasfilesystem/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudNasFileSystemSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the file system will be created.\n Must match the region of the VPC and VSwitch used for the mount target.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "FileSystemType",
+        "jsonName": "fileSystemType",
+        "protoField": "file_system_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "File system type. Determines the performance model and available\n storage types. This is immutable after creation (ForceNew).\n\n   \"standard\" -- auto-scaling capacity, general-purpose workloads.\n   \"extreme\"  -- dedicated throughput, fixed capacity, requires zone_id.\n Default: \"standard\"",
+        "required": false,
+        "default": "standard",
+        "oneofGroup": "_file_system_type"
+      },
+      {
+        "name": "ProtocolType",
+        "jsonName": "protocolType",
+        "protoField": "protocol_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "NAS protocol type. Determines how clients mount and access the file\n system. This is immutable after creation (ForceNew).\n\n   \"NFS\" -- Network File System, the standard Linux/Unix protocol.\n   \"SMB\" -- Server Message Block, for Windows compatibility.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "StorageType",
+        "jsonName": "storageType",
+        "protoField": "storage_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Storage type. Determines the IOPS, throughput, and latency\n characteristics. This is immutable after creation (ForceNew).\n\n For standard file systems:\n   \"Performance\" -- SSD-backed, low latency, up to 10 GiB/s throughput\n   \"Capacity\"    -- HDD-backed, cost-effective for warm/cold data\n   \"Premium\"     -- next-gen SSD, enhanced throughput and IOPS\n\n For extreme file systems:\n   \"standard\"    -- baseline extreme NAS\n   \"advance\"     -- higher throughput extreme NAS",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the file system's purpose.",
+        "required": false
+      },
+      {
+        "name": "Encryption",
+        "jsonName": "encryption",
+        "protoField": "encryption",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudNasEncryption"
+        },
+        "description": "Encryption configuration. When omitted, the file system is not encrypted.\n Encryption type is immutable after creation (ForceNew).",
+        "required": false
+      },
+      {
+        "name": "Capacity",
+        "jsonName": "capacity",
+        "protoField": "capacity",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "File system capacity in GiB.\n Required for extreme NAS (minimum 100 GiB). Ignored for standard NAS,\n which auto-scales capacity based on stored data.",
+        "required": false
+      },
+      {
+        "name": "ZoneId",
+        "jsonName": "zoneId",
+        "protoField": "zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Availability zone for the file system.\n Required for extreme NAS. Optional for standard NAS (the service\n auto-assigns a zone when omitted).\n Format: \"{region}-{letter}\", e.g. \"cn-hangzhou-a\", \"cn-hangzhou-b\".",
+        "required": false
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC ID for the mount target.\n The mount target is created in this VPC, making the file system\n accessible to resources within it.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "VswitchId",
+        "jsonName": "vswitchId",
+        "protoField": "vswitch_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VSwitch ID for the mount target.\n Must be in the VPC specified by vpc_id. Determines which availability\n zone the mount target is placed in.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVswitch",
+        "referenceFieldPath": "status.outputs.vswitch_id"
+      },
+      {
+        "name": "AccessRules",
+        "jsonName": "accessRules",
+        "protoField": "access_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudNasAccessRule"
+          }
+        },
+        "description": "Access rules that control which IP ranges can mount the file system and\n with what permissions.\n\n When one or more access_rules are specified, a custom access group is\n auto-created and associated with the mount target. This gives fine-grained\n control over which subnets or hosts can access the file system.\n\n When omitted (empty list), the mount target uses the built-in\n DEFAULT_VPC_GROUP_NAME access group, which allows full read-write access\n from all IP addresses within the VPC.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the file system is placed in the account's default resource\n group.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the file system resource.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudNasAccessRule",
+      "description": "An access rule within a NAS access group that controls which IP ranges\n can mount the file system and with what permissions.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudnasfilesystem.v1.AliCloudNasAccessRule",
+      "fields": [
+        {
+          "name": "SourceCidrIp",
+          "jsonName": "sourceCidrIp",
+          "protoField": "source_cidr_ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Source CIDR IP address or block.\n Allows traffic from this network range to access the file system.\n Examples: \"0.0.0.0/0\" for all IPs, \"10.0.0.0/8\" for a private range,\n \"10.0.1.5\" for a single host.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "RwAccessType",
+          "jsonName": "rwAccessType",
+          "protoField": "rw_access_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Read-write access type.\n   \"RDWR\"   -- full read-write access (default)\n   \"RDONLY\" -- read-only access\n Default: \"RDWR\"",
+          "required": false,
+          "default": "RDWR",
+          "oneofGroup": "_rw_access_type"
+        },
+        {
+          "name": "UserAccessType",
+          "jsonName": "userAccessType",
+          "protoField": "user_access_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "User identity mapping for NFS root access.\n   \"no_squash\"    -- preserve original user identity (default)\n   \"root_squash\"  -- map root (uid 0) to anonymous user\n   \"all_squash\"   -- map all users to anonymous user\n Default: \"no_squash\"",
+          "required": false,
+          "default": "no_squash",
+          "oneofGroup": "_user_access_type"
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Priority of this access rule. Lower values have higher precedence.\n Range: 1-100.\n Default: 1",
+          "required": false,
+          "default": "1",
+          "oneofGroup": "_priority"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudNasEncryption",
+      "description": "Encryption configuration for a NAS file system.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudnasfilesystem.v1.AliCloudNasEncryption",
+      "fields": [
+        {
+          "name": "EncryptType",
+          "jsonName": "encryptType",
+          "protoField": "encrypt_type",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Encryption type.\n   1 = NAS-managed key: Alibaba Cloud manages the encryption key.\n       No additional configuration needed.\n   2 = Customer-managed KMS key: You manage the key via KMS.\n       Requires kms_key_id to be set.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "KmsKeyId",
+          "jsonName": "kmsKeyId",
+          "protoField": "kms_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "KMS key ID for customer-managed encryption.\n Required when encrypt_type is 2. Ignored when encrypt_type is 1.\n Create one with AliCloudKmsKey and reference its key_id output.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

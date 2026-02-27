@@ -1,0 +1,349 @@
+{
+  "name": "AzureStorageAccount",
+  "kind": "AzureStorageAccount",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "azure-storage-account",
+  "protoPackage": "org.openmcf.provider.azure.azurestorageaccount.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurestorageaccount/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurestorageaccount/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureStorageAccountSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Storage Account will be deployed (e.g., \"eastus\", \"westus2\", \"westeurope\").\n This is required as Storage Account is a regional service.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Storage Account will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "AccountKind",
+        "jsonName": "accountKind",
+        "protoField": "account_kind",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.azure.azurestorageaccount.v1.AzureStorageAccountKind",
+          "enumValues": [
+            "STORAGE_V2",
+            "BLOB_STORAGE",
+            "BLOCK_BLOB_STORAGE",
+            "FILE_STORAGE",
+            "STORAGE"
+          ]
+        },
+        "description": "The kind of storage account.\n - STORAGE_V2: General-purpose v2 (recommended for most scenarios)\n - BLOB_STORAGE: Specialized for blob data (hot/cool/archive tiers)\n - BLOCK_BLOB_STORAGE: Premium storage for block blobs and append blobs\n - FILE_STORAGE: Premium storage for file shares\n Default: STORAGE_V2",
+        "required": false,
+        "default": "STORAGE_V2",
+        "oneofGroup": "_account_kind"
+      },
+      {
+        "name": "AccountTier",
+        "jsonName": "accountTier",
+        "protoField": "account_tier",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.azure.azurestorageaccount.v1.AzureStorageAccountTier",
+          "enumValues": [
+            "STANDARD",
+            "PREMIUM"
+          ]
+        },
+        "description": "The performance tier of the storage account.\n - STANDARD: Standard performance backed by HDD\n - PREMIUM: Premium performance backed by SSD (only for specific account kinds)\n Default: STANDARD",
+        "required": false,
+        "default": "STANDARD",
+        "oneofGroup": "_account_tier"
+      },
+      {
+        "name": "ReplicationType",
+        "jsonName": "replicationType",
+        "protoField": "replication_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.azure.azurestorageaccount.v1.AzureStorageReplicationType",
+          "enumValues": [
+            "LRS",
+            "ZRS",
+            "GRS",
+            "GZRS",
+            "RA_GRS",
+            "RA_GZRS"
+          ]
+        },
+        "description": "The replication strategy for the storage account.\n - LRS: Locally redundant storage (3 copies in single datacenter)\n - ZRS: Zone-redundant storage (3 copies across availability zones)\n - GRS: Geo-redundant storage (6 copies: 3 local + 3 in paired region)\n - GZRS: Geo-zone-redundant storage (ZRS + geo-replication)\n - RA_GRS: Read-access geo-redundant storage\n - RA_GZRS: Read-access geo-zone-redundant storage\n Default: LRS",
+        "required": false,
+        "default": "LRS",
+        "oneofGroup": "_replication_type"
+      },
+      {
+        "name": "AccessTier",
+        "jsonName": "accessTier",
+        "protoField": "access_tier",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.azure.azurestorageaccount.v1.AzureStorageAccessTier",
+          "enumValues": [
+            "HOT",
+            "COOL"
+          ]
+        },
+        "description": "The default access tier for blob data.\n Only applicable for BlobStorage and StorageV2 account kinds.\n - HOT: Optimized for frequently accessed data\n - COOL: Optimized for infrequently accessed data (30-day minimum retention)\n Default: HOT",
+        "required": false,
+        "default": "HOT",
+        "oneofGroup": "_access_tier"
+      },
+      {
+        "name": "EnableHttpsTrafficOnly",
+        "jsonName": "enableHttpsTrafficOnly",
+        "protoField": "enable_https_traffic_only",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable HTTPS traffic only. When true, all requests must use HTTPS.\n Strongly recommended for security.\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_enable_https_traffic_only"
+      },
+      {
+        "name": "MinTlsVersion",
+        "jsonName": "minTlsVersion",
+        "protoField": "min_tls_version",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.azure.azurestorageaccount.v1.AzureTlsVersion",
+          "enumValues": [
+            "TLS1_0",
+            "TLS1_1",
+            "TLS1_2"
+          ]
+        },
+        "description": "Minimum TLS version for incoming requests.\n - TLS1_0: TLS 1.0 (not recommended)\n - TLS1_1: TLS 1.1 (not recommended)\n - TLS1_2: TLS 1.2 (recommended)\n Default: TLS1_2",
+        "required": false,
+        "default": "TLS1_2",
+        "oneofGroup": "_min_tls_version"
+      },
+      {
+        "name": "NetworkRules",
+        "jsonName": "networkRules",
+        "protoField": "network_rules",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureStorageNetworkRules"
+        },
+        "description": "Network access control configuration for the Storage Account.\n Controls who can access the storage from where (public internet, specific IPs, VNets).",
+        "required": false
+      },
+      {
+        "name": "BlobProperties",
+        "jsonName": "blobProperties",
+        "protoField": "blob_properties",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureStorageBlobProperties"
+        },
+        "description": "Blob service properties configuration.",
+        "required": false
+      },
+      {
+        "name": "Containers",
+        "jsonName": "containers",
+        "protoField": "containers",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureStorageContainer"
+          }
+        },
+        "description": "List of blob containers to create in the storage account.",
+        "required": false,
+        "validation": {
+          "maxItems": 100
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureStorageBlobProperties",
+      "description": "**AzureStorageBlobProperties** defines blob service properties.",
+      "protoType": "org.openmcf.provider.azure.azurestorageaccount.v1.AzureStorageBlobProperties",
+      "fields": [
+        {
+          "name": "EnableVersioning",
+          "jsonName": "enableVersioning",
+          "protoField": "enable_versioning",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable versioning for blobs. When enabled, Azure maintains previous versions of blobs.\n Useful for data protection and recovery.\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_enable_versioning"
+        },
+        {
+          "name": "SoftDeleteRetentionDays",
+          "jsonName": "softDeleteRetentionDays",
+          "protoField": "soft_delete_retention_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Soft delete retention period for blobs in days (1-365 days).\n When set, deleted blobs are retained for the specified period and can be recovered.\n Set to 0 to disable soft delete.\n Default: 7 days",
+          "required": false,
+          "validation": {
+            "max": 365
+          },
+          "default": "7",
+          "oneofGroup": "_soft_delete_retention_days"
+        },
+        {
+          "name": "ContainerSoftDeleteRetentionDays",
+          "jsonName": "containerSoftDeleteRetentionDays",
+          "protoField": "container_soft_delete_retention_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Soft delete retention period for containers in days (1-365 days).\n When set, deleted containers are retained for the specified period and can be recovered.\n Set to 0 to disable container soft delete.\n Default: 7 days",
+          "required": false,
+          "validation": {
+            "max": 365
+          },
+          "default": "7",
+          "oneofGroup": "_container_soft_delete_retention_days"
+        }
+      ]
+    },
+    {
+      "name": "AzureStorageContainer",
+      "description": "**AzureStorageContainer** defines a blob container to create.",
+      "protoType": "org.openmcf.provider.azure.azurestorageaccount.v1.AzureStorageContainer",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the container.\n Must be lowercase, 3-63 characters, and start with a letter or number.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 3,
+            "maxLength": 63
+          }
+        },
+        {
+          "name": "AccessType",
+          "jsonName": "accessType",
+          "protoField": "access_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.azure.azurestorageaccount.v1.AzureStorageContainerAccess",
+            "enumValues": [
+              "PRIVATE",
+              "BLOB",
+              "CONTAINER"
+            ]
+          },
+          "description": "The access level for the container.\n - PRIVATE: No public read access (default, recommended)\n - BLOB: Public read access for blobs only\n - CONTAINER: Public read access for container and blobs\n Default: PRIVATE",
+          "required": false,
+          "default": "PRIVATE",
+          "oneofGroup": "_access_type"
+        }
+      ]
+    },
+    {
+      "name": "AzureStorageNetworkRules",
+      "description": "**AzureStorageNetworkRules** defines network access control rules.",
+      "protoType": "org.openmcf.provider.azure.azurestorageaccount.v1.AzureStorageNetworkRules",
+      "fields": [
+        {
+          "name": "DefaultAction",
+          "jsonName": "defaultAction",
+          "protoField": "default_action",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.azure.azurestorageaccount.v1.AzureStorageNetworkAction",
+            "enumValues": [
+              "ALLOW",
+              "DENY"
+            ]
+          },
+          "description": "Default action when no explicit rule matches.\n - ALLOW: Permit all traffic (not recommended for production)\n - DENY: Block all traffic unless explicitly allowed (recommended)\n Default: DENY",
+          "required": false,
+          "default": "DENY",
+          "oneofGroup": "_default_action"
+        },
+        {
+          "name": "BypassAzureServices",
+          "jsonName": "bypassAzureServices",
+          "protoField": "bypass_azure_services",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Allow traffic from trusted Azure services even when default_action is DENY.\n This includes services like Azure Backup, Azure Monitor, Azure Event Grid, etc.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_bypass_azure_services"
+        },
+        {
+          "name": "IpRules",
+          "jsonName": "ipRules",
+          "protoField": "ip_rules",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "List of IP addresses or CIDR ranges allowed to access the storage.\n Example: [\"203.0.113.0/24\", \"198.51.100.42\"]",
+          "required": false,
+          "validation": {
+            "maxItems": 200
+          }
+        },
+        {
+          "name": "VirtualNetworkSubnetIds",
+          "jsonName": "virtualNetworkSubnetIds",
+          "protoField": "virtual_network_subnet_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "List of Azure Virtual Network subnet resource IDs allowed to access the storage.\n Example: [\"/subscriptions/{sub-id}/resourceGroups/{rg}/providers/Microsoft.Network/virtualNetworks/{vnet}/subnets/{subnet}\"]",
+          "required": false,
+          "validation": {
+            "maxItems": 100
+          }
+        }
+      ]
+    }
+  ]
+}

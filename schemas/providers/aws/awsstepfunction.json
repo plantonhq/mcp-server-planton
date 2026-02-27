@@ -1,0 +1,183 @@
+{
+  "name": "AwsStepFunction",
+  "kind": "AwsStepFunction",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsStepFunction is the Kubernetes-style resource envelope for an AWS Step\n Functions state machine.",
+  "protoPackage": "org.openmcf.provider.aws.awsstepfunction.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsstepfunction/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsstepfunction/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsStepFunctionSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "State machine type. Determines execution semantics and pricing model.\n - \"STANDARD\": Long-running, exactly-once, full execution history.\n - \"EXPRESS\": High-volume, short-duration, at-most-once.\n Cannot be changed after creation (forces replacement).\n When omitted the IaC module defaults to \"STANDARD\".",
+        "required": false
+      },
+      {
+        "name": "Definition",
+        "jsonName": "definition",
+        "protoField": "definition",
+        "type": {
+          "kind": "object"
+        },
+        "description": "State machine definition in Amazon States Language (ASL). Write the\n definition as native YAML; the IaC module serializes it to JSON for the\n AWS API. ASL key casing (StartAt, States, Type, Resource, etc.) is\n preserved through serialization.\n\n Maximum size: 1,048,576 bytes (1 MB) after JSON serialization.\n\n Use AWS Step Functions Workflow Studio, CDK, or the ASL specification\n to author complex workflows, then express the result as YAML here.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "RoleArn",
+        "jsonName": "roleArn",
+        "protoField": "role_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IAM execution role ARN. The role must have a trust policy for\n states.amazonaws.com and policies granting access to all services\n invoked by the workflow (Lambda:InvokeFunction, SQS:SendMessage, etc.).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsIamRole",
+        "referenceFieldPath": "status.outputs.role_arn"
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Free-form description visible in the AWS Console. Useful for documenting\n the workflow's purpose and behavior.",
+        "required": false
+      },
+      {
+        "name": "Logging",
+        "jsonName": "logging",
+        "protoField": "logging",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsStepFunctionLoggingConfig"
+        },
+        "description": "Logging configuration for execution history events. When omitted, logging\n is disabled (level OFF). Logging is supported for both STANDARD and EXPRESS\n state machines.",
+        "required": false
+      },
+      {
+        "name": "TracingEnabled",
+        "jsonName": "tracingEnabled",
+        "protoField": "tracing_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable AWS X-Ray tracing for the state machine. When true, Step Functions\n sends trace data to X-Ray for visualizing request flows. Ensure the\n execution role has xray:PutTraceSegments and xray:PutTelemetryRecords\n permissions.",
+        "required": false
+      },
+      {
+        "name": "Encryption",
+        "jsonName": "encryption",
+        "protoField": "encryption",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsStepFunctionEncryptionConfig"
+        },
+        "description": "Encryption configuration for data at rest. When omitted, AWS uses\n AWS-owned keys (default, no additional cost). Provide this block to\n use a customer-managed KMS key for encrypting state machine data,\n execution history, and input/output payloads.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsStepFunctionEncryptionConfig",
+      "description": "AwsStepFunctionEncryptionConfig configures encryption for state machine data\n using a customer-managed KMS key. When this block is provided with a\n kms_key_id, the IaC module sets the encryption type to\n CUSTOMER_MANAGED_KMS_KEY. When omitted, AWS-owned keys are used.",
+      "protoType": "org.openmcf.provider.aws.awsstepfunction.v1.AwsStepFunctionEncryptionConfig",
+      "fields": [
+        {
+          "name": "KmsKeyId",
+          "jsonName": "kmsKeyId",
+          "protoField": "kms_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Customer-managed KMS key ARN for encrypting state machine data, execution\n history, and input/output payloads. The key must be a symmetric encryption\n key in the same region as the state machine. For cross-account access, use\n the full key ARN (not alias).",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsKmsKey",
+          "referenceFieldPath": "status.outputs.key_arn"
+        },
+        {
+          "name": "KmsDataKeyReusePeriodSeconds",
+          "jsonName": "kmsDataKeyReusePeriodSeconds",
+          "protoField": "kms_data_key_reuse_period_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Duration in seconds for which Step Functions reuses a data encryption key\n before calling KMS GenerateDataKey again. Higher values reduce KMS API\n costs but increase the window for key reuse.\n Range: 60–900 seconds. AWS default: 300 (5 minutes).\n Leave at 0 to use the AWS default.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsStepFunctionLoggingConfig",
+      "description": "AwsStepFunctionLoggingConfig configures execution history logging to\n CloudWatch Logs. Logging helps with debugging, auditing, and monitoring\n state machine executions.",
+      "protoType": "org.openmcf.provider.aws.awsstepfunction.v1.AwsStepFunctionLoggingConfig",
+      "fields": [
+        {
+          "name": "Level",
+          "jsonName": "level",
+          "protoField": "level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Logging level. Determines which execution history events are logged.\n - \"ALL\": Log all event types (recommended for development and debugging).\n - \"ERROR\": Log only error events (recommended for production).\n - \"FATAL\": Log only fatal errors.\n - \"OFF\": Disable logging.",
+          "required": false
+        },
+        {
+          "name": "IncludeExecutionData",
+          "jsonName": "includeExecutionData",
+          "protoField": "include_execution_data",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to include execution input and output data in log entries. When\n true, the full JSON payloads passed between states are logged. Useful for\n debugging but may increase log volume and expose sensitive data.",
+          "required": false
+        },
+        {
+          "name": "LogDestination",
+          "jsonName": "logDestination",
+          "protoField": "log_destination",
+          "type": {
+            "kind": "string"
+          },
+          "description": "CloudWatch Logs log group ARN for log delivery. Accepts a direct ARN or a\n reference to a CloudWatch Log Group resource.\n\n Note: AWS requires the ARN to end with \":*\". The IaC module automatically\n appends this suffix if not present, so you can reference a log group ARN\n directly without worrying about the suffix.",
+          "required": false,
+          "referenceKind": "AwsCloudwatchLogGroup",
+          "referenceFieldPath": "status.outputs.log_group_arn"
+        }
+      ]
+    }
+  ]
+}

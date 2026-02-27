@@ -1,0 +1,96 @@
+{
+  "name": "AwsIamRole",
+  "kind": "AwsIamRole",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsIamRole represents an AWS IAM Role resource.\n IAM roles enable secure delegation of permissions to AWS services, applications, or users\n through temporary credentials without embedding long-lived access keys.",
+  "protoPackage": "org.openmcf.provider.aws.awsiamrole.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsiamrole/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsiamrole/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsIamRoleSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description is an optional description of the IAM role.",
+        "required": false
+      },
+      {
+        "name": "Path",
+        "jsonName": "path",
+        "protoField": "path",
+        "type": {
+          "kind": "string"
+        },
+        "description": "path is the IAM path for the role. Defaults to \"/\" if omitted.",
+        "required": false,
+        "recommendedDefault": "/"
+      },
+      {
+        "name": "TrustPolicy",
+        "jsonName": "trustPolicy",
+        "protoField": "trust_policy",
+        "type": {
+          "kind": "object"
+        },
+        "description": "trust_policy_json is the JSON string describing the trust relationship for the role.\n Example: a trust policy allowing ECS tasks to assume this role.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ManagedPolicyArns",
+        "jsonName": "managedPolicyArns",
+        "protoField": "managed_policy_arns",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "managed_policy_arns is a list of ARNs for AWS-managed or customer-managed IAM policies\n you want to attach to this role.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "InlinePolicies",
+        "jsonName": "inlinePolicies",
+        "protoField": "inline_policies",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "object"
+          }
+        },
+        "description": "inline_policy_jsons is a map of inline policy names to a JSON policy doc.\n Key is policy name. Value is the raw JSON for that policy.",
+        "required": false
+      }
+    ]
+  }
+}

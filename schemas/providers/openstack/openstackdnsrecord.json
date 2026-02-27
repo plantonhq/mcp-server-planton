@@ -1,0 +1,121 @@
+{
+  "name": "OpenStackDnsRecord",
+  "kind": "OpenStackDnsRecord",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackDnsRecord is a Kubernetes Resource Model (KRM) style resource for managing\n a standalone DNS record in an OpenStack Designate zone.\n\n This component creates a single DNS recordset (one name + one type + one or more values)\n in an existing zone. Use this for DAG-visible, independently managed records in\n InfraCharts. For convenience (all records in one component), use the inline records\n feature of OpenStackDnsZone instead.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackdnsrecord.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackdnsrecord/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackdnsrecord/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackDnsRecordSpec",
+    "fields": [
+      {
+        "name": "ZoneId",
+        "jsonName": "zoneId",
+        "protoField": "zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The ID of the Designate zone where this record will be created.\n Can be a literal UUID or a reference to an OpenStackDnsZone resource's output.\n\n FK: OpenStackDnsZone.status.outputs.zone_id\n ForceNew: changing this requires recreating the record.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackDnsZone",
+        "referenceFieldPath": "status.outputs.zone_id"
+      },
+      {
+        "name": "RecordName",
+        "jsonName": "recordName",
+        "protoField": "record_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The fully qualified domain name for this record.\n Must end with a trailing dot to indicate FQDN.\n Example: \"www.example.com.\" or \"api.example.com.\"\n ForceNew: changing this requires recreating the record.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.openstack.openstackdnsrecord.v1.RecordType",
+          "enumValues": [
+            "A",
+            "AAAA",
+            "CNAME",
+            "MX",
+            "TXT",
+            "SRV",
+            "NS",
+            "PTR",
+            "CAA",
+            "SOA",
+            "SPF",
+            "SSHFP",
+            "NAPTR"
+          ]
+        },
+        "description": "(Required) The DNS record type.\n Supported types: A, AAAA, CNAME, MX, TXT, SRV, NS, PTR, CAA, SOA, SPF, SSHFP, NAPTR.\n ForceNew: changing this requires recreating the record.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Values",
+        "jsonName": "values",
+        "protoField": "values",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "(Required) The DNS record values.\n Format depends on record type:\n   - A record: IPv4 addresses (e.g., [\"192.0.2.1\", \"192.0.2.2\"])\n   - AAAA record: IPv6 addresses (e.g., [\"2001:db8::1\"])\n   - CNAME record: target hostname with trailing dot (e.g., [\"target.example.com.\"])\n   - MX record: priority and mail server (e.g., [\"10 mail1.example.com.\", \"20 mail2.example.com.\"])\n   - TXT record: text values (e.g., [\"v=spf1 include:_spf.google.com ~all\"])\n Multiple values create a round-robin record set.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Ttl",
+        "jsonName": "ttl",
+        "protoField": "ttl",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Optional) Time To Live (in seconds) for this DNS record.\n Determines how long resolvers cache this record.\n If omitted, the zone's default TTL is used.",
+        "required": false,
+        "oneofGroup": "_ttl"
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Human-readable description of the DNS record.",
+        "required": false
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Override the region from the provider config for this record.\n If omitted, the region from the OpenStack provider config is used.\n ForceNew: changing this requires recreating the record.",
+        "required": false
+      }
+    ]
+  }
+}

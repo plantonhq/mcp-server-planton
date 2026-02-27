@@ -1,0 +1,59 @@
+{
+  "name": "GcpKmsKeyRing",
+  "kind": "GcpKmsKeyRing",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-kms-key-ring",
+  "protoPackage": "org.openmcf.provider.gcp.gcpkmskeyring.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpkmskeyring/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpkmskeyring/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpKmsKeyRingSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The GCP project in which to create this key ring.\n Example: \"my-prod-project-123\"",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "KeyRingName",
+        "jsonName": "keyRingName",
+        "protoField": "key_ring_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the key ring in GCP. Immutable after creation.\n Must be 1-63 characters: letters (upper or lower), digits, hyphens, or underscores.\n This is the GCP resource name, distinct from the OpenMCF metadata.name.\n Example: \"prod-encryption\", \"data-keys-us-central1\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-zA-Z0-9_-]{1,63}$"
+        }
+      },
+      {
+        "name": "Location",
+        "jsonName": "location",
+        "protoField": "location",
+        "type": {
+          "kind": "string"
+        },
+        "description": "GCP location (region, multi-region, or \"global\") where the key ring resides.\n Immutable after creation. Choose based on latency, data residency, and\n redundancy requirements.\n\n Common values:\n   Region:       \"us-central1\", \"europe-west1\", \"asia-east1\"\n   Multi-region: \"us\", \"europe\", \"asia\"\n   Global:       \"global\"\n\n Run `gcloud kms locations list` for a full list of valid locations.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,228 @@
+{
+  "name": "AliCloudSecurityGroup",
+  "kind": "AliCloudSecurityGroup",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-security-group",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudsecuritygroup.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudsecuritygroup/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudsecuritygroup/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudSecurityGroupSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the security group will be created.\n Must match the region of the VPC referenced by vpc_id.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC ID that this security group belongs to.\n All security group rules automatically apply to VPC-internal traffic\n (nic_type \"intranet\" is implied and hardcoded in the IaC modules).",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "SecurityGroupName",
+        "jsonName": "securityGroupName",
+        "protoField": "security_group_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Security group name. 2-128 characters; must start with a letter; can\n contain Unicode characters, digits, colons, underscores, periods, hyphens.\n Maps to the provider field `security_group_name`.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 128
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the security group's purpose.\n 2-256 characters; cannot start with http:// or https://.",
+        "required": false
+      },
+      {
+        "name": "InnerAccessPolicy",
+        "jsonName": "innerAccessPolicy",
+        "protoField": "inner_access_policy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Controls whether instances within the same security group can communicate\n with each other freely. When \"Accept\", all intra-group traffic is allowed.\n When \"Drop\", intra-group traffic follows normal rule evaluation.\n\n Uses the provider's exact casing: \"Accept\" or \"Drop\".\n Default: \"Accept\"",
+        "required": false,
+        "default": "Accept",
+        "oneofGroup": "_inner_access_policy"
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the security group is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the security group.",
+        "required": false
+      },
+      {
+        "name": "Rules",
+        "jsonName": "rules",
+        "protoField": "rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudSecurityGroupRule"
+          }
+        },
+        "description": "Security rules that define allowed or dropped traffic flows.\n Each rule specifies direction (ingress/egress), protocol, port range,\n source/destination, and an accept/drop decision.\n\n Rules are evaluated by priority within their direction. Lower priority\n numbers are evaluated first (1 = highest priority). The first matching\n rule wins.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudSecurityGroupRule",
+      "description": "AliCloudSecurityGroupRule defines a single inbound or outbound traffic rule.\n\n For ingress rules, cidr_ip and source_security_group_id specify the traffic\n source. For egress rules, cidr_ip specifies the traffic destination. At least\n one of cidr_ip or source_security_group_id must be provided.\n\n All rule fields except description are immutable after creation (ForceNew in\n the provider). Changing any field requires destroying and recreating the rule.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudsecuritygroup.v1.AliCloudSecurityGroupRule",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Traffic direction: \"ingress\" for inbound, \"egress\" for outbound.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "IpProtocol",
+          "jsonName": "ipProtocol",
+          "protoField": "ip_protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP protocol for this rule.\n For \"tcp\" and \"udp\", port_range must specify explicit ports.\n For \"icmp\", \"gre\", and \"all\", port_range must be \"-1/-1\".",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "PortRange",
+          "jsonName": "portRange",
+          "protoField": "port_range",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Port range in \"start/end\" format.\n For tcp/udp: valid range 1-65535, e.g. \"80/80\" (single port), \"8080/8090\" (range).\n For icmp/gre/all: must be \"-1/-1\".\n Default: \"-1/-1\" (all ports)",
+          "required": false,
+          "default": "-1/-1",
+          "oneofGroup": "_port_range"
+        },
+        {
+          "name": "CidrIp",
+          "jsonName": "cidrIp",
+          "protoField": "cidr_ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IPv4 CIDR block for the traffic source (ingress) or destination (egress).\n Example: \"0.0.0.0/0\" (any), \"10.0.0.0/8\" (private range).\n At least one of cidr_ip or source_security_group_id must be specified.",
+          "required": false
+        },
+        {
+          "name": "SourceSecurityGroupId",
+          "jsonName": "sourceSecurityGroupId",
+          "protoField": "source_security_group_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Source (for ingress) or destination (for egress) security group ID.\n Used for SG-to-SG rules within the same VPC.\n Mutually exclusive with cidr_ip in the provider -- when both are set,\n cidr_ip takes precedence.",
+          "required": false
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Rule evaluation priority. Lower number = higher priority.\n Range: 1 to 100.\n Default: 1 (highest priority)",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 100
+          },
+          "default": "1",
+          "oneofGroup": "_priority"
+        },
+        {
+          "name": "Policy",
+          "jsonName": "policy",
+          "protoField": "policy",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Action to take when this rule matches: \"accept\" to allow, \"drop\" to block.\n Default: \"accept\"",
+          "required": false,
+          "default": "accept",
+          "oneofGroup": "_policy"
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description of this rule's purpose.\n This is the only field that can be updated after creation without\n recreating the rule.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,504 @@
+{
+  "name": "AwsS3Bucket",
+  "kind": "AwsS3Bucket",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "aws-s3-bucket",
+  "protoPackage": "org.openmcf.provider.aws.awss3bucket.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awss3bucket/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awss3bucket/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsS3BucketSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "IsPublic",
+        "jsonName": "isPublic",
+        "protoField": "is_public",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Flag to indicate if the S3 bucket should have external (public) access.\n When set to `true`, the bucket will be publicly accessible over the internet.\n When set to `false` (default), Block Public Access is enabled (recommended for security).\n Public access should be used cautiously to avoid unintended data exposure.\n Even for public content, consider using CloudFront with Origin Access Control instead.",
+        "required": false
+      },
+      {
+        "name": "VersioningEnabled",
+        "jsonName": "versioningEnabled",
+        "protoField": "versioning_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable versioning to protect against accidental deletions and overwrites.\n When enabled, S3 keeps all versions of an object. Recommended for production buckets.\n Note: Versioning increases storage costs as each version is stored separately.\n Use lifecycle policies to expire old versions and control costs.",
+        "required": false
+      },
+      {
+        "name": "EncryptionType",
+        "jsonName": "encryptionType",
+        "protoField": "encryption_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.aws.awss3bucket.v1.EncryptionType",
+          "enumValues": [
+            "ENCRYPTION_TYPE_SSE_S3",
+            "ENCRYPTION_TYPE_SSE_KMS"
+          ]
+        },
+        "description": "Encryption type for objects in the bucket.\n Defaults to SSE_S3 (AES-256) if unspecified, which is free and provides strong encryption.\n Use SSE_KMS for audit trails (CloudTrail logs key usage) and customer-managed key control.",
+        "required": false
+      },
+      {
+        "name": "KmsKeyId",
+        "jsonName": "kmsKeyId",
+        "protoField": "kms_key_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "KMS key ID or ARN for SSE-KMS encryption.\n Required when encryption_type is ENCRYPTION_TYPE_SSE_KMS.\n Leave empty for ENCRYPTION_TYPE_SSE_S3.\n Can reference an AwsKmsKey resource.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags for resource governance, cost allocation, and organization.\n Common tags: Environment (prod/staging), Project, Owner, CostCenter.\n AWS allows up to 50 tags per bucket.",
+        "required": false
+      },
+      {
+        "name": "LifecycleRules",
+        "jsonName": "lifecycleRules",
+        "protoField": "lifecycle_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "LifecycleRule"
+          }
+        },
+        "description": "Lifecycle rules for automatic storage transitions and expiration.\n Use lifecycle rules to:\n - Move old objects to cheaper storage (Standard -\u003e IA -\u003e Glacier)\n - Expire old logs or temporary data\n - Delete old object versions to control costs\n - Abort incomplete multipart uploads",
+        "required": false
+      },
+      {
+        "name": "Replication",
+        "jsonName": "replication",
+        "protoField": "replication",
+        "type": {
+          "kind": "message",
+          "messageType": "ReplicationConfiguration"
+        },
+        "description": "Replication configuration for disaster recovery or compliance.\n Cross-Region Replication (CRR): replicate to different region for disaster recovery.\n Same-Region Replication (SRR): replicate to same region for cross-account backups or log aggregation.\n Note: Requires versioning_enabled = true on both source and destination buckets.",
+        "required": false
+      },
+      {
+        "name": "Logging",
+        "jsonName": "logging",
+        "protoField": "logging",
+        "type": {
+          "kind": "message",
+          "messageType": "LoggingConfiguration"
+        },
+        "description": "Server access logging configuration.\n Logs all requests made to the bucket for security audits and analytics.\n Access logs are delivered to a separate bucket with some delay (minutes to hours).\n Alternative: Use CloudTrail Data Events for real-time logging (higher cost for high-traffic buckets).",
+        "required": false
+      },
+      {
+        "name": "Cors",
+        "jsonName": "cors",
+        "protoField": "cors",
+        "type": {
+          "kind": "message",
+          "messageType": "CorsConfiguration"
+        },
+        "description": "CORS configuration for web applications.\n Required when your web application hosted on one domain needs to access bucket content.\n Example: React app on example.com accessing S3 bucket for images/files.",
+        "required": false
+      },
+      {
+        "name": "ForceDestroy",
+        "jsonName": "forceDestroy",
+        "protoField": "force_destroy",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Force destroy the bucket even if it contains objects.\n When true, all objects (including versions) are deleted before destroying the bucket.\n WARNING: Use with caution! This is irreversible.\n Recommended: false for production buckets to prevent accidental data loss.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "CorsConfiguration",
+      "description": "CORS (Cross-Origin Resource Sharing) configuration.",
+      "protoType": "org.openmcf.provider.aws.awss3bucket.v1.AwsS3BucketSpec.CorsConfiguration",
+      "fields": [
+        {
+          "name": "CorsRules",
+          "jsonName": "corsRules",
+          "protoField": "cors_rules",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "CorsRule"
+            }
+          },
+          "description": "List of CORS rules.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "CorsRule",
+      "description": "CORS rule.",
+      "protoType": "org.openmcf.provider.aws.awss3bucket.v1.AwsS3BucketSpec.CorsConfiguration.CorsRule",
+      "fields": [
+        {
+          "name": "AllowedMethods",
+          "jsonName": "allowedMethods",
+          "protoField": "allowed_methods",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "HTTP methods allowed (e.g., [\"GET\", \"PUT\", \"POST\"]).",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "AllowedOrigins",
+          "jsonName": "allowedOrigins",
+          "protoField": "allowed_origins",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Origins allowed (e.g., [\"https://example.com\"]).",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "AllowedHeaders",
+          "jsonName": "allowedHeaders",
+          "protoField": "allowed_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Headers allowed in preflight requests.",
+          "required": false
+        },
+        {
+          "name": "ExposeHeaders",
+          "jsonName": "exposeHeaders",
+          "protoField": "expose_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Headers exposed to the browser.",
+          "required": false
+        },
+        {
+          "name": "MaxAgeSeconds",
+          "jsonName": "maxAgeSeconds",
+          "protoField": "max_age_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Time in seconds browser should cache preflight response.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Destination",
+      "description": "Destination bucket for replication.",
+      "protoType": "org.openmcf.provider.aws.awss3bucket.v1.AwsS3BucketSpec.ReplicationConfiguration.Destination",
+      "fields": [
+        {
+          "name": "BucketArn",
+          "jsonName": "bucketArn",
+          "protoField": "bucket_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of the destination bucket (e.g., \"arn:aws:s3:::destination-bucket\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "StorageClass",
+          "jsonName": "storageClass",
+          "protoField": "storage_class",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.aws.awss3bucket.v1.StorageClass",
+            "enumValues": [
+              "STORAGE_CLASS_STANDARD",
+              "STORAGE_CLASS_STANDARD_IA",
+              "STORAGE_CLASS_ONE_ZONE_IA",
+              "STORAGE_CLASS_INTELLIGENT_TIERING",
+              "STORAGE_CLASS_GLACIER_INSTANT_RETRIEVAL",
+              "STORAGE_CLASS_GLACIER_FLEXIBLE_RETRIEVAL",
+              "STORAGE_CLASS_GLACIER_DEEP_ARCHIVE"
+            ]
+          },
+          "description": "Destination storage class. If not specified, uses source object's storage class.",
+          "required": false
+        },
+        {
+          "name": "AccountId",
+          "jsonName": "accountId",
+          "protoField": "account_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "AWS account ID for cross-account replication. Leave empty for same-account.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "LifecycleRule",
+      "description": "Lifecycle rule to automate storage transitions and expiration.",
+      "protoType": "org.openmcf.provider.aws.awss3bucket.v1.AwsS3BucketSpec.LifecycleRule",
+      "fields": [
+        {
+          "name": "Id",
+          "jsonName": "id",
+          "protoField": "id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique identifier for the rule.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the rule is enabled.",
+          "required": false
+        },
+        {
+          "name": "Prefix",
+          "jsonName": "prefix",
+          "protoField": "prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Prefix filter for objects affected by this rule (e.g., \"logs/\").\n Empty string applies to all objects in the bucket.",
+          "required": false
+        },
+        {
+          "name": "TransitionDays",
+          "jsonName": "transitionDays",
+          "protoField": "transition_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Days after creation to transition objects to the specified storage class.",
+          "required": false
+        },
+        {
+          "name": "TransitionStorageClass",
+          "jsonName": "transitionStorageClass",
+          "protoField": "transition_storage_class",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.aws.awss3bucket.v1.StorageClass",
+            "enumValues": [
+              "STORAGE_CLASS_STANDARD",
+              "STORAGE_CLASS_STANDARD_IA",
+              "STORAGE_CLASS_ONE_ZONE_IA",
+              "STORAGE_CLASS_INTELLIGENT_TIERING",
+              "STORAGE_CLASS_GLACIER_INSTANT_RETRIEVAL",
+              "STORAGE_CLASS_GLACIER_FLEXIBLE_RETRIEVAL",
+              "STORAGE_CLASS_GLACIER_DEEP_ARCHIVE"
+            ]
+          },
+          "description": "Target storage class for transition.",
+          "required": false
+        },
+        {
+          "name": "ExpirationDays",
+          "jsonName": "expirationDays",
+          "protoField": "expiration_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Days after creation to expire (delete) objects. 0 means no expiration.",
+          "required": false
+        },
+        {
+          "name": "NoncurrentVersionExpirationDays",
+          "jsonName": "noncurrentVersionExpirationDays",
+          "protoField": "noncurrent_version_expiration_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Days after becoming noncurrent to expire old versions. Only applies if versioning is enabled.",
+          "required": false
+        },
+        {
+          "name": "AbortIncompleteMultipartUploadDays",
+          "jsonName": "abortIncompleteMultipartUploadDays",
+          "protoField": "abort_incomplete_multipart_upload_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Days to abort incomplete multipart uploads. Recommended: 7 days.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "LoggingConfiguration",
+      "description": "Server access logging configuration.",
+      "protoType": "org.openmcf.provider.aws.awss3bucket.v1.AwsS3BucketSpec.LoggingConfiguration",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether logging is enabled.",
+          "required": false
+        },
+        {
+          "name": "TargetBucket",
+          "jsonName": "targetBucket",
+          "protoField": "target_bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Target bucket for access logs. Must be in the same region.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "TargetPrefix",
+          "jsonName": "targetPrefix",
+          "protoField": "target_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Prefix for log object keys (e.g., \"logs/mybucket/\").",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ReplicationConfiguration",
+      "description": "Cross-region or same-region replication configuration.",
+      "protoType": "org.openmcf.provider.aws.awss3bucket.v1.AwsS3BucketSpec.ReplicationConfiguration",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether replication is enabled.",
+          "required": false
+        },
+        {
+          "name": "RoleArn",
+          "jsonName": "roleArn",
+          "protoField": "role_arn",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ARN of the IAM role that S3 assumes to replicate objects.\n The role must have permissions to read from source bucket and write to destination.\n Can reference an AwsIamRole resource.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsIamRole",
+          "referenceFieldPath": "status.outputs.role_arn"
+        },
+        {
+          "name": "Destination",
+          "jsonName": "destination",
+          "protoField": "destination",
+          "type": {
+            "kind": "message",
+            "messageType": "Destination"
+          },
+          "description": "Destination configuration.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Prefix",
+          "jsonName": "prefix",
+          "protoField": "prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Prefix filter for objects to replicate. Empty string replicates all objects.",
+          "required": false
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Priority for replication rules. Higher numbers have higher priority.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

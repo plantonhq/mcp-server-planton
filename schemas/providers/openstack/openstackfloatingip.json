@@ -1,0 +1,110 @@
+{
+  "name": "OpenStackFloatingIp",
+  "kind": "OpenStackFloatingIp",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackFloatingIp is a Kubernetes Resource Model (KRM) style resource\n for managing OpenStack Neutron floating IP allocations.\n\n A floating IP provides external (public) connectivity to instances or ports\n on tenant networks. It is allocated from an external provider network and can\n optionally be associated with a port for immediate connectivity.\n\n For DAG-visible association in InfraCharts, allocate the floating IP without\n port_id and use the separate OpenStackFloatingIpAssociate component.\n\n Use this component for:\n   - Allocating public IP addresses from an external network\n   - Optionally binding the IP to a port in the same manifest (built-in association)\n   - Reserving specific IP addresses for DNS or firewall pre-configuration\n\n Use OpenStackFloatingIpAssociate for:\n   - Associating an existing floating IP with a port as a separate DAG node\n   - InfraCharts where the association must be visually explicit as a dependency",
+  "protoPackage": "org.openmcf.provider.openstack.openstackfloatingip.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackfloatingip/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackfloatingip/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackFloatingIpSpec",
+    "fields": [
+      {
+        "name": "FloatingNetworkId",
+        "jsonName": "floatingNetworkId",
+        "protoField": "floating_network_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "floating_network_id is the ID of the external (provider) network from which\n the floating IP is allocated. This is the pool of public IP addresses.\n Maps to the Terraform \"pool\" attribute.\n Can reference an OpenStackNetwork resource's output or be a literal network UUID.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackNetwork",
+        "referenceFieldPath": "status.outputs.network_id"
+      },
+      {
+        "name": "PortId",
+        "jsonName": "portId",
+        "protoField": "port_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "port_id is the ID of an existing port to associate with this floating IP.\n When set, the floating IP is immediately bound to the port, providing\n external connectivity to whatever is attached to that port (typically an instance).\n Optional: omit for allocation-only (use OpenStackFloatingIpAssociate separately).\n Can reference an OpenStackNetworkPort resource's output or be a literal port UUID.",
+        "required": false,
+        "referenceKind": "OpenStackNetworkPort",
+        "referenceFieldPath": "status.outputs.port_id"
+      },
+      {
+        "name": "FixedIp",
+        "jsonName": "fixedIp",
+        "protoField": "fixed_ip",
+        "type": {
+          "kind": "string"
+        },
+        "description": "fixed_ip specifies which fixed IP address on the port to associate the\n floating IP with. Only relevant when port_id is set and the port has\n multiple IP addresses. If the port has a single IP, this can be omitted.",
+        "required": false
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "subnet_id is the UUID of a subnet within the external network from which\n to allocate the floating IP. This references an admin-managed subnet on the\n provider network. If omitted, OpenStack allocates from any available subnet.",
+        "required": false
+      },
+      {
+        "name": "Address",
+        "jsonName": "address",
+        "protoField": "address",
+        "type": {
+          "kind": "string"
+        },
+        "description": "address requests a specific floating IP address from the pool.\n If omitted, OpenStack allocates any available address.\n This is a create-time setting (ForceNew in Terraform).\n Use case: DNS pre-configuration, firewall whitelisting, IP reservation.",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description is a human-readable description of the floating IP.\n Stored on the OpenStack resource and visible in Horizon and API responses.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "tags are string tags to associate with the floating IP in OpenStack.\n Tags are stored on the OpenStack resource and can be used for filtering\n and organization in the OpenStack API and Horizon dashboard.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this floating IP.\n If omitted, the region from the OpenStack provider config is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  }
+}

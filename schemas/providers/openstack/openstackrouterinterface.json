@@ -1,0 +1,57 @@
+{
+  "name": "OpenStackRouterInterface",
+  "kind": "OpenStackRouterInterface",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackRouterInterface is a Kubernetes Resource Model (KRM) style resource\n for attaching OpenStack Neutron routers to subnets.\n\n A router interface is a join resource that creates a port on a subnet and\n attaches it to a router, providing L3 routing for that subnet. This is the\n glue between Layer 2 (subnet) and Layer 3 (router) -- without it, a subnet\n has no route to other subnets or to the external network.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackrouterinterface.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackrouterinterface/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackrouterinterface/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackRouterInterfaceSpec",
+    "fields": [
+      {
+        "name": "RouterId",
+        "jsonName": "routerId",
+        "protoField": "router_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "router_id is the ID of the router to attach the subnet to.\n This is a required foreign key -- every router interface must reference\n exactly one router.\n Can reference an OpenStackRouter resource's output or be a literal router UUID.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackRouter",
+        "referenceFieldPath": "status.outputs.router_id"
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "subnet_id is the ID of the subnet to connect to the router.\n This is a required foreign key -- every router interface must reference\n exactly one subnet.\n Can reference an OpenStackSubnet resource's output or be a literal subnet UUID.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackSubnet",
+        "referenceFieldPath": "status.outputs.subnet_id"
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this router interface.\n If omitted, the region from the OpenStack provider config is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  }
+}

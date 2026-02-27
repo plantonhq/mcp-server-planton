@@ -1,0 +1,417 @@
+{
+  "name": "AliCloudStorageBucket",
+  "kind": "AliCloudStorageBucket",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-storage-bucket",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudstoragebucket.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudstoragebucket/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudstoragebucket/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudStorageBucketSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the bucket will be created.\n The region determines the physical location of stored data and the\n available endpoints.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "BucketName",
+        "jsonName": "bucketName",
+        "protoField": "bucket_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Globally unique bucket name. Must be 3-63 characters, lowercase letters,\n digits, and hyphens only. Cannot start or end with a hyphen.\n OSS uses the bucket name as the resource ID.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 3,
+          "maxLength": 63
+        }
+      },
+      {
+        "name": "Acl",
+        "jsonName": "acl",
+        "protoField": "acl",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Bucket access control list.\n Controls the default access permissions for all objects in the bucket.\n\n Uses the provider's exact values: \"private\", \"public-read\", \"public-read-write\".\n Default: \"private\"",
+        "required": false,
+        "default": "private",
+        "oneofGroup": "_acl"
+      },
+      {
+        "name": "StorageClass",
+        "jsonName": "storageClass",
+        "protoField": "storage_class",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Storage class for the bucket. Determines cost, availability, and access\n latency characteristics. This is immutable after creation (ForceNew).\n\n Uses the provider's exact values:\n   \"Standard\"      -- frequent access, highest cost, lowest latency\n   \"IA\"            -- infrequent access, lower cost, retrieval fee\n   \"Archive\"       -- archival, minutes to restore\n   \"ColdArchive\"   -- cold storage, hours to restore\n   \"DeepColdArchive\" -- deep cold, 12-48h to restore\n Default: \"Standard\"",
+        "required": false,
+        "default": "Standard",
+        "oneofGroup": "_storage_class"
+      },
+      {
+        "name": "RedundancyType",
+        "jsonName": "redundancyType",
+        "protoField": "redundancy_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Data redundancy type. Controls how data is replicated within the region.\n This is immutable after creation (ForceNew).\n\n   \"LRS\" -- Locally Redundant Storage: 3 copies in a single zone\n   \"ZRS\" -- Zone-Redundant Storage: 3 copies across multiple zones\n Default: \"LRS\"",
+        "required": false,
+        "default": "LRS",
+        "oneofGroup": "_redundancy_type"
+      },
+      {
+        "name": "VersioningEnabled",
+        "jsonName": "versioningEnabled",
+        "protoField": "versioning_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable object versioning on this bucket.\n When true, OSS preserves all versions of every object, allowing recovery\n from accidental overwrites or deletes. Combine with\n lifecycle_rules.noncurrent_version_expiration_days to control version\n retention costs.\n Default: false",
+        "required": false
+      },
+      {
+        "name": "ServerSideEncryption",
+        "jsonName": "serverSideEncryption",
+        "protoField": "server_side_encryption",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudStorageBucketEncryption"
+        },
+        "description": "Server-side encryption configuration.\n When set, all objects stored in this bucket are encrypted at rest using\n the specified algorithm. Omit to store objects without default encryption.",
+        "required": false
+      },
+      {
+        "name": "LifecycleRules",
+        "jsonName": "lifecycleRules",
+        "protoField": "lifecycle_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudStorageBucketLifecycleRule"
+          }
+        },
+        "description": "Lifecycle management rules for automatic object transitions and expiration.\n Rules are evaluated independently; multiple rules can match the same object.\n Maximum 1000 rules per bucket.",
+        "required": false
+      },
+      {
+        "name": "CorsRules",
+        "jsonName": "corsRules",
+        "protoField": "cors_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudStorageBucketCorsRule"
+          }
+        },
+        "description": "Cross-Origin Resource Sharing rules.\n Required when browser-based clients need to access OSS directly.\n Maximum 10 rules per bucket.",
+        "required": false
+      },
+      {
+        "name": "Logging",
+        "jsonName": "logging",
+        "protoField": "logging",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudStorageBucketLogging"
+        },
+        "description": "Server access logging configuration.\n When set, OSS writes access logs to the specified target bucket.\n Omit to disable access logging.",
+        "required": false
+      },
+      {
+        "name": "ForceDestroy",
+        "jsonName": "forceDestroy",
+        "protoField": "force_destroy",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Allow force-destroying a non-empty bucket.\n When true, Terraform/Pulumi will delete all objects in the bucket before\n destroying it. Use with caution in production.\n Default: false",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the bucket is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the bucket.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudStorageBucketCorsRule",
+      "description": "CORS rule for browser-based cross-origin access to an OSS bucket.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudstoragebucket.v1.AliCloudStorageBucketCorsRule",
+      "fields": [
+        {
+          "name": "AllowedOrigins",
+          "jsonName": "allowedOrigins",
+          "protoField": "allowed_origins",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Origins allowed to make cross-origin requests. Use \"*\" to allow all origins.\n Example: [\"https://example.com\", \"https://app.example.com\"]",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "AllowedMethods",
+          "jsonName": "allowedMethods",
+          "protoField": "allowed_methods",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "HTTP methods allowed for cross-origin requests.\n Valid values: GET, PUT, POST, DELETE, HEAD",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "AllowedHeaders",
+          "jsonName": "allowedHeaders",
+          "protoField": "allowed_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Request headers that are allowed in a preflight OPTIONS request.\n Use \"*\" to allow all headers.",
+          "required": false
+        },
+        {
+          "name": "ExposeHeaders",
+          "jsonName": "exposeHeaders",
+          "protoField": "expose_headers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Response headers that the browser is allowed to access.\n Example: [\"x-oss-request-id\", \"ETag\"]",
+          "required": false
+        },
+        {
+          "name": "MaxAgeSeconds",
+          "jsonName": "maxAgeSeconds",
+          "protoField": "max_age_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum time (in seconds) that the browser should cache the preflight\n response. Reduces the number of OPTIONS requests for repeated access.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudStorageBucketEncryption",
+      "description": "Server-side encryption configuration for an OSS bucket.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudstoragebucket.v1.AliCloudStorageBucketEncryption",
+      "fields": [
+        {
+          "name": "SseAlgorithm",
+          "jsonName": "sseAlgorithm",
+          "protoField": "sse_algorithm",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Encryption algorithm.\n \"AES256\" uses OSS-managed keys (no additional configuration needed).\n \"KMS\" uses Alibaba Cloud KMS; optionally specify kms_master_key_id for\n a customer-managed key, or omit for the OSS default KMS key.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "KmsMasterKeyId",
+          "jsonName": "kmsMasterKeyId",
+          "protoField": "kms_master_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "KMS master key ID for customer-managed encryption.\n Only applicable when sse_algorithm is \"KMS\". When omitted with KMS,\n OSS uses the default service key.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudStorageBucketLifecycleRule",
+      "description": "A lifecycle rule for automatic object management within an OSS bucket.\n\n Each rule applies to objects matching the given prefix. At least one action\n (expiration, transition, abort multipart upload, or noncurrent version\n expiration) should be configured for the rule to be meaningful.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudstoragebucket.v1.AliCloudStorageBucketLifecycleRule",
+      "fields": [
+        {
+          "name": "Prefix",
+          "jsonName": "prefix",
+          "protoField": "prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Object name prefix that scopes this rule. An empty prefix applies\n the rule to all objects in the bucket.",
+          "required": false
+        },
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether this rule is active. Disabled rules are retained but not evaluated.",
+          "required": false
+        },
+        {
+          "name": "ExpirationDays",
+          "jsonName": "expirationDays",
+          "protoField": "expiration_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of days after object creation to expire (permanently delete) objects.\n Set to 0 to skip expiration. Only one of date-based or days-based expiration\n can be active; this component exposes the days-based approach as the standard\n pattern.",
+          "required": false
+        },
+        {
+          "name": "Transitions",
+          "jsonName": "transitions",
+          "protoField": "transitions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AliCloudStorageBucketLifecycleTransition"
+            }
+          },
+          "description": "Storage class transitions. Objects are moved to a cheaper storage tier\n after the specified number of days.",
+          "required": false
+        },
+        {
+          "name": "AbortMultipartUploadDays",
+          "jsonName": "abortMultipartUploadDays",
+          "protoField": "abort_multipart_upload_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of days after which incomplete multipart uploads are automatically\n aborted. This prevents orphaned upload parts from consuming storage.\n Recommended: 7 days for most workloads.",
+          "required": false
+        },
+        {
+          "name": "NoncurrentVersionExpirationDays",
+          "jsonName": "noncurrentVersionExpirationDays",
+          "protoField": "noncurrent_version_expiration_days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of days after which noncurrent object versions are expired.\n Only meaningful when versioning is enabled on the bucket.\n Recommended: 30-90 days depending on recovery requirements.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudStorageBucketLifecycleTransition",
+      "description": "A storage class transition within a lifecycle rule.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudstoragebucket.v1.AliCloudStorageBucketLifecycleTransition",
+      "fields": [
+        {
+          "name": "Days",
+          "jsonName": "days",
+          "protoField": "days",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of days after object creation to transition to the target\n storage class.",
+          "required": false
+        },
+        {
+          "name": "StorageClass",
+          "jsonName": "storageClass",
+          "protoField": "storage_class",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Target storage class for the transition.\n Transitions must move objects to a colder tier (cost-decreasing order):\n   Standard -\u003e IA -\u003e Archive -\u003e ColdArchive -\u003e DeepColdArchive",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AliCloudStorageBucketLogging",
+      "description": "Access logging configuration for an OSS bucket.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudstoragebucket.v1.AliCloudStorageBucketLogging",
+      "fields": [
+        {
+          "name": "TargetBucket",
+          "jsonName": "targetBucket",
+          "protoField": "target_bucket",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Destination bucket for access log objects. Can be the same bucket or a\n different bucket in the same region.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "TargetPrefix",
+          "jsonName": "targetPrefix",
+          "protoField": "target_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Key prefix for log objects. Useful for organizing logs within the\n target bucket. Example: \"logs/my-bucket/\"",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,401 @@
+{
+  "name": "AwsDocumentDb",
+  "kind": "AwsDocumentDb",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsDocumentDb is a deployment component for creating and managing\n AWS DocumentDB clusters - a fully managed MongoDB-compatible document database service.",
+  "protoPackage": "org.openmcf.provider.aws.awsdocumentdb.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsdocumentdb/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsdocumentdb/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsDocumentDbSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Subnets",
+        "jsonName": "subnets",
+        "protoField": "subnets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "subnets is the list of subnet IDs for the DB subnet group.\n Provide at least two subnets in distinct Availability Zones for high availability.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.[*].id"
+      },
+      {
+        "name": "DbSubnetGroup",
+        "jsonName": "dbSubnetGroup",
+        "protoField": "db_subnet_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "db_subnet_group is an optional name of an existing DB subnet group to use\n instead of creating one from subnets.",
+        "required": false
+      },
+      {
+        "name": "SecurityGroups",
+        "jsonName": "securityGroups",
+        "protoField": "security_groups",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "security_groups are the VPC security groups to associate with the cluster.",
+        "required": false,
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "AllowedCidrs",
+        "jsonName": "allowedCidrs",
+        "protoField": "allowed_cidrs",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "allowed_cidrs are IPv4 CIDRs to allow ingress to the cluster security group.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "Vpc",
+        "jsonName": "vpc",
+        "protoField": "vpc",
+        "type": {
+          "kind": "string"
+        },
+        "description": "vpc is the VPC where the cluster will be deployed.",
+        "required": false,
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "EngineVersion",
+        "jsonName": "engineVersion",
+        "protoField": "engine_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "engine_version is the DocumentDB engine version.\n Examples: \"4.0.0\", \"5.0.0\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        },
+        "default": "5.0.0",
+        "oneofGroup": "_engine_version"
+      },
+      {
+        "name": "Port",
+        "jsonName": "port",
+        "protoField": "port",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "port is the TCP port on which the cluster accepts connections.",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 65535
+        },
+        "default": "27017",
+        "oneofGroup": "_port"
+      },
+      {
+        "name": "MasterUsername",
+        "jsonName": "masterUsername",
+        "protoField": "master_username",
+        "type": {
+          "kind": "string"
+        },
+        "description": "master_username is the master user name for the cluster.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        },
+        "default": "docdbadmin",
+        "oneofGroup": "_master_username"
+      },
+      {
+        "name": "MasterPassword",
+        "jsonName": "masterPassword",
+        "protoField": "master_password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "master_password is the master user password. Required unless using Secrets Manager.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "InstanceCount",
+        "jsonName": "instanceCount",
+        "protoField": "instance_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "instance_count is the number of instances to create in the cluster.",
+        "required": false,
+        "validation": {
+          "min": 1
+        },
+        "default": "1",
+        "oneofGroup": "_instance_count"
+      },
+      {
+        "name": "InstanceClass",
+        "jsonName": "instanceClass",
+        "protoField": "instance_class",
+        "type": {
+          "kind": "string"
+        },
+        "description": "instance_class is the compute and memory capacity of the DB instances.\n Examples: \"db.r5.large\", \"db.r5.xlarge\", \"db.r6g.large\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        },
+        "default": "db.r6g.large",
+        "oneofGroup": "_instance_class"
+      },
+      {
+        "name": "StorageEncrypted",
+        "jsonName": "storageEncrypted",
+        "protoField": "storage_encrypted",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "storage_encrypted indicates whether to encrypt the cluster storage at rest.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_storage_encrypted"
+      },
+      {
+        "name": "KmsKey",
+        "jsonName": "kmsKey",
+        "protoField": "kms_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "kms_key is the ARN of the KMS key for storage encryption.",
+        "required": false,
+        "referenceKind": "AwsKmsKey",
+        "referenceFieldPath": "status.outputs.key_arn"
+      },
+      {
+        "name": "BackupRetentionPeriod",
+        "jsonName": "backupRetentionPeriod",
+        "protoField": "backup_retention_period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "backup_retention_period is the number of days to retain automated backups (1-35).",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 35
+        },
+        "default": "7",
+        "oneofGroup": "_backup_retention_period"
+      },
+      {
+        "name": "PreferredBackupWindow",
+        "jsonName": "preferredBackupWindow",
+        "protoField": "preferred_backup_window",
+        "type": {
+          "kind": "string"
+        },
+        "description": "preferred_backup_window is the daily time range for automated backups in UTC.\n Format: \"hh24:mi-hh24:mi\" (e.g., \"03:00-04:00\")",
+        "required": false,
+        "validation": {
+          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]-([01][0-9]|2[0-3]):[0-5][0-9]$"
+        }
+      },
+      {
+        "name": "PreferredMaintenanceWindow",
+        "jsonName": "preferredMaintenanceWindow",
+        "protoField": "preferred_maintenance_window",
+        "type": {
+          "kind": "string"
+        },
+        "description": "preferred_maintenance_window is the weekly time range for maintenance in UTC.\n Format: \"ddd:hh24:mi-ddd:hh24:mi\" (e.g., \"sun:05:00-sun:06:00\")",
+        "required": false,
+        "validation": {
+          "pattern": "^(mon|tue|wed|thu|fri|sat|sun):([01][0-9]|2[0-3]):[0-5][0-9]-(mon|tue|wed|thu|fri|sat|sun):([01][0-9]|2[0-3]):[0-5][0-9]$"
+        }
+      },
+      {
+        "name": "DeletionProtection",
+        "jsonName": "deletionProtection",
+        "protoField": "deletion_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "deletion_protection prevents accidental cluster deletion when enabled.",
+        "required": false
+      },
+      {
+        "name": "SkipFinalSnapshot",
+        "jsonName": "skipFinalSnapshot",
+        "protoField": "skip_final_snapshot",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "skip_final_snapshot controls whether a final snapshot is created on deletion.",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_skip_final_snapshot"
+      },
+      {
+        "name": "FinalSnapshotIdentifier",
+        "jsonName": "finalSnapshotIdentifier",
+        "protoField": "final_snapshot_identifier",
+        "type": {
+          "kind": "string"
+        },
+        "description": "final_snapshot_identifier is the identifier for the final snapshot when\n skip_final_snapshot is false.",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "EnabledCloudwatchLogsExports",
+        "jsonName": "enabledCloudwatchLogsExports",
+        "protoField": "enabled_cloudwatch_logs_exports",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "enabled_cloudwatch_logs_exports lists log types to export to CloudWatch.\n Valid values: \"audit\", \"profiler\"",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "ApplyImmediately",
+        "jsonName": "applyImmediately",
+        "protoField": "apply_immediately",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "apply_immediately specifies whether modifications are applied immediately\n or during the next maintenance window.",
+        "required": false
+      },
+      {
+        "name": "AutoMinorVersionUpgrade",
+        "jsonName": "autoMinorVersionUpgrade",
+        "protoField": "auto_minor_version_upgrade",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "auto_minor_version_upgrade enables automatic minor engine version upgrades.",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_auto_minor_version_upgrade"
+      },
+      {
+        "name": "ClusterParameterGroupName",
+        "jsonName": "clusterParameterGroupName",
+        "protoField": "cluster_parameter_group_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cluster_parameter_group_name is the name of the cluster parameter group.",
+        "required": false
+      },
+      {
+        "name": "ClusterParameters",
+        "jsonName": "clusterParameters",
+        "protoField": "cluster_parameters",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsDocumentDbParameter"
+          }
+        },
+        "description": "cluster_parameters are custom parameters for the cluster parameter group.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsDocumentDbParameter",
+      "description": "AwsDocumentDbParameter represents a parameter for the cluster parameter group.",
+      "protoType": "org.openmcf.provider.aws.awsdocumentdb.v1.AwsDocumentDbParameter",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name is the parameter name.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "value is the parameter value.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ApplyMethod",
+          "jsonName": "applyMethod",
+          "protoField": "apply_method",
+          "type": {
+            "kind": "string"
+          },
+          "description": "apply_method specifies when the parameter is applied: \"immediate\" or \"pending-reboot\".",
+          "required": false,
+          "validation": {
+            "enum": [
+              "immediate",
+              "pending-reboot"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

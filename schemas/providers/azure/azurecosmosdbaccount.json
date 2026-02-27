@@ -1,0 +1,781 @@
+{
+  "name": "AzureCosmosdbAccount",
+  "kind": "AzureCosmosdbAccount",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureCosmosdbAccount is the top-level API resource for an Azure Cosmos DB\n account.\n Azure Cosmos DB is a globally distributed, multi-model database service\n supporting SQL/NoSQL and MongoDB APIs with configurable consistency,\n automatic global distribution, and elastic scalability.",
+  "protoPackage": "org.openmcf.provider.azure.azurecosmosdbaccount.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurecosmosdbaccount/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurecosmosdbaccount/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureCosmosdbAccountSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Cosmos DB account will be created.\n This is the primary write region. Additional regions are configured\n via `geo_locations`.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Cosmos DB account will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Cosmos DB account.\n Must be globally unique across Azure. Used as the account endpoint:\n `https://{name}.documents.azure.com:443/`\n Allowed characters: lowercase letters, numbers, and hyphens.\n Length: 3 to 50 characters.\n\n **ForceNew**: Changing this destroys and recreates the account.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 3,
+          "maxLength": 50
+        }
+      },
+      {
+        "name": "Kind",
+        "jsonName": "kind",
+        "protoField": "kind",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The API kind for the Cosmos DB account.\n Uses Azure's exact API values for provider authenticity.\n\n Valid values:\n - \"GlobalDocumentDB\" (default): SQL/NoSQL API -- query JSON documents\n   with SQL-like syntax. Use `sql_databases` for sub-resources.\n - \"MongoDB\": MongoDB wire-protocol compatible API. Use `mongo_databases`\n   for sub-resources.\n\n **ForceNew**: Changing this destroys and recreates the account.",
+        "required": false,
+        "default": "GlobalDocumentDB",
+        "oneofGroup": "_kind"
+      },
+      {
+        "name": "ConsistencyPolicy",
+        "jsonName": "consistencyPolicy",
+        "protoField": "consistency_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureCosmosdbConsistencyPolicy"
+        },
+        "description": "Consistency policy for the account.\n Defines the default consistency level for all reads.\n If omitted, defaults to Session consistency (read-your-writes within a\n session -- the right default for most applications).\n\n Cosmos DB consistency levels (from strongest to weakest):\n 1. Strong -- linearizable reads, highest latency\n 2. BoundedStaleness -- reads lag behind writes by at most K versions or T time\n 3. Session -- read-your-writes within a session (default, recommended)\n 4. ConsistentPrefix -- reads never see out-of-order writes\n 5. Eventual -- no ordering guarantees, highest throughput",
+        "required": false
+      },
+      {
+        "name": "GeoLocations",
+        "jsonName": "geoLocations",
+        "protoField": "geo_locations",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureCosmosdbGeoLocation"
+          }
+        },
+        "description": "Geographic locations for the Cosmos DB account.\n At least one geo_location is required. The first location with\n `failover_priority = 0` is the primary write region and should match\n the `region` field.\n\n For single-region deployments, provide one geo_location.\n For multi-region, provide multiple with unique failover priorities.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Capabilities",
+        "jsonName": "capabilities",
+        "protoField": "capabilities",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Cosmos DB capabilities to enable on the account.\n Capabilities customize account behavior and enable specific features.\n\n Common capabilities:\n - \"EnableServerless\" -- serverless mode (pay-per-request, no throughput config)\n - \"EnableAggregationPipeline\" -- MongoDB aggregation pipeline\n - \"EnableMongoRetryableWrites\" -- MongoDB retryable writes\n - \"EnableMongoRoleBasedAccessControl\" -- MongoDB RBAC\n - \"EnableNoSqlVectorSearch\" -- vector search for SQL API\n - \"EnableNoSqlFullTextSearch\" -- full-text search for SQL API\n\n Note: When `kind` is \"MongoDB\", the IaC modules automatically add\n \"EnableMongo\" to capabilities if not already present.\n\n **Some capabilities are ForceNew** (e.g., EnableServerless).",
+        "required": false
+      },
+      {
+        "name": "FreeTierEnabled",
+        "jsonName": "freeTierEnabled",
+        "protoField": "free_tier_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable the free tier for this account.\n Azure Cosmos DB offers a free tier with 1000 RU/s and 25 GB of storage\n per subscription. Only one account per subscription can use the free tier.\n\n **ForceNew**: Changing this destroys and recreates the account.\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_free_tier_enabled"
+      },
+      {
+        "name": "AutomaticFailoverEnabled",
+        "jsonName": "automaticFailoverEnabled",
+        "protoField": "automatic_failover_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable automatic failover when a region goes down.\n When enabled, Azure automatically promotes the next region in the\n failover priority list to be the write region.\n\n Recommended for any multi-region deployment.\n Required when `multiple_write_locations_enabled` is true.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_automatic_failover_enabled"
+      },
+      {
+        "name": "MultipleWriteLocationsEnabled",
+        "jsonName": "multipleWriteLocationsEnabled",
+        "protoField": "multiple_write_locations_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable multi-region writes (active-active).\n When enabled, all configured regions accept writes. Conflicts are\n resolved using the configured conflict resolution policy.\n\n Requires `automatic_failover_enabled` to be true.\n Increases cost but enables lowest-latency writes from any region.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_multiple_write_locations_enabled"
+      },
+      {
+        "name": "PublicNetworkAccessEnabled",
+        "jsonName": "publicNetworkAccessEnabled",
+        "protoField": "public_network_access_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the account is accessible over the public internet.\n When false, the account can only be accessed via AzurePrivateEndpoint.\n\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_public_network_access_enabled"
+      },
+      {
+        "name": "IsVirtualNetworkFilterEnabled",
+        "jsonName": "isVirtualNetworkFilterEnabled",
+        "protoField": "is_virtual_network_filter_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable virtual network filtering.\n When enabled, only traffic from allowed virtual networks (defined in\n `virtual_network_rules`) can reach the account.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_is_virtual_network_filter_enabled"
+      },
+      {
+        "name": "VirtualNetworkRules",
+        "jsonName": "virtualNetworkRules",
+        "protoField": "virtual_network_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureCosmosdbVirtualNetworkRule"
+          }
+        },
+        "description": "Virtual network rules for restricting network access.\n Only effective when `is_virtual_network_filter_enabled` is true.\n Each rule allows traffic from a specific subnet.",
+        "required": false
+      },
+      {
+        "name": "IpRangeFilter",
+        "jsonName": "ipRangeFilter",
+        "protoField": "ip_range_filter",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "IP-based firewall rules.\n A set of CIDR ranges or individual IPv4 addresses that are allowed to\n access the account. Applied in addition to virtual network rules.\n\n To allow access from the Azure portal, include: \"104.42.195.92\",\n \"40.76.54.131\", \"52.176.6.30\", \"52.169.50.45\", \"52.187.184.26\"\n\n To allow all Azure datacenter IPs: include \"0.0.0.0\"",
+        "required": false
+      },
+      {
+        "name": "Backup",
+        "jsonName": "backup",
+        "protoField": "backup",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureCosmosdbBackupPolicy"
+        },
+        "description": "Backup policy configuration.\n If omitted, Azure defaults to Periodic backup with geo-redundant storage.\n\n Once set to Continuous, the backup type cannot be changed back to Periodic.",
+        "required": false
+      },
+      {
+        "name": "MongoServerVersion",
+        "jsonName": "mongoServerVersion",
+        "protoField": "mongo_server_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "MongoDB server version.\n Only applicable when `kind` is \"MongoDB\". Ignored for GlobalDocumentDB.\n\n Controls the MongoDB wire protocol version that the account supports.\n Applications connecting via MongoDB drivers should use a compatible version.\n\n Valid values: \"3.6\", \"4.0\", \"4.2\", \"5.0\", \"6.0\", \"7.0\"",
+        "required": false,
+        "oneofGroup": "_mongo_server_version"
+      },
+      {
+        "name": "SqlDatabases",
+        "jsonName": "sqlDatabases",
+        "protoField": "sql_databases",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureCosmosdbSqlDatabase"
+          }
+        },
+        "description": "SQL API databases and containers.\n Only applicable when `kind` is \"GlobalDocumentDB\" (default).\n\n Each database is a logical namespace for containers. Throughput can be\n provisioned at the database level (shared across containers) or at the\n container level (dedicated per container).\n\n If omitted, only the account is created with no databases.",
+        "required": false
+      },
+      {
+        "name": "MongoDatabases",
+        "jsonName": "mongoDatabases",
+        "protoField": "mongo_databases",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureCosmosdbMongoDatabase"
+          }
+        },
+        "description": "MongoDB API databases and collections.\n Only applicable when `kind` is \"MongoDB\".\n\n Each database is a logical namespace for collections. Throughput can be\n provisioned at the database level (shared across collections) or at the\n collection level (dedicated per collection).\n\n If omitted, only the account is created with no databases.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureCosmosdbBackupPolicy",
+      "description": "AzureCosmosdbBackupPolicy defines the backup configuration for the account.\n\n Azure Cosmos DB supports two backup modes:\n - **Periodic** (default): Backups are taken at regular intervals and retained\n   for a configurable duration. Storage redundancy can be configured.\n - **Continuous**: Continuous backups with point-in-time restore capability.\n   More expensive but allows restoration to any point in time.\n\n **Important**: Once set to Continuous, the backup type cannot be changed\n back to Periodic.",
+      "protoType": "org.openmcf.provider.azure.azurecosmosdbaccount.v1.AzureCosmosdbBackupPolicy",
+      "fields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The backup type.\n Uses Azure's exact API values.\n\n Valid values:\n - \"Periodic\": Backups at regular intervals (default Azure behavior)\n - \"Continuous\": Continuous backups with point-in-time restore",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "IntervalInMinutes",
+          "jsonName": "intervalInMinutes",
+          "protoField": "interval_in_minutes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Backup interval in minutes.\n Only applicable when `type` is \"Periodic\".\n Range: 60 to 1440 (1 hour to 24 hours).\n\n Default: 240 (4 hours) when Periodic",
+          "required": false,
+          "validation": {
+            "min": 60,
+            "max": 1440
+          },
+          "oneofGroup": "_interval_in_minutes"
+        },
+        {
+          "name": "RetentionInHours",
+          "jsonName": "retentionInHours",
+          "protoField": "retention_in_hours",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Backup retention in hours.\n Only applicable when `type` is \"Periodic\".\n Range: 8 to 720 (8 hours to 30 days).\n\n Default: 8 when Periodic",
+          "required": false,
+          "validation": {
+            "min": 8,
+            "max": 720
+          },
+          "oneofGroup": "_retention_in_hours"
+        },
+        {
+          "name": "StorageRedundancy",
+          "jsonName": "storageRedundancy",
+          "protoField": "storage_redundancy",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Storage redundancy for backup data.\n Only applicable when `type` is \"Periodic\".\n\n Valid values:\n - \"Geo\": Geo-redundant (default, replicated to paired region)\n - \"Local\": Locally-redundant (stays in same region)\n - \"Zone\": Zone-redundant (across availability zones, same region)",
+          "required": false,
+          "oneofGroup": "_storage_redundancy"
+        },
+        {
+          "name": "Tier",
+          "jsonName": "tier",
+          "protoField": "tier",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Continuous backup tier.\n Only applicable when `type` is \"Continuous\".\n\n Valid values:\n - \"Continuous7Days\": 7-day point-in-time restore window\n - \"Continuous30Days\": 30-day point-in-time restore window (higher cost)",
+          "required": false,
+          "oneofGroup": "_tier"
+        }
+      ]
+    },
+    {
+      "name": "AzureCosmosdbConsistencyPolicy",
+      "description": "AzureCosmosdbConsistencyPolicy defines the default consistency policy for\n the Cosmos DB account. Consistency is a per-account setting that applies\n to all databases and containers.\n\n The five consistency levels (from strongest to weakest):\n - \"Strong\": Linearizable. Reads return the most recent committed write.\n   Only available in single-region or with single write region.\n - \"BoundedStaleness\": Reads lag behind writes by at most K versions or T\n   seconds. Requires `max_staleness_prefix` and `max_interval_in_seconds`.\n - \"Session\": Read-your-writes within a client session. The default and\n   recommended for most applications.\n - \"ConsistentPrefix\": Reads never see out-of-order writes. No staleness\n   bounds.\n - \"Eventual\": No ordering or freshness guarantees. Highest throughput and\n   lowest latency.",
+      "protoType": "org.openmcf.provider.azure.azurecosmosdbaccount.v1.AzureCosmosdbConsistencyPolicy",
+      "fields": [
+        {
+          "name": "ConsistencyLevel",
+          "jsonName": "consistencyLevel",
+          "protoField": "consistency_level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The consistency level.\n Uses Azure's exact API values for provider authenticity.\n\n Default: \"Session\"",
+          "required": false,
+          "default": "Session",
+          "oneofGroup": "_consistency_level"
+        },
+        {
+          "name": "MaxIntervalInSeconds",
+          "jsonName": "maxIntervalInSeconds",
+          "protoField": "max_interval_in_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum staleness interval in seconds.\n Only applicable when `consistency_level` is \"BoundedStaleness\".\n Defines the maximum time lag between writes and reads.\n\n Range: 5 to 86400 (24 hours).\n For multi-region accounts with BoundedStaleness, minimum is 300 seconds.\n\n Default: 5",
+          "required": false,
+          "validation": {
+            "min": 5,
+            "max": 86400
+          },
+          "default": "5",
+          "oneofGroup": "_max_interval_in_seconds"
+        },
+        {
+          "name": "MaxStalenessPrefix",
+          "jsonName": "maxStalenessPrefix",
+          "protoField": "max_staleness_prefix",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum staleness prefix (number of stale requests tolerated).\n Only applicable when `consistency_level` is \"BoundedStaleness\".\n Defines the maximum number of versions (operations) a read can lag behind.\n\n Range: 10 to 2147483647.\n For multi-region accounts with BoundedStaleness, minimum is 100000.\n\n Default: 100",
+          "required": false,
+          "validation": {
+            "min": 10
+          },
+          "default": "100",
+          "oneofGroup": "_max_staleness_prefix"
+        }
+      ]
+    },
+    {
+      "name": "AzureCosmosdbGeoLocation",
+      "description": "AzureCosmosdbGeoLocation defines a geographic region for the Cosmos DB account.\n\n At least one geo_location with `failover_priority = 0` is required (the\n primary write region). Additional locations enable reads from closer regions\n and provide failover capability.\n\n Failover priorities must be unique and contiguous starting from 0.\n The maximum failover_priority value must equal the total number of regions\n minus one.",
+      "protoType": "org.openmcf.provider.azure.azurecosmosdbaccount.v1.AzureCosmosdbGeoLocation",
+      "fields": [
+        {
+          "name": "Location",
+          "jsonName": "location",
+          "protoField": "location",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure region name for this geo-location.\n Examples: \"eastus\", \"westeurope\", \"southeastasia\".\n\n The location with `failover_priority = 0` should match the account's\n `region` field.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "FailoverPriority",
+          "jsonName": "failoverPriority",
+          "protoField": "failover_priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "The failover priority for this region.\n Must be unique across all geo_locations.\n `0` = primary write region. Higher numbers = lower priority.\n\n When `automatic_failover_enabled` is true, Azure promotes the next\n region in priority order if the current write region fails.",
+          "required": false
+        },
+        {
+          "name": "ZoneRedundant",
+          "jsonName": "zoneRedundant",
+          "protoField": "zone_redundant",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable availability zone redundancy for this region.\n When true, data is replicated across availability zones within the region\n for higher availability. Not all regions support zone redundancy.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_zone_redundant"
+        }
+      ]
+    },
+    {
+      "name": "AzureCosmosdbMongoCollection",
+      "description": "AzureCosmosdbMongoCollection defines a MongoDB API collection within a\n database. Collections are the MongoDB equivalent of SQL containers.\n\n The shard key is the MongoDB equivalent of a partition key. It determines\n how data is distributed across physical partitions. The same design\n principles apply: high cardinality, even distribution, query alignment.",
+      "protoType": "org.openmcf.provider.azure.azurecosmosdbaccount.v1.AzureCosmosdbMongoCollection",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The collection name.\n Must be unique within the database.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        {
+          "name": "ShardKey",
+          "jsonName": "shardKey",
+          "protoField": "shard_key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The shard key for the collection.\n Determines how documents are distributed across physical partitions.\n This is the MongoDB equivalent of a SQL API partition key.\n\n Examples: \"_id\", \"tenantId\", \"userId\", \"region\"\n\n Choose a shard key with high cardinality and even distribution.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Throughput",
+          "jsonName": "throughput",
+          "protoField": "throughput",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Provisioned throughput in RU/s for this collection (dedicated).\n Minimum: 400. Increments of 100.",
+          "required": false,
+          "validation": {
+            "min": 400
+          },
+          "oneofGroup": "_throughput"
+        },
+        {
+          "name": "AutoscaleMaxThroughput",
+          "jsonName": "autoscaleMaxThroughput",
+          "protoField": "autoscale_max_throughput",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum throughput for autoscale in RU/s for this collection.\n Minimum: 1000. Increments of 1000.",
+          "required": false,
+          "validation": {
+            "min": 1000
+          },
+          "oneofGroup": "_autoscale_max_throughput"
+        },
+        {
+          "name": "DefaultTtlSeconds",
+          "jsonName": "defaultTtlSeconds",
+          "protoField": "default_ttl_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Default time-to-live in seconds.\n When set, documents in this collection automatically expire.\n -1 means TTL is enabled but no default expiry (per-document TTL only).",
+          "required": false,
+          "oneofGroup": "_default_ttl_seconds"
+        },
+        {
+          "name": "Indexes",
+          "jsonName": "indexes",
+          "protoField": "indexes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AzureCosmosdbMongoIndex"
+            }
+          },
+          "description": "Indexes to create on the collection.\n MongoDB automatically creates an index on the `_id` field.\n Additional indexes improve query performance for frequently queried fields.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureCosmosdbMongoDatabase",
+      "description": "AzureCosmosdbMongoDatabase defines a MongoDB API database within the Cosmos\n DB account. A Mongo database is a logical namespace for collections and a\n boundary for shared throughput.\n\n `throughput` and `autoscale_max_throughput` are mutually exclusive.",
+      "protoType": "org.openmcf.provider.azure.azurecosmosdbaccount.v1.AzureCosmosdbMongoDatabase",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The database name.\n Must be unique within the account.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        {
+          "name": "Throughput",
+          "jsonName": "throughput",
+          "protoField": "throughput",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Provisioned throughput in RU/s.\n Shared across all collections in this database.\n Minimum: 400. Increments of 100.",
+          "required": false,
+          "validation": {
+            "min": 400
+          },
+          "oneofGroup": "_throughput"
+        },
+        {
+          "name": "AutoscaleMaxThroughput",
+          "jsonName": "autoscaleMaxThroughput",
+          "protoField": "autoscale_max_throughput",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum throughput for autoscale in RU/s.\n Minimum: 1000. Increments of 1000.",
+          "required": false,
+          "validation": {
+            "min": 1000
+          },
+          "oneofGroup": "_autoscale_max_throughput"
+        },
+        {
+          "name": "Collections",
+          "jsonName": "collections",
+          "protoField": "collections",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AzureCosmosdbMongoCollection"
+            }
+          },
+          "description": "MongoDB collections within this database.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureCosmosdbMongoIndex",
+      "description": "AzureCosmosdbMongoIndex defines an index on a MongoDB collection.\n Indexes improve query performance by allowing efficient lookups on\n specific fields.",
+      "protoType": "org.openmcf.provider.azure.azurecosmosdbaccount.v1.AzureCosmosdbMongoIndex",
+      "fields": [
+        {
+          "name": "Keys",
+          "jsonName": "keys",
+          "protoField": "keys",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "The field names to include in the index.\n For single-field indexes: [\"fieldName\"]\n For compound indexes: [\"field1\", \"field2\"]",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "Unique",
+          "jsonName": "unique",
+          "protoField": "unique",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether the index enforces uniqueness.\n When true, the index rejects duplicate values for the indexed fields.\n\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_unique"
+        }
+      ]
+    },
+    {
+      "name": "AzureCosmosdbSqlContainer",
+      "description": "AzureCosmosdbSqlContainer defines a SQL API container (table) within a\n database. Containers are the fundamental unit of scalability in Cosmos DB.\n\n The partition key is the single most critical design decision for Cosmos DB\n performance and cost. Choose a partition key that:\n - Has high cardinality (many distinct values)\n - Distributes requests evenly across partitions\n - Is frequently used in query WHERE clauses\n\n Common partition key choices: tenantId, userId, deviceId, region.\n Avoid: timestamp (hot partition), status (low cardinality).",
+      "protoType": "org.openmcf.provider.azure.azurecosmosdbaccount.v1.AzureCosmosdbSqlContainer",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The container name.\n Must be unique within the database.\n Length: 1 to 255 characters.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        {
+          "name": "PartitionKeyPaths",
+          "jsonName": "partitionKeyPaths",
+          "protoField": "partition_key_paths",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Partition key paths.\n At least one path is required. Each path starts with \"/\" and references\n a property in the JSON document.\n\n Single partition key (most common): [\"/tenantId\"]\n Hierarchical partition key (MultiHash): [\"/tenantId\", \"/userId\"]\n\n When using multiple paths, set `partition_key_kind` to \"MultiHash\".",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "PartitionKeyKind",
+          "jsonName": "partitionKeyKind",
+          "protoField": "partition_key_kind",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Partition key kind.\n Determines how the partition key is hashed.\n\n Valid values:\n - \"Hash\" (default): Single partition key path\n - \"MultiHash\": Hierarchical (multi-level) partition key\n\n Use \"MultiHash\" when `partition_key_paths` has multiple paths.",
+          "required": false,
+          "default": "Hash",
+          "oneofGroup": "_partition_key_kind"
+        },
+        {
+          "name": "Throughput",
+          "jsonName": "throughput",
+          "protoField": "throughput",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Provisioned throughput in RU/s for this container (dedicated).\n When set, this container uses its own dedicated throughput instead\n of sharing the database-level throughput.\n Minimum: 400. Increments of 100.\n\n Mutually exclusive with `autoscale_max_throughput`.\n Ignored when serverless mode is enabled.",
+          "required": false,
+          "validation": {
+            "min": 400
+          },
+          "oneofGroup": "_throughput"
+        },
+        {
+          "name": "AutoscaleMaxThroughput",
+          "jsonName": "autoscaleMaxThroughput",
+          "protoField": "autoscale_max_throughput",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum throughput for autoscale in RU/s for this container.\n Minimum: 1000. Increments of 1000.\n\n Mutually exclusive with `throughput`.\n Ignored when serverless mode is enabled.",
+          "required": false,
+          "validation": {
+            "min": 1000
+          },
+          "oneofGroup": "_autoscale_max_throughput"
+        },
+        {
+          "name": "DefaultTtl",
+          "jsonName": "defaultTtl",
+          "protoField": "default_ttl",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Default time-to-live in seconds.\n When set, documents in this container automatically expire after this\n duration unless overridden by a per-document TTL.\n\n -1 means TTL is enabled but no default expiry (per-document TTL only).\n 0 or omitted means TTL is disabled.\n Positive value: default expiry in seconds.",
+          "required": false,
+          "oneofGroup": "_default_ttl"
+        }
+      ]
+    },
+    {
+      "name": "AzureCosmosdbSqlDatabase",
+      "description": "AzureCosmosdbSqlDatabase defines a SQL API database within the Cosmos DB\n account. A SQL database is a logical namespace for containers and a boundary\n for shared throughput.\n\n Throughput can be provisioned at the database level (shared across all\n containers in the database) or at the container level (dedicated). When\n serverless mode is enabled via capabilities, throughput fields are ignored.\n\n `throughput` and `autoscale_max_throughput` are mutually exclusive.",
+      "protoType": "org.openmcf.provider.azure.azurecosmosdbaccount.v1.AzureCosmosdbSqlDatabase",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The database name.\n Must be unique within the account.\n Length: 1 to 255 characters.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        {
+          "name": "Throughput",
+          "jsonName": "throughput",
+          "protoField": "throughput",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Provisioned throughput in RU/s (Request Units per second).\n Shared across all containers in this database unless a container\n has its own dedicated throughput.\n Minimum: 400. Increments of 100.\n\n Mutually exclusive with `autoscale_max_throughput`.\n Ignored when serverless mode is enabled.",
+          "required": false,
+          "validation": {
+            "min": 400
+          },
+          "oneofGroup": "_throughput"
+        },
+        {
+          "name": "AutoscaleMaxThroughput",
+          "jsonName": "autoscaleMaxThroughput",
+          "protoField": "autoscale_max_throughput",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum throughput for autoscale in RU/s.\n Azure automatically scales between 10% of this value and this value.\n Minimum: 1000. Increments of 1000.\n\n Mutually exclusive with `throughput`.\n Ignored when serverless mode is enabled.",
+          "required": false,
+          "validation": {
+            "min": 1000
+          },
+          "oneofGroup": "_autoscale_max_throughput"
+        },
+        {
+          "name": "Containers",
+          "jsonName": "containers",
+          "protoField": "containers",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AzureCosmosdbSqlContainer"
+            }
+          },
+          "description": "SQL containers within this database.\n Containers are where data is stored. Each container requires a partition\n key, which determines how data is distributed across physical partitions.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AzureCosmosdbVirtualNetworkRule",
+      "description": "AzureCosmosdbVirtualNetworkRule defines a virtual network rule for\n restricting access to the Cosmos DB account.",
+      "protoType": "org.openmcf.provider.azure.azurecosmosdbaccount.v1.AzureCosmosdbVirtualNetworkRule",
+      "fields": [
+        {
+          "name": "SubnetId",
+          "jsonName": "subnetId",
+          "protoField": "subnet_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The subnet ID to allow access from.\n The subnet must have the \"Microsoft.AzureCosmosDB\" service endpoint enabled.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AzureSubnet",
+          "referenceFieldPath": "status.outputs.subnet_id"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "name": "OciBastion",
+  "kind": "OciBastion",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciBastion is the top-level resource representing an OCI Bastion\n that provides secure, time-limited access to private subnet resources.",
+  "protoPackage": "org.openmcf.provider.oci.ocibastion.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocibastion/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocibastion/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciBastionSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the bastion will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "TargetSubnetId",
+        "jsonName": "targetSubnetId",
+        "protoField": "target_subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the subnet that the bastion connects to. The bastion\n creates a private endpoint in this subnet. Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciSubnet",
+        "referenceFieldPath": "status.outputs.subnetId"
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Display name for the bastion. When omitted, the metadata name is used.\n Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "ClientCidrBlockAllowList",
+        "jsonName": "clientCidrBlockAllowList",
+        "protoField": "client_cidr_block_allow_list",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "CIDR ranges allowed to connect to sessions hosted by this bastion.\n Example: [\"10.0.0.0/16\", \"192.168.1.0/24\"]. Updatable after creation.",
+        "required": false
+      },
+      {
+        "name": "MaxSessionTtlInSeconds",
+        "jsonName": "maxSessionTtlInSeconds",
+        "protoField": "max_session_ttl_in_seconds",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum TTL in seconds for any session on this bastion.\n When omitted, the OCI default applies (10800 = 3 hours).\n Updatable after creation.",
+        "required": false,
+        "oneofGroup": "_max_session_ttl_in_seconds"
+      },
+      {
+        "name": "IsDnsProxyEnabled",
+        "jsonName": "isDnsProxyEnabled",
+        "protoField": "is_dns_proxy_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable FQDN and SOCKS5 proxy support on the bastion.\n When true, sessions can use DNS names to reach targets.\n Immutable after creation. When omitted, defaults to disabled.",
+        "required": false,
+        "oneofGroup": "_is_dns_proxy_enabled"
+      }
+    ]
+  }
+}

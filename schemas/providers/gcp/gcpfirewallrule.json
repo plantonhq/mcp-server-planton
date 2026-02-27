@@ -1,0 +1,289 @@
+{
+  "name": "GcpFirewallRule",
+  "kind": "GcpFirewallRule",
+  "cloudProvider": "gcp",
+  "apiVersion": "gcp.openmcf.org/v1",
+  "description": "gcp-firewall-rule",
+  "protoPackage": "org.openmcf.provider.gcp.gcpfirewallrule.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/gcp/gcpfirewallrule/v1/api.proto",
+    "spec": "org/openmcf/provider/gcp/gcpfirewallrule/v1/spec.proto"
+  },
+  "spec": {
+    "name": "GcpFirewallRuleSpec",
+    "fields": [
+      {
+        "name": "ProjectId",
+        "jsonName": "projectId",
+        "protoField": "project_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The GCP project ID in which to create this firewall rule.\n Example: \"my-prod-project-123\"",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpProject",
+        "referenceFieldPath": "status.outputs.project_id"
+      },
+      {
+        "name": "Network",
+        "jsonName": "network",
+        "protoField": "network",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC network to which this firewall rule applies.\n Accepts a network name (e.g., \"default\") or a full self-link URL.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "GcpVpc",
+        "referenceFieldPath": "status.outputs.network_self_link"
+      },
+      {
+        "name": "RuleName",
+        "jsonName": "ruleName",
+        "protoField": "rule_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the firewall rule in GCP.\n Must be 1-63 characters, lowercase letters, numbers, or hyphens.\n Must start with a lowercase letter and end with a letter or number.\n Example: \"allow-http-ingress\", \"deny-all-egress\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "Direction",
+        "jsonName": "direction",
+        "protoField": "direction",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Traffic direction this rule applies to.\n \"INGRESS\" matches inbound traffic to instances; \"EGRESS\" matches outbound traffic.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Action",
+        "jsonName": "action",
+        "protoField": "action",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Action to take when the rule matches traffic.\n \"ALLOW\" permits the matched traffic; \"DENY\" blocks it.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Rules",
+        "jsonName": "rules",
+        "protoField": "rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "GcpFirewallProtocolPort"
+          }
+        },
+        "description": "Protocol and port combinations this rule matches.\n At least one rule must be specified.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Priority",
+        "jsonName": "priority",
+        "protoField": "priority",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Rule priority. Range: 0-65535. Lower values indicate higher priority.\n At the same priority, DENY rules take precedence over ALLOW rules.\n Default: 1000",
+        "required": false,
+        "validation": {
+          "max": 65535
+        },
+        "default": "1000",
+        "oneofGroup": "_priority"
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description for the firewall rule.\n Example: \"Allow HTTP/HTTPS traffic from the internet\"",
+        "required": false
+      },
+      {
+        "name": "SourceRanges",
+        "jsonName": "sourceRanges",
+        "protoField": "source_ranges",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Source IPv4 or IPv6 CIDR ranges for INGRESS rules.\n Traffic is only matched when the source IP falls within one of these ranges.\n For INGRESS rules, at least one of source_ranges, source_tags, or source_service_accounts is required.\n Example: [\"0.0.0.0/0\"] to match all IPv4 traffic, [\"10.0.0.0/8\"] for internal.",
+        "required": false
+      },
+      {
+        "name": "DestinationRanges",
+        "jsonName": "destinationRanges",
+        "protoField": "destination_ranges",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Destination IPv4 or IPv6 CIDR ranges for EGRESS rules.\n Traffic is only matched when the destination IP falls within one of these ranges.\n If omitted on EGRESS rules, GCP defaults to [\"0.0.0.0/0\"] (all destinations).",
+        "required": false
+      },
+      {
+        "name": "SourceTags",
+        "jsonName": "sourceTags",
+        "protoField": "source_tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Source instance network tags for INGRESS rules.\n Traffic from instances with any of these tags is matched.\n Cannot be combined with source_service_accounts or target_service_accounts.",
+        "required": false
+      },
+      {
+        "name": "TargetTags",
+        "jsonName": "targetTags",
+        "protoField": "target_tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Target instance network tags.\n The rule applies only to instances that have one of these tags.\n If omitted, the rule applies to all instances in the network.\n Cannot be combined with source_service_accounts or target_service_accounts.",
+        "required": false
+      },
+      {
+        "name": "SourceServiceAccounts",
+        "jsonName": "sourceServiceAccounts",
+        "protoField": "source_service_accounts",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Source service accounts for INGRESS rules. Max 10.\n Traffic from instances running as any of these service accounts is matched.\n Cannot be combined with source_tags or target_tags.",
+        "required": false,
+        "validation": {
+          "maxItems": 10
+        }
+      },
+      {
+        "name": "TargetServiceAccounts",
+        "jsonName": "targetServiceAccounts",
+        "protoField": "target_service_accounts",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Target service accounts. Max 10.\n The rule applies only to instances running as one of these service accounts.\n If omitted, the rule applies to all instances in the network.\n Cannot be combined with source_tags or target_tags.",
+        "required": false,
+        "validation": {
+          "maxItems": 10
+        }
+      },
+      {
+        "name": "Disabled",
+        "jsonName": "disabled",
+        "protoField": "disabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether the firewall rule is disabled.\n A disabled rule exists in the configuration but is not enforced.\n Useful for temporarily suspending a rule without deleting it.",
+        "required": false
+      },
+      {
+        "name": "LogConfig",
+        "jsonName": "logConfig",
+        "protoField": "log_config",
+        "type": {
+          "kind": "message",
+          "messageType": "GcpFirewallLogConfig"
+        },
+        "description": "Logging configuration. When present, firewall logging is enabled.\n Omit this field to disable logging (the default).",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "GcpFirewallLogConfig",
+      "description": "Logging configuration for the firewall rule.\n When this message is present on the spec, logging is enabled for matched traffic.",
+      "protoType": "org.openmcf.provider.gcp.gcpfirewallrule.v1.GcpFirewallLogConfig",
+      "fields": [
+        {
+          "name": "Metadata",
+          "jsonName": "metadata",
+          "protoField": "metadata",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Metadata inclusion mode for firewall logs.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "GcpFirewallProtocolPort",
+      "description": "A protocol and optional port range for firewall rule traffic matching.\n Each entry defines an IP protocol and, for TCP/UDP, a set of ports or port ranges.",
+      "protoType": "org.openmcf.provider.gcp.gcpfirewallrule.v1.GcpFirewallProtocolPort",
+      "fields": [
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP protocol to match. Accepted values: \"tcp\", \"udp\", \"icmp\", \"esp\", \"ah\", \"sctp\", \"ipip\", \"all\",\n or an IANA protocol number (e.g., \"6\" for TCP).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Ports",
+          "jsonName": "ports",
+          "protoField": "ports",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Ports or port ranges to match. Only applicable when protocol is \"tcp\" or \"udp\".\n Each entry is a single port (e.g., \"80\") or a range (e.g., \"8000-9000\").\n Omit for protocols that do not use ports (icmp, esp, ah, etc.).",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+{
+  "name": "CivoKubernetesCluster",
+  "kind": "CivoKubernetesCluster",
+  "cloudProvider": "civo",
+  "apiVersion": "civo.openmcf.org/v1",
+  "description": "civo-kubernetes-cluster",
+  "protoPackage": "org.openmcf.provider.civo.civokubernetescluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/civo/civokubernetescluster/v1/api.proto",
+    "spec": "org/openmcf/provider/civo/civokubernetescluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "CivoKubernetesClusterSpec",
+    "fields": [
+      {
+        "name": "ClusterName",
+        "jsonName": "clusterName",
+        "protoField": "cluster_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Kubernetes cluster.\n Constraints: Must be unique per account. No spaces allowed (alphanumeric and hyphens recommended). If left blank, a random name will be assigned.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.civo.CivoRegion",
+          "enumValues": [
+            "lon1",
+            "lon2",
+            "fra1",
+            "nyc1",
+            "phx1",
+            "mum1"
+          ]
+        },
+        "description": "The Civo region where the cluster will be created.\n Determines where the cluster's control plane and nodes are provisioned.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "KubernetesVersion",
+        "jsonName": "kubernetesVersion",
+        "protoField": "kubernetes_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Kubernetes version to use for the cluster (semantic versioning).\n Must be a supported version on Civo (e.g., \"1.26.3\").",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Network",
+        "jsonName": "network",
+        "protoField": "network",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to the Civo network where the cluster will reside.\n This must be an existing network in the same region. The network's ID is used for the cluster's networking.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "CivoVpc",
+        "referenceFieldPath": "status.outputs.network_id"
+      },
+      {
+        "name": "HighlyAvailable",
+        "jsonName": "highlyAvailable",
+        "protoField": "highly_available",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable a highly available control plane for the cluster.\n If true (when supported), the cluster is created with multiple master nodes for increased availability.\n Default: false.",
+        "required": false,
+        "recommendedDefault": "false"
+      },
+      {
+        "name": "AutoUpgrade",
+        "jsonName": "autoUpgrade",
+        "protoField": "auto_upgrade",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable automatic Kubernetes version patch upgrades for the cluster.\n If true, the cluster will automatically upgrade to new patch releases of Kubernetes when available.",
+        "required": false
+      },
+      {
+        "name": "DisableSurgeUpgrade",
+        "jsonName": "disableSurgeUpgrade",
+        "protoField": "disable_surge_upgrade",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to disable surge upgrades for the cluster.\n If false (default), cluster upgrades may temporarily provision extra resources to minimize downtime during updates.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "A list of tags to apply to the cluster.\n Tags help organize and identify the cluster within Civo.",
+        "required": false
+      },
+      {
+        "name": "DefaultNodePool",
+        "jsonName": "defaultNodePool",
+        "protoField": "default_node_pool",
+        "type": {
+          "kind": "message",
+          "messageType": "CivoKubernetesClusterDefaultNodePool"
+        },
+        "description": "Configuration for the cluster's default node pool.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "CivoKubernetesClusterDefaultNodePool",
+      "description": "Civo Kubernetes Cluster Default Node Pool",
+      "protoType": "org.openmcf.provider.civo.civokubernetescluster.v1.CivoKubernetesClusterDefaultNodePool",
+      "fields": [
+        {
+          "name": "Size",
+          "jsonName": "size",
+          "protoField": "size",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The instance size (node flavor) for each node in the default pool (e.g., \"g4s.kube.medium\").\n This defines the CPU and memory for the nodes.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "NodeCount",
+          "jsonName": "nodeCount",
+          "protoField": "node_count",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "The number of nodes to provision in the default node pool.\n Must be at least 1.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    }
+  ]
+}

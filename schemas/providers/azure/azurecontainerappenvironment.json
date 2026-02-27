@@ -1,0 +1,182 @@
+{
+  "name": "AzureContainerAppEnvironment",
+  "kind": "AzureContainerAppEnvironment",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureContainerAppEnvironment is the top-level API resource for an Azure\n Container Apps Managed Environment. It defines the hosting platform for\n Azure Container Apps, providing the execution boundary, networking,\n logging, and compute configuration.",
+  "protoPackage": "org.openmcf.provider.azure.azurecontainerappenvironment.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurecontainerappenvironment/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurecontainerappenvironment/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureContainerAppEnvironmentSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Container App Environment will be created.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".\n\n **ForceNew**: Changing this destroys and recreates the environment.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Container App Environment will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.\n\n **ForceNew**: Changing this destroys and recreates the environment.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Container App Environment.\n Must be lowercase alphanumeric or hyphens, start with a letter, end with\n an alphanumeric character, and be between 2 and 60 characters.\n\n This name appears in the Azure portal, CLI, and is part of the default\n domain for apps in this environment ({app-name}.{env-default-domain}).\n\n **ForceNew**: Changing this destroys and recreates the environment.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 60
+        }
+      },
+      {
+        "name": "InfrastructureSubnetId",
+        "jsonName": "infrastructureSubnetId",
+        "protoField": "infrastructure_subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The existing Subnet to use for the Container Apps Control Plane.\n When provided, the environment is VNet-injected, enabling private\n connectivity to other VNet resources (databases, storage, etc.).\n\n **Important**: The subnet must have a /21 or larger address space\n (minimum 2048 IPs). Container Apps infrastructure reserves a significant\n portion of the address space for platform services.\n\n When set, enables `internal_load_balancer_enabled` and\n `zone_redundancy_enabled` options.\n\n **ForceNew**: Changing this destroys and recreates the environment.",
+        "required": false,
+        "referenceKind": "AzureSubnet",
+        "referenceFieldPath": "status.outputs.subnet_id"
+      },
+      {
+        "name": "LogAnalyticsWorkspaceId",
+        "jsonName": "logAnalyticsWorkspaceId",
+        "protoField": "log_analytics_workspace_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Log Analytics Workspace to link for centralized log collection.\n When provided, the IaC modules automatically configure the logging\n destination to \"log-analytics\". When omitted, logs are streaming-only.\n\n Log Analytics enables querying container app logs via KQL, setting up\n alerts, and integrating with Azure Monitor dashboards.",
+        "required": false,
+        "referenceKind": "AzureLogAnalyticsWorkspace",
+        "referenceFieldPath": "status.outputs.workspace_id"
+      },
+      {
+        "name": "InternalLoadBalancerEnabled",
+        "jsonName": "internalLoadBalancerEnabled",
+        "protoField": "internal_load_balancer_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable Internal Load Balancing mode. When true, apps in this environment\n are only accessible from within the VNet (no public internet access).\n\n Requires `infrastructure_subnet_id` to be set.\n\n Use this for backend microservices, internal APIs, and workloads that\n should not be exposed to the public internet.\n\n Default: false (external mode -- apps are publicly accessible)\n\n **ForceNew**: Changing this destroys and recreates the environment.",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_internal_load_balancer_enabled"
+      },
+      {
+        "name": "ZoneRedundancyEnabled",
+        "jsonName": "zoneRedundancyEnabled",
+        "protoField": "zone_redundancy_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable zone redundancy. Distributes the environment's infrastructure\n across multiple availability zones for higher resilience.\n\n Requires `infrastructure_subnet_id` to be set.\n\n When enabled, Container Apps infrastructure is spread across all\n available zones in the region (typically 3). Recommended for\n production workloads requiring high availability.\n\n Default: false\n\n **ForceNew**: Changing this destroys and recreates the environment.",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_zone_redundancy_enabled"
+      },
+      {
+        "name": "WorkloadProfiles",
+        "jsonName": "workloadProfiles",
+        "protoField": "workload_profiles",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AzureContainerAppWorkloadProfile"
+          }
+        },
+        "description": "Workload profiles for dedicated compute resources.\n\n By default, all environments include the \"Consumption\" profile (serverless,\n pay-per-use, scales to zero). This field is for adding **dedicated compute\n profiles** alongside Consumption. Azure automatically includes the\n Consumption profile -- do not add it here.\n\n Use dedicated profiles when workloads need:\n - Guaranteed CPU/memory resources\n - GPU access (NC* profiles)\n - Predictable performance (no cold starts)\n - Compliance requirements for dedicated infrastructure\n\n **Note**: Adding or removing workload profiles forces environment\n replacement (ForceNew).",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureContainerAppWorkloadProfile",
+      "description": "AzureContainerAppWorkloadProfile defines a dedicated compute profile\n within a Container App Environment.\n\n Each profile represents a pool of dedicated VMs that container apps can\n target. Apps select a workload profile by name in their configuration.",
+      "protoType": "org.openmcf.provider.azure.azurecontainerappenvironment.v1.AzureContainerAppWorkloadProfile",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The name of the workload profile.\n This name is referenced by Container Apps when selecting which\n profile to run on (e.g., \"gpu-pool\", \"high-memory\").\n\n Must be unique within the environment.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "WorkloadProfileType",
+          "jsonName": "workloadProfileType",
+          "protoField": "workload_profile_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The workload profile type (SKU) that determines the VM size.\n\n General purpose: \"D4\", \"D8\", \"D16\", \"D32\"\n Memory optimized: \"E4\", \"E8\", \"E16\", \"E32\"\n GPU (NVIDIA A100): \"NC24-A100\", \"NC48-A100\", \"NC96-A100\"\n\n Do not use \"Consumption\" here -- it is always available by default.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "MinimumCount",
+          "jsonName": "minimumCount",
+          "protoField": "minimum_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of instances for this profile.\n Set to 0 to allow scale-to-zero (instances are deallocated when idle).\n Set to 1+ to keep pre-warmed instances for reduced cold-start latency.",
+          "required": false,
+          "oneofGroup": "_minimum_count"
+        },
+        {
+          "name": "MaximumCount",
+          "jsonName": "maximumCount",
+          "protoField": "maximum_count",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of instances this profile can scale to.\n Controls the upper bound on cost and capacity.",
+          "required": false,
+          "oneofGroup": "_maximum_count"
+        }
+      ]
+    }
+  ]
+}

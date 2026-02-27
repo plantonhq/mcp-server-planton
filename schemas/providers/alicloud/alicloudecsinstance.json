@@ -1,0 +1,494 @@
+{
+  "name": "AliCloudEcsInstance",
+  "kind": "AliCloudEcsInstance",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-ecs-instance",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudecsinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudecsinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudecsinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudEcsInstanceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the ECS instance will be created.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VswitchId",
+        "jsonName": "vswitchId",
+        "protoField": "vswitch_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VSwitch ID that determines the VPC, availability zone, and subnet CIDR\n for the instance's primary network interface.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVswitch",
+        "referenceFieldPath": "status.outputs.vswitch_id"
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Security group IDs to associate with the instance. At least one is\n required. An instance can belong to up to 5 security groups.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        },
+        "referenceKind": "AliCloudSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "InstanceType",
+        "jsonName": "instanceType",
+        "protoField": "instance_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ECS instance type that determines CPU and memory allocation.\n Must start with \"ecs.\" prefix.\n Examples: \"ecs.g7.large\" (2 vCPU, 8 GiB), \"ecs.c7.xlarge\" (4 vCPU, 8 GiB).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ImageId",
+        "jsonName": "imageId",
+        "protoField": "image_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Operating system image ID. Determines the OS, architecture, and\n pre-installed software on the instance.\n Example: \"ubuntu_22_04_x64_20G_alibase_20230515.vhd\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "InstanceName",
+        "jsonName": "instanceName",
+        "protoField": "instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance display name. 2-128 characters.\n If omitted, defaults to the metadata.name.",
+        "required": false
+      },
+      {
+        "name": "HostName",
+        "jsonName": "hostName",
+        "protoField": "host_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OS-level hostname. If omitted, Alibaba Cloud generates one.",
+        "required": false
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance description. 2-256 characters.",
+        "required": false
+      },
+      {
+        "name": "SystemDisk",
+        "jsonName": "systemDisk",
+        "protoField": "system_disk",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudEcsSystemDisk"
+        },
+        "description": "System disk configuration. Every ECS instance has exactly one system\n disk that holds the OS. If omitted, defaults are applied (cloud_essd, 40 GB).",
+        "required": false
+      },
+      {
+        "name": "DataDisks",
+        "jsonName": "dataDisks",
+        "protoField": "data_disks",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudEcsDataDisk"
+          }
+        },
+        "description": "Additional data disks to create and attach to the instance. Up to 16\n data disks are supported. Disks are created inline with the instance\n and their lifecycle is tied to it by default.",
+        "required": false,
+        "validation": {
+          "maxItems": 16
+        }
+      },
+      {
+        "name": "KeyName",
+        "jsonName": "keyName",
+        "protoField": "key_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SSH key pair name for passwordless authentication. Mutually exclusive\n authentication option with password.",
+        "required": false
+      },
+      {
+        "name": "Password",
+        "jsonName": "password",
+        "protoField": "password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance login password. 8-30 characters, must contain at least three\n of: uppercase, lowercase, digits, special characters.\n Mutually exclusive authentication option with key_name.",
+        "required": false
+      },
+      {
+        "name": "InternetMaxBandwidthOut",
+        "jsonName": "internetMaxBandwidthOut",
+        "protoField": "internet_max_bandwidth_out",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum outbound internet bandwidth in Mbps. A value \u003e 0 causes Alibaba\n Cloud to allocate a public IP address to the instance.\n Default: 0 (no public IP).",
+        "required": false,
+        "validation": {
+          "max": 100
+        },
+        "default": "0",
+        "oneofGroup": "_internet_max_bandwidth_out"
+      },
+      {
+        "name": "InternetChargeType",
+        "jsonName": "internetChargeType",
+        "protoField": "internet_charge_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Billing method for internet traffic. Only meaningful when\n internet_max_bandwidth_out \u003e 0.",
+        "required": false,
+        "oneofGroup": "_internet_charge_type"
+      },
+      {
+        "name": "InstanceChargeType",
+        "jsonName": "instanceChargeType",
+        "protoField": "instance_charge_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Billing method for the instance itself.\n Default: \"PostPaid\" (pay-as-you-go).",
+        "required": false,
+        "default": "PostPaid",
+        "oneofGroup": "_instance_charge_type"
+      },
+      {
+        "name": "Period",
+        "jsonName": "period",
+        "protoField": "period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Subscription period. Only applicable when instance_charge_type is \"PrePaid\".\n Valid values: 1-9, 12, 24, 36, 48, 60.",
+        "required": false,
+        "oneofGroup": "_period"
+      },
+      {
+        "name": "PeriodUnit",
+        "jsonName": "periodUnit",
+        "protoField": "period_unit",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Subscription period unit. Only applicable when instance_charge_type is \"PrePaid\".",
+        "required": false,
+        "oneofGroup": "_period_unit"
+      },
+      {
+        "name": "SpotStrategy",
+        "jsonName": "spotStrategy",
+        "protoField": "spot_strategy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Spot instance bidding strategy. Spot instances can reduce costs up to 90%\n but may be reclaimed by Alibaba Cloud when capacity is needed.",
+        "required": false,
+        "oneofGroup": "_spot_strategy"
+      },
+      {
+        "name": "SpotPriceLimit",
+        "jsonName": "spotPriceLimit",
+        "protoField": "spot_price_limit",
+        "type": {
+          "kind": "double"
+        },
+        "description": "Maximum hourly price for a spot instance. Only applicable when\n spot_strategy is \"SpotWithPriceLimit\".",
+        "required": false,
+        "oneofGroup": "_spot_price_limit"
+      },
+      {
+        "name": "UserData",
+        "jsonName": "userData",
+        "protoField": "user_data",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cloud-init user data script. Typically base64-encoded. Executed once\n at first boot for automated instance provisioning.",
+        "required": false
+      },
+      {
+        "name": "RoleName",
+        "jsonName": "roleName",
+        "protoField": "role_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "RAM role name to attach as the instance profile. Enables the instance\n to call Alibaba Cloud APIs without embedded credentials.",
+        "required": false
+      },
+      {
+        "name": "DeletionProtection",
+        "jsonName": "deletionProtection",
+        "protoField": "deletion_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Prevent accidental instance deletion via console or API.",
+        "required": false,
+        "oneofGroup": "_deletion_protection"
+      },
+      {
+        "name": "SecurityEnhancementStrategy",
+        "jsonName": "securityEnhancementStrategy",
+        "protoField": "security_enhancement_strategy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Cloud security center agent mode. \"Active\" enables the China-region\n security agent; \"Deactive\" disables it.",
+        "required": false,
+        "oneofGroup": "_security_enhancement_strategy"
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the instance is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the ECS instance and its disks.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudEcsDataDisk",
+      "description": "AliCloudEcsDataDisk configures an additional data disk to be created\n inline with the ECS instance.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudecsinstance.v1.AliCloudEcsDataDisk",
+      "fields": [
+        {
+          "name": "Size",
+          "jsonName": "size",
+          "protoField": "size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Disk size in GB. Required for each data disk.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 20
+          }
+        },
+        {
+          "name": "Category",
+          "jsonName": "category",
+          "protoField": "category",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Disk category.\n Default: \"cloud_essd\"",
+          "required": false,
+          "default": "cloud_essd",
+          "oneofGroup": "_category"
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Disk display name.",
+          "required": false
+        },
+        {
+          "name": "PerformanceLevel",
+          "jsonName": "performanceLevel",
+          "protoField": "performance_level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ESSD performance level. Only applicable when category is \"cloud_essd\".",
+          "required": false,
+          "oneofGroup": "_performance_level"
+        },
+        {
+          "name": "Encrypted",
+          "jsonName": "encrypted",
+          "protoField": "encrypted",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable server-side encryption for this data disk.",
+          "required": false,
+          "oneofGroup": "_encrypted"
+        },
+        {
+          "name": "KmsKeyId",
+          "jsonName": "kmsKeyId",
+          "protoField": "kms_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "KMS key ID for disk encryption.",
+          "required": false
+        },
+        {
+          "name": "SnapshotId",
+          "jsonName": "snapshotId",
+          "protoField": "snapshot_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Snapshot ID to create this disk from.",
+          "required": false
+        },
+        {
+          "name": "DeleteWithInstance",
+          "jsonName": "deleteWithInstance",
+          "protoField": "delete_with_instance",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether this disk is deleted when the instance is released.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_delete_with_instance"
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Disk description.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudEcsSystemDisk",
+      "description": "AliCloudEcsSystemDisk configures the boot disk for the ECS instance.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudecsinstance.v1.AliCloudEcsSystemDisk",
+      "fields": [
+        {
+          "name": "Category",
+          "jsonName": "category",
+          "protoField": "category",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Disk category. Determines the underlying storage technology and\n performance characteristics.\n Default: \"cloud_essd\"",
+          "required": false,
+          "default": "cloud_essd",
+          "oneofGroup": "_category"
+        },
+        {
+          "name": "Size",
+          "jsonName": "size",
+          "protoField": "size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Disk size in GB. The minimum depends on the image; typical minimum\n is 20 GB for Linux and 40 GB for Windows.\n Default: 40",
+          "required": false,
+          "validation": {
+            "min": 20
+          },
+          "default": "40",
+          "oneofGroup": "_size"
+        },
+        {
+          "name": "PerformanceLevel",
+          "jsonName": "performanceLevel",
+          "protoField": "performance_level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ESSD performance level. Only applicable when category is \"cloud_essd\".\n Higher levels deliver more IOPS and throughput at higher cost.",
+          "required": false,
+          "oneofGroup": "_performance_level"
+        },
+        {
+          "name": "Encrypted",
+          "jsonName": "encrypted",
+          "protoField": "encrypted",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Enable server-side encryption for the system disk.",
+          "required": false,
+          "oneofGroup": "_encrypted"
+        },
+        {
+          "name": "KmsKeyId",
+          "jsonName": "kmsKeyId",
+          "protoField": "kms_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "KMS key ID for disk encryption. Only applicable when encrypted is true.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

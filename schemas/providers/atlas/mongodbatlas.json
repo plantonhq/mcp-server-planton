@@ -1,0 +1,137 @@
+{
+  "name": "MongodbAtlas",
+  "kind": "MongodbAtlas",
+  "cloudProvider": "atlas",
+  "apiVersion": "atlas.openmcf.org/v1",
+  "description": "mongodb-atlas",
+  "protoPackage": "org.openmcf.provider.atlas.mongodbatlas.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/atlas/mongodbatlas/v1/api.proto",
+    "spec": "org/openmcf/provider/atlas/mongodbatlas/v1/spec.proto"
+  },
+  "spec": {
+    "name": "MongodbAtlasSpec",
+    "fields": [
+      {
+        "name": "ClusterConfig",
+        "jsonName": "clusterConfig",
+        "protoField": "cluster_config",
+        "type": {
+          "kind": "message",
+          "messageType": "MongodbAtlasClusterConfig"
+        },
+        "description": "cluster-config",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "MongodbAtlasClusterConfig",
+      "description": "mongodb-atlas cluster config",
+      "protoType": "org.openmcf.provider.atlas.mongodbatlas.v1.MongodbAtlasClusterConfig",
+      "fields": [
+        {
+          "name": "ProjectId",
+          "jsonName": "projectId",
+          "protoField": "project_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The unique ID for the project to create the database user.\nhttps://www.pulumi.com/registry/packages/mongodbatlas/api-docs/cluster/#projectid_yaml",
+          "required": false
+        },
+        {
+          "name": "ClusterType",
+          "jsonName": "clusterType",
+          "protoField": "cluster_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Specifies the type of the cluster that you want to modify. You cannot convert a sharded cluster deployment to a replica set deployment.\nAccepted values include:\nREPLICASET Replica set\nSHARDED Sharded cluster\nGEOSHARDED Global Cluster\nhttps://www.pulumi.com/registry/packages/mongodbatlas/api-docs/cluster/#clustertype_yaml",
+          "required": false
+        },
+        {
+          "name": "ElectableNodes",
+          "jsonName": "electableNodes",
+          "protoField": "electable_nodes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of electable nodes for Atlas to deploy to the region. Electable nodes can become the primary and can facilitate local reads.\nThe total number of electableNodes across all replication spec regions must total 3, 5, or 7.\nSpecify 0 if you do not want any electable nodes in the region.\nYou cannot create electable nodes in a region if priority is 0.\nhttps://www.pulumi.com/registry/packages/mongodbatlas/api-docs/cluster/#electablenodes_yaml",
+          "required": false
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Election priority of the region. For regions with only read-only nodes, set this value to 0.\nFor regions where electable_nodes is at least 1, each region must have a priority of exactly one (1) less than the previous region. The first region must have a priority of 7. The lowest possible priority is 1.\nThe priority 7 region identifies the Preferred Region of the cluster. Atlas places the primary node in the Preferred Region. Priorities 1 through 7 are exclusive - no more than one region per cluster can be assigned a given priority.\nExample: If you have three regions, their priorities would be 7, 6, and 5 respectively. If you added two more regions for supporting electable nodes, the priorities of those regions would be 4 and 3 respectively.\nhttps://www.pulumi.com/registry/packages/mongodbatlas/api-docs/cluster/#priority_yaml",
+          "required": false
+        },
+        {
+          "name": "ReadOnlyNodes",
+          "jsonName": "readOnlyNodes",
+          "protoField": "read_only_nodes",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of read-only nodes for Atlas to deploy to the region. Read-only nodes can never become the primary, but can facilitate local-reads. Specify 0 if you do not want any read-only nodes in the region.\nhttps://www.pulumi.com/registry/packages/mongodbatlas/api-docs/cluster/#readonlynodes_yaml",
+          "required": false
+        },
+        {
+          "name": "CloudBackup",
+          "jsonName": "cloudBackup",
+          "protoField": "cloud_backup",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "enable or disable cloud backup",
+          "required": false
+        },
+        {
+          "name": "AutoScalingDiskGbEnabled",
+          "jsonName": "autoScalingDiskGbEnabled",
+          "protoField": "auto_scaling_disk_gb_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "auto scaling disk db enabled",
+          "required": false
+        },
+        {
+          "name": "MongoDbMajorVersion",
+          "jsonName": "mongoDbMajorVersion",
+          "protoField": "mongo_db_major_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Version of the cluster to deploy. Atlas supports the following MongoDB versions for M10+ clusters: 4.4, 5.0, 6.0 or 7.0.\n If omitted, Atlas deploys a cluster that runs MongoDB 7.0.\n If provider_instance_size_name: M0, M2 or M5, Atlas deploys MongoDB 5.0.\n Atlas always deploys the cluster with the latest stable release of the specified version\nhttps://www.pulumi.com/registry/packages/mongodbatlas/api-docs/cluster/#mongodbmajorversion_yaml",
+          "required": false
+        },
+        {
+          "name": "ProviderName",
+          "jsonName": "providerName",
+          "protoField": "provider_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Cloud service provider on which the servers are provisioned.\n\nThe possible values are:\n\nAWS - Amazon AWS\nGCP - Google Cloud Platform\nAZURE - Microsoft Azure\nTENANT - A multi-tenant deployment on one of the supported cloud service providers. Only valid when providerSettings.instanceSizeName is either M2 or M5.\nhttps://www.pulumi.com/registry/packages/mongodbatlas/api-docs/cluster/#providername_yaml",
+          "required": false
+        },
+        {
+          "name": "ProviderInstanceSizeName",
+          "jsonName": "providerInstanceSizeName",
+          "protoField": "provider_instance_size_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "https://www.pulumi.com/registry/packages/mongodbatlas/api-docs/cluster/#providerinstancesizename_yaml\nAtlas provides different instance sizes, each with a default storage capacity and RAM size.\n The instance size you select is used for all the data-bearing servers in your cluster.\nhttps://www.pulumi.com/registry/packages/mongodbatlas/api-docs/cluster/#providerinstancesizename_yaml",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

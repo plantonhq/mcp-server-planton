@@ -1,0 +1,204 @@
+{
+  "name": "AwsEc2Instance",
+  "kind": "AwsEc2Instance",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsEc2Instance represents a single EC2 virtual machine instance on AWS.\n This resource provisions one EC2 instance with networking, IAM, and access configuration.",
+  "protoPackage": "org.openmcf.provider.aws.awsec2instance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsec2instance/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsec2instance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsEc2InstanceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "InstanceName",
+        "jsonName": "instanceName",
+        "protoField": "instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "name of the EC2 instance.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "AmiId",
+        "jsonName": "amiId",
+        "protoField": "ami_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Amazon Machine Image ID to use for launching the instance.\n This is the unique identifier of the OS image (AMI) that the EC2 will run.\n Example: \"ami-0abcdef1234567890\" for an Ubuntu or Amazon Linux image.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "pattern": "^ami-"
+        }
+      },
+      {
+        "name": "InstanceType",
+        "jsonName": "instanceType",
+        "protoField": "instance_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "EC2 instance type (flavor) determining vCPU count and memory.\n Example: \"t3.small\" (2 vCPUs, 2 GiB RAM) or \"m5.large\" (2 vCPUs, 8 GiB RAM).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to the target subnet where this instance will reside.\n This should be a private subnet within an existing VPC.\n The default kind expects an AwsVpc resource, using one of its private subnet IDs.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsVpc",
+        "referenceFieldPath": "status.outputs.private_subnets.id"
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "One or more security group IDs to attach to the instance's network interface.\n These security groups control inbound/outbound traffic for the instance.\n Typically includes at least one security group for application or SSH access.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 1
+        },
+        "referenceKind": "AwsSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "ConnectionMethod",
+        "jsonName": "connectionMethod",
+        "protoField": "connection_method",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.aws.awsec2instance.v1.AwsEc2InstanceConnectionMethod",
+          "enumValues": [
+            "BASTION",
+            "INSTANCE_CONNECT"
+          ]
+        },
+        "description": "Method for connecting to the instance for administration or SSH access.\n - SSM: Use AWS Systems Manager Session Manager (no SSH key needed, requires an IAM instance profile with SSM permissions).\n - BASTION: Use a traditional SSH method with a key pair (requires a key_name for the EC2 instance).\n - INSTANCE_CONNECT: Use AWS EC2 Instance Connect (temporary key injection, also requires a key_name).",
+        "required": false,
+        "default": "SSM",
+        "oneofGroup": "_connection_method"
+      },
+      {
+        "name": "IamInstanceProfileArn",
+        "jsonName": "iamInstanceProfileArn",
+        "protoField": "iam_instance_profile_arn",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The ARN of an IAM instance profile to attach to the EC2 instance.\n This profile should include an IAM role with necessary permissions (for example, SSM Session Manager access if using SSM).\n **Required if** connection_method is SSM; optional otherwise.",
+        "required": false,
+        "referenceKind": "AwsIamRole",
+        "referenceFieldPath": "status.outputs.role_arn"
+      },
+      {
+        "name": "KeyName",
+        "jsonName": "keyName",
+        "protoField": "key_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of an EC2 Key Pair to associate with the instance for SSH access.\n This is the key pair name as created in AWS (not the public key material).\n **Required if** connection_method is BASTION or INSTANCE_CONNECT; not used for SSM.",
+        "required": false
+      },
+      {
+        "name": "RootVolumeSizeGb",
+        "jsonName": "rootVolumeSizeGb",
+        "protoField": "root_volume_size_gb",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Size of the root EBS volume in GiB.\n This defines the storage capacity for the instance's root filesystem.\n Defaults to 30 GiB if not specified.",
+        "required": false,
+        "default": "30",
+        "oneofGroup": "_root_volume_size_gb"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Map of tags to apply to the EC2 instance.\n Tags are key-value pairs for metadata and organization of AWS resources (e.g., {\"env\": \"production\", \"app\": \"web\"}).",
+        "required": false
+      },
+      {
+        "name": "UserData",
+        "jsonName": "userData",
+        "protoField": "user_data",
+        "type": {
+          "kind": "string"
+        },
+        "description": "User data script to provide when launching the instance (cloud-init or shell script).\n This can be a plaintext or base64-encoded string, up to 32 KiB.\n Use this to perform initial configuration on boot (install packages, configure software, etc.).",
+        "required": false
+      },
+      {
+        "name": "EbsOptimized",
+        "jsonName": "ebsOptimized",
+        "protoField": "ebs_optimized",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable EBS optimization for the instance (if supported by the instance type).\n When true, the instance uses dedicated throughput for EBS I/O, which can improve performance for I/O-intensive workloads.",
+        "required": false
+      },
+      {
+        "name": "DisableApiTermination",
+        "jsonName": "disableApiTermination",
+        "protoField": "disable_api_termination",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "If true, prevents the instance from being terminated via the AWS API (enables termination protection).\n This adds a safety measure against accidental deletion of the instance.",
+        "required": false
+      }
+    ]
+  }
+}

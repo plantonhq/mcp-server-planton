@@ -1,0 +1,670 @@
+{
+  "name": "KubernetesService",
+  "kind": "KubernetesService",
+  "cloudProvider": "kubernetes",
+  "apiVersion": "kubernetes.openmcf.org/v1",
+  "description": "*\n **KubernetesService** defines a Kubernetes Service resource following the Kubernetes Resource Model (KRM).\n This resource represents a standalone Kubernetes Service for service discovery, load balancing,\n and external access to workloads running in a Kubernetes cluster.",
+  "protoPackage": "org.openmcf.provider.kubernetes.kubernetesservice.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/kubernetes/kubernetesservice/v1/api.proto",
+    "spec": "org/openmcf/provider/kubernetes/kubernetesservice/v1/spec.proto"
+  },
+  "spec": {
+    "name": "KubernetesServiceSpec",
+    "fields": [
+      {
+        "name": "TargetCluster",
+        "jsonName": "targetCluster",
+        "protoField": "target_cluster",
+        "type": {
+          "kind": "message",
+          "messageType": "KubernetesClusterSelector"
+        },
+        "description": "The Kubernetes cluster in which the service should be created.",
+        "required": false
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "*\n The namespace in which the service will be created.\n Must be a valid DNS label (lowercase alphanumeric and hyphens, max 63 characters).\n The namespace must already exist in the target cluster.",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "maxLength": 63
+        }
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "*\n The name of the Kubernetes Service.\n Used as `metadata.name` on the created Service resource.\n Must be a valid DNS label (lowercase alphanumeric and hyphens, max 63 characters).",
+        "required": false,
+        "validation": {
+          "minLength": 1,
+          "maxLength": 63
+        }
+      },
+      {
+        "name": "Labels",
+        "jsonName": "labels",
+        "protoField": "labels",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "*\n Additional labels to apply to the Service resource.\n These are merged with standard OpenMCF labels for governance and discoverability.",
+        "required": false
+      },
+      {
+        "name": "Annotations",
+        "jsonName": "annotations",
+        "protoField": "annotations",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "*\n Annotations to apply to the Service resource.\n Annotations are critical for configuring cloud-provider-specific load balancer behavior.\n Common use cases:\n - `service.beta.kubernetes.io/aws-load-balancer-type: \"nlb\"` for AWS NLB\n - `cloud.google.com/neg: '{\"ingress\": true}'` for GCP NEG\n - `service.beta.kubernetes.io/azure-load-balancer-internal: \"true\"` for Azure internal LB",
+        "required": false
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.kubernetes.kubernetesservice.v1.KubernetesServiceType",
+          "enumValues": [
+            "cluster_ip",
+            "node_port",
+            "load_balancer",
+            "external_name"
+          ]
+        },
+        "description": "*\n The type of Kubernetes Service to create.\n Default: cluster_ip",
+        "required": false,
+        "oneofGroup": "_type"
+      },
+      {
+        "name": "Selector",
+        "jsonName": "selector",
+        "protoField": "selector",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "*\n Label selector for identifying the pods that this service routes traffic to.\n The service will route traffic to pods whose labels match all key-value pairs\n in this selector.\n\n Not required for ExternalName services or services with manually managed endpoints.",
+        "required": false
+      },
+      {
+        "name": "Ports",
+        "jsonName": "ports",
+        "protoField": "ports",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "KubernetesServicePort"
+          }
+        },
+        "description": "*\n The list of ports exposed by this service.\n At least one port must be specified for all service types except ExternalName.",
+        "required": false
+      },
+      {
+        "name": "Headless",
+        "jsonName": "headless",
+        "protoField": "headless",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "*\n Whether to create a headless service (clusterIP: None).\n Headless services do not allocate a cluster IP; DNS queries return the pod IPs directly.\n Useful for StatefulSets and custom service discovery mechanisms.\n\n Cannot be combined with service types NodePort or LoadBalancer.",
+        "required": false
+      },
+      {
+        "name": "ExternalDnsName",
+        "jsonName": "externalDnsName",
+        "protoField": "external_dns_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "*\n The external DNS name for ExternalName-type services.\n This must be a valid DNS name (e.g., \"my-database.example.com\").\n Only used when type is set to external_name.",
+        "required": false
+      },
+      {
+        "name": "ExternalTrafficPolicy",
+        "jsonName": "externalTrafficPolicy",
+        "protoField": "external_traffic_policy",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.kubernetes.kubernetesservice.v1.KubernetesServiceExternalTrafficPolicy",
+          "enumValues": [
+            "cluster",
+            "local"
+          ]
+        },
+        "description": "*\n External traffic policy for NodePort and LoadBalancer services.\n Controls whether traffic is routed to node-local endpoints only or across all nodes.\n Only applicable when type is node_port or load_balancer.\n Default: cluster",
+        "required": false,
+        "oneofGroup": "_external_traffic_policy"
+      },
+      {
+        "name": "SessionAffinity",
+        "jsonName": "sessionAffinity",
+        "protoField": "session_affinity",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.kubernetes.kubernetesservice.v1.KubernetesServiceSessionAffinity",
+          "enumValues": [
+            "none",
+            "client_ip"
+          ]
+        },
+        "description": "*\n Session affinity configuration.\n Determines whether requests from the same client are routed to the same backend pod.\n Default: none",
+        "required": false,
+        "oneofGroup": "_session_affinity"
+      },
+      {
+        "name": "LoadBalancerSourceRanges",
+        "jsonName": "loadBalancerSourceRanges",
+        "protoField": "load_balancer_source_ranges",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "*\n Restrict access to the load balancer by source IP ranges.\n Only applicable when type is load_balancer.\n Each entry must be a valid CIDR notation (e.g., \"203.0.113.0/24\", \"10.0.0.0/8\").\n\n An empty list means the load balancer is accessible from any source IP.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "KubernetesClusterSelector",
+      "description": "**KubernetesClusterSelector** defines a selector for a Kubernetes cluster in the same environment as the addon.",
+      "protoType": "org.openmcf.provider.kubernetes.KubernetesClusterSelector",
+      "fields": [
+        {
+          "name": "ClusterKind",
+          "jsonName": "clusterKind",
+          "protoField": "cluster_kind",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.shared.cloudresourcekind.CloudResourceKind",
+            "enumValues": [
+              "TestCloudResourceOne",
+              "TestCloudResourceTwo",
+              "TestCloudResourceThree",
+              "ConfluentKafka",
+              "MongodbAtlas",
+              "SnowflakeDatabase",
+              "AwsAlb",
+              "AwsCertManagerCert",
+              "AwsCloudFront",
+              "AwsDynamodb",
+              "AwsEcrRepo",
+              "AwsEcsCluster",
+              "AwsEcsService",
+              "AwsEksCluster",
+              "AwsIamRole",
+              "AwsLambda",
+              "AwsRdsCluster",
+              "AwsRdsInstance",
+              "AwsRoute53Zone",
+              "AwsS3Bucket",
+              "AwsSecretsManager",
+              "AwsSecurityGroup",
+              "AwsVpc",
+              "AwsEksNodeGroup",
+              "AwsIamUser",
+              "AwsKmsKey",
+              "AwsEc2Instance",
+              "AwsClientVpn",
+              "AwsDocumentDb",
+              "AwsRoute53DnsRecord",
+              "AwsS3ObjectSet",
+              "AwsSqsQueue",
+              "AwsSnsTopic",
+              "AwsEventBridgeBus",
+              "AwsEventBridgeRule",
+              "AwsHttpApiGateway",
+              "AwsStepFunction",
+              "AwsRedisElasticache",
+              "AwsOpenSearchDomain",
+              "AwsMemcachedElasticache",
+              "AwsServerlessElasticache",
+              "AwsNetworkLoadBalancer",
+              "AwsElasticIp",
+              "AwsTransitGateway",
+              "AwsGlobalAccelerator",
+              "AwsElasticFileSystem",
+              "AwsFsxLustreFileSystem",
+              "AwsFsxOpenzfsFileSystem",
+              "AwsFsxWindowsFileSystem",
+              "AwsFsxOntapFileSystem",
+              "AwsFsxOntapStorageVirtualMachine",
+              "AwsFsxOntapVolume",
+              "AwsCognitoUserPool",
+              "AwsCognitoIdentityProvider",
+              "AwsWafWebAcl",
+              "AwsCloudwatchLogGroup",
+              "AwsCloudwatchAlarm",
+              "AwsKinesisStream",
+              "AwsKinesisFirehose",
+              "AwsKinesisStreamConsumer",
+              "AwsAthenaWorkgroup",
+              "AwsGlueCatalogDatabase",
+              "AwsRedshiftCluster",
+              "AwsSagemakerDomain",
+              "AwsAppRunnerService",
+              "AwsBatchComputeEnvironment",
+              "AwsCodeBuildProject",
+              "AwsCodePipeline",
+              "AwsMwaaEnvironment",
+              "AwsNeptuneCluster",
+              "AwsMemorydbCluster",
+              "AwsMskCluster",
+              "AzureResourceGroup",
+              "AzureAksCluster",
+              "AzureAksNodePool",
+              "AzureContainerRegistry",
+              "AzureDnsZone",
+              "AzureKeyVault",
+              "AzureVpc",
+              "AzureNatGateway",
+              "AzureVirtualMachine",
+              "AzureStorageAccount",
+              "AzureDnsRecord",
+              "AzureSubnet",
+              "AzureNetworkSecurityGroup",
+              "AzurePublicIp",
+              "AzurePrivateEndpoint",
+              "AzurePrivateDnsZone",
+              "AzureApplicationGateway",
+              "AzureLoadBalancer",
+              "AzurePostgresqlFlexibleServer",
+              "AzureRedisCache",
+              "AzureCosmosdbAccount",
+              "AzureMssqlServer",
+              "AzureMysqlFlexibleServer",
+              "AzureContainerAppEnvironment",
+              "AzureContainerApp",
+              "AzureServicePlan",
+              "AzureFunctionApp",
+              "AzureLinuxWebApp",
+              "AzureLogAnalyticsWorkspace",
+              "AzureApplicationInsights",
+              "AzureUserAssignedIdentity",
+              "AzureServiceBusNamespace",
+              "AzureEventHubNamespace",
+              "AzureFrontDoorProfile",
+              "GcpArtifactRegistryRepo",
+              "GcpCloudCdn",
+              "GcpCloudFunction",
+              "GcpCloudRun",
+              "GcpCloudSql",
+              "GcpDnsZone",
+              "GcpGcsBucket",
+              "GcpGkeCluster",
+              "GcpSecretsManager",
+              "GcpProject",
+              "GcpVpc",
+              "GcpSubnetwork",
+              "GcpRouterNat",
+              "GcpGkeNodePool",
+              "GcpServiceAccount",
+              "GcpGkeWorkloadIdentityBinding",
+              "GcpCertManagerCert",
+              "GcpComputeInstance",
+              "GcpDnsRecord",
+              "GcpFirewallRule",
+              "GcpGlobalAddress",
+              "GcpCloudArmorPolicy",
+              "GcpAlloydbCluster",
+              "GcpRedisInstance",
+              "GcpFirestoreDatabase",
+              "GcpSpannerInstance",
+              "GcpSpannerDatabase",
+              "GcpBigtableInstance",
+              "GcpMemorystoreInstance",
+              "GcpBigQueryDataset",
+              "GcpDataprocCluster",
+              "GcpDataprocVirtualCluster",
+              "GcpPubSubTopic",
+              "GcpPubSubSubscription",
+              "GcpCloudTasksQueue",
+              "GcpCloudSchedulerJob",
+              "GcpVertexAiNotebook",
+              "GcpVertexAiEndpoint",
+              "GcpCloudComposerEnvironment",
+              "GcpKmsKeyRing",
+              "GcpKmsKey",
+              "GcpFilestoreInstance",
+              "KubernetesArgocd",
+              "KubernetesCronJob",
+              "KubernetesElasticsearch",
+              "KubernetesGitlab",
+              "KubernetesGrafana",
+              "KubernetesHelmRelease",
+              "KubernetesJenkins",
+              "KubernetesKafka",
+              "KubernetesKeycloak",
+              "KubernetesLocust",
+              "KubernetesDeployment",
+              "KubernetesMongodb",
+              "KubernetesNeo4j",
+              "KubernetesOpenFga",
+              "KubernetesPostgres",
+              "KubernetesPrometheus",
+              "KubernetesRedis",
+              "KubernetesSignoz",
+              "KubernetesSolr",
+              "KubernetesTemporal",
+              "KubernetesNats",
+              "KubernetesCertManager",
+              "KubernetesElasticOperator",
+              "KubernetesExternalDns",
+              "KubernetesIngressNginx",
+              "KubernetesIstio",
+              "KubernetesStrimziKafkaOperator",
+              "KubernetesZalandoPostgresOperator",
+              "KubernetesSolrOperator",
+              "KubernetesExternalSecrets",
+              "KubernetesClickHouse",
+              "KubernetesAltinityOperator",
+              "KubernetesPerconaPostgresOperator",
+              "KubernetesPerconaMongoOperator",
+              "KubernetesPerconaMysqlOperator",
+              "KubernetesHarbor",
+              "KubernetesNamespace",
+              "KubernetesGatewayApiCrds",
+              "KubernetesTektonOperator",
+              "KubernetesTekton",
+              "KubernetesStatefulSet",
+              "KubernetesDaemonSet",
+              "KubernetesManifest",
+              "KubernetesGhaRunnerScaleSetController",
+              "KubernetesGhaRunnerScaleSet",
+              "KubernetesOpenBao",
+              "KubernetesJob",
+              "KubernetesRookCephOperator",
+              "KubernetesRookCephCluster",
+              "KubernetesService",
+              "KubernetesSecret",
+              "DigitalOceanAppPlatformService",
+              "DigitalOceanBucket",
+              "DigitalOceanContainerRegistry",
+              "DigitalOceanDatabaseCluster",
+              "DigitalOceanDnsZone",
+              "DigitalOceanDroplet",
+              "DigitalOceanFirewall",
+              "DigitalOceanFunction",
+              "DigitalOceanKubernetesCluster",
+              "DigitalOceanKubernetesNodePool",
+              "DigitalOceanLoadBalancer",
+              "DigitalOceanVolume",
+              "DigitalOceanVpc",
+              "DigitalOceanCertificate",
+              "DigitalOceanDnsRecord",
+              "CivoBucket",
+              "CivoCertificate",
+              "CivoComputeInstance",
+              "CivoDatabase",
+              "CivoDnsZone",
+              "CivoFirewall",
+              "CivoIpAddress",
+              "CivoKubernetesCluster",
+              "CivoKubernetesNodePool",
+              "CivoVolume",
+              "CivoVpc",
+              "CivoDnsRecord",
+              "CloudflareDnsZone",
+              "CloudflareKvNamespace",
+              "CloudflareR2Bucket",
+              "CloudflareWorker",
+              "CloudflareLoadBalancer",
+              "CloudflareD1Database",
+              "CloudflareZeroTrustAccessApplication",
+              "CloudflareDnsRecord",
+              "Auth0Connection",
+              "Auth0Client",
+              "Auth0EventStream",
+              "Auth0ResourceServer",
+              "OpenFgaStore",
+              "OpenFgaAuthorizationModel",
+              "OpenFgaRelationshipTuple",
+              "OpenStackKeypair",
+              "OpenStackNetwork",
+              "OpenStackSubnet",
+              "OpenStackRouter",
+              "OpenStackRouterInterface",
+              "OpenStackSecurityGroup",
+              "OpenStackFloatingIp",
+              "OpenStackNetworkPort",
+              "OpenStackSecurityGroupRule",
+              "OpenStackFloatingIpAssociate",
+              "OpenStackInstance",
+              "OpenStackServerGroup",
+              "OpenStackVolume",
+              "OpenStackVolumeAttach",
+              "OpenStackProject",
+              "OpenStackApplicationCredential",
+              "OpenStackImage",
+              "OpenStackRoleAssignment",
+              "OpenStackLoadBalancer",
+              "OpenStackLoadBalancerListener",
+              "OpenStackLoadBalancerPool",
+              "OpenStackLoadBalancerMember",
+              "OpenStackLoadBalancerMonitor",
+              "OpenStackDnsZone",
+              "OpenStackDnsRecord",
+              "OpenStackContainerClusterTemplate",
+              "OpenStackContainerCluster",
+              "ScalewayVpc",
+              "ScalewayPrivateNetwork",
+              "ScalewayPublicGateway",
+              "ScalewayLoadBalancer",
+              "ScalewayInstanceSecurityGroup",
+              "ScalewayInstance",
+              "ScalewayKapsuleCluster",
+              "ScalewayKapsulePool",
+              "ScalewayRdbInstance",
+              "ScalewayRedisCluster",
+              "ScalewayMongodbInstance",
+              "ScalewayObjectBucket",
+              "ScalewayBlockVolume",
+              "ScalewayContainerRegistry",
+              "ScalewayDnsZone",
+              "ScalewayDnsRecord",
+              "ScalewayServerlessFunction",
+              "ScalewayServerlessContainer",
+              "AliCloudLogProject",
+              "AliCloudRamRole",
+              "AliCloudRamPolicy",
+              "AliCloudVpc",
+              "AliCloudVswitch",
+              "AliCloudSecurityGroup",
+              "AliCloudEipAddress",
+              "AliCloudNatGateway",
+              "AliCloudApplicationLoadBalancer",
+              "AliCloudNetworkLoadBalancer",
+              "AliCloudVpnGateway",
+              "AliCloudDnsZone",
+              "AliCloudDnsRecord",
+              "AliCloudPrivateDnsZone",
+              "AliCloudStorageBucket",
+              "AliCloudNasFileSystem",
+              "AliCloudKmsKey",
+              "AliCloudRdsInstance",
+              "AliCloudPolardbCluster",
+              "AliCloudRedisInstance",
+              "AliCloudMongodbInstance",
+              "AliCloudEcsInstance",
+              "AliCloudContainerRegistry",
+              "AliCloudKubernetesCluster",
+              "AliCloudKubernetesNodePool",
+              "AliCloudCdnDomain",
+              "AliCloudFunction",
+              "AliCloudSaeApplication",
+              "AliCloudRocketmqInstance",
+              "AliCloudCenInstance",
+              "OciVcn",
+              "OciSubnet",
+              "OciSecurityGroup",
+              "OciCompartment",
+              "OciIdentityPolicy",
+              "OciDynamicGroup",
+              "OciComputeInstance",
+              "OciContainerEngineCluster",
+              "OciContainerEngineNodePool",
+              "OciContainerInstance",
+              "OciApplicationLoadBalancer",
+              "OciNetworkLoadBalancer",
+              "OciDynamicRoutingGateway",
+              "OciPublicIp",
+              "OciAutonomousDatabase",
+              "OciDbSystem",
+              "OciMysqlDbSystem",
+              "OciPostgresqlDbSystem",
+              "OciRedisCluster",
+              "OciNosqlTable",
+              "OciObjectStorageBucket",
+              "OciFileSystem",
+              "OciBlockVolume",
+              "OciKmsVault",
+              "OciKmsKey",
+              "OciVaultSecret",
+              "OciBastion",
+              "OciFunctionsApplication",
+              "OciApiGateway",
+              "OciStreamPool",
+              "OciQueue",
+              "OciAlarm",
+              "OciLogGroup",
+              "OciDnsZone",
+              "OciDnsRecord",
+              "OciNetworkFirewall",
+              "OciDevopsProject",
+              "HetznerCloudSshKey",
+              "HetznerCloudPlacementGroup",
+              "HetznerCloudFirewall",
+              "HetznerCloudNetwork",
+              "HetznerCloudPrimaryIp",
+              "HetznerCloudFloatingIp",
+              "HetznerCloudServer",
+              "HetznerCloudVolume",
+              "HetznerCloudSnapshot",
+              "HetznerCloudCertificate",
+              "HetznerCloudLoadBalancer",
+              "HetznerCloudDnsZone"
+            ]
+          },
+          "description": "can be one of the supported kubernetes cluster kinds",
+          "required": false
+        },
+        {
+          "name": "ClusterName",
+          "jsonName": "clusterName",
+          "protoField": "cluster_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "name of the kubernetes cluster in the same environment as the addon\n if the name is different from slug, use the value of slug here.\n for the purposes of readbility, this field is named as cluster_name vs cluster_slug but the expected value is always slug.\n the provided value is automatically converted to slug for example Prod Cluster -\u003e prod-cluster.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "KubernetesServicePort",
+      "description": "*\n **KubernetesServicePort** defines a port exposed by the Kubernetes Service.",
+      "protoType": "org.openmcf.provider.kubernetes.kubernetesservice.v1.KubernetesServicePort",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n Optional name for this port. Must be unique within the list of ports.\n Required when the service exposes more than one port.\n Must be a valid IANA service name (lowercase alphanumeric and hyphens).",
+          "required": false,
+          "validation": {
+            "maxLength": 63
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.kubernetes.kubernetesservice.v1.KubernetesServiceProtocol",
+            "enumValues": [
+              "TCP",
+              "UDP",
+              "SCTP"
+            ]
+          },
+          "description": "*\n The IP protocol for this port.\n Default: TCP",
+          "required": false,
+          "default": "TCP",
+          "oneofGroup": "_protocol"
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "*\n The port number exposed by the service.\n This is the port that clients use to access the service.\n Must be in the range 1-65535.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "TargetPort",
+          "jsonName": "targetPort",
+          "protoField": "target_port",
+          "type": {
+            "kind": "string"
+          },
+          "description": "*\n The port on the target pod to route traffic to.\n Can be a numeric port (e.g., \"8080\") or a named port (e.g., \"http\") defined\n in the container's port list.\n If not specified, defaults to the same value as port.",
+          "required": false
+        },
+        {
+          "name": "NodePort",
+          "jsonName": "nodePort",
+          "protoField": "node_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "*\n The port on each node to expose for NodePort and LoadBalancer services.\n If not specified, Kubernetes allocates a port from the node port range (default 30000-32767).\n Must be in the range 30000-32767 when specified.\n Only applicable when the service type is node_port or load_balancer.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

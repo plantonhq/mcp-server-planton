@@ -1,0 +1,205 @@
+{
+  "name": "OpenStackSecurityGroup",
+  "kind": "OpenStackSecurityGroup",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackSecurityGroup is a Kubernetes Resource Model (KRM) style resource for\n managing Neutron security groups in OpenStack.\n\n A security group acts as a virtual firewall for instances and ports, controlling\n ingress and egress traffic through a set of rules. This component supports\n inline rules for convenience (rules defined in the spec) and is also referenced\n by the standalone OpenStackSecurityGroupRule component for DAG-visible rule\n management in InfraCharts.\n\n Security groups are referenced by network ports, instances, and other networking\n resources as the primary mechanism for network-level access control.",
+  "protoPackage": "org.openmcf.provider.openstack.openstacksecuritygroup.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstacksecuritygroup/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstacksecuritygroup/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackSecurityGroupSpec",
+    "fields": [
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description is a human-readable description of the security group.\n This is stored on the OpenStack resource and visible in Horizon and API responses.",
+        "required": false
+      },
+      {
+        "name": "DeleteDefaultRules",
+        "jsonName": "deleteDefaultRules",
+        "protoField": "delete_default_rules",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "delete_default_rules controls whether OpenStack's automatically created default\n egress rules are deleted after the security group is created.\n OpenStack creates two default rules on every new security group:\n   - Allow all egress IPv4 traffic\n   - Allow all egress IPv6 traffic\n Set to true to start with a completely empty rule set (zero-trust baseline).\n If omitted, the default rules are kept.\n This is a create-time setting and cannot be changed after creation.",
+        "required": false,
+        "oneofGroup": "_delete_default_rules"
+      },
+      {
+        "name": "Stateful",
+        "jsonName": "stateful",
+        "protoField": "stateful",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "stateful controls whether the security group operates in stateful or stateless mode.\n Stateful (default in OpenStack): Return traffic is automatically allowed regardless\n of rules. Stateless: Return traffic must be explicitly permitted by rules.\n Stateless security groups offer better performance for high-throughput workloads\n but require more careful rule management.\n If omitted, OpenStack uses its deployment default (typically stateful).\n Note: Not all OpenStack deployments support stateless security groups.",
+        "required": false,
+        "oneofGroup": "_stateful"
+      },
+      {
+        "name": "Rules",
+        "jsonName": "rules",
+        "protoField": "rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "SecurityGroupRule"
+          }
+        },
+        "description": "rules defines inline security group rules to create alongside the security group.\n Each rule is provisioned as a separate openstack_networking_secgroup_rule_v2 resource,\n keyed by the rule's `key` field for stable IaC state management.\n For DAG-visible, independently managed rules, use the OpenStackSecurityGroupRule\n component instead.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "tags are string tags to associate with the security group in OpenStack.\n Tags are stored on the OpenStack resource and can be used for filtering\n and organization in the OpenStack API and Horizon dashboard.",
+        "required": false,
+        "validation": {
+          "unique": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "region overrides the region from the provider config for this security group.\n If omitted, the region from the OpenStack provider config is used.\n Example: \"RegionOne\"",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "SecurityGroupRule",
+      "description": "SecurityGroupRule defines an inline security group rule.\n Each rule controls traffic in one direction (ingress or egress) for a specific\n protocol and port range, optionally restricted to a source/destination CIDR\n or another security group.",
+      "protoType": "org.openmcf.provider.openstack.openstacksecuritygroup.v1.SecurityGroupRule",
+      "fields": [
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "key is a unique identifier for this rule within the security group.\n Used as the resource key in IaC state management (Terraform for_each key,\n Pulumi resource name suffix). Must be unique across all rules in the spec.\n Use descriptive, kebab-case names like \"allow-ssh\", \"egress-all-ipv4\",\n \"allow-https-from-lb\".",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Direction",
+          "jsonName": "direction",
+          "protoField": "direction",
+          "type": {
+            "kind": "string"
+          },
+          "description": "direction specifies whether the rule applies to incoming or outgoing traffic.\n Must be \"ingress\" or \"egress\".",
+          "required": false,
+          "validation": {
+            "enum": [
+              "ingress",
+              "egress"
+            ]
+          }
+        },
+        {
+          "name": "Ethertype",
+          "jsonName": "ethertype",
+          "protoField": "ethertype",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ethertype specifies the layer-3 protocol type for the rule.\n Must be \"IPv4\" or \"IPv6\".",
+          "required": false,
+          "validation": {
+            "enum": [
+              "IPv4",
+              "IPv6"
+            ]
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "protocol is the IP protocol for the rule.\n Common values: \"tcp\", \"udp\", \"icmp\", \"icmpv6\".\n Also accepts any IANA protocol name or number (0-255).\n If omitted, the rule applies to all protocols.",
+          "required": false
+        },
+        {
+          "name": "PortRangeMin",
+          "jsonName": "portRangeMin",
+          "protoField": "port_range_min",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "port_range_min is the minimum port number for the rule.\n For TCP/UDP: the start of the port range (0-65535).\n For ICMP: the ICMP type (0-255). Type 0 = Echo Reply, Type 8 = Echo Request.\n Must be set together with port_range_max. Requires protocol to be set.",
+          "required": false,
+          "oneofGroup": "_port_range_min"
+        },
+        {
+          "name": "PortRangeMax",
+          "jsonName": "portRangeMax",
+          "protoField": "port_range_max",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "port_range_max is the maximum port number for the rule.\n For TCP/UDP: the end of the port range (0-65535).\n For ICMP: the ICMP code (0-255). Code 0 is valid and commonly used.\n Must be set together with port_range_min. Requires protocol to be set.",
+          "required": false,
+          "oneofGroup": "_port_range_max"
+        },
+        {
+          "name": "RemoteIpPrefix",
+          "jsonName": "remoteIpPrefix",
+          "protoField": "remote_ip_prefix",
+          "type": {
+            "kind": "string"
+          },
+          "description": "remote_ip_prefix restricts the rule to traffic from/to a specific CIDR.\n For ingress: the source IP range. For egress: the destination IP range.\n Example: \"0.0.0.0/0\" (all IPv4), \"10.0.0.0/8\" (private range), \"203.0.113.0/24\".\n Mutually exclusive with remote_group_id.",
+          "required": false
+        },
+        {
+          "name": "RemoteGroupId",
+          "jsonName": "remoteGroupId",
+          "protoField": "remote_group_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "remote_group_id restricts the rule to traffic from/to instances in another\n security group (or the same security group for self-referencing rules).\n This is a literal UUID of an existing security group.\n For self-referencing rules in InfraCharts, use the standalone\n OpenStackSecurityGroupRule component with a StringValueOrRef FK instead.\n Mutually exclusive with remote_ip_prefix.",
+          "required": false
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "description is a human-readable description of the rule.\n Stored on the OpenStack rule resource.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

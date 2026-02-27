@@ -1,0 +1,590 @@
+{
+  "name": "AliCloudNetworkLoadBalancer",
+  "kind": "AliCloudNetworkLoadBalancer",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-network-load-balancer",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudnetworkloadbalancer.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudnetworkloadbalancer/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudnetworkloadbalancer/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudNetworkLoadBalancerSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the NLB will be created.\n Must match the region of the VPC and VSwitches.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC ID that the NLB belongs to. The NLB, all zone-mapping VSwitches,\n and server groups must reside in the same VPC.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "LoadBalancerName",
+        "jsonName": "loadBalancerName",
+        "protoField": "load_balancer_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "NLB name. 2-128 characters; must start with a letter; can contain\n digits, underscores, periods, and hyphens.\n If omitted, defaults to the metadata.name.",
+        "required": false
+      },
+      {
+        "name": "AddressType",
+        "jsonName": "addressType",
+        "protoField": "address_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Network type of the NLB.\n \"Internet\" creates a public-facing NLB with a DNS name resolvable\n from the internet. \"Intranet\" creates a VPC-internal NLB.\n Default: \"Internet\"",
+        "required": false,
+        "default": "Internet",
+        "oneofGroup": "_address_type"
+      },
+      {
+        "name": "ZoneMappings",
+        "jsonName": "zoneMappings",
+        "protoField": "zone_mappings",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudNetworkLoadBalancerZoneMapping"
+          }
+        },
+        "description": "Availability zone mappings. Each mapping places an NLB node in a zone\n with a VSwitch for IP allocation. NLB requires at least 2 zones for\n high availability.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 2
+        }
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the NLB is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "CrossZoneEnabled",
+        "jsonName": "crossZoneEnabled",
+        "protoField": "cross_zone_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable cross-zone load balancing. When enabled, NLB\n distributes traffic across all healthy backends in all zones. When\n disabled, traffic stays within the zone where it was received.\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_cross_zone_enabled"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the NLB resource.",
+        "required": false
+      },
+      {
+        "name": "ServerGroups",
+        "jsonName": "serverGroups",
+        "protoField": "server_groups",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudNetworkLoadBalancerServerGroup"
+          }
+        },
+        "description": "Server groups that define backend targets for the NLB.\n Each server group has its own health check, protocol, and scheduling\n configuration. Listeners reference server groups by name.\n\n Server groups are created empty -- backend membership is managed\n externally (by ACK service controllers, manual attachment, etc.).",
+        "required": false
+      },
+      {
+        "name": "Listeners",
+        "jsonName": "listeners",
+        "protoField": "listeners",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudNetworkLoadBalancerListener"
+          }
+        },
+        "description": "Listeners that define how the NLB accepts incoming traffic.\n Each listener binds to a port and protocol and forwards traffic\n directly to a server group. TCPSSL listeners support TLS termination.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudNetworkLoadBalancerHealthCheckConfig",
+      "description": "AliCloudNetworkLoadBalancerHealthCheckConfig defines how the NLB probes backend servers.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudnetworkloadbalancer.v1.AliCloudNetworkLoadBalancerHealthCheckConfig",
+      "fields": [
+        {
+          "name": "HealthCheckEnabled",
+          "jsonName": "healthCheckEnabled",
+          "protoField": "health_check_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether health checks are enabled for this server group.\n When disabled, all servers are considered healthy.",
+          "required": false
+        },
+        {
+          "name": "HealthCheckType",
+          "jsonName": "healthCheckType",
+          "protoField": "health_check_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol used for health check probes.\n \"TCP\" performs a TCP connection check.\n \"HTTP\" sends an HTTP request and checks the response code.\n \"UDP\" sends a UDP packet and expects a response.\n Default: \"TCP\"",
+          "required": false,
+          "default": "TCP",
+          "oneofGroup": "_health_check_type"
+        },
+        {
+          "name": "HealthCheckConnectPort",
+          "jsonName": "healthCheckConnectPort",
+          "protoField": "health_check_connect_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Backend port used for health checks. 0 means use the port of the\n backend server (the default).\n Range: 0-65535. Default: 0",
+          "required": false,
+          "validation": {
+            "max": 65535
+          },
+          "default": "0",
+          "oneofGroup": "_health_check_connect_port"
+        },
+        {
+          "name": "HealthCheckConnectTimeout",
+          "jsonName": "healthCheckConnectTimeout",
+          "protoField": "health_check_connect_timeout",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum time to wait for a health check response, in seconds.\n Range: 1-300. Default: 5",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 300
+          },
+          "default": "5",
+          "oneofGroup": "_health_check_connect_timeout"
+        },
+        {
+          "name": "HealthCheckInterval",
+          "jsonName": "healthCheckInterval",
+          "protoField": "health_check_interval",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Interval between health check probes, in seconds.\n Range: 5-50. Default: 10",
+          "required": false,
+          "validation": {
+            "min": 5,
+            "max": 50
+          },
+          "default": "10",
+          "oneofGroup": "_health_check_interval"
+        },
+        {
+          "name": "HealthyThreshold",
+          "jsonName": "healthyThreshold",
+          "protoField": "healthy_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive successful probes before a server is marked healthy.\n Range: 2-10. Default: 2",
+          "required": false,
+          "validation": {
+            "min": 2,
+            "max": 10
+          },
+          "default": "2",
+          "oneofGroup": "_healthy_threshold"
+        },
+        {
+          "name": "UnhealthyThreshold",
+          "jsonName": "unhealthyThreshold",
+          "protoField": "unhealthy_threshold",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive failed probes before a server is marked unhealthy.\n Range: 2-10. Default: 2",
+          "required": false,
+          "validation": {
+            "min": 2,
+            "max": 10
+          },
+          "default": "2",
+          "oneofGroup": "_unhealthy_threshold"
+        },
+        {
+          "name": "HealthCheckUrl",
+          "jsonName": "healthCheckUrl",
+          "protoField": "health_check_url",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URL path for HTTP health check probes. Must start with \"/\".\n Only applicable when health_check_type is \"HTTP\".\n Example: \"/health\", \"/api/healthz\"",
+          "required": false
+        },
+        {
+          "name": "HealthCheckDomain",
+          "jsonName": "healthCheckDomain",
+          "protoField": "health_check_domain",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Domain name used in the Host header of HTTP health check probes.\n Only applicable when health_check_type is \"HTTP\".\n If omitted, the server's IP address is used.",
+          "required": false
+        },
+        {
+          "name": "HttpCheckMethod",
+          "jsonName": "httpCheckMethod",
+          "protoField": "http_check_method",
+          "type": {
+            "kind": "string"
+          },
+          "description": "HTTP method for health check probes.\n Only applicable when health_check_type is \"HTTP\".\n Default: \"GET\"",
+          "required": false,
+          "default": "GET",
+          "oneofGroup": "_http_check_method"
+        },
+        {
+          "name": "HealthCheckHttpCodes",
+          "jsonName": "healthCheckHttpCodes",
+          "protoField": "health_check_http_codes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "HTTP status codes that indicate a healthy response.\n Only applicable when health_check_type is \"HTTP\".\n Examples: [\"http_2xx\"], [\"http_2xx\", \"http_3xx\"]",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudNetworkLoadBalancerListener",
+      "description": "AliCloudNetworkLoadBalancerListener defines how the NLB accepts incoming traffic on a\n specific port and protocol.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudnetworkloadbalancer.v1.AliCloudNetworkLoadBalancerListener",
+      "fields": [
+        {
+          "name": "ListenerPort",
+          "jsonName": "listenerPort",
+          "protoField": "listener_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port on which the listener accepts traffic.\n Range: 1-65535. Common values: 80 (TCP), 443 (TCPSSL), 3306 (MySQL).",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "ListenerProtocol",
+          "jsonName": "listenerProtocol",
+          "protoField": "listener_protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Protocol for this listener.\n \"TCP\" for raw TCP traffic.\n \"UDP\" for UDP traffic.\n \"TCPSSL\" for TLS-encrypted TCP traffic (requires certificate_ids).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ServerGroupName",
+          "jsonName": "serverGroupName",
+          "protoField": "server_group_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the server group that receives traffic from this listener.\n Must match a name in the server_groups list.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "ListenerDescription",
+          "jsonName": "listenerDescription",
+          "protoField": "listener_description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description of this listener's purpose.",
+          "required": false
+        },
+        {
+          "name": "IdleTimeout",
+          "jsonName": "idleTimeout",
+          "protoField": "idle_timeout",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Connection idle timeout in seconds. Connections idle longer are closed.\n Applies to TCP and TCPSSL only; ignored for UDP.\n Range: 1-900. Default: 900",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 900
+          },
+          "default": "900",
+          "oneofGroup": "_idle_timeout"
+        },
+        {
+          "name": "ProxyProtocolEnabled",
+          "jsonName": "proxyProtocolEnabled",
+          "protoField": "proxy_protocol_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to enable the Proxy Protocol. When enabled, the NLB inserts\n a Proxy Protocol header so backends can read the real client IP/port.\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_proxy_protocol_enabled"
+        },
+        {
+          "name": "CertificateIds",
+          "jsonName": "certificateIds",
+          "protoField": "certificate_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Server certificate IDs for TCPSSL listeners. At least one is required\n when listener_protocol is \"TCPSSL\".\n Obtain from Alibaba Cloud Certificate Management Service (CAS).",
+          "required": false
+        },
+        {
+          "name": "SecurityPolicyId",
+          "jsonName": "securityPolicyId",
+          "protoField": "security_policy_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "TLS security policy that defines the supported TLS versions and cipher\n suites. Only applicable for TCPSSL listeners.\n Examples: \"tls_cipher_policy_1_0\", \"tls_cipher_policy_1_2_strict\"",
+          "required": false
+        },
+        {
+          "name": "CaCertificateIds",
+          "jsonName": "caCertificateIds",
+          "protoField": "ca_certificate_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "CA certificate IDs for mutual TLS authentication on TCPSSL listeners.\n When set along with ca_enabled, the NLB validates the client certificate\n against these CA certificates.",
+          "required": false
+        },
+        {
+          "name": "CaEnabled",
+          "jsonName": "caEnabled",
+          "protoField": "ca_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to enable mutual TLS (client certificate verification)\n on TCPSSL listeners. Requires ca_certificate_ids to be set.\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_ca_enabled"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudNetworkLoadBalancerServerGroup",
+      "description": "AliCloudNetworkLoadBalancerServerGroup defines a backend target group with health check\n and connection management configuration. Server groups are created empty --\n backend membership is managed externally.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudnetworkloadbalancer.v1.AliCloudNetworkLoadBalancerServerGroup",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Server group name. 2-128 characters; must start with a letter.\n Used by listeners to reference this server group via server_group_name.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 2,
+            "maxLength": 128
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Backend protocol for communication between the NLB and servers.\n Default: \"TCP\"",
+          "required": false,
+          "default": "TCP",
+          "oneofGroup": "_protocol"
+        },
+        {
+          "name": "Scheduler",
+          "jsonName": "scheduler",
+          "protoField": "scheduler",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Scheduling algorithm for distributing connections across servers.\n \"Wrr\" -- Weighted Round Robin (default, distributes by weight).\n \"Rr\"  -- Round Robin (equal distribution).\n \"Sch\" -- Source IP Consistent Hashing (same client to same server).\n \"Tch\" -- Four-tuple Consistent Hashing (src/dst IP + port).\n \"Qch\" -- QUIC ID Consistent Hashing.\n \"Wlc\" -- Weighted Least Connections.\n Default: \"Wrr\"",
+          "required": false,
+          "default": "Wrr",
+          "oneofGroup": "_scheduler"
+        },
+        {
+          "name": "ConnectionDrainEnabled",
+          "jsonName": "connectionDrainEnabled",
+          "protoField": "connection_drain_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to enable connection draining. When enabled, existing\n connections to a removed backend are allowed to complete within the\n drain timeout before being forcibly closed.\n Default: false",
+          "required": false,
+          "default": "false",
+          "oneofGroup": "_connection_drain_enabled"
+        },
+        {
+          "name": "ConnectionDrainTimeout",
+          "jsonName": "connectionDrainTimeout",
+          "protoField": "connection_drain_timeout",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum time in seconds to wait for in-flight connections to complete\n when a backend is removed. Only effective when connection_drain_enabled\n is true.\n Range: 10-900. Default: 10",
+          "required": false,
+          "validation": {
+            "min": 10,
+            "max": 900
+          },
+          "default": "10",
+          "oneofGroup": "_connection_drain_timeout"
+        },
+        {
+          "name": "PreserveClientIpEnabled",
+          "jsonName": "preserveClientIpEnabled",
+          "protoField": "preserve_client_ip_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to preserve the client's original IP address when forwarding\n traffic to backends. The backend sees the real client IP instead of\n the NLB's IP.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_preserve_client_ip_enabled"
+        },
+        {
+          "name": "HealthCheck",
+          "jsonName": "healthCheck",
+          "protoField": "health_check",
+          "type": {
+            "kind": "message",
+            "messageType": "AliCloudNetworkLoadBalancerHealthCheckConfig"
+          },
+          "description": "Health check configuration. Required for every server group.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AliCloudNetworkLoadBalancerZoneMapping",
+      "description": "AliCloudNetworkLoadBalancerZoneMapping associates an availability zone with a VSwitch.\n The NLB places a node in each mapped zone for high availability.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudnetworkloadbalancer.v1.AliCloudNetworkLoadBalancerZoneMapping",
+      "fields": [
+        {
+          "name": "ZoneId",
+          "jsonName": "zoneId",
+          "protoField": "zone_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Availability zone ID within the region.\n Examples: \"cn-hangzhou-a\", \"cn-hangzhou-b\", \"us-west-1-a\".",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "VswitchId",
+          "jsonName": "vswitchId",
+          "protoField": "vswitch_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VSwitch ID in this availability zone. The NLB allocates an IP from\n this VSwitch. Must belong to the same VPC as the NLB's vpc_id.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AliCloudVswitch",
+          "referenceFieldPath": "status.outputs.vswitch_id"
+        },
+        {
+          "name": "AllocationId",
+          "jsonName": "allocationId",
+          "protoField": "allocation_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "EIP allocation ID to bind a fixed public IP to this zone's NLB node.\n Only meaningful for internet-facing NLBs that need stable public IPs\n (e.g., database access, game servers, DNS A-records).\n If omitted, Alibaba Cloud auto-assigns IPs.",
+          "required": false,
+          "referenceKind": "AliCloudEipAddress",
+          "referenceFieldPath": "status.outputs.eip_id"
+        }
+      ]
+    }
+  ]
+}

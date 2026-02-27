@@ -1,0 +1,173 @@
+{
+  "name": "AzureAksNodePool",
+  "kind": "AzureAksNodePool",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "azure-aks-node-pool",
+  "protoPackage": "org.openmcf.provider.azure.azureaksnodepool.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azureaksnodepool/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azureaksnodepool/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureAksNodePoolSpec",
+    "fields": [
+      {
+        "name": "ClusterName",
+        "jsonName": "clusterName",
+        "protoField": "cluster_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Reference to the parent AKS cluster by name.\n Must refer to an existing AzureAksCluster resource in the same environment.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureAksCluster",
+        "referenceFieldPath": "metadata.name"
+      },
+      {
+        "name": "VmSize",
+        "jsonName": "vmSize",
+        "protoField": "vm_size",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VM size (SKU) for the nodes in this pool (e.g., \"Standard_D4s_v3\").\n Determines the CPU/memory of each node. No default; user must specify.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "InitialNodeCount",
+        "jsonName": "initialNodeCount",
+        "protoField": "initial_node_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of nodes to create in this pool initially (if autoscaling is off, this is the fixed node count).\n Must be at least 1.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Autoscaling",
+        "jsonName": "autoscaling",
+        "protoField": "autoscaling",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureAksNodePoolAutoscaling"
+        },
+        "description": "Autoscaling configuration for this node pool. If set, cluster autoscaler is enabled for this pool.\n If not provided, the node pool will have a fixed size (no autoscaling).",
+        "required": false
+      },
+      {
+        "name": "AvailabilityZones",
+        "jsonName": "availabilityZones",
+        "protoField": "availability_zones",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Zones to spread this node pool across for high availability (e.g., [\"1\", \"2\", \"3\"] for three zones).\n If unspecified, nodes are not pinned to specific zones (using region defaults). If specified, at least 2 zones should be provided for HA.",
+        "required": false,
+        "validation": {
+          "minItems": 2
+        }
+      },
+      {
+        "name": "OsType",
+        "jsonName": "osType",
+        "protoField": "os_type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.azure.azureaksnodepool.v1.AzureAksNodePoolOsType",
+          "enumValues": [
+            "LINUX",
+            "WINDOWS"
+          ]
+        },
+        "description": "Operating system type for nodes. Defaults to Linux. Use \"WINDOWS\" for a Windows node pool (requires a cluster with Windows support).",
+        "required": false,
+        "default": "AZURE_AKS_NODE_POOL_OS_TYPE_LINUX",
+        "oneofGroup": "_os_type"
+      },
+      {
+        "name": "Mode",
+        "jsonName": "mode",
+        "protoField": "mode",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.azure.azureaksnodepool.v1.AzureAksNodePoolMode",
+          "enumValues": [
+            "SYSTEM",
+            "USER"
+          ]
+        },
+        "description": "Node pool mode determines the pool's purpose.\n SYSTEM pools host critical cluster components (CoreDNS, metrics-server). Must be Linux. Cannot scale to zero.\n USER pools run application workloads. Can be Linux or Windows. Can scale to zero.\n Defaults to USER since most additional pools are for application workloads.",
+        "required": false,
+        "default": "AZURE_AKS_NODE_POOL_MODE_USER",
+        "oneofGroup": "_mode"
+      },
+      {
+        "name": "SpotEnabled",
+        "jsonName": "spotEnabled",
+        "protoField": "spot_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Use Spot (preemptible) VMs for this node pool to reduce cost. Defaults to false (regular on-demand VMs).\n NOTE: Spot cannot be used for System mode pools.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the node pool's parent cluster resides.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureAksNodePoolAutoscaling",
+      "description": "Autoscaling settings for an AKS node pool. Effective only if autoscaling is enabled.",
+      "protoType": "org.openmcf.provider.azure.azureaksnodepool.v1.AzureAksNodePoolAutoscaling",
+      "fields": [
+        {
+          "name": "MinNodes",
+          "jsonName": "minNodes",
+          "protoField": "min_nodes",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "Minimum number of nodes for this pool when autoscaler is active. Can be 0 for user node pools to allow scale-to-zero.\n For system pools, minimum should be at least 1 (system pools cannot scale to zero).",
+          "required": false
+        },
+        {
+          "name": "MaxNodes",
+          "jsonName": "maxNodes",
+          "protoField": "max_nodes",
+          "type": {
+            "kind": "uint32"
+          },
+          "description": "Maximum number of nodes for this pool when autoscaler is active. Must be greater than or equal to min_nodes.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

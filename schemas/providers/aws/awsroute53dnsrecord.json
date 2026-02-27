@@ -1,0 +1,353 @@
+{
+  "name": "AwsRoute53DnsRecord",
+  "kind": "AwsRoute53DnsRecord",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsRoute53DnsRecord represents a DNS record in an AWS Route53 hosted zone.\n It follows the Kubernetes Resource Model (KRM) pattern with metadata, spec, and status.\n\n This resource enables creating individual DNS records with support for:\n   - Standard record types (A, AAAA, CNAME, MX, TXT, etc.)\n   - Alias records (Route53's killer feature for AWS resources)\n   - Advanced routing policies (weighted, latency, failover, geolocation)\n\n Example usage:\n   apiVersion: aws.openmcf.org/v1\n   kind: AwsRoute53DnsRecord\n   metadata:\n     name: www-example\n   spec:\n     hosted_zone_id: Z1234567890ABC\n     name: www.example.com\n     type: A\n     ttl: 300\n     values:\n       - 192.0.2.1",
+  "protoPackage": "org.openmcf.provider.aws.awsroute53dnsrecord.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awsroute53dnsrecord/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awsroute53dnsrecord/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsRoute53DnsRecordSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Route53 hosted zone ID where this DNS record will be created.\n Can be provided as a literal value or referenced from an AwsRoute53Zone resource.\n\n When using value_from, the default kind is AwsRoute53Zone and the default field path\n is \"status.outputs.zone_id\", allowing you to wire this directly to a zone resource.\n\n Example literal: \"Z1234567890ABC\"\n Example value_from:\n   value_from:\n     name: my-zone\n The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ZoneId",
+        "jsonName": "zoneId",
+        "protoField": "zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AwsRoute53Zone",
+        "referenceFieldPath": "status.outputs.zone_id"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the DNS record (fully qualified domain name or subdomain).\n Examples:\n   - \"example.com\" for zone apex\n   - \"www.example.com\" for subdomain\n   - \"*.example.com\" for wildcard\n Route53 automatically appends a trailing dot if not provided.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^(?:\\*\\.[A-Za-z0-9\\-\\.]+|[A-Za-z0-9\\-\\.]+\\.[A-Za-z]{2,}|[A-Za-z0-9\\-\\.]+)$"
+        }
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "protoField": "type",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.aws.awsroute53dnsrecord.v1.RecordType",
+          "enumValues": [
+            "A",
+            "AAAA",
+            "CNAME",
+            "MX",
+            "TXT",
+            "SRV",
+            "NS",
+            "CAA"
+          ]
+        },
+        "description": "The type of DNS record to create.\n Common types: A (IPv4), AAAA (IPv6), CNAME, MX, TXT, NS, SRV, CAA",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Ttl",
+        "jsonName": "ttl",
+        "protoField": "ttl",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Time to live (TTL) for the DNS record in seconds.\n TTL specifies how long DNS resolvers should cache the record.\n Common values:\n   - 60: For records you might change during incidents\n   - 300: Default for most records (5 minutes)\n   - 86400: For static records (1 day)\n Note: TTL is ignored for alias records (uses target resource's TTL).\n Default: 300 seconds.",
+        "required": false
+      },
+      {
+        "name": "Values",
+        "jsonName": "values",
+        "protoField": "values",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "The values for the DNS record.\n Format depends on record type:\n   - A record: IPv4 addresses (e.g., [\"192.0.2.1\", \"192.0.2.2\"])\n   - AAAA record: IPv6 addresses (e.g., [\"2001:db8::1\"])\n   - CNAME record: Target hostname (e.g., [\"target.example.com\"])\n   - MX record: Priority and mail server (e.g., [\"10 mail1.example.com\", \"20 mail2.example.com\"])\n   - TXT record: Text values (e.g., [\"v=spf1 include:_spf.google.com ~all\"])\n Note: Mutually exclusive with alias_target. Use one or the other.",
+        "required": false
+      },
+      {
+        "name": "AliasTarget",
+        "jsonName": "aliasTarget",
+        "protoField": "alias_target",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsRoute53AliasTarget"
+        },
+        "description": "Alias target configuration for Route53 alias records.\n Alias records are Route53's killer feature - they allow:\n   1. Pointing zone apex (example.com) to AWS resources without CNAME restrictions\n   2. Free queries (no Route53 charges for alias queries to AWS resources)\n   3. Automatic IP updates when target resource changes\n\n Common targets: CloudFront, ALB/NLB, S3 website, API Gateway, another Route53 record.\n Note: Mutually exclusive with values. Use one or the other.",
+        "required": false
+      },
+      {
+        "name": "RoutingPolicy",
+        "jsonName": "routingPolicy",
+        "protoField": "routing_policy",
+        "type": {
+          "kind": "message",
+          "messageType": "AwsRoute53RoutingPolicy"
+        },
+        "description": "Routing policy configuration for advanced traffic management.\n Route53 supports multiple routing strategies:\n   - Simple: Default single-value response (no config needed)\n   - Weighted: Split traffic across resources (blue/green, canary)\n   - Latency: Route to lowest-latency endpoint (global apps)\n   - Failover: Active-passive with automatic failover\n   - Geolocation: Route based on user location (GDPR, localization)\n\n If not specified, simple routing is used.",
+        "required": false
+      },
+      {
+        "name": "HealthCheckId",
+        "jsonName": "healthCheckId",
+        "protoField": "health_check_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Health check ID to attach for failover routing.\n Health checks monitor endpoint availability and trigger automatic failover.\n Create health checks separately in Route53 and reference by ID.\n Only used with failover routing policy.",
+        "required": false
+      },
+      {
+        "name": "SetIdentifier",
+        "jsonName": "setIdentifier",
+        "protoField": "set_identifier",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Set identifier for routing policies.\n Required for weighted, latency, failover, and geolocation routing.\n Must be unique among records with the same name and type.\n Example: \"primary\", \"secondary\", \"us-east-1\", \"weight-70\"",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsRoute53AliasTarget",
+      "description": "AwsRoute53AliasTarget defines an alias record target.\n Alias records are a Route53-specific extension to DNS that allows routing traffic\n to AWS resources without the limitations of CNAME records.\n\n Key benefits:\n   - Works at zone apex (example.com) where CNAME is not allowed\n   - No query charges for alias queries to AWS resources\n   - Automatic updates when target resource's IP changes\n\n Both dns_name and zone_id can be provided as literals or referenced from AWS resources.\n The default kind for both is AwsAlb, enabling seamless wiring to Application Load Balancers.",
+      "protoType": "org.openmcf.provider.aws.awsroute53dnsrecord.v1.AwsRoute53AliasTarget",
+      "fields": [
+        {
+          "name": "DnsName",
+          "jsonName": "dnsName",
+          "protoField": "dns_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The DNS name of the target resource.\n Can be provided as a literal value or referenced from an AWS resource.\n\n When using value_from, the default kind is AwsAlb and the default field path\n is \"status.outputs.load_balancer_dns_name\".\n\n Example literals:\n   - CloudFront: \"d1234abcd.cloudfront.net\"\n   - ALB: \"my-alb-1234567890.us-east-1.elb.amazonaws.com\"\n   - S3 website: \"my-bucket.s3-website-us-east-1.amazonaws.com\"\n   - API Gateway: \"abc123.execute-api.us-east-1.amazonaws.com\"\n\n Example value_from (ALB):\n   value_from:\n     name: my-alb",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsAlb",
+          "referenceFieldPath": "status.outputs.load_balancer_dns_name"
+        },
+        {
+          "name": "ZoneId",
+          "jsonName": "zoneId",
+          "protoField": "zone_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The hosted zone ID of the target resource (AWS service's zone ID, not your Route53 zone).\n Can be provided as a literal value or referenced from an AWS resource.\n\n When using value_from, the default kind is AwsAlb and the default field path\n is \"status.outputs.load_balancer_hosted_zone_id\".\n\n Common hosted zone IDs (for literal values):\n   - CloudFront: \"Z2FDTNDATAQYW2\" (global)\n   - ALB (us-east-1): \"Z35SXDOTRQ7X7K\"\n   - S3 website (us-east-1): \"Z3AQBSTGFYJSTF\"\n\n Example value_from (ALB):\n   value_from:\n     name: my-alb\n\n Note: This is NOT your Route53 zone ID - it's the AWS service's zone ID.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AwsAlb",
+          "referenceFieldPath": "status.outputs.load_balancer_hosted_zone_id"
+        },
+        {
+          "name": "EvaluateTargetHealth",
+          "jsonName": "evaluateTargetHealth",
+          "protoField": "evaluate_target_health",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Evaluate target health.\n If true, Route53 checks the health of the target before responding.\n Useful for automatic failover when combined with health checks.\n Default: false",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsRoute53FailoverPolicy",
+      "description": "AwsRoute53FailoverPolicy enables active-passive failover.\n Primary serves traffic when healthy; secondary takes over on failure.",
+      "protoType": "org.openmcf.provider.aws.awsroute53dnsrecord.v1.AwsRoute53FailoverPolicy",
+      "fields": [
+        {
+          "name": "FailoverType",
+          "jsonName": "failoverType",
+          "protoField": "failover_type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.aws.awsroute53dnsrecord.v1.FailoverType",
+            "enumValues": [
+              "primary",
+              "secondary"
+            ]
+          },
+          "description": "Failover record type.\n Must have exactly one PRIMARY and one SECONDARY record per name/type combo.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsRoute53GeolocationPolicy",
+      "description": "AwsRoute53GeolocationPolicy routes traffic based on user's location.\n Supports routing at continent, country, or US state level.",
+      "protoType": "org.openmcf.provider.aws.awsroute53dnsrecord.v1.AwsRoute53GeolocationPolicy",
+      "fields": [
+        {
+          "name": "Continent",
+          "jsonName": "continent",
+          "protoField": "continent",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Continent code (two-letter).\n Examples: \"NA\" (North America), \"EU\" (Europe), \"AS\" (Asia)\n Note: Use continent OR country, not both. Country is more specific.",
+          "required": false
+        },
+        {
+          "name": "Country",
+          "jsonName": "country",
+          "protoField": "country",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Country code (two-letter ISO 3166-1 alpha-2).\n Examples: \"US\" (United States), \"GB\" (United Kingdom), \"DE\" (Germany)",
+          "required": false
+        },
+        {
+          "name": "Subdivision",
+          "jsonName": "subdivision",
+          "protoField": "subdivision",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Subdivision code (US state only).\n Only valid when country is \"US\".\n Examples: \"CA\" (California), \"NY\" (New York), \"TX\" (Texas)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AwsRoute53LatencyPolicy",
+      "description": "AwsRoute53LatencyPolicy routes users to the resource with lowest latency.\n Route53 measures latency from AWS regions and routes to best performer.",
+      "protoType": "org.openmcf.provider.aws.awsroute53dnsrecord.v1.AwsRoute53LatencyPolicy",
+      "fields": [
+        {
+          "name": "Region",
+          "jsonName": "region",
+          "protoField": "region",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The AWS region where this resource is located.\n Route53 uses this to measure latency from user locations.\n Example: \"us-east-1\", \"eu-west-1\", \"ap-southeast-1\"",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsRoute53RoutingPolicy",
+      "description": "AwsRoute53RoutingPolicy defines traffic routing policies for DNS records.\n Route53 supports multiple routing strategies beyond simple DNS resolution.",
+      "protoType": "org.openmcf.provider.aws.awsroute53dnsrecord.v1.AwsRoute53RoutingPolicy",
+      "fields": [
+        {
+          "name": "Weighted",
+          "jsonName": "weighted",
+          "protoField": "weighted",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsRoute53WeightedPolicy"
+          },
+          "description": "Weighted routing: distribute traffic based on assigned weights.\n Use cases: blue/green deployments, canary releases, load distribution.",
+          "required": false,
+          "oneofGroup": "policy"
+        },
+        {
+          "name": "Latency",
+          "jsonName": "latency",
+          "protoField": "latency",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsRoute53LatencyPolicy"
+          },
+          "description": "Latency-based routing: route to the lowest-latency endpoint.\n Use cases: global applications, multi-region deployments.",
+          "required": false,
+          "oneofGroup": "policy"
+        },
+        {
+          "name": "Failover",
+          "jsonName": "failover",
+          "protoField": "failover",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsRoute53FailoverPolicy"
+          },
+          "description": "Failover routing: automatic failover to secondary when primary fails.\n Use cases: active-passive disaster recovery, high availability.",
+          "required": false,
+          "oneofGroup": "policy"
+        },
+        {
+          "name": "Geolocation",
+          "jsonName": "geolocation",
+          "protoField": "geolocation",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsRoute53GeolocationPolicy"
+          },
+          "description": "Geolocation routing: route based on user's geographic location.\n Use cases: GDPR compliance, localized content, geographic restrictions.",
+          "required": false,
+          "oneofGroup": "policy"
+        }
+      ]
+    },
+    {
+      "name": "AwsRoute53WeightedPolicy",
+      "description": "AwsRoute53WeightedPolicy enables traffic splitting across resources.\n Weights are relative - Route53 calculates percentage based on sum of all weights.",
+      "protoType": "org.openmcf.provider.aws.awsroute53dnsrecord.v1.AwsRoute53WeightedPolicy",
+      "fields": [
+        {
+          "name": "Weight",
+          "jsonName": "weight",
+          "protoField": "weight",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Weight value (0-255).\n Higher weight means more traffic.\n Weight of 0 stops traffic to this record (useful for quick traffic draining).\n Example: Records with weights 70 and 30 get 70% and 30% of traffic.",
+          "required": false,
+          "validation": {
+            "max": 255
+          }
+        }
+      ]
+    }
+  ]
+}

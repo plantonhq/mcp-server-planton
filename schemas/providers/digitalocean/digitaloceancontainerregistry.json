@@ -1,0 +1,86 @@
+{
+  "name": "DigitalOceanContainerRegistry",
+  "kind": "DigitalOceanContainerRegistry",
+  "cloudProvider": "digitalocean",
+  "apiVersion": "digital-ocean.openmcf.org/v1",
+  "description": "digital-ocean-container-registry",
+  "protoPackage": "org.openmcf.provider.digitalocean.digitaloceancontainerregistry.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/digitalocean/digitaloceancontainerregistry/v1/api.proto",
+    "spec": "org/openmcf/provider/digitalocean/digitaloceancontainerregistry/v1/spec.proto"
+  },
+  "spec": {
+    "name": "DigitalOceanContainerRegistrySpec",
+    "fields": [
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Registry name (must be unique within your DigitalOcean account).\n 1-63 characters, lowercase letters, numbers, and hyphens; must start and end with an alphanumeric.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        }
+      },
+      {
+        "name": "SubscriptionTier",
+        "jsonName": "subscriptionTier",
+        "protoField": "subscription_tier",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.digitaloceancontainerregistry.v1.DigitalOceanContainerRegistryTier",
+          "enumValues": [
+            "starter",
+            "basic",
+            "professional"
+          ]
+        },
+        "description": "Subscription tier slug (defines storage limits and pricing).",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.digitalocean.DigitalOceanRegion",
+          "enumValues": [
+            "nyc3",
+            "sfo3",
+            "fra1",
+            "sgp1",
+            "lon1",
+            "tor1",
+            "blr1",
+            "ams3"
+          ]
+        },
+        "description": "Optional region slug where registry data is stored (e.g., \"nyc3\", \"sfo3\").\n If omitted, DigitalOcean chooses a default/nearest region.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "GarbageCollectionEnabled",
+        "jsonName": "garbageCollectionEnabled",
+        "protoField": "garbage_collection_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable garbage collection of untagged images.\n Default is false (no automatic GC).",
+        "required": false
+      }
+    ]
+  }
+}

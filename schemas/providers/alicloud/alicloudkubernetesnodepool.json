@@ -1,0 +1,763 @@
+{
+  "name": "AliCloudKubernetesNodePool",
+  "kind": "AliCloudKubernetesNodePool",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-kubernetes-node-pool",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudkubernetesnodepool.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudkubernetesnodepool/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudkubernetesnodepool/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudKubernetesNodePoolSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region. Must match the parent cluster's region.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ClusterId",
+        "jsonName": "clusterId",
+        "protoField": "cluster_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "ACK cluster ID that this node pool belongs to.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudKubernetesCluster",
+        "referenceFieldPath": "status.outputs.cluster_id"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Node pool name. 1-63 characters.\n Maps to provider field `node_pool_name`.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 63
+        }
+      },
+      {
+        "name": "VswitchIds",
+        "jsonName": "vswitchIds",
+        "protoField": "vswitch_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "VSwitch IDs for worker node placement. 1-5 VSwitches, preferably in\n distinct availability zones for high availability.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 1,
+          "maxItems": 5
+        },
+        "referenceKind": "AliCloudVswitch",
+        "referenceFieldPath": "status.outputs.vswitch_id"
+      },
+      {
+        "name": "InstanceTypes",
+        "jsonName": "instanceTypes",
+        "protoField": "instance_types",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "ECS instance types for worker nodes. At least one type is required.\n Specifying multiple types improves availability, especially for spot\n instances where a single type may be unavailable.\n Examples: \"ecs.g7.xlarge\", \"ecs.g7.2xlarge\", \"ecs.c7.xlarge\"",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minItems": 1
+        }
+      },
+      {
+        "name": "DesiredSize",
+        "jsonName": "desiredSize",
+        "protoField": "desired_size",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Desired number of nodes in the node pool.\n For auto-scaling pools (scaling_config.enable = true), this sets the\n initial count; the auto-scaler may adjust between min_size and max_size.\n For fixed-size pools, this is the exact count.\n Range: 0-1000.",
+        "required": false,
+        "validation": {
+          "max": 1000
+        },
+        "oneofGroup": "_desired_size"
+      },
+      {
+        "name": "ImageType",
+        "jsonName": "imageType",
+        "protoField": "image_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OS image type for the worker nodes.\n Default: \"AliyunLinux3\"",
+        "required": false,
+        "default": "AliyunLinux3",
+        "oneofGroup": "_image_type"
+      },
+      {
+        "name": "SystemDisk",
+        "jsonName": "systemDisk",
+        "protoField": "system_disk",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudKubernetesNodePoolSystemDisk"
+        },
+        "description": "System disk configuration for the worker nodes.",
+        "required": false
+      },
+      {
+        "name": "DataDisks",
+        "jsonName": "dataDisks",
+        "protoField": "data_disks",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudKubernetesNodePoolDataDisk"
+          }
+        },
+        "description": "Additional data disks attached to each worker node.",
+        "required": false
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Security group IDs for the worker nodes.\n Immutable after creation.\n If omitted, the cluster's default security group is used.",
+        "required": false,
+        "referenceKind": "AliCloudSecurityGroup",
+        "referenceFieldPath": "status.outputs.security_group_id"
+      },
+      {
+        "name": "InternetMaxBandwidthOut",
+        "jsonName": "internetMaxBandwidthOut",
+        "protoField": "internet_max_bandwidth_out",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum outbound internet bandwidth in Mbps.\n 0 means no public IP is allocated (default). 1-100 allocates a public IP.",
+        "required": false,
+        "validation": {
+          "max": 100
+        },
+        "oneofGroup": "_internet_max_bandwidth_out"
+      },
+      {
+        "name": "InternetChargeType",
+        "jsonName": "internetChargeType",
+        "protoField": "internet_charge_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Billing method for public internet access.\n Only relevant when internet_max_bandwidth_out \u003e 0.\n Default: \"PayByTraffic\"",
+        "required": false,
+        "oneofGroup": "_internet_charge_type"
+      },
+      {
+        "name": "KeyName",
+        "jsonName": "keyName",
+        "protoField": "key_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SSH key pair name for node access.\n Mutually exclusive with password.\n Recommended over password for managed node pools.",
+        "required": false
+      },
+      {
+        "name": "Password",
+        "jsonName": "password",
+        "protoField": "password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SSH password for node access. 8-30 characters.\n Mutually exclusive with key_name. Sensitive value.",
+        "required": false
+      },
+      {
+        "name": "Labels",
+        "jsonName": "labels",
+        "protoField": "labels",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Kubernetes labels applied to all nodes in the pool.\n Used for pod scheduling affinity and node selectors.\n Example: {\"workload-type\": \"compute\", \"team\": \"platform\"}",
+        "required": false
+      },
+      {
+        "name": "Taints",
+        "jsonName": "taints",
+        "protoField": "taints",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudKubernetesNodePoolTaint"
+          }
+        },
+        "description": "Kubernetes taints applied to all nodes in the pool.\n Taints repel pods unless the pod has a matching toleration.",
+        "required": false
+      },
+      {
+        "name": "CpuPolicy",
+        "jsonName": "cpuPolicy",
+        "protoField": "cpu_policy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "CPU management policy for nodes.\n \"none\" (default) -- standard CFS scheduling.\n \"static\" -- pin exclusive containers to specific CPUs; improves\n   determinism for latency-sensitive workloads.",
+        "required": false,
+        "oneofGroup": "_cpu_policy"
+      },
+      {
+        "name": "RuntimeName",
+        "jsonName": "runtimeName",
+        "protoField": "runtime_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Container runtime name (e.g., \"containerd\", \"Sandboxed-Container.runv\").\n If omitted, the provider default for the selected image_type is used.",
+        "required": false
+      },
+      {
+        "name": "RuntimeVersion",
+        "jsonName": "runtimeVersion",
+        "protoField": "runtime_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Container runtime version.\n If omitted, the latest version supported by the cluster is used.",
+        "required": false
+      },
+      {
+        "name": "Unschedulable",
+        "jsonName": "unschedulable",
+        "protoField": "unschedulable",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether newly added nodes are marked unschedulable.\n When true, pods cannot be scheduled on new nodes until the taint is\n manually removed. Useful for pre-configuration before accepting workloads.",
+        "required": false,
+        "oneofGroup": "_unschedulable"
+      },
+      {
+        "name": "UserData",
+        "jsonName": "userData",
+        "protoField": "user_data",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Custom user data script to execute on each node at boot time.\n Must be base64-encoded. Maximum 16 KB before encoding.",
+        "required": false
+      },
+      {
+        "name": "InstallCloudMonitor",
+        "jsonName": "installCloudMonitor",
+        "protoField": "install_cloud_monitor",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to install Alibaba Cloud CloudMonitor agent on nodes.\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_install_cloud_monitor"
+      },
+      {
+        "name": "ScalingConfig",
+        "jsonName": "scalingConfig",
+        "protoField": "scaling_config",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudKubernetesNodePoolScalingConfig"
+        },
+        "description": "Auto-scaling configuration. When enabled, the cluster auto-scaler\n adjusts the number of nodes between min_size and max_size based on\n pending pod resource requests.",
+        "required": false
+      },
+      {
+        "name": "MultiAzPolicy",
+        "jsonName": "multiAzPolicy",
+        "protoField": "multi_az_policy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Multi-AZ scheduling policy when vswitch_ids spans multiple zones.\n \"PRIORITY\" -- allocate in the first AZ with available capacity.\n \"COST_OPTIMIZED\" -- allocate in the cheapest AZ.\n \"BALANCE\" -- evenly distribute across AZs.",
+        "required": false,
+        "oneofGroup": "_multi_az_policy"
+      },
+      {
+        "name": "Management",
+        "jsonName": "management",
+        "protoField": "management",
+        "type": {
+          "kind": "message",
+          "messageType": "AliCloudKubernetesNodePoolManagement"
+        },
+        "description": "Managed node pool lifecycle management settings.\n When enabled, ACK automatically repairs unhealthy nodes, upgrades\n kubelet versions, and patches vulnerabilities.",
+        "required": false
+      },
+      {
+        "name": "SpotStrategy",
+        "jsonName": "spotStrategy",
+        "protoField": "spot_strategy",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Spot instance strategy for cost optimization.\n \"NoSpot\" (default) -- only on-demand instances.\n \"SpotWithPriceLimit\" -- spot instances with a price cap.\n \"SpotAsPriceGo\" -- spot instances at market price (cheapest).",
+        "required": false,
+        "oneofGroup": "_spot_strategy"
+      },
+      {
+        "name": "SpotPriceLimits",
+        "jsonName": "spotPriceLimits",
+        "protoField": "spot_price_limits",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudKubernetesNodePoolSpotPriceLimit"
+          }
+        },
+        "description": "Per-instance-type price caps for spot instances.\n Only relevant when spot_strategy is \"SpotWithPriceLimit\".",
+        "required": false
+      },
+      {
+        "name": "InstanceChargeType",
+        "jsonName": "instanceChargeType",
+        "protoField": "instance_charge_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Billing method for worker node instances.\n \"PostPaid\" (default) -- pay-as-you-go.\n \"PrePaid\" -- subscription; requires period and optionally auto_renew.",
+        "required": false,
+        "default": "PostPaid",
+        "oneofGroup": "_instance_charge_type"
+      },
+      {
+        "name": "Period",
+        "jsonName": "period",
+        "protoField": "period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Subscription period in months. Required when instance_charge_type is PrePaid.\n Valid values: 1, 2, 3, 6, 12.",
+        "required": false,
+        "oneofGroup": "_period"
+      },
+      {
+        "name": "AutoRenew",
+        "jsonName": "autoRenew",
+        "protoField": "auto_renew",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to automatically renew the subscription.\n Only relevant when instance_charge_type is PrePaid.",
+        "required": false,
+        "oneofGroup": "_auto_renew"
+      },
+      {
+        "name": "AutoRenewPeriod",
+        "jsonName": "autoRenewPeriod",
+        "protoField": "auto_renew_period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Auto-renewal period in months.\n Valid values: 1, 2, 3, 6, 12.",
+        "required": false,
+        "oneofGroup": "_auto_renew_period"
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags applied to the ECS instances in the node pool.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping.",
+        "required": false
+      },
+      {
+        "name": "RamRoleName",
+        "jsonName": "ramRoleName",
+        "protoField": "ram_role_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "RAM role name for worker nodes.\n Determines what Alibaba Cloud APIs the node can call (e.g., pulling\n images from ACR, writing to SLS). If omitted, the cluster's default\n worker RAM role is used.\n Immutable after creation.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudKubernetesNodePoolDataDisk",
+      "description": "AliCloudKubernetesNodePoolDataDisk configures an additional data disk\n attached to each worker node.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudkubernetesnodepool.v1.AliCloudKubernetesNodePoolDataDisk",
+      "fields": [
+        {
+          "name": "Category",
+          "jsonName": "category",
+          "protoField": "category",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Disk category.\n Default: \"cloud_essd\"",
+          "required": false,
+          "default": "cloud_essd",
+          "oneofGroup": "_category"
+        },
+        {
+          "name": "Size",
+          "jsonName": "size",
+          "protoField": "size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Disk size in GiB. Range: 40-32767.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "min": 40,
+            "max": 32767
+          }
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Disk name.",
+          "required": false
+        },
+        {
+          "name": "PerformanceLevel",
+          "jsonName": "performanceLevel",
+          "protoField": "performance_level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ESSD performance level. Only applies when category is \"cloud_essd\".\n Valid values: \"PL0\", \"PL1\", \"PL2\", \"PL3\".",
+          "required": false
+        },
+        {
+          "name": "Encrypted",
+          "jsonName": "encrypted",
+          "protoField": "encrypted",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Whether to encrypt the data disk. \"true\" or \"false\".",
+          "required": false
+        },
+        {
+          "name": "KmsKeyId",
+          "jsonName": "kmsKeyId",
+          "protoField": "kms_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "KMS key ID for disk encryption.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudKubernetesNodePoolManagement",
+      "description": "AliCloudKubernetesNodePoolManagement configures automatic lifecycle\n management for a managed node pool.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudkubernetesnodepool.v1.AliCloudKubernetesNodePoolManagement",
+      "fields": [
+        {
+          "name": "Enable",
+          "jsonName": "enable",
+          "protoField": "enable",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether managed node pool features are enabled.\n Default: true",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_enable"
+        },
+        {
+          "name": "AutoRepair",
+          "jsonName": "autoRepair",
+          "protoField": "auto_repair",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether ACK automatically repairs unhealthy nodes.\n Unhealthy nodes are detected via node conditions (Ready, DiskPressure, etc.).",
+          "required": false,
+          "oneofGroup": "_auto_repair"
+        },
+        {
+          "name": "AutoUpgrade",
+          "jsonName": "autoUpgrade",
+          "protoField": "auto_upgrade",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether ACK automatically upgrades kubelet on nodes when the cluster\n version is upgraded.",
+          "required": false,
+          "oneofGroup": "_auto_upgrade"
+        },
+        {
+          "name": "MaxUnavailable",
+          "jsonName": "maxUnavailable",
+          "protoField": "max_unavailable",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of nodes that can be unavailable during managed\n operations (repair, upgrade, patching).\n Range: 0-1000. Default: 1.",
+          "required": false,
+          "validation": {
+            "max": 1000
+          },
+          "oneofGroup": "_max_unavailable"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudKubernetesNodePoolScalingConfig",
+      "description": "AliCloudKubernetesNodePoolScalingConfig configures the cluster auto-scaler\n for this node pool.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudkubernetesnodepool.v1.AliCloudKubernetesNodePoolScalingConfig",
+      "fields": [
+        {
+          "name": "Enable",
+          "jsonName": "enable",
+          "protoField": "enable",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether auto-scaling is enabled.\n Default: true (when scaling_config is present).",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_enable"
+        },
+        {
+          "name": "MinSize",
+          "jsonName": "minSize",
+          "protoField": "min_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Minimum number of nodes the auto-scaler will maintain.\n Range: 0-1000.",
+          "required": false,
+          "validation": {
+            "max": 1000
+          }
+        },
+        {
+          "name": "MaxSize",
+          "jsonName": "maxSize",
+          "protoField": "max_size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum number of nodes the auto-scaler can scale to.\n Range: 0-2000. Must be \u003e= min_size.",
+          "required": false,
+          "validation": {
+            "max": 2000
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Instance classification for the auto-scaler.\n \"cpu\" (default) -- general-purpose CPU instances.\n \"gpu\" -- GPU instances.\n \"gpushare\" -- shared GPU instances.\n \"spot\" -- spot/preemptible instances.",
+          "required": false,
+          "oneofGroup": "_type"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudKubernetesNodePoolSpotPriceLimit",
+      "description": "AliCloudKubernetesNodePoolSpotPriceLimit defines a price cap for a\n specific spot instance type.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudkubernetesnodepool.v1.AliCloudKubernetesNodePoolSpotPriceLimit",
+      "fields": [
+        {
+          "name": "InstanceType",
+          "jsonName": "instanceType",
+          "protoField": "instance_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ECS instance type (e.g., \"ecs.g7.xlarge\").\n Must be one of the types listed in instance_types.",
+          "required": false
+        },
+        {
+          "name": "PriceLimit",
+          "jsonName": "priceLimit",
+          "protoField": "price_limit",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Maximum hourly price in CNY (e.g., \"0.98\").\n When the spot market price exceeds this, the instance is not created.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudKubernetesNodePoolSystemDisk",
+      "description": "AliCloudKubernetesNodePoolSystemDisk configures the system (OS) disk\n for each worker node.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudkubernetesnodepool.v1.AliCloudKubernetesNodePoolSystemDisk",
+      "fields": [
+        {
+          "name": "Category",
+          "jsonName": "category",
+          "protoField": "category",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Disk category.\n Default: \"cloud_essd\"",
+          "required": false,
+          "default": "cloud_essd",
+          "oneofGroup": "_category"
+        },
+        {
+          "name": "Size",
+          "jsonName": "size",
+          "protoField": "size",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Disk size in GiB.\n Minimum: 40 GiB. Default: 120 GiB.",
+          "required": false,
+          "validation": {
+            "min": 40,
+            "max": 500
+          },
+          "default": "120",
+          "oneofGroup": "_size"
+        },
+        {
+          "name": "PerformanceLevel",
+          "jsonName": "performanceLevel",
+          "protoField": "performance_level",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ESSD performance level. Only applies when category is \"cloud_essd\".\n Valid values: \"PL0\", \"PL1\", \"PL2\", \"PL3\".\n Higher levels provide more IOPS and throughput.",
+          "required": false
+        },
+        {
+          "name": "Encrypted",
+          "jsonName": "encrypted",
+          "protoField": "encrypted",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to encrypt the system disk.",
+          "required": false,
+          "oneofGroup": "_encrypted"
+        },
+        {
+          "name": "KmsKeyId",
+          "jsonName": "kmsKeyId",
+          "protoField": "kms_key_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "KMS key ID for disk encryption.\n Only relevant when encrypted is true.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudKubernetesNodePoolTaint",
+      "description": "AliCloudKubernetesNodePoolTaint defines a Kubernetes taint applied to\n all nodes in the pool.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudkubernetesnodepool.v1.AliCloudKubernetesNodePoolTaint",
+      "fields": [
+        {
+          "name": "Key",
+          "jsonName": "key",
+          "protoField": "key",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Taint key. Must be a valid Kubernetes label key.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Taint value.",
+          "required": false
+        },
+        {
+          "name": "Effect",
+          "jsonName": "effect",
+          "protoField": "effect",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Taint effect that determines the scheduling behavior.\n \"NoSchedule\" -- pods without a toleration are not scheduled.\n \"PreferNoSchedule\" -- soft version; scheduler tries to avoid.\n \"NoExecute\" -- existing pods without a toleration are evicted.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,729 @@
+{
+  "name": "OciNetworkLoadBalancer",
+  "kind": "OciNetworkLoadBalancer",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "protoPackage": "org.openmcf.provider.oci.ocinetworkloadbalancer.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocinetworkloadbalancer/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocinetworkloadbalancer/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciNetworkLoadBalancerSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the network load balancer will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable name for the network load balancer shown in the OCI Console.\n Falls back to metadata.name if not provided.",
+        "required": false
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the subnet where the network load balancer will be spawned.\n Unlike the L7 load balancer which accepts multiple subnets, the NLB\n is deployed into a single subnet. Changing this after creation forces\n recreation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciSubnet",
+        "referenceFieldPath": "status.outputs.subnetId"
+      },
+      {
+        "name": "IsPrivate",
+        "jsonName": "isPrivate",
+        "protoField": "is_private",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, creates a private network load balancer that is not accessible\n from the public internet. Private NLBs receive only private IP addresses.\n Note: OCI defaults NLBs to private (true). The proto3 default is false,\n so explicitly set this to true for private NLBs.\n Changing this after creation forces recreation.",
+        "required": false
+      },
+      {
+        "name": "IsPreserveSourceDestination",
+        "jsonName": "isPreserveSourceDestination",
+        "protoField": "is_preserve_source_destination",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, the NLB preserves the source IP address and destination IP\n address in the IP header. This automatically enables skipSourceDestinationCheck\n on the NLB's VNIC, allowing packets to reach backends with the original\n client IP intact. Essential for firewalls, intrusion detection systems,\n and applications that need the true client IP.",
+        "required": false
+      },
+      {
+        "name": "IsSymmetricHashEnabled",
+        "jsonName": "isSymmetricHashEnabled",
+        "protoField": "is_symmetric_hash_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "When true, enables symmetric hashing for the NLB. This can only be enabled\n when the NLB is working in transparent mode with source/destination\n preservation enabled. Removes the dependency on backends (like firewalls)\n to perform SNAT.",
+        "required": false
+      },
+      {
+        "name": "NetworkSecurityGroupIds",
+        "jsonName": "networkSecurityGroupIds",
+        "protoField": "network_security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "OCIDs of network security groups applied to the network load balancer.",
+        "required": false,
+        "referenceKind": "OciSecurityGroup",
+        "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+      },
+      {
+        "name": "NlbIpVersion",
+        "jsonName": "nlbIpVersion",
+        "protoField": "nlb_ip_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IP version for the network load balancer. Accepted values:\n \"IPV4\", \"IPV6\", \"IPV4_AND_IPV6\".\n When omitted, defaults to \"IPV4\".",
+        "required": false
+      },
+      {
+        "name": "ReservedIps",
+        "jsonName": "reservedIps",
+        "protoField": "reserved_ips",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ReservedIp"
+          }
+        },
+        "description": "Pre-created reserved public IPs to assign to the network load balancer.\n When omitted, OCI assigns ephemeral public IPs (for public NLBs).",
+        "required": false
+      },
+      {
+        "name": "BackendSets",
+        "jsonName": "backendSets",
+        "protoField": "backend_sets",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "BackendSet"
+          }
+        },
+        "description": "Backend sets define groups of backend servers with load balancing\n policies and health checking. At least one backend set is required.\n Each listener routes traffic to exactly one default backend set.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Listeners",
+        "jsonName": "listeners",
+        "protoField": "listeners",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Listener"
+          }
+        },
+        "description": "Listeners define the ports and protocols on which the network load\n balancer accepts connections. At least one listener is required.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "AssignedIpv6",
+        "jsonName": "assignedIpv6",
+        "protoField": "assigned_ipv6",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IPv6 address to assign to the network load balancer. Must be part of\n one of the prefixes supported by the subnet.\n Example: \"2607:9b80:9a0a:9a7e:abcd:ef01:2345:6789\"",
+        "required": false
+      },
+      {
+        "name": "AssignedPrivateIpv4",
+        "jsonName": "assignedPrivateIpv4",
+        "protoField": "assigned_private_ipv4",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Private IPv4 address to assign to the network load balancer. Must be\n in the CIDR range of the subnet. Changing this after creation forces\n recreation. Example: \"10.0.0.1\"",
+        "required": false
+      },
+      {
+        "name": "SubnetIpv6cidr",
+        "jsonName": "subnetIpv6cidr",
+        "protoField": "subnet_ipv6cidr",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IPv6 subnet prefix selection. When provided, the NLB IPv6 address is\n assigned within this CIDR block.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "Backend",
+      "description": "Backend represents an individual server that receives traffic from\n the network load balancer through a backend set.\n\n Backends can be identified by IP address, by target ID (compute instance\n OCID or private IP OCID), or both. At least one of ip_address or\n target_id should be provided.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkloadbalancer.v1.OciNetworkLoadBalancerSpec.Backend",
+      "fields": [
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port on which the backend server listens for traffic.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "IpAddress",
+          "jsonName": "ipAddress",
+          "protoField": "ip_address",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP address of the backend server. When omitted, target_id must be\n provided instead.",
+          "required": false
+        },
+        {
+          "name": "TargetId",
+          "jsonName": "targetId",
+          "protoField": "target_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of a compute instance or private IP to use as the backend target.\n When provided, OCI resolves the IP address automatically. When omitted,\n ip_address must be provided instead.",
+          "required": false
+        },
+        {
+          "name": "Weight",
+          "jsonName": "weight",
+          "protoField": "weight",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Relative weight for traffic distribution. Higher weights receive\n proportionally more traffic. When omitted, defaults to 1.",
+          "required": false
+        },
+        {
+          "name": "IsBackup",
+          "jsonName": "isBackup",
+          "protoField": "is_backup",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, this backend only receives traffic when all non-backup\n backends are unhealthy.",
+          "required": false
+        },
+        {
+          "name": "IsDrain",
+          "jsonName": "isDrain",
+          "protoField": "is_drain",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, the backend is in drain mode -- existing connections\n complete but no new connections are sent to this backend.",
+          "required": false
+        },
+        {
+          "name": "IsOffline",
+          "jsonName": "isOffline",
+          "protoField": "is_offline",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, the backend is temporarily taken offline. No traffic\n is sent to offline backends.",
+          "required": false
+        },
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional unique name identifying the backend within the backend set.\n When omitted, OCI auto-generates a name in the format \"IP:port\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "BackendSet",
+      "description": "BackendSet defines a group of backend servers that receive traffic from\n the network load balancer, along with the load balancing policy, health\n checking, and failover configuration.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkloadbalancer.v1.OciNetworkLoadBalancerSpec.BackendSet",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this backend set within the network load balancer.\n Listeners reference backend sets by this name.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Policy",
+          "jsonName": "policy",
+          "protoField": "policy",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocinetworkloadbalancer.v1.Policy",
+            "enumValues": [
+              "five_tuple",
+              "three_tuple",
+              "two_tuple"
+            ]
+          },
+          "description": "Load balancing policy that determines how traffic is distributed\n across backends. NLB uses tuple-based hashing rather than the\n round-robin/least-connections policies of the L7 load balancer.",
+          "required": false
+        },
+        {
+          "name": "HealthChecker",
+          "jsonName": "healthChecker",
+          "protoField": "health_checker",
+          "type": {
+            "kind": "message",
+            "messageType": "HealthChecker"
+          },
+          "description": "Health checker configuration that monitors backend availability.\n The NLB removes unhealthy backends from the rotation until they\n pass health checks again.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Backends",
+          "jsonName": "backends",
+          "protoField": "backends",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "Backend"
+            }
+          },
+          "description": "Backend servers in this set. When omitted, the backend set is\n created without backends (useful when backends are added dynamically\n or via target_id references to compute instances).",
+          "required": false
+        },
+        {
+          "name": "IsPreserveSource",
+          "jsonName": "isPreserveSource",
+          "protoField": "is_preserve_source",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, the NLB preserves the source IP of the packet when\n forwarding to backends in this set. Defaults to true in OCI.",
+          "required": false
+        },
+        {
+          "name": "IsFailOpen",
+          "jsonName": "isFailOpen",
+          "protoField": "is_fail_open",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, the NLB continues distributing traffic to all backends\n even when all backends are marked unhealthy. Prevents total service\n outage at the cost of sending traffic to degraded backends.",
+          "required": false
+        },
+        {
+          "name": "IsInstantFailoverEnabled",
+          "jsonName": "isInstantFailoverEnabled",
+          "protoField": "is_instant_failover_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, existing connections are immediately forwarded to an\n alternative healthy backend as soon as the current backend becomes\n unhealthy, rather than waiting for the connection to time out.",
+          "required": false
+        },
+        {
+          "name": "IsInstantFailoverTcpResetEnabled",
+          "jsonName": "isInstantFailoverTcpResetEnabled",
+          "protoField": "is_instant_failover_tcp_reset_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true (and instant failover is enabled), the NLB sends a TCP\n RST to clients for existing connections instead of silently failing\n over. Gives clients an immediate signal to reconnect.",
+          "required": false
+        },
+        {
+          "name": "AreOperationallyActiveBackendsPreferred",
+          "jsonName": "areOperationallyActiveBackendsPreferred",
+          "protoField": "are_operationally_active_backends_preferred",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, enables active-standby backend support. The NLB\n preferentially routes traffic to operationally active backends.",
+          "required": false
+        },
+        {
+          "name": "IpVersion",
+          "jsonName": "ipVersion",
+          "protoField": "ip_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP version for this backend set. When omitted, inherits from the\n NLB's nlb_ip_version setting.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "DnsHealthCheck",
+      "description": "DnsHealthCheck configures DNS-based health checking. The NLB sends\n DNS queries to backends and validates the response codes to determine\n health. Useful for DNS servers and services that expose health via DNS.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkloadbalancer.v1.OciNetworkLoadBalancerSpec.DnsHealthCheck",
+      "fields": [
+        {
+          "name": "DomainName",
+          "jsonName": "domainName",
+          "protoField": "domain_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Fully qualified domain name to query.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "QueryClass",
+          "jsonName": "queryClass",
+          "protoField": "query_class",
+          "type": {
+            "kind": "string"
+          },
+          "description": "DNS query class. Accepted values: \"IN\" (Internet), \"CH\" (Chaos).\n When omitted, defaults to \"IN\".",
+          "required": false
+        },
+        {
+          "name": "QueryType",
+          "jsonName": "queryType",
+          "protoField": "query_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "DNS query type. Accepted values: \"A\", \"AAAA\", \"TXT\".\n When omitted, defaults to \"A\".",
+          "required": false
+        },
+        {
+          "name": "Rcodes",
+          "jsonName": "rcodes",
+          "protoField": "rcodes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Acceptable DNS response codes. The backend is healthy if the\n response code matches any value in this list.\n Example values: \"NOERROR\", \"NXDOMAIN\".\n When omitted, defaults to [\"NOERROR\"].",
+          "required": false
+        },
+        {
+          "name": "TransportProtocol",
+          "jsonName": "transportProtocol",
+          "protoField": "transport_protocol",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Transport protocol for DNS queries. Accepted values: \"UDP\", \"TCP\".\n When omitted, defaults to \"UDP\".",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "HealthChecker",
+      "description": "HealthChecker configures periodic health probes sent to backend servers.\n The NLB supports a broader set of health check protocols than the L7 LB,\n including HTTPS, UDP, and DNS probes.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkloadbalancer.v1.OciNetworkLoadBalancerSpec.HealthChecker",
+      "fields": [
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocinetworkloadbalancer.v1.Protocol",
+            "enumValues": [
+              "http",
+              "https",
+              "tcp",
+              "udp",
+              "dns"
+            ]
+          },
+          "description": "Protocol used for health checks.",
+          "required": false
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port on the backend server to probe. When omitted or set to 0,\n the health checker uses the backend's traffic port.",
+          "required": false
+        },
+        {
+          "name": "UrlPath",
+          "jsonName": "urlPath",
+          "protoField": "url_path",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URL path for HTTP/HTTPS health checks (e.g., \"/health\", \"/ready\").\n Required when protocol is http or https. Ignored for other protocols.",
+          "required": false
+        },
+        {
+          "name": "ReturnCode",
+          "jsonName": "returnCode",
+          "protoField": "return_code",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Expected HTTP status code from healthy backends (e.g., 200).\n Used with http and https protocols.",
+          "required": false
+        },
+        {
+          "name": "ResponseBodyRegex",
+          "jsonName": "responseBodyRegex",
+          "protoField": "response_body_regex",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Regex pattern to match against the response body. The backend is\n considered healthy only if the response body matches this pattern.",
+          "required": false
+        },
+        {
+          "name": "IntervalInMillis",
+          "jsonName": "intervalInMillis",
+          "protoField": "interval_in_millis",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Interval between consecutive health checks in milliseconds.\n When omitted, defaults to 10000 (10 seconds).",
+          "required": false
+        },
+        {
+          "name": "TimeoutInMillis",
+          "jsonName": "timeoutInMillis",
+          "protoField": "timeout_in_millis",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Maximum time to wait for a health check response in milliseconds.\n When omitted, defaults to 3000 (3 seconds).",
+          "required": false
+        },
+        {
+          "name": "Retries",
+          "jsonName": "retries",
+          "protoField": "retries",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Number of consecutive failed health checks before marking a backend\n as unhealthy. When omitted, defaults to 3.",
+          "required": false
+        },
+        {
+          "name": "RequestData",
+          "jsonName": "requestData",
+          "protoField": "request_data",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Base64-encoded request data for UDP and TCP health checks.\n The NLB sends this data as the health check probe payload.",
+          "required": false
+        },
+        {
+          "name": "ResponseData",
+          "jsonName": "responseData",
+          "protoField": "response_data",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Base64-encoded expected response data for UDP and TCP health checks.\n The backend is healthy only if the response matches this data.",
+          "required": false
+        },
+        {
+          "name": "DnsHealthCheck",
+          "jsonName": "dnsHealthCheck",
+          "protoField": "dns_health_check",
+          "type": {
+            "kind": "message",
+            "messageType": "DnsHealthCheck"
+          },
+          "description": "DNS health check configuration. Required when protocol is dns.\n Ignored for other protocols.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Listener",
+      "description": "Listener defines a port and protocol on which the network load balancer\n accepts incoming connections and routes them to a backend set.\n\n NLB listeners support L4 protocols (TCP, UDP, TCP_AND_UDP, ANY) and\n offer protocol-specific idle timeout configuration.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkloadbalancer.v1.OciNetworkLoadBalancerSpec.Listener",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name for this listener within the network load balancer.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Port",
+          "jsonName": "port",
+          "protoField": "port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Port on which the listener accepts connections.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "Protocol",
+          "jsonName": "protocol",
+          "protoField": "protocol",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocinetworkloadbalancer.v1.Protocol",
+            "enumValues": [
+              "tcp",
+              "udp",
+              "tcp_and_udp",
+              "any"
+            ]
+          },
+          "description": "Protocol for the listener. NLB supports Layer 4 protocols only.",
+          "required": false
+        },
+        {
+          "name": "DefaultBackendSetName",
+          "jsonName": "defaultBackendSetName",
+          "protoField": "default_backend_set_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the backend set that receives traffic from this listener.\n Must match a backend set defined in backend_sets.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "IpVersion",
+          "jsonName": "ipVersion",
+          "protoField": "ip_version",
+          "type": {
+            "kind": "string"
+          },
+          "description": "IP version for this listener. When omitted, inherits from the\n NLB's nlb_ip_version setting.",
+          "required": false
+        },
+        {
+          "name": "IsPpv2Enabled",
+          "jsonName": "isPpv2Enabled",
+          "protoField": "is_ppv2_enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "When true, enables Proxy Protocol v2 (PPv2) on this listener.\n PPv2 prepends connection metadata (source IP, port, protocol)\n to the TCP stream, allowing backends to see the original client\n information even when source IP preservation is not possible.",
+          "required": false
+        },
+        {
+          "name": "TcpIdleTimeout",
+          "jsonName": "tcpIdleTimeout",
+          "protoField": "tcp_idle_timeout",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "TCP idle timeout in seconds. Connections idle longer than this\n are closed by the NLB. When omitted, OCI uses its default.",
+          "required": false
+        },
+        {
+          "name": "UdpIdleTimeout",
+          "jsonName": "udpIdleTimeout",
+          "protoField": "udp_idle_timeout",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "UDP idle timeout in seconds. When omitted, OCI uses its default.",
+          "required": false
+        },
+        {
+          "name": "L3ipIdleTimeout",
+          "jsonName": "l3ipIdleTimeout",
+          "protoField": "l3ip_idle_timeout",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "L3IP idle timeout in seconds. Applies when the protocol is ANY.\n When omitted, OCI uses its default.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ReservedIp",
+      "description": "ReservedIp references a pre-created OCI reserved public IP.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkloadbalancer.v1.OciNetworkLoadBalancerSpec.ReservedIp",
+      "fields": [
+        {
+          "name": "Id",
+          "jsonName": "id",
+          "protoField": "id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "OCID of the reserved public IP to assign to the network load balancer.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

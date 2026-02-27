@@ -1,0 +1,545 @@
+{
+  "name": "AliCloudRdsInstance",
+  "kind": "AliCloudRdsInstance",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-rds-instance",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudrdsinstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudrdsinstance/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudrdsinstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudRdsInstanceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the RDS instance will be created.\n Must match the region of the VSwitch.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "Engine",
+        "jsonName": "engine",
+        "protoField": "engine",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Database engine. Determines which relational database software runs on the\n instance. Each engine has its own set of valid versions, instance types,\n and character sets.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "EngineVersion",
+        "jsonName": "engineVersion",
+        "protoField": "engine_version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Database engine version. Must be a version supported by the selected\n engine. Examples: \"8.0\", \"5.7\" (MySQL), \"16.0\", \"15.0\" (PostgreSQL),\n \"2019_ent\" (SQL Server), \"10.3\" (MariaDB).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "InstanceType",
+        "jsonName": "instanceType",
+        "protoField": "instance_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "RDS instance class that determines CPU, memory, and I/O capacity.\n Examples: \"rds.mysql.s2.large\", \"rds.pg.s2.large\",\n \"rds.mssql.s2.large\", \"rds.mysql.t1.small\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "InstanceStorage",
+        "jsonName": "instanceStorage",
+        "protoField": "instance_storage",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Storage size in GB. The valid range depends on the engine, instance type,\n and storage type. Typical ranges: 20-6000 GB for cloud_essd.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "VswitchId",
+        "jsonName": "vswitchId",
+        "protoField": "vswitch_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VSwitch ID where the RDS instance is placed. The instance inherits the\n VPC and availability zone from the VSwitch.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVswitch",
+        "referenceFieldPath": "status.outputs.vswitch_id"
+      },
+      {
+        "name": "InstanceName",
+        "jsonName": "instanceName",
+        "protoField": "instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "RDS instance name. 2-256 characters.\n If omitted, defaults to the metadata.name.",
+        "required": false
+      },
+      {
+        "name": "InstanceChargeType",
+        "jsonName": "instanceChargeType",
+        "protoField": "instance_charge_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Billing method. \"Postpaid\" for pay-as-you-go, \"Prepaid\" for subscription.\n Default: \"Postpaid\"",
+        "required": false,
+        "default": "Postpaid",
+        "oneofGroup": "_instance_charge_type"
+      },
+      {
+        "name": "Category",
+        "jsonName": "category",
+        "protoField": "category",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Instance category that determines the deployment architecture.\n \"Basic\" -- single node, suitable for dev/test.\n \"HighAvailability\" -- primary + standby with automatic failover.\n \"AlwaysOn\" -- SQL Server AlwaysOn Availability Group clusters.\n \"Finance\" -- three-node enterprise edition for financial scenarios.\n \"cluster\" -- MySQL NDB cluster mode.\n Default: \"HighAvailability\"",
+        "required": false,
+        "default": "HighAvailability",
+        "oneofGroup": "_category"
+      },
+      {
+        "name": "DbInstanceStorageType",
+        "jsonName": "dbInstanceStorageType",
+        "protoField": "db_instance_storage_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Storage type for the instance's data disks.\n \"local_ssd\" -- local SSD (only for specific instance types).\n \"cloud_ssd\" -- standard cloud SSD.\n \"cloud_essd\" -- enhanced SSD (recommended for most workloads).\n \"cloud_essd2\" -- ESSD PL2 (higher IOPS).\n \"cloud_essd3\" -- ESSD PL3 (highest IOPS).",
+        "required": false,
+        "oneofGroup": "_db_instance_storage_type"
+      },
+      {
+        "name": "ZoneId",
+        "jsonName": "zoneId",
+        "protoField": "zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Availability zone ID for the primary instance.\n If omitted, Alibaba Cloud selects a zone from the VSwitch's region.\n Examples: \"cn-hangzhou-a\", \"cn-shanghai-b\".",
+        "required": false
+      },
+      {
+        "name": "ZoneIdSlaveA",
+        "jsonName": "zoneIdSlaveA",
+        "protoField": "zone_id_slave_a",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Availability zone ID for the standby instance in HA deployments.\n Must differ from zone_id for cross-AZ high availability.\n Only applicable when category is \"HighAvailability\" or \"Finance\".",
+        "required": false
+      },
+      {
+        "name": "SecurityIps",
+        "jsonName": "securityIps",
+        "protoField": "security_ips",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "IP addresses or CIDR blocks allowed to access the RDS instance.\n Default: [\"127.0.0.1\"] (no access). Set to [\"0.0.0.0/0\"] to allow all\n (not recommended for production).",
+        "required": false
+      },
+      {
+        "name": "SecurityGroupIds",
+        "jsonName": "securityGroupIds",
+        "protoField": "security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "VPC security group IDs to associate with the RDS instance.\n Provides network-level access control in addition to the IP whitelist.",
+        "required": false
+      },
+      {
+        "name": "MonitoringPeriod",
+        "jsonName": "monitoringPeriod",
+        "protoField": "monitoring_period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Monitoring data collection interval in seconds.\n Valid values: 5, 10, 60, 300. Lower values provide finer granularity\n but may increase monitoring costs.",
+        "required": false,
+        "oneofGroup": "_monitoring_period"
+      },
+      {
+        "name": "MaintainTime",
+        "jsonName": "maintainTime",
+        "protoField": "maintain_time",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Maintenance window in UTC. The RDS service may perform minor version\n upgrades or patches during this window.\n Format: \"HH:mmZ-HH:mmZ\" (e.g., \"02:00Z-06:00Z\").",
+        "required": false
+      },
+      {
+        "name": "DeletionProtection",
+        "jsonName": "deletionProtection",
+        "protoField": "deletion_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable deletion protection to prevent accidental deletion via the\n console or API.",
+        "required": false,
+        "oneofGroup": "_deletion_protection"
+      },
+      {
+        "name": "SslAction",
+        "jsonName": "sslAction",
+        "protoField": "ssl_action",
+        "type": {
+          "kind": "string"
+        },
+        "description": "SSL/TLS configuration for encrypted client connections.\n \"Open\" enables SSL and generates server certificates.\n \"Close\" disables SSL (default).",
+        "required": false,
+        "oneofGroup": "_ssl_action"
+      },
+      {
+        "name": "TdeStatus",
+        "jsonName": "tdeStatus",
+        "protoField": "tde_status",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Transparent Data Encryption (TDE) status. TDE encrypts data at rest\n at the storage level. Once enabled, TDE cannot be disabled.\n \"Enabled\" turns on TDE. \"Disabled\" is the default.",
+        "required": false,
+        "oneofGroup": "_tde_status"
+      },
+      {
+        "name": "EncryptionKey",
+        "jsonName": "encryptionKey",
+        "protoField": "encryption_key",
+        "type": {
+          "kind": "string"
+        },
+        "description": "KMS key ID for disk encryption. When set, the instance's storage is\n encrypted using this customer-managed key.",
+        "required": false
+      },
+      {
+        "name": "AutoRenew",
+        "jsonName": "autoRenew",
+        "protoField": "auto_renew",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Auto-renewal for Prepaid instances. Ignored for Postpaid instances.",
+        "required": false,
+        "oneofGroup": "_auto_renew"
+      },
+      {
+        "name": "AutoRenewPeriod",
+        "jsonName": "autoRenewPeriod",
+        "protoField": "auto_renew_period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Auto-renewal period in months (1-12). Only applicable when auto_renew\n is true and instance_charge_type is \"Prepaid\".",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 12
+        },
+        "oneofGroup": "_auto_renew_period"
+      },
+      {
+        "name": "Period",
+        "jsonName": "period",
+        "protoField": "period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Subscription period in months. Only applicable when instance_charge_type\n is \"Prepaid\". Valid values: 1-9, 12, 24, 36.",
+        "required": false,
+        "oneofGroup": "_period"
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for organizational grouping (per DD05).\n If omitted, the instance is placed in the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the RDS instance resource.",
+        "required": false
+      },
+      {
+        "name": "Parameters",
+        "jsonName": "parameters",
+        "protoField": "parameters",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudRdsParameter"
+          }
+        },
+        "description": "Database parameter overrides. Each parameter sets a specific database\n engine configuration value, overriding the default from the parameter\n group. Refer to Alibaba Cloud documentation for valid parameter names\n and value ranges per engine.",
+        "required": false
+      },
+      {
+        "name": "Databases",
+        "jsonName": "databases",
+        "protoField": "databases",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudRdsDatabase"
+          }
+        },
+        "description": "Databases to create within the RDS instance.",
+        "required": false
+      },
+      {
+        "name": "Accounts",
+        "jsonName": "accounts",
+        "protoField": "accounts",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudRdsAccount"
+          }
+        },
+        "description": "Database accounts to create within the RDS instance.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudRdsAccount",
+      "description": "AliCloudRdsAccount defines a database account to create within the RDS\n instance.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudrdsinstance.v1.AliCloudRdsAccount",
+      "fields": [
+        {
+          "name": "AccountName",
+          "jsonName": "accountName",
+          "protoField": "account_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Account login name. Must match [a-z][a-z0-9_]{0,61}[a-z0-9].",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 2
+          }
+        },
+        {
+          "name": "AccountPassword",
+          "jsonName": "accountPassword",
+          "protoField": "account_password",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Account password. Must meet the Alibaba Cloud password complexity\n requirements: 8-32 characters, containing at least three of uppercase,\n lowercase, digits, and special characters.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 8
+          }
+        },
+        {
+          "name": "AccountType",
+          "jsonName": "accountType",
+          "protoField": "account_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Account type.\n \"Normal\" -- standard account with explicit database privileges.\n \"Super\" -- superuser with full privileges on all databases.\n Default: \"Normal\"",
+          "required": false,
+          "default": "Normal",
+          "oneofGroup": "_account_type"
+        },
+        {
+          "name": "AccountDescription",
+          "jsonName": "accountDescription",
+          "protoField": "account_description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description of the account's purpose.",
+          "required": false
+        },
+        {
+          "name": "Privileges",
+          "jsonName": "privileges",
+          "protoField": "privileges",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AliCloudRdsAccountPrivilege"
+            }
+          },
+          "description": "Database privileges to grant to this account. Each entry grants a\n privilege level on a set of databases. Only applicable when account_type\n is \"Normal\"; Super accounts have implicit full access.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudRdsAccountPrivilege",
+      "description": "AliCloudRdsAccountPrivilege grants a single privilege level on a set of\n databases to the owning account.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudrdsinstance.v1.AliCloudRdsAccountPrivilege",
+      "fields": [
+        {
+          "name": "DatabaseNames",
+          "jsonName": "databaseNames",
+          "protoField": "database_names",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Database names to grant access to. Each name must match a database\n defined in the spec's databases list.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minItems": 1
+          }
+        },
+        {
+          "name": "Privilege",
+          "jsonName": "privilege",
+          "protoField": "privilege",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Privilege level to grant on the specified databases.\n \"ReadOnly\" -- SELECT access.\n \"ReadWrite\" -- SELECT, INSERT, UPDATE, DELETE access.\n \"DDLOnly\" -- DDL operations only (CREATE, ALTER, DROP).\n \"DMLOnly\" -- DML operations only (INSERT, UPDATE, DELETE).\n \"DBOwner\" -- full database ownership (SQL Server only).\n Default: \"ReadOnly\"",
+          "required": false,
+          "default": "ReadOnly",
+          "oneofGroup": "_privilege"
+        }
+      ]
+    },
+    {
+      "name": "AliCloudRdsDatabase",
+      "description": "AliCloudRdsDatabase defines a database to create within the RDS instance.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudrdsinstance.v1.AliCloudRdsDatabase",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Database name. Must match the pattern [a-z][a-z0-9_-]*[a-z0-9] and\n be unique within the instance.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "CharacterSet",
+          "jsonName": "characterSet",
+          "protoField": "character_set",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Character set for the database. Defaults vary by engine:\n MySQL: \"utf8mb4\", PostgreSQL: \"UTF8\", SQL Server: \"Chinese_PRC_CI_AS\",\n MariaDB: \"utf8mb4\". Set explicitly to override the engine default.",
+          "required": false
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description of the database.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudRdsParameter",
+      "description": "AliCloudRdsParameter represents a single database engine parameter override.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudrdsinstance.v1.AliCloudRdsParameter",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Parameter name (e.g., \"innodb_buffer_pool_size\", \"max_connections\",\n \"shared_buffers\").",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Parameter value as a string. The database engine interprets the value\n according to the parameter's type.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

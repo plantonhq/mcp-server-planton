@@ -1,0 +1,201 @@
+{
+  "name": "AzureKeyVault",
+  "kind": "AzureKeyVault",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "azure-key-vault",
+  "protoPackage": "org.openmcf.provider.azure.azurekeyvault.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azurekeyvault/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azurekeyvault/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureKeyVaultSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Key Vault will be deployed (e.g., \"eastus\", \"westus2\", \"westeurope\").\n This is required as Key Vault is a regional service.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Key Vault will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Sku",
+        "jsonName": "sku",
+        "protoField": "sku",
+        "type": {
+          "kind": "enum",
+          "enumType": "org.openmcf.provider.azure.azurekeyvault.v1.AzureKeyVaultSku",
+          "enumValues": [
+            "STANDARD",
+            "PREMIUM"
+          ]
+        },
+        "description": "The SKU tier for the Key Vault.\n - STANDARD: Software-protected keys, suitable for most applications\n - PREMIUM: HSM-backed keys, required for compliance (PCI-DSS, FIPS 140-2 Level 3)\n Default: STANDARD",
+        "required": false,
+        "default": "STANDARD",
+        "oneofGroup": "_sku"
+      },
+      {
+        "name": "EnableRbacAuthorization",
+        "jsonName": "enableRbacAuthorization",
+        "protoField": "enable_rbac_authorization",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable Azure RBAC for authorization instead of vault access policies.\n RBAC is the modern, recommended approach that integrates with Azure AD and PIM.\n Default: true (strongly recommended for new deployments)",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_enable_rbac_authorization"
+      },
+      {
+        "name": "EnablePurgeProtection",
+        "jsonName": "enablePurgeProtection",
+        "protoField": "enable_purge_protection",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable purge protection to prevent permanent deletion of the vault and its contents.\n When enabled, deleted vaults are retained for the soft delete retention period and cannot be purged.\n CRITICAL: Should always be true for production environments.\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_enable_purge_protection"
+      },
+      {
+        "name": "SoftDeleteRetentionDays",
+        "jsonName": "softDeleteRetentionDays",
+        "protoField": "soft_delete_retention_days",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Soft delete retention period in days (7-90 days).\n Deleted secrets, keys, and certificates are retained for this period and can be recovered.\n Default: 90 days (maximum retention)",
+        "required": false,
+        "validation": {
+          "min": 7,
+          "max": 90
+        },
+        "default": "90",
+        "oneofGroup": "_soft_delete_retention_days"
+      },
+      {
+        "name": "NetworkAcls",
+        "jsonName": "networkAcls",
+        "protoField": "network_acls",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureKeyVaultNetworkAcls"
+        },
+        "description": "Network access control configuration for the Key Vault.\n Controls who can access the vault from where (public internet, specific IPs, VNets).",
+        "required": false,
+        "oneofGroup": "_network_acls"
+      },
+      {
+        "name": "SecretNames",
+        "jsonName": "secretNames",
+        "protoField": "secret_names",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "List of secret names to create in the Key Vault.\n The actual secret values should be set separately after vault creation using Azure SDK,\n Azure CLI, or the Key Vault API (never hardcoded in IaC).",
+        "required": false,
+        "validation": {
+          "maxItems": 100
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureKeyVaultNetworkAcls",
+      "description": "**AzureKeyVaultNetworkAcls** defines network access control rules for the Key Vault.",
+      "protoType": "org.openmcf.provider.azure.azurekeyvault.v1.AzureKeyVaultNetworkAcls",
+      "fields": [
+        {
+          "name": "DefaultAction",
+          "jsonName": "defaultAction",
+          "protoField": "default_action",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.azure.azurekeyvault.v1.AzureKeyVaultNetworkAction",
+            "enumValues": [
+              "ALLOW",
+              "DENY"
+            ]
+          },
+          "description": "Default action when no explicit rule matches.\n - ALLOW: Permit all traffic (not recommended for production)\n - DENY: Block all traffic unless explicitly allowed (recommended)\n Default: DENY",
+          "required": false,
+          "default": "DENY",
+          "oneofGroup": "_default_action"
+        },
+        {
+          "name": "BypassAzureServices",
+          "jsonName": "bypassAzureServices",
+          "protoField": "bypass_azure_services",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Allow traffic from trusted Azure services even when default_action is DENY.\n This includes services like Azure Backup, Azure Site Recovery, Azure Monitor, etc.\n Default: true (recommended to allow Azure service integrations)",
+          "required": false,
+          "default": "true",
+          "oneofGroup": "_bypass_azure_services"
+        },
+        {
+          "name": "IpRules",
+          "jsonName": "ipRules",
+          "protoField": "ip_rules",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "List of IP addresses or CIDR ranges allowed to access the vault.\n Example: [\"203.0.113.0/24\", \"198.51.100.42\"]\n Used for office IPs, VPN gateways, CI/CD runners, etc.",
+          "required": false,
+          "validation": {
+            "maxItems": 200
+          }
+        },
+        {
+          "name": "VirtualNetworkSubnetIds",
+          "jsonName": "virtualNetworkSubnetIds",
+          "protoField": "virtual_network_subnet_ids",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "List of Azure Virtual Network subnet resource IDs allowed to access the vault.\n Example: [\"/subscriptions/{sub-id}/resourceGroups/{rg}/providers/Microsoft.Network/virtualNetworks/{vnet}/subnets/{subnet}\"]\n Used to restrict access to specific VNets/subnets.",
+          "required": false,
+          "validation": {
+            "maxItems": 100
+          }
+        }
+      ]
+    }
+  ]
+}

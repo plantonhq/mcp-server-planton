@@ -1,0 +1,157 @@
+{
+  "name": "AliCloudCenInstance",
+  "kind": "AliCloudCenInstance",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-cen-instance",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudceninstance.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudceninstance/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudceninstance/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudCenInstanceSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region used for API routing. CEN is a global service so\n this does not restrict where attached networks reside -- each attachment\n declares its own region via child_instance_region_id.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "CenInstanceName",
+        "jsonName": "cenInstanceName",
+        "protoField": "cen_instance_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "CEN instance name. 2-128 characters; must start with a letter or Chinese\n character; can contain digits, underscores, periods, and hyphens.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 128
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the CEN instance's purpose.",
+        "required": false
+      },
+      {
+        "name": "ProtectionLevel",
+        "jsonName": "protectionLevel",
+        "protoField": "protection_level",
+        "type": {
+          "kind": "string"
+        },
+        "description": "CIDR block overlap protection level for attached networks. When set to\n \"REDUCED\", CEN allows overlapping CIDR blocks between attached VPCs\n (routing is controlled by route maps). Leave empty for the default\n strict mode that rejects CIDR overlaps.",
+        "required": false,
+        "oneofGroup": "_protection_level"
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Resource group ID for organizational access control. Leave empty to use\n the account's default resource group.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the CEN instance resource.",
+        "required": false
+      },
+      {
+        "name": "Attachments",
+        "jsonName": "attachments",
+        "protoField": "attachments",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudCenAttachment"
+          }
+        },
+        "description": "Child-instance attachments bundled with this CEN. Each entry attaches a\n VPC, VBR (Virtual Border Router), or CCN (Cloud Connect Network) to the\n CEN instance, enabling private connectivity between the attached networks.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudCenAttachment",
+      "description": "AliCloudCenAttachment attaches a single child instance (VPC, VBR, or CCN)\n to the parent CEN instance. Each attachment creates an\n alicloud_cen_instance_attachment resource in the provider.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudceninstance.v1.AliCloudCenAttachment",
+      "fields": [
+        {
+          "name": "ChildInstanceId",
+          "jsonName": "childInstanceId",
+          "protoField": "child_instance_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "ID of the child instance to attach. For VPCs this is the vpc_id; for VBRs\n the vbr_id; for CCNs the ccn_id. When the child is a VPC managed by\n OpenMCF, use valueFrom to reference its output.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AliCloudVpc",
+          "referenceFieldPath": "status.outputs.vpc_id"
+        },
+        {
+          "name": "ChildInstanceType",
+          "jsonName": "childInstanceType",
+          "protoField": "child_instance_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Type of the child instance being attached.\n Default: \"VPC\"",
+          "required": false,
+          "default": "VPC",
+          "oneofGroup": "_child_instance_type"
+        },
+        {
+          "name": "ChildInstanceRegionId",
+          "jsonName": "childInstanceRegionId",
+          "protoField": "child_instance_region_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Region of the child instance. Required because CEN is global and the\n attached child instance can reside in any region.\n Examples: \"cn-hangzhou\", \"us-west-1\", \"eu-central-1\".",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

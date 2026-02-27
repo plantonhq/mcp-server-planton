@@ -1,0 +1,180 @@
+{
+  "name": "ScalewayRedisCluster",
+  "kind": "ScalewayRedisCluster",
+  "cloudProvider": "scaleway",
+  "apiVersion": "scaleway.openmcf.org/v1",
+  "description": "scaleway-redis-cluster",
+  "protoPackage": "org.openmcf.provider.scaleway.scalewayrediscluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/scaleway/scalewayrediscluster/v1/api.proto",
+    "spec": "org/openmcf/provider/scaleway/scalewayrediscluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "ScalewayRedisClusterSpec",
+    "fields": [
+      {
+        "name": "Zone",
+        "jsonName": "zone",
+        "protoField": "zone",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Scaleway availability zone where the cluster will be created.\n\n Examples: \"fr-par-1\", \"nl-ams-1\", \"pl-waw-1\"\n\n Redis is a ZONAL resource (unlike RDB which is regional). The zone\n determines which data center hosts the cluster nodes.\n\n Cannot be changed after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "Version",
+        "jsonName": "version",
+        "protoField": "version",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Redis engine version.\n\n Format: semantic version (e.g., \"7.2.5\", \"6.2.7\").\n\n Can be upgraded (triggers an online migration) but never downgraded.\n Check Scaleway documentation for currently supported versions.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        }
+      },
+      {
+        "name": "NodeType",
+        "jsonName": "nodeType",
+        "protoField": "node_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Node type determining CPU, RAM, and performance characteristics.\n\n Common types:\n   - \"RED1-MICRO\"  -- Smallest, for development and testing.\n   - \"RED1-S\"      -- Small production workloads.\n   - \"RED1-M\"      -- Medium production workloads.\n   - \"RED1-L\"      -- Large production workloads.\n   - \"RED1-XL\"     -- High-traffic production.\n\n Can be upgraded (triggers an online migration) but never downgraded.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "ClusterSize",
+        "jsonName": "clusterSize",
+        "protoField": "cluster_size",
+        "type": {
+          "kind": "uint32"
+        },
+        "description": "Number of nodes in the cluster. Determines the deployment mode:\n\n   - 1: Standalone mode (single node, no redundancy).\n   - 2: High Availability (1 main + 1 standby with automatic failover).\n   - 3+: Cluster mode (data sharded across nodes, minimum 3).\n\n IMPORTANT lifecycle constraints:\n   - Standalone (1) to Cluster (3+): DESTROYS and recreates the cluster.\n   - Cluster to smaller Cluster: DESTROYS and recreates the cluster.\n   - Cluster to larger Cluster: online migration (safe scale-out).\n   - HA adjustments (1 to 2, 2 to 1): migration-based.\n\n Default: 1 (standalone).",
+        "required": false,
+        "recommendedDefault": "1"
+      },
+      {
+        "name": "TlsEnabled",
+        "jsonName": "tlsEnabled",
+        "protoField": "tls_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether to enable TLS encryption for client connections.\n\n When enabled, all client connections must use TLS. The cluster's\n TLS certificate is exported in `status.outputs.certificate`.\n\n IMPORTANT: Changing this value DESTROYS and RECREATES the cluster.\n Plan TLS requirements before initial deployment.\n\n Default: false.",
+        "required": false
+      },
+      {
+        "name": "UserName",
+        "jsonName": "userName",
+        "protoField": "user_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Username for the Redis cluster's initial user.\n\n This is the only user created with the cluster. Redis on Scaleway\n supports a single authentication principal (unlike RDB which has\n multi-user support).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "maxLength": 63
+        }
+      },
+      {
+        "name": "Password",
+        "jsonName": "password",
+        "protoField": "password",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Password for the Redis cluster user.\n\n Must meet minimum complexity requirements. For production, use a\n strong, randomly generated password and manage it through your\n organization's secrets workflow.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 8
+        }
+      },
+      {
+        "name": "AclRules",
+        "jsonName": "aclRules",
+        "protoField": "acl_rules",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "ScalewayRedisAclRule"
+          }
+        },
+        "description": "Network ACL rules restricting which IPs can connect to the cluster.\n\n Each rule allows a CIDR range to connect. The complete set of rules\n defines who can reach the cluster over its public endpoint.\n\n IMPORTANT: ACL rules CONFLICT with Private Network attachment.\n Scaleway does not support both simultaneously. If `private_network_id`\n is set, this field MUST be empty. This constraint is enforced by\n CEL validation below and by the Scaleway API at apply time.\n\n If neither ACL nor Private Network is configured, Scaleway creates\n a public endpoint with no restrictions (all IPs allowed).",
+        "required": false
+      },
+      {
+        "name": "PrivateNetworkId",
+        "jsonName": "privateNetworkId",
+        "protoField": "private_network_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Private Network to attach the cluster to.\n\n When set, the cluster receives a private endpoint reachable only\n from resources on the same Private Network. No public endpoint is\n created.\n\n IMPORTANT: Private Network CONFLICTS with ACL rules. If this\n field is set, `acl_rules` MUST be empty. This constraint is\n enforced by CEL validation below and by the Scaleway API.\n\n IPAM is used automatically to assign IP addresses. Static IP\n assignment is not exposed in this version.\n\n In Cluster mode (3+ nodes), the Private Network is set at creation\n time and CANNOT be changed afterward without destroying and\n recreating the cluster.\n\n In infra charts, this is typically wired via valueFrom:\n\n   privateNetworkId:\n     valueFrom:\n       kind: ScalewayPrivateNetwork\n       name: app-network\n       fieldPath: status.outputs.private_network_id",
+        "required": false,
+        "referenceKind": "ScalewayPrivateNetwork",
+        "referenceFieldPath": "status.outputs.private_network_id"
+      },
+      {
+        "name": "Settings",
+        "jsonName": "settings",
+        "protoField": "settings",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Redis-specific configuration settings.\n\n Key-value pairs passed to the Redis engine configuration. Applied\n on both creation and updates.\n\n Common settings:\n   - \"maxclients\" = \"1000\"        -- Maximum concurrent client connections\n   - \"tcp-keepalive\" = \"120\"      -- TCP keepalive interval in seconds\n   - \"maxmemory-policy\" = \"allkeys-lru\" -- Eviction policy when memory is full\n   - \"timeout\" = \"300\"            -- Client idle timeout in seconds\n\n Available settings depend on the Redis version. Use the Scaleway\n API or CLI to list available settings for a given version.\n\n Optional. If empty, Scaleway uses Redis defaults optimized for\n the node type.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "ScalewayRedisAclRule",
+      "description": "ScalewayRedisAclRule defines a network access control rule for the\n Redis cluster's public endpoint.\n\n Each rule allows connections from a specific CIDR range. The complete\n set of rules defines who can reach the cluster over the public network.\n\n ACL rules are only applicable when the cluster is NOT attached to a\n Private Network (they are mutually exclusive).",
+      "protoType": "org.openmcf.provider.scaleway.scalewayrediscluster.v1.ScalewayRedisAclRule",
+      "fields": [
+        {
+          "name": "Ip",
+          "jsonName": "ip",
+          "protoField": "ip",
+          "type": {
+            "kind": "string"
+          },
+          "description": "CIDR range to allow.\n\n Examples:\n   - \"10.0.0.0/24\" -- Allow a /24 subnet\n   - \"1.2.3.4/32\"  -- Allow a single IP\n   - \"0.0.0.0/0\"   -- Allow all IPs (NOT recommended for production)",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable description for this rule.\n\n Helps operators understand the purpose of each ACL entry.\n Examples: \"Office IP\", \"VPN egress\", \"CI/CD pipeline\"",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

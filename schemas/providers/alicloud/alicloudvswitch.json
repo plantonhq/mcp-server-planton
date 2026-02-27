@@ -1,0 +1,138 @@
+{
+  "name": "AliCloudVswitch",
+  "kind": "AliCloudVswitch",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-vswitch",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudvswitch.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudvswitch/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudvswitch/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudVswitchSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region where the VSwitch will be created.\n Must match the region of the parent VPC.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VpcId",
+        "jsonName": "vpcId",
+        "protoField": "vpc_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VPC ID that this VSwitch belongs to.\n The VSwitch's CIDR block must fall within the VPC's CIDR range.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AliCloudVpc",
+        "referenceFieldPath": "status.outputs.vpc_id"
+      },
+      {
+        "name": "ZoneId",
+        "jsonName": "zoneId",
+        "protoField": "zone_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Availability zone for the VSwitch.\n Format: \"{region}-{letter}\" (e.g., \"cn-hangzhou-a\", \"cn-hangzhou-b\").\n The zone must exist in the VSwitch's region. All resources deployed into\n this VSwitch run in this zone.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "CidrBlock",
+        "jsonName": "cidrBlock",
+        "protoField": "cidr_block",
+        "type": {
+          "kind": "string"
+        },
+        "description": "IPv4 CIDR block for the VSwitch.\n Must be a subnet of the parent VPC's CIDR block.\n Mask length: 16-29 (e.g., \"10.0.0.0/24\" gives 256 addresses).\n This field is immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "VswitchName",
+        "jsonName": "vswitchName",
+        "protoField": "vswitch_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "VSwitch name. 1-128 characters; cannot start with http:// or https://.\n Maps to the provider field `vswitch_name`.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the VSwitch.\n 1-256 characters; cannot start with http:// or https://.",
+        "required": false
+      },
+      {
+        "name": "EnableIpv6",
+        "jsonName": "enableIpv6",
+        "protoField": "enable_ipv6",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable IPv6 for this VSwitch.\n The parent VPC must have IPv6 enabled (enable_ipv6 = true) for this\n to take effect. When enabled, an IPv6 CIDR block is allocated to the\n VSwitch based on ipv6_cidr_block_mask.\n Default: false",
+        "required": false
+      },
+      {
+        "name": "Ipv6CidrBlockMask",
+        "jsonName": "ipv6CidrBlockMask",
+        "protoField": "ipv6_cidr_block_mask",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "IPv6 CIDR block mask for the VSwitch.\n Only meaningful when enable_ipv6 is true and the parent VPC has IPv6\n enabled. Valid range: 0-255. The mask selects a /64 segment from the\n VPC's /56 IPv6 allocation.",
+        "required": false,
+        "validation": {
+          "max": 255
+        }
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the VSwitch.",
+        "required": false
+      }
+    ]
+  }
+}

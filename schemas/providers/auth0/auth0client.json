@@ -1,0 +1,745 @@
+{
+  "name": "Auth0Client",
+  "kind": "Auth0Client",
+  "cloudProvider": "auth0",
+  "apiVersion": "auth0.openmcf.org/v1",
+  "description": "Auth0Client is a deployment component that configures an Application in Auth0.\n In the Auth0 dashboard, these are shown as \"Applications\" - they represent clients\n that can authenticate users and request access to APIs.\n\n This component supports all Auth0 application types:\n - Native applications (mobile, desktop, CLI)\n - Single Page Applications (SPAs)\n - Regular web applications (server-side rendered)\n - Machine-to-Machine (M2M) applications\n\n Example manifest for a SPA:\n ```yaml\n apiVersion: auth0.openmcf.org/v1\n kind: Auth0Client\n metadata:\n   name: my-spa-app\n   org: my-organization\n   env: production\n spec:\n   application_type: spa\n   description: My React SPA\n   callbacks:\n     - https://myapp.com/callback\n     - http://localhost:3000/callback\n   allowed_logout_urls:\n     - https://myapp.com\n     - http://localhost:3000\n   web_origins:\n     - https://myapp.com\n     - http://localhost:3000\n   grant_types:\n     - authorization_code\n     - refresh_token\n ```\n\n Example manifest for M2M application:\n ```yaml\n apiVersion: auth0.openmcf.org/v1\n kind: Auth0Client\n metadata:\n   name: backend-api-client\n   org: my-organization\n spec:\n   application_type: non_interactive\n   description: Backend API service client\n   grant_types:\n     - client_credentials\n ```",
+  "protoPackage": "org.openmcf.provider.auth0.auth0client.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/auth0/auth0client/v1/api.proto",
+    "spec": "org/openmcf/provider/auth0/auth0client/v1/spec.proto"
+  },
+  "spec": {
+    "name": "Auth0ClientSpec",
+    "fields": [
+      {
+        "name": "ApplicationType",
+        "jsonName": "applicationType",
+        "protoField": "application_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "application_type defines the type of application being registered.\n This determines the appropriate OAuth flows and security settings.\n\n - \"native\": Mobile, desktop, or CLI applications that run natively on a device.\n   Uses Authorization Code with PKCE. Cannot securely store secrets.\n - \"spa\": Single Page Applications running JavaScript in the browser.\n   Uses Authorization Code with PKCE. Cannot securely store secrets.\n - \"regular_web\": Traditional web apps with server-side rendering.\n   Can use Authorization Code flow and securely store client secrets.\n - \"non_interactive\": Machine-to-Machine applications for API access.\n   Uses Client Credentials flow. Designed for backend services.\n\n https://auth0.com/docs/get-started/applications/application-types",
+        "required": true,
+        "validation": {
+          "required": true,
+          "enum": [
+            "native",
+            "spa",
+            "regular_web",
+            "non_interactive"
+          ]
+        }
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "protoField": "description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "description is an optional free-text description of the application.\n Useful for documenting the purpose, owner, or other metadata.\n Maximum 140 characters.",
+        "required": false,
+        "validation": {
+          "maxLength": 140
+        }
+      },
+      {
+        "name": "LogoUri",
+        "jsonName": "logoUri",
+        "protoField": "logo_uri",
+        "type": {
+          "kind": "string"
+        },
+        "description": "logo_uri is the URL of the application's logo.\n This is displayed on the consent page and login page.\n Must be a valid HTTPS URL to an image file.",
+        "required": false
+      },
+      {
+        "name": "Callbacks",
+        "jsonName": "callbacks",
+        "protoField": "callbacks",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "callbacks are the allowed callback URLs for the application.\n After authentication, Auth0 will only redirect to URLs in this list.\n For SPAs and native apps, include your development and production URLs.\n Example: [\"https://myapp.com/callback\", \"http://localhost:3000/callback\"]",
+        "required": false
+      },
+      {
+        "name": "AllowedLogoutUrls",
+        "jsonName": "allowedLogoutUrls",
+        "protoField": "allowed_logout_urls",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "allowed_logout_urls are URLs that Auth0 can redirect to after logout.\n Must be registered here to be used with the logout endpoint.\n Example: [\"https://myapp.com\", \"http://localhost:3000\"]",
+        "required": false
+      },
+      {
+        "name": "WebOrigins",
+        "jsonName": "webOrigins",
+        "protoField": "web_origins",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "web_origins are the allowed origins for web message response mode.\n Required for SPAs using popup or iframe-based authentication.\n Example: [\"https://myapp.com\", \"http://localhost:3000\"]",
+        "required": false
+      },
+      {
+        "name": "AllowedOrigins",
+        "jsonName": "allowedOrigins",
+        "protoField": "allowed_origins",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "allowed_origins are CORS origins allowed for this application.\n Used for cross-origin requests from JavaScript applications.\n Example: [\"https://myapp.com\"]",
+        "required": false
+      },
+      {
+        "name": "GrantTypes",
+        "jsonName": "grantTypes",
+        "protoField": "grant_types",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "grant_types specifies which OAuth grant types this application can use.\n If not specified, defaults are based on application_type.\n\n Common grant types:\n - \"authorization_code\": Standard OAuth 2.0 authorization code flow\n - \"implicit\": Implicit flow (legacy, not recommended)\n - \"refresh_token\": Allows obtaining refresh tokens\n - \"client_credentials\": For M2M applications\n - \"password\": Resource owner password grant (not recommended)\n - \"http://auth0.com/oauth/grant-type/password-realm\": Password with realm\n - \"urn:ietf:params:oauth:grant-type:device_code\": Device authorization flow",
+        "required": false
+      },
+      {
+        "name": "OidcConformant",
+        "jsonName": "oidcConformant",
+        "protoField": "oidc_conformant",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "oidc_conformant enables stricter OIDC-conformant behavior.\n When true, the application will follow OIDC specification strictly.\n Recommended for new applications.\n Default: true",
+        "required": false
+      },
+      {
+        "name": "IsFirstParty",
+        "jsonName": "isFirstParty",
+        "protoField": "is_first_party",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "is_first_party indicates whether this is a first-party application.\n First-party apps are owned by the same entity as the Auth0 tenant.\n They skip the consent prompt for users.\n Default: true",
+        "required": false
+      },
+      {
+        "name": "CrossOriginAuthentication",
+        "jsonName": "crossOriginAuthentication",
+        "protoField": "cross_origin_authentication",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "cross_origin_authentication enables cross-origin authentication.\n Required for embedded login forms in SPAs.\n Only enable if you understand the security implications.\n Default: false",
+        "required": false
+      },
+      {
+        "name": "CrossOriginLoc",
+        "jsonName": "crossOriginLoc",
+        "protoField": "cross_origin_loc",
+        "type": {
+          "kind": "string"
+        },
+        "description": "cross_origin_loc is the URL for cross-origin verification fallback.\n Used with cross-origin authentication for certain browsers.",
+        "required": false
+      },
+      {
+        "name": "Sso",
+        "jsonName": "sso",
+        "protoField": "sso",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "sso enables Single Sign-On for this application.\n When enabled, users who are already logged in won't need to re-authenticate.\n Default: true",
+        "required": false
+      },
+      {
+        "name": "SsoDisabled",
+        "jsonName": "ssoDisabled",
+        "protoField": "sso_disabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "sso_disabled explicitly disables SSO for this application.\n Set to true to require authentication for each session.\n Default: false",
+        "required": false
+      },
+      {
+        "name": "CustomLoginPage",
+        "jsonName": "customLoginPage",
+        "protoField": "custom_login_page",
+        "type": {
+          "kind": "string"
+        },
+        "description": "custom_login_page is the custom HTML for the login page.\n Allows complete customization of the login experience.\n Only used when custom_login_page_on is true.",
+        "required": false
+      },
+      {
+        "name": "CustomLoginPageOn",
+        "jsonName": "customLoginPageOn",
+        "protoField": "custom_login_page_on",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "custom_login_page_on enables the custom login page.\n When true, uses custom_login_page instead of Universal Login.\n Default: false",
+        "required": false
+      },
+      {
+        "name": "InitiateLoginUri",
+        "jsonName": "initiateLoginUri",
+        "protoField": "initiate_login_uri",
+        "type": {
+          "kind": "string"
+        },
+        "description": "initiate_login_uri is the URL to initiate login (for OIDC third-party apps).\n Used for third-party initiated login flows.",
+        "required": false
+      },
+      {
+        "name": "OrganizationUsage",
+        "jsonName": "organizationUsage",
+        "protoField": "organization_usage",
+        "type": {
+          "kind": "string"
+        },
+        "description": "organization_usage determines how organizations are used with this app.\n - \"deny\": Organizations cannot be used (default for most apps)\n - \"allow\": Organizations can be used optionally\n - \"require\": Organizations must be specified at login",
+        "required": false,
+        "validation": {
+          "enum": [
+            "",
+            "deny",
+            "allow",
+            "require"
+          ]
+        }
+      },
+      {
+        "name": "OrganizationRequireBehavior",
+        "jsonName": "organizationRequireBehavior",
+        "protoField": "organization_require_behavior",
+        "type": {
+          "kind": "string"
+        },
+        "description": "organization_require_behavior specifies when org is required.\n - \"no_prompt\": Fail silently if no organization specified\n - \"pre_login_prompt\": Show organization picker before login\n - \"post_login_prompt\": Show organization picker after login\n Only used when organization_usage is \"require\".",
+        "required": false,
+        "validation": {
+          "enum": [
+            "",
+            "no_prompt",
+            "pre_login_prompt",
+            "post_login_prompt"
+          ]
+        }
+      },
+      {
+        "name": "JwtConfiguration",
+        "jsonName": "jwtConfiguration",
+        "protoField": "jwt_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "Auth0JwtConfiguration"
+        },
+        "description": "jwt_configuration contains settings for JWT tokens issued to this client.",
+        "required": false
+      },
+      {
+        "name": "RefreshToken",
+        "jsonName": "refreshToken",
+        "protoField": "refresh_token",
+        "type": {
+          "kind": "message",
+          "messageType": "Auth0RefreshTokenConfiguration"
+        },
+        "description": "refresh_token contains settings for refresh token behavior.",
+        "required": false
+      },
+      {
+        "name": "NativeSocialLogin",
+        "jsonName": "nativeSocialLogin",
+        "protoField": "native_social_login",
+        "type": {
+          "kind": "message",
+          "messageType": "Auth0NativeSocialLogin"
+        },
+        "description": "native_social_login configures native social login for mobile apps.\n Only applicable for native application types.",
+        "required": false
+      },
+      {
+        "name": "Mobile",
+        "jsonName": "mobile",
+        "protoField": "mobile",
+        "type": {
+          "kind": "message",
+          "messageType": "Auth0MobileConfiguration"
+        },
+        "description": "mobile configures mobile-specific settings.\n Only applicable for native application types.",
+        "required": false
+      },
+      {
+        "name": "ClientMetadata",
+        "jsonName": "clientMetadata",
+        "protoField": "client_metadata",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "client_metadata is a map of custom metadata key-value pairs.\n Useful for storing application-specific configuration.\n Maximum 10 key-value pairs.",
+        "required": false
+      },
+      {
+        "name": "ClientAliases",
+        "jsonName": "clientAliases",
+        "protoField": "client_aliases",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "client_aliases are alternative identifiers for this client.\n Can be used in authentication requests instead of client_id.",
+        "required": false
+      },
+      {
+        "name": "IsTokenEndpointIpHeaderTrusted",
+        "jsonName": "isTokenEndpointIpHeaderTrusted",
+        "protoField": "is_token_endpoint_ip_header_trusted",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "is_token_endpoint_ip_header_trusted determines if IP header is trusted.\n When true, Auth0 uses X-Forwarded-For header for IP-based features.\n Default: false",
+        "required": false
+      },
+      {
+        "name": "OidcBackchannelLogout",
+        "jsonName": "oidcBackchannelLogout",
+        "protoField": "oidc_backchannel_logout",
+        "type": {
+          "kind": "message",
+          "messageType": "Auth0OidcBackchannelLogout"
+        },
+        "description": "oidc_backchannel_logout configures OIDC back-channel logout.",
+        "required": false
+      },
+      {
+        "name": "EnabledConnections",
+        "jsonName": "enabledConnections",
+        "protoField": "enabled_connections",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "enabled_connections limits which connections this app can use.\n If empty, all connections are available.\n\n You can provide either:\n - Direct connection name: {value: \"Username-Password-Authentication\"}\n - Reference to Auth0Connection component: {value_from: {kind: Auth0Connection, name: \"my-connection\"}}\n\n When using references, the connection name is automatically resolved from the\n Auth0Connection's status.outputs.name field.",
+        "required": false,
+        "referenceKind": "Auth0Connection",
+        "referenceFieldPath": "status.outputs.name"
+      },
+      {
+        "name": "ApiGrants",
+        "jsonName": "apiGrants",
+        "protoField": "api_grants",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "Auth0ClientApiGrant"
+          }
+        },
+        "description": "api_grants configures which APIs this client is authorized to access.\n For M2M applications using client_credentials grant, at least one API grant is typically required.\n Each entry creates an auth0_client_grant resource linking this client to an API.\n\n Without api_grants, an M2M application can authenticate but cannot access any APIs.\n This is different from grant_types which only defines which OAuth flows are allowed.\n\n Example - Authorize for Auth0 Management API:\n   api_grants:\n     - audience: \"https://your-tenant.us.auth0.com/api/v2/\"\n       scopes:\n         - read:users\n         - read:user_idp_tokens\n\n Example - Authorize for custom API:\n   api_grants:\n     - audience: \"https://api.example.com/\"\n       scopes:\n         - read:resources\n         - write:resources",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "Auth0ClientApiGrant",
+      "description": "Auth0ClientApiGrant configures API access for this client.\n Each grant authorizes the client to call a specific API with specified scopes.\n Maps to the auth0_client_grant Terraform resource and auth0.ClientGrant Pulumi resource.\n\n This is essential for Machine-to-Machine (M2M) applications that need to be\n authorized to access APIs (including the Auth0 Management API).",
+      "protoType": "org.openmcf.provider.auth0.auth0client.v1.Auth0ClientApiGrant",
+      "fields": [
+        {
+          "name": "Audience",
+          "jsonName": "audience",
+          "protoField": "audience",
+          "type": {
+            "kind": "string"
+          },
+          "description": "audience is the API identifier (Resource Server identifier) the client is authorized to access.\n For Auth0 Management API: \"https://{tenant}.{region}.auth0.com/api/v2/\"\n For custom APIs: the identifier you configured when creating the API in Auth0\n\n You can provide either:\n - Direct value: {value: \"https://api.example.com/\"}\n - Reference to Auth0ResourceServer component: {value_from: {kind: Auth0ResourceServer, name: \"my-api\"}}\n\n When using references, the audience is automatically resolved from the\n Auth0ResourceServer's status.outputs.identifier field.\n\n Example: \"https://api.example.com/\", \"api.planton.live\"",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "Auth0ResourceServer",
+          "referenceFieldPath": "status.outputs.identifier"
+        },
+        {
+          "name": "Scopes",
+          "jsonName": "scopes",
+          "protoField": "scopes",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "scopes are the permissions granted for this API.\n For Management API, common scopes include:\n   - read:users, read:user_idp_tokens, create:users, update:users, delete:users\n   - read:clients, update:clients, delete:clients\n   - read:connections, update:connections\n For custom APIs: the scopes you defined when creating the API in Auth0.\n If empty, the client gets access to the API with no specific scopes\n (valid for APIs that don't use scope-based authorization).",
+          "required": false
+        },
+        {
+          "name": "AllowAnyOrganization",
+          "jsonName": "allowAnyOrganization",
+          "protoField": "allow_any_organization",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "allow_any_organization determines if any organization can be used with this grant.\n If false (default), the grant must be explicitly assigned to desired organizations.\n Only relevant when using Auth0 Organizations feature.",
+          "required": false
+        },
+        {
+          "name": "OrganizationUsage",
+          "jsonName": "organizationUsage",
+          "protoField": "organization_usage",
+          "type": {
+            "kind": "string"
+          },
+          "description": "organization_usage defines whether organizations can be used with client credentials\n exchanges for this grant.\n - \"deny\": Organizations cannot be used (default)\n - \"allow\": Organizations can be used optionally\n - \"require\": Organizations must be specified",
+          "required": false,
+          "validation": {
+            "enum": [
+              "",
+              "deny",
+              "allow",
+              "require"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth0JwtConfiguration",
+      "description": "Auth0JwtConfiguration configures JWT token settings for the application.",
+      "protoType": "org.openmcf.provider.auth0.auth0client.v1.Auth0JwtConfiguration",
+      "fields": [
+        {
+          "name": "LifetimeInSeconds",
+          "jsonName": "lifetimeInSeconds",
+          "protoField": "lifetime_in_seconds",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "lifetime_in_seconds is the expiration time for JWTs in seconds.\n Default: 36000 (10 hours)\n Range: 0-2592000 (30 days max)",
+          "required": false,
+          "validation": {
+            "max": 2592000
+          }
+        },
+        {
+          "name": "Scopes",
+          "jsonName": "scopes",
+          "protoField": "scopes",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "scopes is a map of custom scopes and their descriptions.\n These scopes will be available for this application.\n Key: scope name, Value: scope description",
+          "required": false
+        },
+        {
+          "name": "Alg",
+          "jsonName": "alg",
+          "protoField": "alg",
+          "type": {
+            "kind": "string"
+          },
+          "description": "alg is the algorithm used to sign the JWT.\n - \"HS256\": HMAC using SHA-256 (symmetric, uses client secret)\n - \"RS256\": RSA using SHA-256 (asymmetric, uses tenant keys)\n - \"PS256\": RSA-PSS using SHA-256\n Default: RS256 (recommended)",
+          "required": false,
+          "validation": {
+            "enum": [
+              "",
+              "HS256",
+              "RS256",
+              "PS256"
+            ]
+          }
+        },
+        {
+          "name": "SecretEncoded",
+          "jsonName": "secretEncoded",
+          "protoField": "secret_encoded",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "secret_encoded indicates if the client secret is base64 encoded.\n Only relevant when alg is HS256.\n Default: false",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Auth0MobileAndroid",
+      "description": "Auth0MobileAndroid configures Android-specific settings.",
+      "protoType": "org.openmcf.provider.auth0.auth0client.v1.Auth0MobileAndroid",
+      "fields": [
+        {
+          "name": "AppPackageName",
+          "jsonName": "appPackageName",
+          "protoField": "app_package_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "app_package_name is the Android application package name.\n Example: \"com.example.myapp\"",
+          "required": false
+        },
+        {
+          "name": "Sha256CertFingerprints",
+          "jsonName": "sha256CertFingerprints",
+          "protoField": "sha256_cert_fingerprints",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "sha256_cert_fingerprints are the SHA-256 fingerprints of signing certificates.\n Used for App Links and secure deep linking.\n Example: [\"D8:A0:...\"]",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Auth0MobileConfiguration",
+      "description": "Auth0MobileConfiguration configures mobile-specific settings.",
+      "protoType": "org.openmcf.provider.auth0.auth0client.v1.Auth0MobileConfiguration",
+      "fields": [
+        {
+          "name": "Android",
+          "jsonName": "android",
+          "protoField": "android",
+          "type": {
+            "kind": "message",
+            "messageType": "Auth0MobileAndroid"
+          },
+          "description": "android configures Android-specific settings.",
+          "required": false
+        },
+        {
+          "name": "Ios",
+          "jsonName": "ios",
+          "protoField": "ios",
+          "type": {
+            "kind": "message",
+            "messageType": "Auth0MobileIos"
+          },
+          "description": "ios configures iOS-specific settings.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Auth0MobileIos",
+      "description": "Auth0MobileIos configures iOS-specific settings.",
+      "protoType": "org.openmcf.provider.auth0.auth0client.v1.Auth0MobileIos",
+      "fields": [
+        {
+          "name": "TeamId",
+          "jsonName": "teamId",
+          "protoField": "team_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "team_id is the Apple Developer Team ID.\n Required for universal links.",
+          "required": false
+        },
+        {
+          "name": "AppBundleIdentifier",
+          "jsonName": "appBundleIdentifier",
+          "protoField": "app_bundle_identifier",
+          "type": {
+            "kind": "string"
+          },
+          "description": "app_bundle_identifier is the iOS application bundle identifier.\n Example: \"com.example.myapp\"",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Auth0NativeSocialLogin",
+      "description": "Auth0NativeSocialLogin configures native social login for mobile apps.",
+      "protoType": "org.openmcf.provider.auth0.auth0client.v1.Auth0NativeSocialLogin",
+      "fields": [
+        {
+          "name": "Apple",
+          "jsonName": "apple",
+          "protoField": "apple",
+          "type": {
+            "kind": "message",
+            "messageType": "Auth0NativeSocialLoginProvider"
+          },
+          "description": "apple configures Sign in with Apple native integration.",
+          "required": false
+        },
+        {
+          "name": "Facebook",
+          "jsonName": "facebook",
+          "protoField": "facebook",
+          "type": {
+            "kind": "message",
+            "messageType": "Auth0NativeSocialLoginProvider"
+          },
+          "description": "facebook configures Facebook native login integration.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Auth0NativeSocialLoginProvider",
+      "description": "Auth0NativeSocialLoginProvider configures a specific native social provider.",
+      "protoType": "org.openmcf.provider.auth0.auth0client.v1.Auth0NativeSocialLoginProvider",
+      "fields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "protoField": "enabled",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "enabled determines if this native social provider is active.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Auth0OidcBackchannelLogout",
+      "description": "Auth0OidcBackchannelLogout configures OIDC back-channel logout.",
+      "protoType": "org.openmcf.provider.auth0.auth0client.v1.Auth0OidcBackchannelLogout",
+      "fields": [
+        {
+          "name": "BackchannelLogoutUrls",
+          "jsonName": "backchannelLogoutUrls",
+          "protoField": "backchannel_logout_urls",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "backchannel_logout_urls are the URLs to receive logout tokens.\n Auth0 will POST a logout token to these URLs on logout.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Auth0RefreshTokenConfiguration",
+      "description": "Auth0RefreshTokenConfiguration configures refresh token behavior.",
+      "protoType": "org.openmcf.provider.auth0.auth0client.v1.Auth0RefreshTokenConfiguration",
+      "fields": [
+        {
+          "name": "RotationType",
+          "jsonName": "rotationType",
+          "protoField": "rotation_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "rotation_type determines refresh token rotation behavior.\n - \"non-rotating\": Refresh tokens don't rotate (legacy behavior)\n - \"rotating\": New refresh token issued with each use (recommended)\n Default: non-rotating",
+          "required": false,
+          "validation": {
+            "enum": [
+              "",
+              "non-rotating",
+              "rotating"
+            ]
+          }
+        },
+        {
+          "name": "ExpirationType",
+          "jsonName": "expirationType",
+          "protoField": "expiration_type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "expiration_type determines how refresh tokens expire.\n - \"non-expiring\": Tokens don't expire (not recommended)\n - \"expiring\": Tokens expire based on configured lifetimes\n Default: non-expiring",
+          "required": false,
+          "validation": {
+            "enum": [
+              "",
+              "non-expiring",
+              "expiring"
+            ]
+          }
+        },
+        {
+          "name": "TokenLifetime",
+          "jsonName": "tokenLifetime",
+          "protoField": "token_lifetime",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "token_lifetime is the absolute lifetime of a refresh token in seconds.\n The token will expire after this time regardless of activity.\n Only used when expiration_type is \"expiring\".\n Default: 2592000 (30 days)",
+          "required": false
+        },
+        {
+          "name": "IdleTokenLifetime",
+          "jsonName": "idleTokenLifetime",
+          "protoField": "idle_token_lifetime",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "idle_token_lifetime is the inactivity timeout for refresh tokens in seconds.\n Token expires if not used within this time.\n Only used when expiration_type is \"expiring\".\n Default: 1296000 (15 days)",
+          "required": false
+        },
+        {
+          "name": "InfiniteTokenLifetime",
+          "jsonName": "infiniteTokenLifetime",
+          "protoField": "infinite_token_lifetime",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "infinite_token_lifetime allows tokens to never expire.\n Only valid when expiration_type is \"non-expiring\".\n Not recommended for security reasons.\n Default: false",
+          "required": false
+        },
+        {
+          "name": "InfiniteIdleTokenLifetime",
+          "jsonName": "infiniteIdleTokenLifetime",
+          "protoField": "infinite_idle_token_lifetime",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "infinite_idle_token_lifetime allows tokens to never expire due to inactivity.\n Only valid when expiration_type is \"non-expiring\".\n Not recommended for security reasons.\n Default: false",
+          "required": false
+        },
+        {
+          "name": "Leeway",
+          "jsonName": "leeway",
+          "protoField": "leeway",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "leeway is the clock skew leeway in seconds for token validation.\n Allows for slight differences in server clocks.\n Default: 0",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

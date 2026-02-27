@@ -1,0 +1,145 @@
+{
+  "name": "OpenStackContainerCluster",
+  "kind": "OpenStackContainerCluster",
+  "cloudProvider": "openstack",
+  "apiVersion": "openstack.openmcf.org/v1",
+  "description": "OpenStackContainerCluster is a Kubernetes Resource Model (KRM) style resource\n for managing Magnum container clusters in OpenStack.\n\n A Magnum cluster provisions a fully functional Kubernetes cluster using a\n cluster template as a blueprint. The cluster manages master and worker nodes,\n networking, and outputs the kubeconfig needed to access the Kubernetes API.\n\n Important: Almost all fields are ForceNew. Only node_count (scale) and\n cluster_template (upgrade) can be updated after creation.",
+  "protoPackage": "org.openmcf.provider.openstack.openstackcontainercluster.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/openstack/openstackcontainercluster/v1/api.proto",
+    "spec": "org/openmcf/provider/openstack/openstackcontainercluster/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OpenStackContainerClusterSpec",
+    "fields": [
+      {
+        "name": "ClusterTemplate",
+        "jsonName": "clusterTemplate",
+        "protoField": "cluster_template",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Required) The cluster template to use as a blueprint.\n Can be a literal template UUID or a reference to an OpenStackContainerClusterTemplate.\n UPDATABLE: changing the template triggers a cluster upgrade.\n\n FK: OpenStackContainerClusterTemplate.status.outputs.template_id",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OpenStackContainerClusterTemplate",
+        "referenceFieldPath": "status.outputs.template_id"
+      },
+      {
+        "name": "MasterCount",
+        "jsonName": "masterCount",
+        "protoField": "master_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Optional) The number of master nodes.\n Use 1 for development, 3+ for production HA.\n ForceNew: changing this requires recreating the cluster.",
+        "required": false,
+        "oneofGroup": "_master_count"
+      },
+      {
+        "name": "NodeCount",
+        "jsonName": "nodeCount",
+        "protoField": "node_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Optional) The number of worker nodes.\n UPDATABLE: changing this triggers a scale operation.\n Default: 1 (set by Magnum if not specified).",
+        "required": false,
+        "oneofGroup": "_node_count"
+      },
+      {
+        "name": "Keypair",
+        "jsonName": "keypair",
+        "protoField": "keypair",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The SSH keypair for cluster node access.\n Overrides the keypair from the cluster template.\n Can be a literal keypair name or a reference to an OpenStackKeypair resource.\n ForceNew: changing this requires recreating the cluster.\n\n FK: OpenStackKeypair.status.outputs.name",
+        "required": false,
+        "referenceKind": "OpenStackKeypair",
+        "referenceFieldPath": "status.outputs.name"
+      },
+      {
+        "name": "Flavor",
+        "jsonName": "flavor",
+        "protoField": "flavor",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The Nova flavor for worker nodes.\n Overrides the flavor from the cluster template.\n ForceNew: changing this requires recreating the cluster.",
+        "required": false
+      },
+      {
+        "name": "MasterFlavor",
+        "jsonName": "masterFlavor",
+        "protoField": "master_flavor",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) The Nova flavor for master nodes.\n Overrides the master_flavor from the cluster template.\n ForceNew: changing this requires recreating the cluster.",
+        "required": false
+      },
+      {
+        "name": "DockerVolumeSize",
+        "jsonName": "dockerVolumeSize",
+        "protoField": "docker_volume_size",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Optional) The size (in GB) of the Docker volume for each node.\n Overrides the docker_volume_size from the cluster template.\n ForceNew: changing this requires recreating the cluster.",
+        "required": false,
+        "oneofGroup": "_docker_volume_size"
+      },
+      {
+        "name": "Labels",
+        "jsonName": "labels",
+        "protoField": "labels",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "(Optional) Key-value labels for the cluster.\n Can extend or override the cluster template's labels.\n Used for Kubernetes-specific settings (kube_tag, container_runtime, etc.).\n ForceNew: changing this requires recreating the cluster.",
+        "required": false
+      },
+      {
+        "name": "CreateTimeout",
+        "jsonName": "createTimeout",
+        "protoField": "create_timeout",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "(Optional) The timeout (in minutes) for cluster creation.\n If the cluster is not ready within this time, creation fails.\n ForceNew: changing this requires recreating the cluster.",
+        "required": false,
+        "oneofGroup": "_create_timeout"
+      },
+      {
+        "name": "FloatingIpEnabled",
+        "jsonName": "floatingIpEnabled",
+        "protoField": "floating_ip_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "(Optional) Whether to create a floating IP for every cluster node.\n Overrides the floating_ip_enabled from the cluster template.\n ForceNew: changing this requires recreating the cluster.",
+        "required": false,
+        "oneofGroup": "_floating_ip_enabled"
+      },
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "(Optional) Override the region from the provider config.\n ForceNew: changing this requires recreating the cluster.",
+        "required": false
+      }
+    ]
+  }
+}

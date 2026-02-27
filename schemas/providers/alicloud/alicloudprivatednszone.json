@@ -1,0 +1,225 @@
+{
+  "name": "AliCloudPrivateDnsZone",
+  "kind": "AliCloudPrivateDnsZone",
+  "cloudProvider": "alicloud",
+  "apiVersion": "ali-cloud.openmcf.org/v1",
+  "description": "alicloud-private-dns-zone",
+  "protoPackage": "org.openmcf.provider.alicloud.alicloudprivatednszone.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/alicloud/alicloudprivatednszone/v1/api.proto",
+    "spec": "org/openmcf/provider/alicloud/alicloudprivatednszone/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AliCloudPrivateDnsZoneSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud region for provider initialization.\n Private Zone is a global service, but the provider requires a region.\n Examples: \"cn-hangzhou\", \"cn-shanghai\", \"us-west-1\", \"ap-southeast-1\".",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ZoneName",
+        "jsonName": "zoneName",
+        "protoField": "zone_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The private zone name (e.g., \"internal.example.com\", \"db.corp\").\n This is the DNS suffix that records in the zone are created under.\n Cannot be changed after creation (ForceNew).",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 253
+        }
+      },
+      {
+        "name": "Remark",
+        "jsonName": "remark",
+        "protoField": "remark",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Remark or description for the zone.\n Visible in the Private Zone console; useful for noting the zone's purpose.",
+        "required": false
+      },
+      {
+        "name": "ResourceGroupId",
+        "jsonName": "resourceGroupId",
+        "protoField": "resource_group_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Alibaba Cloud resource group ID for access control and cost attribution.\n If omitted, the zone is placed in the account's default resource group.\n Cannot be changed after creation (ForceNew).",
+        "required": false
+      },
+      {
+        "name": "VpcAttachments",
+        "jsonName": "vpcAttachments",
+        "protoField": "vpc_attachments",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudPrivateDnsZoneVpcAttachment"
+          }
+        },
+        "description": "VPCs to attach this private zone to. The zone will resolve DNS queries\n only within attached VPCs. At least one VPC attachment is required.\n\n Cross-region attachments are supported: set region_id on the attachment\n to attach a VPC in a different region than spec.region.",
+        "required": false,
+        "validation": {
+          "minItems": 1
+        }
+      },
+      {
+        "name": "Records",
+        "jsonName": "records",
+        "protoField": "records",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AliCloudPrivateDnsZoneRecord"
+          }
+        },
+        "description": "DNS records within the private zone.\n Each record maps a resource record name (rr) to a value (IP, hostname, etc.)\n that is resolvable only within the attached VPCs.",
+        "required": false
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "protoField": "tags",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Tags to apply to the private zone.",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AliCloudPrivateDnsZoneRecord",
+      "description": "AliCloudPrivateDnsZoneRecord defines a DNS record within the private zone.\n\n Supported record types for Private Zone: A, CNAME, MX, PTR, SRV, TXT.\n Note: AAAA and NS are not supported in Alibaba Cloud Private Zone\n (unlike public Alidns which supports a broader set of types).",
+      "protoType": "org.openmcf.provider.alicloud.alicloudprivatednszone.v1.AliCloudPrivateDnsZoneRecord",
+      "fields": [
+        {
+          "name": "Rr",
+          "jsonName": "rr",
+          "protoField": "rr",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Resource record name -- the hostname part under the zone.\n Examples: \"db\" resolves as \"db.internal.example.com\" if zone is\n \"internal.example.com\"; \"@\" for the zone apex.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "string"
+          },
+          "description": "DNS record type. Must be a type supported by Private Zone.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Value",
+          "jsonName": "value",
+          "protoField": "value",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Record value. Interpretation depends on the record type:\n   A     -\u003e IPv4 address (e.g., \"10.0.1.100\")\n   CNAME -\u003e target hostname (e.g., \"db-master.internal.example.com\")\n   MX    -\u003e mail server hostname (e.g., \"mail.internal.example.com\")\n   PTR   -\u003e pointer hostname\n   SRV   -\u003e priority weight port target\n   TXT   -\u003e text content",
+          "required": true,
+          "validation": {
+            "required": true,
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Ttl",
+          "jsonName": "ttl",
+          "protoField": "ttl",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Time-to-live in seconds. Controls how long VPC resolvers cache this record.\n Default: 60.",
+          "required": false
+        },
+        {
+          "name": "Priority",
+          "jsonName": "priority",
+          "protoField": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Priority for MX records. Ignored for other record types.\n Range: 1 (highest priority) to 99 (lowest priority). Default: 1.",
+          "required": false
+        },
+        {
+          "name": "Remark",
+          "jsonName": "remark",
+          "protoField": "remark",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Remark or description for the record.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "AliCloudPrivateDnsZoneVpcAttachment",
+      "description": "AliCloudPrivateDnsZoneVpcAttachment defines a VPC to attach to the private zone.\n Once attached, resources in the VPC can resolve records in this zone.",
+      "protoType": "org.openmcf.provider.alicloud.alicloudprivatednszone.v1.AliCloudPrivateDnsZoneVpcAttachment",
+      "fields": [
+        {
+          "name": "VpcId",
+          "jsonName": "vpcId",
+          "protoField": "vpc_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "VPC ID to attach. References an AliCloudVpc component's output.",
+          "required": true,
+          "validation": {
+            "required": true
+          },
+          "referenceKind": "AliCloudVpc",
+          "referenceFieldPath": "status.outputs.vpc_id"
+        },
+        {
+          "name": "RegionId",
+          "jsonName": "regionId",
+          "protoField": "region_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Region of the VPC. Defaults to the spec.region when omitted.\n Set this explicitly when attaching a VPC in a different region than\n the provider's region (cross-region private zone attachment).",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

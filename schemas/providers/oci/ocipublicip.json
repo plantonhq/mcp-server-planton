@@ -1,0 +1,78 @@
+{
+  "name": "OciPublicIp",
+  "kind": "OciPublicIp",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciPublicIp is the top-level resource representing an Oracle Cloud\n Infrastructure public IPv4 address for internet connectivity.",
+  "protoPackage": "org.openmcf.provider.oci.ocipublicip.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocipublicip/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocipublicip/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciPublicIpSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where this public IP will reside.\n For ephemeral IPs, must match the compartment of the private IP.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "Lifetime",
+        "jsonName": "lifetime",
+        "protoField": "lifetime",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Lifetime controls when the public IP is deleted and released back to the\n OCI public IP pool. Cannot be changed after creation.\n Valid values: \"RESERVED\", \"EPHEMERAL\".",
+        "required": false,
+        "validation": {
+          "enum": [
+            "RESERVED",
+            "EPHEMERAL"
+          ]
+        }
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "User-friendly display name for the public IP.\n Falls back to metadata.name if not provided.",
+        "required": false
+      },
+      {
+        "name": "PrivateIpId",
+        "jsonName": "privateIpId",
+        "protoField": "private_ip_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the private IP to assign this public IP to.\n\n Required for ephemeral IPs (must be a primary private IP on a VNIC).\n Optional for reserved IPs -- when omitted the IP is created unassigned\n and can be attached later via the OCI Console or API.",
+        "required": false
+      },
+      {
+        "name": "PublicIpPoolId",
+        "jsonName": "publicIpPoolId",
+        "protoField": "public_ip_pool_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of a public IP pool for BYOIP (Bring Your Own IP) scenarios.\n When set, the public IP is allocated from the specified pool instead\n of Oracle's pool. Cannot be changed after creation.",
+        "required": false
+      }
+    ]
+  }
+}

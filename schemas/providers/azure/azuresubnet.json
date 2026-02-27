@@ -1,0 +1,172 @@
+{
+  "name": "AzureSubnet",
+  "kind": "AzureSubnet",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureSubnet is the top-level API resource for an Azure Subnet.\n Subnets partition a Virtual Network's address space into segments for different\n workloads, tiers, or service delegations. This is the most widely referenced\n networking resource in the Azure resource collection.",
+  "protoPackage": "org.openmcf.provider.azure.azuresubnet.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azuresubnet/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azuresubnet/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureSubnetSpec",
+    "fields": [
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the parent VNet exists.\n Must be the same resource group as the VNet.\n Can be a literal string or a reference to an AzureResourceGroup output.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "VnetId",
+        "jsonName": "vnetId",
+        "protoField": "vnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Manager ID of the parent Virtual Network.\n The subnet will be created inside this VNet and must use an address prefix\n that falls within the VNet's address space.\n Format: /subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Network/virtualNetworks/{name}",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureVpc",
+        "referenceFieldPath": "status.outputs.vnet_id"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the subnet.\n Must be unique within the VNet.\n Allowed characters: alphanumeric, underscores, hyphens, and periods.\n Must start with alphanumeric. Length: 1 to 80 characters.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      {
+        "name": "AddressPrefix",
+        "jsonName": "addressPrefix",
+        "protoField": "address_prefix",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The IPv4 CIDR block for the subnet (e.g., \"10.0.1.0/24\").\n Must be a subset of the parent VNet's address space and must not overlap\n with other subnets in the same VNet.\n Typical sizing: /24 for general workloads (254 usable IPs), /27 for Application\n Gateway (min 32 IPs), /28 for small delegated subnets (14 usable IPs).\n Note: Azure reserves 5 IPs per subnet (first 4 + last) for internal use.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ServiceEndpoints",
+        "jsonName": "serviceEndpoints",
+        "protoField": "service_endpoints",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Azure service endpoints to enable on this subnet.\n Service endpoints create an optimized route over the Azure backbone network\n to the specified Azure services, bypassing the public internet.\n\n Common values:\n - \"Microsoft.Storage\" -- secure access to Azure Storage Accounts\n - \"Microsoft.Sql\" -- secure access to Azure SQL Database and PostgreSQL/MySQL Flexible Server\n - \"Microsoft.KeyVault\" -- secure access to Azure Key Vault\n - \"Microsoft.AzureCosmosDB\" -- secure access to Cosmos DB\n - \"Microsoft.ServiceBus\" -- secure access to Service Bus\n - \"Microsoft.EventHub\" -- secure access to Event Hubs\n - \"Microsoft.Web\" -- secure access to App Services\n - \"Microsoft.ContainerRegistry\" -- secure access to Container Registry",
+        "required": false
+      },
+      {
+        "name": "Delegation",
+        "jsonName": "delegation",
+        "protoField": "delegation",
+        "type": {
+          "kind": "message",
+          "messageType": "AzureSubnetDelegation"
+        },
+        "description": "Optional service delegation for this subnet.\n Delegation grants an Azure service permission to create service-specific\n network rules and inject resources into the subnet. A subnet can have at\n most one delegation.\n\n Common delegations:\n - PostgreSQL Flexible Server: \"Microsoft.DBforPostgreSQL/flexibleServers\"\n - MySQL Flexible Server: \"Microsoft.DBforMySQL/flexibleServers\"\n - Container App Environment: \"Microsoft.App/environments\"\n - App Service / Function App (VNet integration): \"Microsoft.Web/serverFarms\"\n\n Note: Delegated subnets are typically dedicated to a single service and cannot\n be shared with other resource types.",
+        "required": false
+      },
+      {
+        "name": "PrivateEndpointNetworkPolicies",
+        "jsonName": "privateEndpointNetworkPolicies",
+        "protoField": "private_endpoint_network_policies",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Controls whether network policies (NSG rules, route tables) are applied to\n private endpoints in this subnet.\n\n Valid values:\n - \"Disabled\" -- network policies are NOT applied to private endpoints (Azure default)\n - \"Enabled\" -- both NSG and route table policies apply to private endpoints\n - \"NetworkSecurityGroupEnabled\" -- only NSG policies apply\n - \"RouteTableEnabled\" -- only route table policies apply\n\n Most private endpoint subnets use \"Disabled\" (the Azure default) to allow\n private endpoints to receive traffic without NSG interference. Set to \"Enabled\"\n or one of the granular options only in zero-trust architectures that require\n explicit security rules on private endpoint traffic.\n\n Default: Disabled",
+        "required": false,
+        "default": "Disabled",
+        "oneofGroup": "_private_endpoint_network_policies"
+      },
+      {
+        "name": "PrivateLinkServiceNetworkPoliciesEnabled",
+        "jsonName": "privateLinkServiceNetworkPoliciesEnabled",
+        "protoField": "private_link_service_network_policies_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Controls whether network policies are applied to Private Link Service\n resources in this subnet.\n\n When true (default), standard network policies (NSGs, UDRs) apply to Private\n Link Services. Set to false only when creating a Private Link Service that\n needs to bypass network policies.\n\n Default: true",
+        "required": false,
+        "default": "true",
+        "oneofGroup": "_private_link_service_network_policies_enabled"
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AzureSubnetDelegation",
+      "description": "AzureSubnetDelegation defines a service delegation for the subnet.\n Delegation grants an Azure PaaS service permission to inject service-specific\n resources and network rules into the subnet.",
+      "protoType": "org.openmcf.provider.azure.azuresubnet.v1.AzureSubnetDelegation",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "A user-chosen label for this delegation.\n This is a logical name used in the Terraform/Pulumi configuration, not an\n Azure resource name. Use a descriptive name like \"postgresql\" or \"container-apps\".",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "ServiceName",
+          "jsonName": "serviceName",
+          "protoField": "service_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "The Azure service to delegate to.\n This must be an exact match for one of Azure's supported delegation service names.\n\n Common values:\n - \"Microsoft.DBforPostgreSQL/flexibleServers\"\n - \"Microsoft.DBforMySQL/flexibleServers\"\n - \"Microsoft.App/environments\"\n - \"Microsoft.Web/serverFarms\"\n - \"Microsoft.ContainerInstance/containerGroups\"\n - \"Microsoft.Netapp/volumes\"",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Actions",
+          "jsonName": "actions",
+          "protoField": "actions",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Optional list of actions that the delegated service is permitted to perform.\n If omitted, Azure uses the default actions for the service.\n\n Common action: \"Microsoft.Network/virtualNetworks/subnets/action\"\n Most delegations only need this single action, and Azure infers it if omitted.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

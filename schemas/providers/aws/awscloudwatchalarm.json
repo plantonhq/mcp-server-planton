@@ -1,0 +1,450 @@
+{
+  "name": "AwsCloudwatchAlarm",
+  "kind": "AwsCloudwatchAlarm",
+  "cloudProvider": "aws",
+  "apiVersion": "aws.openmcf.org/v1",
+  "description": "AwsCloudwatchAlarm represents a CloudWatch metric alarm — a monitoring\n resource that watches a single metric or metric math expression and performs\n actions when the value crosses a threshold for a sustained number of periods.\n\n Alarms support two metric definition modes:\n 1. Simple metric mode — a single metric with statistic and dimensions.\n 2. Metric query mode — metric math expressions, anomaly detection, or\n    multi-metric evaluations using up to 20 queries.\n\n Actions are typically SNS topic notifications but can also target Auto\n Scaling policies, EC2 automation, Lambda functions, and SSM OpsItems.",
+  "protoPackage": "org.openmcf.provider.aws.awscloudwatchalarm.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/aws/awscloudwatchalarm/v1/api.proto",
+    "spec": "org/openmcf/provider/aws/awscloudwatchalarm/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AwsCloudwatchAlarmSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The AWS region where the resource will be created.\n Example: \"us-west-2\", \"eu-west-1\"",
+        "required": false,
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ComparisonOperator",
+        "jsonName": "comparisonOperator",
+        "protoField": "comparison_operator",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Arithmetic operation to compare the statistic against the threshold.\n\n Standard comparison operators:\n - \"GreaterThanOrEqualToThreshold\"\n - \"GreaterThanThreshold\"\n - \"LessThanThreshold\"\n - \"LessThanOrEqualToThreshold\"\n\n Anomaly detection operators (use with metric_queries and threshold_metric_id):\n - \"LessThanLowerOrGreaterThanUpperThreshold\"\n - \"LessThanLowerThreshold\"\n - \"GreaterThanUpperThreshold\"",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "name": "EvaluationPeriods",
+        "jsonName": "evaluationPeriods",
+        "protoField": "evaluation_periods",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of consecutive periods over which the metric is compared to the\n threshold. Must be at least 1.\n\n Combined with `datapoints_to_alarm` this creates an M-of-N evaluation\n window. For example, evaluation_periods=5 with datapoints_to_alarm=3\n means \"3 out of the last 5 periods must breach to trigger the alarm.\"",
+        "required": false,
+        "validation": {
+          "min": 1
+        }
+      },
+      {
+        "name": "DatapointsToAlarm",
+        "jsonName": "datapointsToAlarm",
+        "protoField": "datapoints_to_alarm",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of data points within the evaluation window that must breach the\n threshold to trigger the alarm. Must be less than or equal to\n `evaluation_periods`. When omitted, defaults to `evaluation_periods`\n (every period must breach).\n\n Use a value lower than `evaluation_periods` for M-of-N evaluation to\n reduce false positives caused by transient spikes.",
+        "required": false
+      },
+      {
+        "name": "Threshold",
+        "jsonName": "threshold",
+        "protoField": "threshold",
+        "type": {
+          "kind": "double"
+        },
+        "description": "Static threshold value. The statistic (or metric math result) is compared\n against this value using `comparison_operator`.\n\n Required for static threshold alarms. Must not be set for anomaly\n detection alarms (use `threshold_metric_id` instead).",
+        "required": false
+      },
+      {
+        "name": "ThresholdMetricId",
+        "jsonName": "thresholdMetricId",
+        "protoField": "threshold_metric_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "For anomaly detection alarms, set this to the ID of the\n ANOMALY_DETECTION_BAND function defined in `metric_queries`. The anomaly\n band serves as a dynamic threshold instead of a static `threshold` value.\n\n Mutually exclusive with `threshold`.",
+        "required": false,
+        "validation": {
+          "maxLength": 255
+        }
+      },
+      {
+        "name": "TreatMissingData",
+        "jsonName": "treatMissingData",
+        "protoField": "treat_missing_data",
+        "type": {
+          "kind": "string"
+        },
+        "description": "How the alarm treats missing data points during evaluation.\n\n Valid values:\n - \"missing\"      — (Default) Missing data is treated as missing; the alarm\n                     state does not change. Can cause delayed transitions.\n - \"notBreaching\" — Missing data is within the threshold. Best for alarms\n                     on intermittent metrics (e.g., error count on low-traffic\n                     services) to avoid false alarms during idle periods.\n - \"breaching\"    — Missing data is treated as breaching. Use for metrics\n                     that must always report (e.g., heartbeat checks).\n - \"ignore\"       — The current alarm state is maintained regardless of\n                     missing data.",
+        "required": false
+      },
+      {
+        "name": "ActionsEnabled",
+        "jsonName": "actionsEnabled",
+        "protoField": "actions_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Whether actions execute during alarm state transitions. Defaults to true\n in the IaC module when not set. Set to false to suppress actions during\n maintenance windows or alarm tuning.",
+        "required": false
+      },
+      {
+        "name": "MetricName",
+        "jsonName": "metricName",
+        "protoField": "metric_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Name of the CloudWatch metric to alarm on (e.g., \"CPUUtilization\",\n \"4xxErrorRate\", \"ApproximateNumberOfMessagesVisible\").\n\n When set, `namespace`, `period`, and one of `statistic` or\n `extended_statistic` must also be set.\n\n Mutually exclusive with `metric_queries`.",
+        "required": false,
+        "validation": {
+          "maxLength": 255
+        }
+      },
+      {
+        "name": "Namespace",
+        "jsonName": "namespace",
+        "protoField": "namespace",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Namespace of the metric (e.g., \"AWS/EC2\", \"AWS/ECS\", \"AWS/SQS\",\n \"AWS/ApplicationELB\"). Custom namespaces are also supported.\n\n Required when `metric_name` is set. Must not start with a colon.",
+        "required": false,
+        "validation": {
+          "maxLength": 255
+        }
+      },
+      {
+        "name": "Period",
+        "jsonName": "period",
+        "protoField": "period",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Period in seconds over which the statistic is applied. Defines the\n granularity of the alarm evaluation.\n\n Valid values: 10, 20, 30, or any multiple of 60.\n High-resolution metrics support 10/20/30-second periods.\n Standard-resolution metrics require multiples of 60.\n\n Required when `metric_name` is set.",
+        "required": false
+      },
+      {
+        "name": "Statistic",
+        "jsonName": "statistic",
+        "protoField": "statistic",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Standard statistic to apply to the metric.\n\n Valid values: \"SampleCount\", \"Average\", \"Sum\", \"Minimum\", \"Maximum\".\n\n Mutually exclusive with `extended_statistic`. Exactly one must be set\n when using simple metric mode.",
+        "required": false
+      },
+      {
+        "name": "ExtendedStatistic",
+        "jsonName": "extendedStatistic",
+        "protoField": "extended_statistic",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Percentile or extended statistic to apply to the metric. Used for\n percentile-based alarms (e.g., p95 latency, p99 error rate).\n\n Examples: \"p95\", \"p99\", \"p99.9\", \"IQM\", \"TM(10%:90%)\"\n\n Mutually exclusive with `statistic`. Exactly one must be set when\n using simple metric mode.",
+        "required": false
+      },
+      {
+        "name": "Dimensions",
+        "jsonName": "dimensions",
+        "protoField": "dimensions",
+        "type": {
+          "kind": "map",
+          "keyType": {
+            "kind": "string"
+          },
+          "valueType": {
+            "kind": "string"
+          }
+        },
+        "description": "Dimensions that identify the specific metric stream to alarm on.\n Dimensions narrow the metric to a specific resource or subset.\n\n Example for EC2 CPU: {\"InstanceId\": \"i-1234567890abcdef0\"}\n Example for ECS service: {\"ClusterName\": \"prod\", \"ServiceName\": \"api\"}\n\n Mutually exclusive with `metric_queries`.",
+        "required": false
+      },
+      {
+        "name": "Unit",
+        "jsonName": "unit",
+        "protoField": "unit",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Unit for the metric. When specified, only data points with a matching unit\n are used for evaluation. Most alarms omit this and use the metric's\n published unit.",
+        "required": false
+      },
+      {
+        "name": "MetricQueries",
+        "jsonName": "metricQueries",
+        "protoField": "metric_queries",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "message",
+            "messageType": "AwsCloudwatchAlarmMetricQuery"
+          }
+        },
+        "description": "Metric math expressions or multi-metric queries. Use this mode for:\n - Metric math (e.g., error rate = errors / total * 100)\n - Anomaly detection (ANOMALY_DETECTION_BAND function)\n - Cross-account metric monitoring\n - Multi-metric composite evaluations\n\n Up to 20 queries are supported. Exactly one query must set\n `return_data = true` to serve as the alarm's evaluation signal.\n\n Mutually exclusive with simple metric fields (`metric_name`,\n `namespace`, `period`, `statistic`, `extended_statistic`, `dimensions`).",
+        "required": false
+      },
+      {
+        "name": "AlarmActions",
+        "jsonName": "alarmActions",
+        "protoField": "alarm_actions",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Actions to execute when the alarm transitions to ALARM state. Each action\n is an ARN — typically an SNS topic ARN, but can also be an Auto Scaling\n policy, EC2 automation action, Lambda function, or SSM OpsItem.\n\n Maximum 5 actions.",
+        "required": false,
+        "referenceKind": "AwsSnsTopic",
+        "referenceFieldPath": "status.outputs.topic_arn"
+      },
+      {
+        "name": "OkActions",
+        "jsonName": "okActions",
+        "protoField": "ok_actions",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Actions to execute when the alarm transitions to OK state.\n Maximum 5 actions.",
+        "required": false,
+        "referenceKind": "AwsSnsTopic",
+        "referenceFieldPath": "status.outputs.topic_arn"
+      },
+      {
+        "name": "InsufficientDataActions",
+        "jsonName": "insufficientDataActions",
+        "protoField": "insufficient_data_actions",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "Actions to execute when the alarm transitions to INSUFFICIENT_DATA state.\n Maximum 5 actions.",
+        "required": false,
+        "referenceKind": "AwsSnsTopic",
+        "referenceFieldPath": "status.outputs.topic_arn"
+      },
+      {
+        "name": "AlarmDescription",
+        "jsonName": "alarmDescription",
+        "protoField": "alarm_description",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Human-readable description of the alarm's purpose. Include details about\n what the alarm monitors, expected thresholds, and remediation steps.\n Maximum 1024 characters.",
+        "required": false,
+        "validation": {
+          "maxLength": 1024
+        }
+      },
+      {
+        "name": "EvaluateLowSampleCountPercentiles",
+        "jsonName": "evaluateLowSampleCountPercentiles",
+        "protoField": "evaluate_low_sample_count_percentiles",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Controls alarm behavior during periods with too few data points for\n statistically significant percentile calculations.\n\n Valid values:\n - \"evaluate\" — Always evaluate the alarm regardless of sample count.\n - \"ignore\"   — Do not change alarm state during low-sample-count periods.\n\n Only meaningful when using percentile statistics (extended_statistic or\n a percentile stat in metric_queries).",
+        "required": false
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AwsCloudwatchAlarmMetricQuery",
+      "description": "AwsCloudwatchAlarmMetricQuery defines a single metric query within a metric\n math alarm. Queries can reference raw metrics or define expressions that\n combine other queries using metric math functions.\n\n Exactly one of `expression` or `metric` must be set (not both, not neither).\n\n The query `id` serves as a variable name in metric math expressions. For\n example, two queries with id \"m1\" (raw 5xx errors) and \"m2\" (raw request\n count) can be combined by a third query with expression \"m1/m2*100\" to\n compute an error rate percentage.",
+      "protoType": "org.openmcf.provider.aws.awscloudwatchalarm.v1.AwsCloudwatchAlarmMetricQuery",
+      "fields": [
+        {
+          "name": "Id",
+          "jsonName": "id",
+          "protoField": "id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique identifier for this query. Used as a variable name in metric math\n expressions. Must start with a lowercase letter; valid characters are\n lowercase letters, digits, and underscores.",
+          "required": true,
+          "validation": {
+            "required": true,
+            "maxLength": 255
+          }
+        },
+        {
+          "name": "Expression",
+          "jsonName": "expression",
+          "protoField": "expression",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Metric math expression or Metrics Insights query. References other\n queries by their `id` field.\n\n Examples:\n   \"m1/m2*100\"                           — error rate percentage\n   \"ANOMALY_DETECTION_BAND(m1, 2)\"       — anomaly detection with 2 std devs\n   \"METRICS('AWS/EC2')\"                   — Metrics Insights query\n\n Mutually exclusive with `metric`.",
+          "required": false,
+          "validation": {
+            "maxLength": 1024
+          }
+        },
+        {
+          "name": "Metric",
+          "jsonName": "metric",
+          "protoField": "metric",
+          "type": {
+            "kind": "message",
+            "messageType": "AwsCloudwatchAlarmMetricQueryMetric"
+          },
+          "description": "Raw metric definition. Use when this query retrieves a metric from\n CloudWatch rather than computing a value from other queries.\n\n Mutually exclusive with `expression`.",
+          "required": false
+        },
+        {
+          "name": "Label",
+          "jsonName": "label",
+          "protoField": "label",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Human-readable label for this query. Displayed in the CloudWatch console\n and alarm history. Especially useful for expressions to describe what the\n computed value represents.",
+          "required": false
+        },
+        {
+          "name": "Period",
+          "jsonName": "period",
+          "protoField": "period",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Override period (in seconds) for this query. When omitted, uses the period\n from the `metric` definition (if present) or inherits the alarm's period.\n\n Valid values: 1, 5, 10, 20, 30, or any multiple of 60.",
+          "required": false
+        },
+        {
+          "name": "ReturnData",
+          "jsonName": "returnData",
+          "protoField": "return_data",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether this query's result is used as the alarm's evaluation signal.\n Exactly one query in the `metric_queries` list must set this to true.\n Queries with `return_data = false` are intermediate values used by\n expressions but not directly evaluated by the alarm.",
+          "required": false
+        },
+        {
+          "name": "AccountId",
+          "jsonName": "accountId",
+          "protoField": "account_id",
+          "type": {
+            "kind": "string"
+          },
+          "description": "AWS account ID where the metric is located. Use for cross-account alarms\n that monitor metrics from a different account.",
+          "required": false,
+          "validation": {
+            "maxLength": 255
+          }
+        }
+      ]
+    },
+    {
+      "name": "AwsCloudwatchAlarmMetricQueryMetric",
+      "description": "AwsCloudwatchAlarmMetricQueryMetric defines a raw CloudWatch metric to\n retrieve for use in a metric query. This is the data source for the query —\n it specifies which metric, from which namespace, with what statistic and\n period.",
+      "protoType": "org.openmcf.provider.aws.awscloudwatchalarm.v1.AwsCloudwatchAlarmMetricQueryMetric",
+      "fields": [
+        {
+          "name": "MetricName",
+          "jsonName": "metricName",
+          "protoField": "metric_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Name of the CloudWatch metric (e.g., \"CPUUtilization\", \"5XXError\").",
+          "required": true,
+          "validation": {
+            "required": true,
+            "maxLength": 255
+          }
+        },
+        {
+          "name": "Namespace",
+          "jsonName": "namespace",
+          "protoField": "namespace",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Namespace of the metric (e.g., \"AWS/EC2\", \"AWS/ApplicationELB\").",
+          "required": true,
+          "validation": {
+            "required": true,
+            "maxLength": 255
+          }
+        },
+        {
+          "name": "Period",
+          "jsonName": "period",
+          "protoField": "period",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Period in seconds for the metric data points. Determines the granularity\n of the data used in expressions.\n\n Valid values: 1, 5, 10, 20, 30, or any multiple of 60.\n High-resolution metrics support sub-minute periods (1, 5, 10, 20, 30).",
+          "required": false,
+          "validation": {
+            "min": 1
+          }
+        },
+        {
+          "name": "Stat",
+          "jsonName": "stat",
+          "protoField": "stat",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Statistic to apply — either a standard statistic (SampleCount, Average,\n Sum, Minimum, Maximum) or a percentile/extended statistic (p95, p99.9,\n IQM, TM(10%:90%), etc.).",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Dimensions",
+          "jsonName": "dimensions",
+          "protoField": "dimensions",
+          "type": {
+            "kind": "map",
+            "keyType": {
+              "kind": "string"
+            },
+            "valueType": {
+              "kind": "string"
+            }
+          },
+          "description": "Dimensions that identify the specific metric stream.",
+          "required": false
+        },
+        {
+          "name": "Unit",
+          "jsonName": "unit",
+          "protoField": "unit",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unit for the metric. Optional; filters data points to those matching\n the specified unit.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

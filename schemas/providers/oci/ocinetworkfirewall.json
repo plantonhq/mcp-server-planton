@@ -1,0 +1,657 @@
+{
+  "name": "OciNetworkFirewall",
+  "kind": "OciNetworkFirewall",
+  "cloudProvider": "oci",
+  "apiVersion": "oci.openmcf.org/v1",
+  "description": "OciNetworkFirewall is the top-level resource representing an OCI\n Network Firewall bundled with an inline policy -- providing\n next-generation firewall capabilities with L3/L4 network rules\n and L7 URL filtering.",
+  "protoPackage": "org.openmcf.provider.oci.ocinetworkfirewall.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/oci/ocinetworkfirewall/v1/api.proto",
+    "spec": "org/openmcf/provider/oci/ocinetworkfirewall/v1/spec.proto"
+  },
+  "spec": {
+    "name": "OciNetworkFirewallSpec",
+    "fields": [
+      {
+        "name": "CompartmentId",
+        "jsonName": "compartmentId",
+        "protoField": "compartment_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the compartment where the firewall and policy will be created.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciCompartment",
+        "referenceFieldPath": "status.outputs.compartmentId"
+      },
+      {
+        "name": "SubnetId",
+        "jsonName": "subnetId",
+        "protoField": "subnet_id",
+        "type": {
+          "kind": "string"
+        },
+        "description": "OCID of the subnet where the firewall appliance will be deployed.\n Immutable after creation.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "OciSubnet",
+        "referenceFieldPath": "status.outputs.subnetId"
+      },
+      {
+        "name": "DisplayName",
+        "jsonName": "displayName",
+        "protoField": "display_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Display name for the firewall. When omitted, the metadata name is used.",
+        "required": false
+      },
+      {
+        "name": "Ipv4Address",
+        "jsonName": "ipv4Address",
+        "protoField": "ipv4_address",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Static IPv4 address for the firewall. When omitted, OCI auto-assigns\n from the subnet. Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "Ipv6Address",
+        "jsonName": "ipv6Address",
+        "protoField": "ipv6_address",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Static IPv6 address for the firewall. When omitted, OCI auto-assigns\n if the subnet supports IPv6. Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "AvailabilityDomain",
+        "jsonName": "availabilityDomain",
+        "protoField": "availability_domain",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Availability domain for the firewall placement.\n When omitted, OCI selects automatically. Immutable after creation.",
+        "required": false
+      },
+      {
+        "name": "NetworkSecurityGroupIds",
+        "jsonName": "networkSecurityGroupIds",
+        "protoField": "network_security_group_ids",
+        "type": {
+          "kind": "array",
+          "elementType": {
+            "kind": "string"
+          }
+        },
+        "description": "OCIDs of network security groups applied to the firewall.",
+        "required": false,
+        "referenceKind": "OciSecurityGroup",
+        "referenceFieldPath": "status.outputs.networkSecurityGroupId"
+      },
+      {
+        "name": "NatConfiguration",
+        "jsonName": "natConfiguration",
+        "protoField": "nat_configuration",
+        "type": {
+          "kind": "message",
+          "messageType": "NatConfiguration"
+        },
+        "description": "NAT configuration for the firewall. Controls whether private NAT\n is used for egress traffic inspection.",
+        "required": false
+      },
+      {
+        "name": "Shape",
+        "jsonName": "shape",
+        "protoField": "shape",
+        "type": {
+          "kind": "string"
+        },
+        "description": "Firewall shape determining throughput capacity.\n When omitted, OCI applies the default shape.",
+        "required": false
+      },
+      {
+        "name": "Policy",
+        "jsonName": "policy",
+        "protoField": "policy",
+        "type": {
+          "kind": "message",
+          "messageType": "Policy"
+        },
+        "description": "Inline firewall policy defining security rules and their supporting\n objects (address lists, services, URL lists). The policy is always\n created as part of this component.",
+        "required": true,
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  },
+  "nestedTypes": [
+    {
+      "name": "AddressList",
+      "description": "AddressList defines a named collection of IP addresses/CIDRs or\n FQDNs that can be referenced in security rule conditions.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.OciNetworkFirewallSpec.AddressList",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name within the policy. Immutable after creation.\n Referenced by security rules via source_addresses and\n destination_addresses.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.AddressListType",
+            "enumValues": [
+              "ip",
+              "fqdn"
+            ]
+          },
+          "description": "Whether this list contains IP addresses/CIDRs or FQDNs.",
+          "required": false
+        },
+        {
+          "name": "Addresses",
+          "jsonName": "addresses",
+          "protoField": "addresses",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Addresses in the list. IP lists accept CIDRs (e.g., \"10.0.0.0/8\")\n and individual IPs. FQDN lists accept domain names\n (e.g., \"example.com\").",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional description.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "NatConfiguration",
+      "description": "NatConfiguration controls NAT behavior for the firewall.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.OciNetworkFirewallSpec.NatConfiguration",
+      "fields": [
+        {
+          "name": "MustEnablePrivateNat",
+          "jsonName": "mustEnablePrivateNat",
+          "protoField": "must_enable_private_nat",
+          "type": {
+            "kind": "bool"
+          },
+          "description": "Whether to enable private NAT for the firewall.\n When true, the firewall uses a private IP for NAT operations\n instead of a public IP.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Policy",
+      "description": "Policy defines the firewall policy and all of its sub-resources.\n The policy is the container for address lists, services, URL lists,\n and security rules that determine how the firewall inspects traffic.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.OciNetworkFirewallSpec.Policy",
+      "fields": [
+        {
+          "name": "DisplayName",
+          "jsonName": "displayName",
+          "protoField": "display_name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Display name for the policy. When omitted, defaults to\n \"{firewall_display_name}-policy\".",
+          "required": false
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Description of the policy.",
+          "required": false
+        },
+        {
+          "name": "AddressLists",
+          "jsonName": "addressLists",
+          "protoField": "address_lists",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "AddressList"
+            }
+          },
+          "description": "IP and FQDN address lists referenced by security rules.",
+          "required": false
+        },
+        {
+          "name": "Services",
+          "jsonName": "services",
+          "protoField": "services",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "Service"
+            }
+          },
+          "description": "TCP/UDP port definitions referenced by security rules.",
+          "required": false
+        },
+        {
+          "name": "ServiceLists",
+          "jsonName": "serviceLists",
+          "protoField": "service_lists",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "ServiceList"
+            }
+          },
+          "description": "Groups of services for reuse across multiple security rules.",
+          "required": false
+        },
+        {
+          "name": "UrlLists",
+          "jsonName": "urlLists",
+          "protoField": "url_lists",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "UrlList"
+            }
+          },
+          "description": "URL pattern lists for L7 HTTP(S) traffic inspection.",
+          "required": false
+        },
+        {
+          "name": "SecurityRules",
+          "jsonName": "securityRules",
+          "protoField": "security_rules",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "SecurityRule"
+            }
+          },
+          "description": "Security rules evaluated in list order. Priority is derived from\n the position in this list (first rule = highest priority).",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "PortRange",
+      "description": "PortRange defines a range of ports (or a single port when maximum\n is omitted).",
+      "protoType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.OciNetworkFirewallSpec.PortRange",
+      "fields": [
+        {
+          "name": "MinimumPort",
+          "jsonName": "minimumPort",
+          "protoField": "minimum_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "Start of the port range (inclusive). Must be 1-65535.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          }
+        },
+        {
+          "name": "MaximumPort",
+          "jsonName": "maximumPort",
+          "protoField": "maximum_port",
+          "type": {
+            "kind": "int32"
+          },
+          "description": "End of the port range (inclusive). When omitted, equals\n minimum_port (single port). Must be \u003e= minimum_port when set.",
+          "required": false,
+          "validation": {
+            "min": 1,
+            "max": 65535
+          },
+          "oneofGroup": "_maximum_port"
+        }
+      ]
+    },
+    {
+      "name": "SecurityRule",
+      "description": "SecurityRule defines a traffic inspection rule. Rules are evaluated\n in the order they appear in the policy's security_rules list.\n Priority is derived from list position (1-based).",
+      "protoType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.OciNetworkFirewallSpec.SecurityRule",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name within the policy. Immutable after creation.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Action",
+          "jsonName": "action",
+          "protoField": "action",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.Action",
+            "enumValues": [
+              "allow",
+              "drop",
+              "reject",
+              "inspect"
+            ]
+          },
+          "description": "Action to take when traffic matches the condition.",
+          "required": false
+        },
+        {
+          "name": "Condition",
+          "jsonName": "condition",
+          "protoField": "condition",
+          "type": {
+            "kind": "message",
+            "messageType": "SecurityRuleCondition"
+          },
+          "description": "Traffic matching condition. References address lists, services,\n and URL lists by name.",
+          "required": true,
+          "validation": {
+            "required": true
+          }
+        },
+        {
+          "name": "Inspection",
+          "jsonName": "inspection",
+          "protoField": "inspection",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.Inspection",
+            "enumValues": [
+              "intrusion_detection",
+              "intrusion_prevention"
+            ]
+          },
+          "description": "Inspection type. Required when action is inspect.",
+          "required": false
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional description.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "SecurityRuleCondition",
+      "description": "SecurityRuleCondition defines the traffic matching criteria for a\n security rule. All non-empty fields are AND-ed together. Within\n each field, values are OR-ed.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.OciNetworkFirewallSpec.SecurityRuleCondition",
+      "fields": [
+        {
+          "name": "SourceAddresses",
+          "jsonName": "sourceAddresses",
+          "protoField": "source_addresses",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Names of address lists matching source IP addresses.",
+          "required": false
+        },
+        {
+          "name": "DestinationAddresses",
+          "jsonName": "destinationAddresses",
+          "protoField": "destination_addresses",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Names of address lists matching destination IP addresses.",
+          "required": false
+        },
+        {
+          "name": "Services",
+          "jsonName": "services",
+          "protoField": "services",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Names of services or service lists matching traffic ports.",
+          "required": false
+        },
+        {
+          "name": "Urls",
+          "jsonName": "urls",
+          "protoField": "urls",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Names of URL lists matching HTTP(S) request URLs.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Service",
+      "description": "Service defines a named TCP or UDP port range definition that can\n be referenced in security rule conditions.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.OciNetworkFirewallSpec.Service",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name within the policy. Immutable after creation.\n Referenced by security rules and service lists.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "protoField": "type",
+          "type": {
+            "kind": "enum",
+            "enumType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.ServiceType",
+            "enumValues": [
+              "tcp_service",
+              "udp_service"
+            ]
+          },
+          "description": "Protocol for this service definition.",
+          "required": false
+        },
+        {
+          "name": "PortRanges",
+          "jsonName": "portRanges",
+          "protoField": "port_ranges",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "PortRange"
+            }
+          },
+          "description": "Port ranges for this service. At least one port range is required.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional description.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ServiceList",
+      "description": "ServiceList defines a named group of services for reuse across\n multiple security rules.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.OciNetworkFirewallSpec.ServiceList",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name within the policy. Immutable after creation.\n Referenced by security rules via the services condition field.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Services",
+          "jsonName": "services",
+          "protoField": "services",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "string"
+            }
+          },
+          "description": "Names of services to include in this list. Each name must match\n a Service defined in the policy's services field.",
+          "required": false
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional description.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "UrlList",
+      "description": "UrlList defines a named collection of URL patterns for L7 HTTP(S)\n traffic inspection.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.OciNetworkFirewallSpec.UrlList",
+      "fields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "protoField": "name",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Unique name within the policy. Immutable after creation.\n Referenced by security rules via the urls condition field.",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        },
+        {
+          "name": "Urls",
+          "jsonName": "urls",
+          "protoField": "urls",
+          "type": {
+            "kind": "array",
+            "elementType": {
+              "kind": "message",
+              "messageType": "UrlPattern"
+            }
+          },
+          "description": "URL patterns in the list. At least one pattern is required.",
+          "required": false,
+          "validation": {
+            "minItems": 1
+          }
+        },
+        {
+          "name": "Description",
+          "jsonName": "description",
+          "protoField": "description",
+          "type": {
+            "kind": "string"
+          },
+          "description": "Optional description.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "UrlPattern",
+      "description": "UrlPattern defines a single URL matching pattern.\n OCI evaluates patterns using simple string matching.",
+      "protoType": "org.openmcf.provider.oci.ocinetworkfirewall.v1.OciNetworkFirewallSpec.UrlPattern",
+      "fields": [
+        {
+          "name": "Pattern",
+          "jsonName": "pattern",
+          "protoField": "pattern",
+          "type": {
+            "kind": "string"
+          },
+          "description": "URL pattern string (e.g., \"*.example.com\",\n \"malware.example.com/path\").",
+          "required": false,
+          "validation": {
+            "minLength": 1
+          }
+        }
+      ]
+    }
+  ]
+}

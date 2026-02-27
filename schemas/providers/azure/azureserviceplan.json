@@ -1,0 +1,136 @@
+{
+  "name": "AzureServicePlan",
+  "kind": "AzureServicePlan",
+  "cloudProvider": "azure",
+  "apiVersion": "azure.openmcf.org/v1",
+  "description": "AzureServicePlan is the top-level API resource for an Azure App Service Plan.\n An App Service Plan defines the compute resources (region, VM size, instance\n count, pricing tier) that host Azure Web Apps, Function Apps, and Logic Apps.",
+  "protoPackage": "org.openmcf.provider.azure.azureserviceplan.v1",
+  "protoFiles": {
+    "api": "org/openmcf/provider/azure/azureserviceplan/v1/api.proto",
+    "spec": "org/openmcf/provider/azure/azureserviceplan/v1/spec.proto"
+  },
+  "spec": {
+    "name": "AzureServicePlanSpec",
+    "fields": [
+      {
+        "name": "Region",
+        "jsonName": "region",
+        "protoField": "region",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure region where the Service Plan will be created.\n Examples: \"eastus\", \"westus2\", \"westeurope\", \"southeastasia\".\n\n **ForceNew**: Changing this destroys and recreates the plan.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "ResourceGroup",
+        "jsonName": "resourceGroup",
+        "protoField": "resource_group",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The Azure Resource Group where the Service Plan will be created.\n Can be a literal string or a reference to an AzureResourceGroup output.\n\n **ForceNew**: Changing this destroys and recreates the plan.",
+        "required": true,
+        "validation": {
+          "required": true
+        },
+        "referenceKind": "AzureResourceGroup",
+        "referenceFieldPath": "status.outputs.resource_group_name"
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "protoField": "name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The name of the Service Plan.\n Allowed characters: alphanumeric, hyphens, and underscores.\n Length: 1 to 60 characters.\n\n This name appears in the Azure portal and CLI. It does not need to be\n globally unique (uniqueness is scoped to the resource group).\n\n **ForceNew**: Changing this destroys and recreates the plan.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1,
+          "maxLength": 60
+        }
+      },
+      {
+        "name": "OsType",
+        "jsonName": "osType",
+        "protoField": "os_type",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The operating system type for the plan.\n Uses Azure's exact API values for provider authenticity.\n\n Valid values:\n - \"Linux\" (default): Runs Linux-based web apps and function apps.\n   Sets `reserved = true` in the Azure API.\n - \"Windows\": Runs Windows-based web apps and function apps.\n   Sets `reserved = false` in the Azure API.\n\n All apps within a plan must share the same OS type. The D1 (Shared)\n SKU is Windows-only.\n\n **ForceNew**: Changing this destroys and recreates the plan.",
+        "required": false,
+        "default": "Linux",
+        "oneofGroup": "_os_type"
+      },
+      {
+        "name": "SkuName",
+        "jsonName": "skuName",
+        "protoField": "sku_name",
+        "type": {
+          "kind": "string"
+        },
+        "description": "The SKU name that determines the pricing tier and compute capacity.\n\n Common SKUs by category:\n   Free/Shared: \"F1\", \"D1\"\n   Basic:       \"B1\", \"B2\", \"B3\"\n   Standard:    \"S1\", \"S2\", \"S3\"\n   Premium v3:  \"P1v3\", \"P2v3\", \"P3v3\"\n   Consumption: \"Y1\" (for Azure Functions pay-per-execution)\n   Elastic:     \"EP1\", \"EP2\", \"EP3\" (for Azure Functions pre-warmed)\n\n SKU names are case-insensitive in the Azure API. The full list of valid\n values is documented above in the message-level comment. Validation is\n deferred to the Azure API to avoid maintaining a 50+ entry whitelist.",
+        "required": true,
+        "validation": {
+          "required": true,
+          "minLength": 1
+        }
+      },
+      {
+        "name": "WorkerCount",
+        "jsonName": "workerCount",
+        "protoField": "worker_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Number of VM instances (workers) allocated to the plan.\n Minimum: 1.\n\n If not specified, Azure defaults to the SKU's default capacity (typically 1).\n When `zone_balancing_enabled` is true, set this to a multiple of the\n number of availability zones in the region (typically 3) for even distribution.\n\n Maximum varies by SKU: Basic=3, Standard=10, Premium=30, Isolated=100.\n Consumption (Y1) and Elastic Premium (EP*) manage instance count automatically.",
+        "required": false,
+        "validation": {
+          "min": 1
+        },
+        "oneofGroup": "_worker_count"
+      },
+      {
+        "name": "ZoneBalancingEnabled",
+        "jsonName": "zoneBalancingEnabled",
+        "protoField": "zone_balancing_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable availability zone balancing for the plan.\n Distributes instances across availability zones for higher resilience.\n\n Only supported on: Premium (v2/v3), Elastic Premium (EP*), Isolated v2,\n and Workflow (WS*) SKUs.\n **Not supported on**: Free (F1), Shared (D1), Basic (B*), Standard (S*).\n\n When enabling on an existing plan with `worker_count \u003c 2`, Azure\n forces the plan to be recreated (ForceNew).\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_zone_balancing_enabled"
+      },
+      {
+        "name": "PerSiteScalingEnabled",
+        "jsonName": "perSiteScalingEnabled",
+        "protoField": "per_site_scaling_enabled",
+        "type": {
+          "kind": "bool"
+        },
+        "description": "Enable per-site scaling, allowing individual apps within the plan\n to scale independently of the plan's overall instance count.\n\n Supported on Standard and above SKUs. Not supported on Free, Shared,\n Basic, Consumption (Y1), or Elastic Premium (EP*) SKUs.\n\n Default: false",
+        "required": false,
+        "default": "false",
+        "oneofGroup": "_per_site_scaling_enabled"
+      },
+      {
+        "name": "MaximumElasticWorkerCount",
+        "jsonName": "maximumElasticWorkerCount",
+        "protoField": "maximum_elastic_worker_count",
+        "type": {
+          "kind": "int32"
+        },
+        "description": "Maximum number of elastic workers for the plan.\n\n Only applicable to:\n - Elastic Premium SKUs (EP1, EP2, EP3): Controls the upper bound on\n   how many workers the plan can scale to when handling events. This is\n   the primary cost control lever for serverless Function App workloads.\n   Default: 20, maximum: 100.\n\n Ignored for all other SKU tiers. Set this when using EP* plans to\n prevent runaway scaling costs.",
+        "required": false,
+        "oneofGroup": "_maximum_elastic_worker_count"
+      }
+    ]
+  }
+}
