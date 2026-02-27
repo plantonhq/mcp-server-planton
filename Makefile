@@ -90,8 +90,8 @@ codegen-schemas:
 
 # Stage 2: Generate Go input types from JSON schemas.
 codegen-types:
-	rm -rf gen/cloudresource/
-	go run ./tools/codegen/generator/ --schemas-dir=schemas --output-dir=gen/cloudresource
+	rm -rf gen/infrahub/cloudresource/
+	go run ./tools/codegen/generator/ --schemas-dir=schemas --output-dir=gen/infrahub/cloudresource
 
 # Full codegen pipeline (Stage 1 + Stage 2).
 codegen: codegen-schemas codegen-types

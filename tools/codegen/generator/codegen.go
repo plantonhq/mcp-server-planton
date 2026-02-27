@@ -17,8 +17,8 @@ import (
 const cloudResourceKindEnumType = "org.openmcf.shared.cloudresourcekind.CloudResourceKind"
 
 // generateCloudPackage generates all Go files for a single cloud provider
-// package (e.g., gen/cloudresource/aws/). Returns registry items for the
-// top-level registry.
+// package (e.g., gen/infrahub/cloudresource/aws/). Returns registry items for
+// the top-level registry.
 func generateCloudPackage(outputDir, goModule, cloud string, schemas []*ProviderSchema) ([]registryItem, error) {
 	pkgDir := filepath.Join(outputDir, cloud)
 	if err := os.MkdirAll(pkgDir, 0o755); err != nil {

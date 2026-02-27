@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// generateRegistry creates gen/cloudresource/registry_gen.go with the
+// generateRegistry creates gen/infrahub/cloudresource/registry_gen.go with the
 // ParseFunc type, a map of kind->ParseFunc, and GetParser().
 func generateRegistry(outputDir, goModule string, clouds []string, items []registryItem) error {
 	if err := os.MkdirAll(outputDir, 0o755); err != nil {
