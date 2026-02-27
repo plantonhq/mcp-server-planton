@@ -79,7 +79,7 @@ Additionally, `joinEnumValues` is currently duplicated identically in 3 packages
   - Public endpoint, no org required
   - Optional provider filter resolved via `domains.ResolveProvider`
   - Pagination: 1-based tool API, 0-based proto (established convention)
-- `**get.go**` -- Dispatches to `Get` or `GetByCloudResourceKind` based on input
+- `**get.go`** -- Dispatches to `Get` or `GetByCloudResourceKind` based on input
   - Dual identification: by ID or by kind string
   - Kind resolution via `domains.ResolveKind`
 
