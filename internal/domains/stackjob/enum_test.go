@@ -115,4 +115,3 @@ func TestResolveExecutionResult_Empty(t *testing.T) {
 		t.Fatal("expected error for empty string")
 	}
 }
-

@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	stackjobv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/infrahub/stackjob/v1"
 	"github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/workflow"
+	stackjobv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/infrahub/stackjob/v1"
 )
 
 // resolveOperationType maps a string (e.g. "update", "destroy") to the
