@@ -21,7 +21,7 @@
 
 ## Current Status
 
-**Current Task**: Phase 2A (Graph / Dependency Intelligence)
+**Current Task**: Phase 2B (ConfigManager / Variables & Secrets)
 **Status**: Not started — ready to plan
 
 **Current step:**
@@ -43,7 +43,12 @@
   - Server expanded from 27 to 34 tools
   - Build, vet, tests all pass clean
   - Phase 1 trifecta complete (Chart + Project + Pipeline)
-- 🔵 Next: **Phase 2A: Graph / Dependency Intelligence** (4 tools: org graph, resource graph, dependencies, impact analysis)
+- ✅ **Phase 2A: Graph / Dependency Intelligence** (2026-02-28)
+  - 7 new tools (expanded from planned 4): `get_organization_graph`, `get_environment_graph`, `get_service_graph`, `get_cloud_resource_graph`, `get_dependencies`, `get_dependents`, `get_impact_analysis`
+  - Server expanded from 34 to 41 tools
+  - First domain outside infrahub bounded context (`internal/domains/graph/`)
+  - Build, vet, tests all pass clean
+- 🔵 Next: **Phase 2B: ConfigManager / Variables & Secrets** (5 tools) or choose from other objectives
 
 ---
 
@@ -242,28 +247,94 @@
 
 ---
 
+### ✅ COMPLETED: Phase 2A — Graph / Dependency Intelligence (2026-02-28)
+
+**Added 7 MCP tools for dependency intelligence and impact analysis, expanding the server from 34 to 41 tools. First domain outside the infrahub bounded context.**
+
+**What was delivered:**
+
+1. **`get_organization_graph`** - Full resource topology via `GraphQueryController.GetOrganizationGraph`
+   - `internal/domains/graph/organization.go` - Org-scoped with env/node-type/depth filters
+   - Supports topological ordering for deployment order analysis
+
+2. **`get_environment_graph`** - Environment-scoped graph via `GraphQueryController.GetEnvironmentGraph`
+   - `internal/domains/graph/environment.go` - Everything deployed in a specific environment
+
+3. **`get_service_graph`** - Service-centric subgraph via `GraphQueryController.GetServiceGraph`
+   - `internal/domains/graph/service.go` - Service deployments per environment with upstream/downstream traversal
+
+4. **`get_cloud_resource_graph`** - Resource-centric dependency view via `GraphQueryController.GetCloudResourceGraph`
+   - `internal/domains/graph/cloudresource.go` - Services, credentials, and dependency neighbors
+
+5. **`get_dependencies`** - Upstream traversal via `GraphQueryController.GetDependencies`
+   - `internal/domains/graph/dependency.go` - "What does this resource depend on?" with relationship type filter
+
+6. **`get_dependents`** - Downstream traversal via `GraphQueryController.GetDependents`
+   - `internal/domains/graph/dependency.go` - "What depends on this resource?" with relationship type filter
+
+7. **`get_impact_analysis`** - Impact assessment via `GraphQueryController.GetImpactAnalysis`
+   - `internal/domains/graph/impact.go` - Direct + transitive impacts, counts, breakdown by type
+
+8. **Enum resolvers**
+   - `internal/domains/graph/enum.go` - resolveNodeTypes, resolveRelationshipTypes, resolveChangeType with user-friendly error messages
+
+9. **Tool definitions and handlers**
+   - `internal/domains/graph/tools.go` - 7 input structs, 7 tool defs, 7 typed handlers
+
+10. **Server registration**
+    - `internal/server/server.go` - Import + 7 `mcp.AddTool` calls, count 34→41
+
+**Key Decisions Made:**
+- DD-1: Expanded from planned 4 tools to 7 — `getEnvironmentGraph`, `getServiceGraph`, `getDependents` discovered during proto analysis, all high-value read-only queries
+- DD-2: New bounded context — `internal/domains/graph/` (not under `infrahub/`) mirrors proto package `ai.planton.graph.v1`
+- DD-3: Shared `DependencyInput` struct for `get_dependencies` and `get_dependents` — identical parameter shapes, same response type
+- DD-4: Enum handling follows `stackjob/enum.go` pattern — proto `_value` maps with `joinEnumValues` for error messages
+
+**Files Created:**
+- `internal/domains/graph/doc.go`
+- `internal/domains/graph/enum.go`
+- `internal/domains/graph/tools.go`
+- `internal/domains/graph/organization.go`
+- `internal/domains/graph/environment.go`
+- `internal/domains/graph/service.go`
+- `internal/domains/graph/cloudresource.go`
+- `internal/domains/graph/dependency.go`
+- `internal/domains/graph/impact.go`
+
+**Files Modified:**
+- `internal/server/server.go` - Tool registration + count
+
+**Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
+
+---
+
 ## Objectives for Next Conversations
 
-### Option A (Recommended): Phase 2A — Graph / Dependency Intelligence (4 tools)
+### Option A (Recommended): Phase 2B — ConfigManager / Variables & Secrets (5 tools)
 
-The "wow factor" differentiator — impact analysis, dependency graphs, org topology. Would bring the server to 38 tools.
+Configuration lifecycle — variables and secret metadata management. Would bring the server to 46 tools.
 
 | Tool | Backend RPC | Purpose |
 |------|-------------|---------|
-| `get_organization_graph` | `GraphQueryController.getOrganizationGraph` | Full resource topology for an org |
-| `get_cloud_resource_graph` | `GraphQueryController.getCloudResourceGraph` | Resource-centric dependency view |
-| `get_dependencies` | `GraphQueryController.getDependencies` | What does this resource depend on? |
-| `get_impact_analysis` | `GraphQueryController.getImpactAnalysis` | If I change/delete this, what breaks? |
+| `list_variables` | `VariableQueryController.find` or list | List config variables in org/env |
+| `apply_variable` | `VariableCommandController.apply` | Create or update a variable |
+| `get_secret` | `SecretQueryController.get` | Retrieve secret metadata (not values) |
+| `apply_secret` | `SecretCommandController.apply` | Create or update secret metadata |
+| `create_secret_version` | `SecretVersionCommandController.create` | Set a new secret value |
 
-Files to create: `internal/domains/graph/` (tools.go, organization.go, cloudresource.go, dependencies.go, impact.go)
+Files to create: `internal/domains/configmanager/variable/`, `internal/domains/configmanager/secret/`, `internal/domains/configmanager/secretversion/`
 
-### Option B: Phase 2B — ConfigManager / Variables & Secrets (5 tools)
+### Option B: Phase 3A — Audit / Version History (3 tools)
 
-Configuration lifecycle — variables and secret metadata management. Would bring the server to 39 tools.
+Resource version history and change tracking. Would bring the server to 44 tools.
 
-### Option C: Phase 2A + Phase 2B combined
+### Option C: Phase 3B — StackJob Commands / Lifecycle Control (3 tools)
 
-Both Graph and ConfigManager in one session (9 tools, reaching 43 total).
+Retry, cancel, and pre-validate stack jobs. Would bring the server to 44 tools.
+
+### Option D: Phase 3C — Deployment Component & IaC Module Catalog (3 tools)
+
+Browse cloud resource types and IaC modules. Would bring the server to 44 tools.
 
 ---
 
@@ -299,6 +370,7 @@ Existing domain implementations to use as reference:
 - `internal/domains/infrahub/infraproject/` — full lifecycle: search, get, apply, delete, slug, undeploy (6 tools)
 - `internal/domains/infrahub/stackjob/` — read-only query tools (3 tools)
 - `internal/domains/infrahub/preset/` — search + get pair (2 tools)
+- `internal/domains/graph/` — dependency intelligence + impact analysis (7 tools, first non-infrahub bounded context)
 
 ---
 

@@ -10,6 +10,7 @@ Plans created for the InfraHub MCP Tools Expansion project. Each plan documents 
 | `phase-1a-infrachart-tools.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Add list, get, build tools for InfraChart domain |
 | `phase-1b-infraproject-tools.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Add search, get, apply, delete, slug, undeploy tools for InfraProject domain |
 | `phase-1c-infrapipeline-tools.md` | ✅ Completed | 2026-02-28 | 2026-02-28 | Add list, get, latest, run, cancel, gate resolution tools for InfraPipeline domain |
+| `phase-2a-graph-tools.md` | ✅ Completed | 2026-02-28 | 2026-02-28 | Add 7 graph/dependency intelligence tools (org graph, env graph, service graph, resource graph, dependencies, dependents, impact analysis) |
 
 ### Status Legend
 
@@ -43,6 +44,12 @@ Plans created for the InfraHub MCP Tools Expansion project. Each plan documents 
 - **Phases**: Single phase
 - **Current Phase**: Complete
 - **Key Decisions**: Unified run tool (chart + git), manual gate tools included, streaming RPCs excluded, user-friendly approve/reject decisions
+
+### phase-2a-graph-tools.md
+- **Objective**: Add 7 MCP tools for dependency intelligence and impact analysis (first non-infrahub bounded context)
+- **Phases**: Single phase
+- **Current Phase**: Complete
+- **Key Decisions**: Expanded from planned 4 to 7 tools (added environment graph, service graph, dependents), new `internal/domains/graph/` bounded context, shared DependencyInput struct
 
 ---
 

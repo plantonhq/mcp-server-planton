@@ -13,6 +13,7 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/plantonhq/mcp-server-planton/internal/auth"
 	"github.com/plantonhq/mcp-server-planton/internal/config"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/graph"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/cloudresource"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infrachart"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infrapipeline"
@@ -95,7 +96,15 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, cloudresource.GetEnvVarMapTool(), cloudresource.GetEnvVarMapHandler(serverAddress))
 	mcp.AddTool(srv, cloudresource.ResolveValueReferencesTool(), cloudresource.ResolveValueReferencesHandler(serverAddress))
 
-	slog.Info("tools registered", "count", 34, "tools", []string{
+	mcp.AddTool(srv, graph.GetOrganizationGraphTool(), graph.GetOrganizationGraphHandler(serverAddress))
+	mcp.AddTool(srv, graph.GetEnvironmentGraphTool(), graph.GetEnvironmentGraphHandler(serverAddress))
+	mcp.AddTool(srv, graph.GetServiceGraphTool(), graph.GetServiceGraphHandler(serverAddress))
+	mcp.AddTool(srv, graph.GetCloudResourceGraphTool(), graph.GetCloudResourceGraphHandler(serverAddress))
+	mcp.AddTool(srv, graph.GetDependenciesTool(), graph.GetDependenciesHandler(serverAddress))
+	mcp.AddTool(srv, graph.GetDependentsTool(), graph.GetDependentsHandler(serverAddress))
+	mcp.AddTool(srv, graph.GetImpactAnalysisTool(), graph.GetImpactAnalysisHandler(serverAddress))
+
+	slog.Info("tools registered", "count", 41, "tools", []string{
 		"apply_cloud_resource",
 		"get_cloud_resource",
 		"delete_cloud_resource",
@@ -130,6 +139,13 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 		"rename_cloud_resource",
 		"get_env_var_map",
 		"resolve_value_references",
+		"get_organization_graph",
+		"get_environment_graph",
+		"get_service_graph",
+		"get_cloud_resource_graph",
+		"get_dependencies",
+		"get_dependents",
+		"get_impact_analysis",
 	})
 }
 
