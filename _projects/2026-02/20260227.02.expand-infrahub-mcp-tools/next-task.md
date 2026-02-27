@@ -21,7 +21,7 @@
 
 ## Current Status
 
-**Current Task**: Phase 3A/3B/3C (Audit, StackJob Commands, or Catalog)
+**Current Task**: Phase 3B/3C (StackJob Commands or Catalog)
 **Status**: Ready to pick next phase
 
 **Current step:**
@@ -55,7 +55,13 @@
   - Three sub-packages: variable/ (5 tools), secret/ (4 tools), secretversion/ (2 tools)
   - Build, vet, tests all pass clean
   - Phase 2 pair complete (Graph + ConfigManager)
-- 🔵 Next: **Phase 3A: Audit / Version History** (3 tools) or choose from other objectives
+- ✅ **Phase 3A: Audit / Version History** (2026-02-28)
+  - 3 new tools: `list_resource_versions`, `get_resource_version`, `get_resource_version_count`
+  - Server expanded from 52 to 55 tools
+  - Third domain outside infrahub bounded context (`internal/domains/audit/`)
+  - Dynamic `ApiResourceKind` enum resolver (first cross-resource-type domain)
+  - Build, vet, tests all pass clean
+- 🔵 Next: **Phase 3B: StackJob Commands** (3 tools) or **Phase 3C: Catalog** (3 tools)
 
 ---
 
@@ -377,19 +383,64 @@
 
 ---
 
+### ✅ COMPLETED: Phase 3A — Audit / Version History (2026-02-28)
+
+**Added 3 MCP tools for resource version history and change tracking, expanding the server from 52 to 55 tools. Third domain outside the infrahub bounded context.**
+
+**What was delivered:**
+
+1. **`list_resource_versions`** — Paginated version history via `ApiResourceVersionQueryController.ListByFilters`
+   - `internal/domains/audit/list.go` — Kind + resource ID scoping with 1-based-to-0-based pagination
+   - Requires both `resource_id` and `kind` to scope the query
+
+2. **`get_resource_version`** — Full version with diff via `ApiResourceVersionQueryController.GetByIdWithContextSize`
+   - `internal/domains/audit/get.go` — Returns YAML states, unified diff, event type, stack job link
+   - `context_size` parameter controls diff context (default 3, like `git diff -U3`)
+   - Uses `GetByIdWithContextSize` RPC (supersedes plain `Get` — strictly more useful)
+
+3. **`get_resource_version_count`** — Lightweight count via `ApiResourceVersionQueryController.GetCount`
+   - `internal/domains/audit/count.go` — Returns version count for quick "has anything changed?" checks
+
+4. **Dynamic `ApiResourceKind` enum resolver**
+   - `internal/domains/audit/enum.go` — `resolveApiResourceKind()` accepts any valid kind string
+   - First cross-resource-type domain — unlike infrachart/variable/secret that hard-code their kind
+
+5. **Tool definitions and handlers**
+   - `internal/domains/audit/tools.go` — 3 input structs, 3 tool defs, 3 typed handlers
+
+6. **Server registration**
+   - `internal/server/server.go` — Import + 3 `mcp.AddTool` calls, count 52→55
+
+**Key Decisions Made:**
+- Merge `Get` and `GetByIdWithContextSize` into single `get_resource_version` tool — `GetByIdWithContextSize` is strictly more useful
+- Default `context_size` to 3 — matches standard unified diff convention (`-U3`)
+- Both `resource_id` and `kind` are required for list and count — backend needs both to scope the query
+- `joinEnumValues` duplicated locally (Option A from plan) — avoids touching unrelated packages; cleanup refactor deferred
+
+**Files Created:**
+- `internal/domains/audit/doc.go`
+- `internal/domains/audit/enum.go`
+- `internal/domains/audit/tools.go`
+- `internal/domains/audit/list.go`
+- `internal/domains/audit/get.go`
+- `internal/domains/audit/count.go`
+
+**Files Modified:**
+- `internal/server/server.go` — Tool registration + count 52→55
+
+**Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
+
+---
+
 ## Objectives for Next Conversations
 
-### Option A (Recommended): Phase 3A — Audit / Version History (3 tools)
+### Option A (Recommended): Phase 3B — StackJob Commands / Lifecycle Control (3 tools)
 
-Resource version history and change tracking. Would bring the server to 55 tools.
+Retry, cancel, and pre-validate stack jobs. Would bring the server to 58 tools.
 
-### Option B: Phase 3B — StackJob Commands / Lifecycle Control (3 tools)
+### Option B: Phase 3C — Deployment Component & IaC Module Catalog (3 tools)
 
-Retry, cancel, and pre-validate stack jobs. Would bring the server to 55 tools.
-
-### Option C: Phase 3C — Deployment Component & IaC Module Catalog (3 tools)
-
-Browse cloud resource types and IaC modules. Would bring the server to 55 tools.
+Browse cloud resource types and IaC modules. Would bring the server to 58 tools.
 
 ---
 
@@ -429,6 +480,7 @@ Existing domain implementations to use as reference:
 - `internal/domains/configmanager/variable/` — variable CRUD + resolve (5 tools, scope-aware identification)
 - `internal/domains/configmanager/secret/` — secret metadata CRUD (4 tools, scope-aware identification)
 - `internal/domains/configmanager/secretversion/` — version create + list (2 tools, write-only security boundary)
+- `internal/domains/audit/` — resource version history + change tracking (3 tools, third non-infrahub bounded context, dynamic ApiResourceKind resolver)
 
 ---
 

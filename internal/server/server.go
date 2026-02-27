@@ -13,6 +13,7 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/plantonhq/mcp-server-planton/internal/auth"
 	"github.com/plantonhq/mcp-server-planton/internal/config"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/audit"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secret"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secretversion"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/variable"
@@ -121,7 +122,11 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, secretversion.CreateTool(), secretversion.CreateHandler(serverAddress))
 	mcp.AddTool(srv, secretversion.ListTool(), secretversion.ListHandler(serverAddress))
 
-	slog.Info("tools registered", "count", 52, "tools", []string{
+	mcp.AddTool(srv, audit.ListTool(), audit.ListHandler(serverAddress))
+	mcp.AddTool(srv, audit.GetTool(), audit.GetHandler(serverAddress))
+	mcp.AddTool(srv, audit.CountTool(), audit.CountHandler(serverAddress))
+
+	slog.Info("tools registered", "count", 55, "tools", []string{
 		"apply_cloud_resource",
 		"get_cloud_resource",
 		"delete_cloud_resource",
@@ -174,6 +179,9 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 		"delete_secret",
 		"create_secret_version",
 		"list_secret_versions",
+		"list_resource_versions",
+		"get_resource_version",
+		"get_resource_version_count",
 	})
 }
 

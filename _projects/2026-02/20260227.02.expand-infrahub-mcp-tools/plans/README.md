@@ -12,6 +12,7 @@ Plans created for the InfraHub MCP Tools Expansion project. Each plan documents 
 | `phase-1c-infrapipeline-tools.md` | ✅ Completed | 2026-02-28 | 2026-02-28 | Add list, get, latest, run, cancel, gate resolution tools for InfraPipeline domain |
 | `phase-2a-graph-tools.md` | ✅ Completed | 2026-02-28 | 2026-02-28 | Add 7 graph/dependency intelligence tools (org graph, env graph, service graph, resource graph, dependencies, dependents, impact analysis) |
 | `phase-2b-configmanager-tools.md` | ✅ Completed | 2026-02-28 | 2026-02-28 | Add 11 configmanager tools (5 variable, 4 secret, 2 secret version) — second non-infrahub bounded context |
+| `phase-3a-audit-tools.md` | ✅ Completed | 2026-02-28 | 2026-02-28 | Add 3 audit/version history tools (list, get, count) — third non-infrahub bounded context |
 
 ### Status Legend
 
@@ -57,6 +58,12 @@ Plans created for the InfraHub MCP Tools Expansion project. Each plan documents 
 - **Phases**: Single phase
 - **Current Phase**: Complete
 - **Key Decisions**: Expanded from planned 5 to 11 tools, write-only secret values (DD-2), explicit params for apply (DD-3), delete_secret with destructive warning (DD-5)
+
+### phase-3a-audit-tools.md
+- **Objective**: Add 3 MCP tools for resource version history and change tracking (third non-infrahub bounded context)
+- **Phases**: Single phase
+- **Current Phase**: Complete
+- **Key Decisions**: Merge Get + GetByIdWithContextSize into single tool, dynamic ApiResourceKind enum resolver (first cross-resource-type domain), context_size defaults to 3 (standard unified diff)
 
 ---
 
