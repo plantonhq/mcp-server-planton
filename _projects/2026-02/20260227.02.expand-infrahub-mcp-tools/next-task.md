@@ -21,7 +21,7 @@
 
 ## Current Status
 
-**Current Task**: Phase 1C (InfraPipeline tools)
+**Current Task**: Phase 2A (Graph / Dependency Intelligence)
 **Status**: Not started — ready to plan
 
 **Current step:**
@@ -38,7 +38,12 @@
   - 6 new tools: `search_infra_projects`, `get_infra_project`, `apply_infra_project`, `delete_infra_project`, `check_infra_project_slug`, `undeploy_infra_project`
   - Server expanded from 21 to 27 tools
   - Build, vet, tests all pass clean
-- 🔵 Next: **Phase 1C: InfraPipeline tools** (5 tools: list, get, get latest, run, cancel)
+- ✅ **Phase 1C: InfraPipeline tools** (2026-02-28)
+  - 7 new tools (expanded from planned 5): `list_infra_pipelines`, `get_infra_pipeline`, `get_latest_infra_pipeline`, `run_infra_pipeline`, `cancel_infra_pipeline`, `resolve_infra_pipeline_env_gate`, `resolve_infra_pipeline_node_gate`
+  - Server expanded from 27 to 34 tools
+  - Build, vet, tests all pass clean
+  - Phase 1 trifecta complete (Chart + Project + Pipeline)
+- 🔵 Next: **Phase 2A: Graph / Dependency Intelligence** (4 tools: org graph, resource graph, dependencies, impact analysis)
 
 ---
 
@@ -176,29 +181,89 @@
 
 ---
 
+### ✅ COMPLETED: Phase 1C — InfraPipeline Tools (2026-02-28)
+
+**Added 7 MCP tools for infra pipeline observability and control, expanding the server from 27 to 34 tools. Completes the Phase 1 trifecta (Chart + Project + Pipeline).**
+
+**What was delivered:**
+
+1. **`list_infra_pipelines`** - Paginated listing via `InfraPipelineQueryController.ListByFilters`
+   - `internal/domains/infrahub/infrapipeline/list.go` - Org-scoped with optional project ID filter
+   - 1-based page numbers in tool API, converted to 0-based for proto
+
+2. **`get_infra_pipeline`** - Retrieve by ID via `InfraPipelineQueryController.Get`
+   - `internal/domains/infrahub/infrapipeline/get.go` - Standard get-by-ID pattern
+
+3. **`get_latest_infra_pipeline`** - Most recent pipeline for a project via `InfraPipelineQueryController.GetLastInfraPipelineByInfraProjectId`
+   - `internal/domains/infrahub/infrapipeline/latest.go` - Mirrors stackjob/latest.go pattern
+
+4. **`run_infra_pipeline`** - Unified trigger for both project source types
+   - `internal/domains/infrahub/infrapipeline/run.go` - Dispatches to RunInfraProjectChartSourcePipeline or RunGitCommit based on commit_sha presence
+
+5. **`cancel_infra_pipeline`** - Cancel a running pipeline via `InfraPipelineCommandController.Cancel`
+   - `internal/domains/infrahub/infrapipeline/cancel.go` - Returns updated pipeline after cancellation
+
+6. **`resolve_infra_pipeline_env_gate`** - Approve/reject environment manual gate
+   - `internal/domains/infrahub/infrapipeline/gate.go` - Maps "approve"/"reject" to proto's "yes"/"no" enum
+
+7. **`resolve_infra_pipeline_node_gate`** - Approve/reject DAG node manual gate
+   - `internal/domains/infrahub/infrapipeline/gate.go` - Shared gate resolution with resolveDecision() helper
+
+8. **Tool definitions and handlers**
+   - `internal/domains/infrahub/infrapipeline/tools.go` - 7 input structs, 7 tool defs, 7 handlers
+
+9. **Server registration**
+   - `internal/server/server.go` - Import + 7 `mcp.AddTool` calls, count 27→34
+   - `internal/domains/infrahub/doc.go` - Updated subpackage list
+
+**Key Decisions Made:**
+- DD-1: Unified run tool — single `run_infra_pipeline` with optional `commit_sha` dispatches to chart-source or git-commit RPC
+- DD-2: Manual gate tools included — without them, agents hit dead ends at approval gates
+- DD-3: User-friendly gate decisions — tool accepts "approve"/"reject", translates to proto's "yes"/"no"
+- DD-4: Streaming RPCs excluded — GetStatusStream/GetLogStream incompatible with MCP; get_infra_pipeline snapshot suffices
+- DD-5: Pipeline CRUD excluded — Apply/Create/Update/Delete are internal platform operations
+- DD-6: ListByFilters correction — proto only supports org + infra_project_id + pagination (no status/result filters)
+- DD-7: 0-based pagination — follows infrachart/infraproject convention (stackjob inconsistency noted)
+
+**Files Created:**
+- `internal/domains/infrahub/infrapipeline/tools.go`
+- `internal/domains/infrahub/infrapipeline/list.go`
+- `internal/domains/infrahub/infrapipeline/get.go`
+- `internal/domains/infrahub/infrapipeline/latest.go`
+- `internal/domains/infrahub/infrapipeline/run.go`
+- `internal/domains/infrahub/infrapipeline/cancel.go`
+- `internal/domains/infrahub/infrapipeline/gate.go`
+
+**Files Modified:**
+- `internal/server/server.go` - Tool registration + count
+- `internal/domains/infrahub/doc.go` - Subpackage docs
+
+**Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
+
+---
+
 ## Objectives for Next Conversations
 
-### Option A (Recommended): Phase 1C — InfraPipeline (5 tools)
+### Option A (Recommended): Phase 2A — Graph / Dependency Intelligence (4 tools)
 
-The natural continuation. Completes the Phase 1 trifecta (Chart + Project + Pipeline) giving agents full composition-to-deployment observability.
+The "wow factor" differentiator — impact analysis, dependency graphs, org topology. Would bring the server to 38 tools.
 
 | Tool | Backend RPC | Purpose |
 |------|-------------|---------|
-| `list_infra_pipelines` | `InfraPipelineQueryController.listByFilters` | List pipelines by project, status |
-| `get_infra_pipeline` | `InfraPipelineQueryController.get` | Full pipeline status and details |
-| `get_latest_infra_pipeline` | `InfraPipelineQueryController.getLastInfraPipelineByInfraProjectId` | Last pipeline for a project |
-| `run_infra_pipeline` | `InfraPipelineCommandController.runInfraProjectChartSourcePipeline` | Trigger pipeline run |
-| `cancel_infra_pipeline` | `InfraPipelineCommandController.cancel` | Cancel a running pipeline |
+| `get_organization_graph` | `GraphQueryController.getOrganizationGraph` | Full resource topology for an org |
+| `get_cloud_resource_graph` | `GraphQueryController.getCloudResourceGraph` | Resource-centric dependency view |
+| `get_dependencies` | `GraphQueryController.getDependencies` | What does this resource depend on? |
+| `get_impact_analysis` | `GraphQueryController.getImpactAnalysis` | If I change/delete this, what breaks? |
 
-Files to create: `internal/domains/infrahub/infrapipeline/` (tools.go, list.go, get.go, latest.go, run.go, cancel.go)
+Files to create: `internal/domains/graph/` (tools.go, organization.go, cloudresource.go, dependencies.go, impact.go)
 
-### Option B: Phase 2A — Graph / Dependency Intelligence (4 tools)
+### Option B: Phase 2B — ConfigManager / Variables & Secrets (5 tools)
 
-The "wow factor" differentiator — impact analysis, dependency graphs, org topology.
+Configuration lifecycle — variables and secret metadata management. Would bring the server to 39 tools.
 
-### Option C: Phase 1C + Phase 2A combined
+### Option C: Phase 2A + Phase 2B combined
 
-If scope allows, tackle both Pipeline and Graph in one session (9 tools, reaching 36 total).
+Both Graph and ConfigManager in one session (9 tools, reaching 43 total).
 
 ---
 
@@ -230,6 +295,7 @@ _projects/2026-02/20260227.02.expand-infrahub-mcp-tools/design-decisions/
 Existing domain implementations to use as reference:
 - `internal/domains/infrahub/cloudresource/` — full CRUD + search (11 tools)
 - `internal/domains/infrahub/infrachart/` — list + get + two-step build (3 tools)
+- `internal/domains/infrahub/infrapipeline/` — pipeline observability + control + gate resolution (7 tools)
 - `internal/domains/infrahub/infraproject/` — full lifecycle: search, get, apply, delete, slug, undeploy (6 tools)
 - `internal/domains/infrahub/stackjob/` — read-only query tools (3 tools)
 - `internal/domains/infrahub/preset/` — search + get pair (2 tools)
