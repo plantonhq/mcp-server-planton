@@ -1,5 +1,17 @@
 # Next Task: 20260227.01.expand-cloud-resource-tools
 
+## ⚠️ RULES OF ENGAGEMENT - READ FIRST ⚠️
+
+**When this file is loaded in a new conversation, the AI MUST:**
+
+1. **DO NOT AUTO-EXECUTE** - Never start implementing without explicit user approval
+2. **GATHER CONTEXT SILENTLY** - Read project files without outputting
+3. **PRESENT STATUS SUMMARY** - Show what's done, what's pending, agreed next steps
+4. **SHOW OPTIONS** - List recommended and alternative actions
+5. **WAIT FOR DIRECTION** - Do NOT proceed until user explicitly says "go" or chooses an option
+
+---
+
 ## Quick Resume Instructions
 
 Drop this file into your conversation to quickly resume work on this project.
@@ -9,7 +21,7 @@ Drop this file into your conversation to quickly resume work on this project.
 **Description**: Expand the MCP server's cloud resource tool surface from the current 3 tools (apply, get, delete) to 18 tools covering the full lifecycle: listing/search, infrastructure destroy, stack job observability, org/env discovery, slug validation, presets, locks, rename, env var maps, and cross-resource reference resolution.
 **Goal**: Give AI agents full autonomous capability over cloud resource lifecycle — from discovering their operating context (orgs, environments) through CRUD operations to observing provisioning outcomes (stack jobs) and managing operational concerns (locks, presets, references).
 **Tech Stack**: Go/gRPC/MCP
-**Components**: internal/domains/cloudresource/, internal/domains/stackjob/, internal/domains/organization/ (planned), internal/domains/environment/ (planned), internal/domains/preset/ (planned), internal/server/server.go
+**Components**: internal/domains/cloudresource/, internal/domains/stackjob/, internal/domains/organization/, internal/domains/environment/, internal/domains/preset/ (planned), internal/server/server.go
 
 ## Essential Files to Review
 
@@ -68,9 +80,33 @@ When starting a new session:
 ## Current Status
 
 **Created**: 2026-02-27
-**Current Task**: Phase 6C — Context Discovery
-**Status**: Phase 6B complete, ready to begin Phase 6C
+**Current Task**: Phase 6D — Agent Quality-of-Life
+**Status**: Phase 6C complete, ready to begin Phase 6D
 **Last Session**: 2026-02-27
+
+### Session Progress (2026-02-27, Session 3)
+
+**Phase 6C: Context Discovery — DONE**
+
+Implemented 2 new tools (`list_organizations`, `list_environments`) in two new domain packages (`organization/`, `environment/`), expanding the MCP server from 8 to 10 tools.
+
+**Files created:**
+- `internal/domains/organization/tools.go` — Package doc comment (proto provenance), empty `ListOrganizationsInput`, `ListTool()`, `ListHandler()`
+- `internal/domains/organization/list.go` — `List` domain function calling `OrganizationQueryController.FindOrganizations`
+- `internal/domains/environment/tools.go` — Package doc comment (proto provenance), `ListEnvironmentsInput` with required `org`, `ListTool()`, `ListHandler()` with validation
+- `internal/domains/environment/list.go` — `List` domain function calling `EnvironmentQueryController.FindAuthorized`
+
+**Files modified:**
+- `internal/server/server.go` — Imported `organization` and `environment` packages, registered 2 new tools (count 8 → 10)
+
+**Design decisions made:**
+- Flat domain package structure maintained — evaluated mirroring proto hierarchy (`infrahub/`, `resourcemanager/`) but decided against it: only 5-6 packages at full expansion, Go idiom favors flat, MCP server is an adapter layer not the platform, no shared code within groupings
+- Provenance documented via package doc comments mapping each package to its proto service origin
+- `FindOrganizations` chosen over `find` (platform-operator-only, wrong layer)
+- `FindAuthorized` chosen over `findByOrg` (FGA-filtered, permission-aware)
+- No unit tests for these tools — they are thin RPC wrappers with no domain logic (no enum resolution, no identifier validation, no kind conversion)
+
+**Verification:** `go build ./...` and `go test ./...` both pass. Zero linter errors.
 
 ### Session Progress (2026-02-27, Session 2)
 
@@ -137,19 +173,28 @@ Implemented 2 new tools (`list_cloud_resources`, `destroy_cloud_resource`), expa
   - Total tool count adjusted from 17 to 18 (added `get_stack_job`)
   - `get_stack_job_status` renamed to `get_latest_stack_job` (naming honesty)
 
+## Current Step
+
+- ✅ Phase 6A: Complete the Resource Lifecycle (2 tools, 3 → 5) — 2026-02-27
+- ✅ Phase 6B: Stack Job Observability (3 tools, 5 → 8) — 2026-02-27
+- ✅ Phase 6C: Context Discovery (2 tools, 8 → 10) — 2026-02-27
+- 🔵 Next: **Phase 6D: Agent Quality-of-Life** (3 tools: `check_slug_availability`, `search_cloud_object_presets`, `get_cloud_object_preset`)
+- ⬜ Phase 6E: Advanced Operations (locks, rename, envvarmap, references)
+- ⬜ Hardening: Unit tests, README update, docs, potential `get.go` refactor
+
 ## Next Steps
 
-1. **Phase 6C: Context Discovery** (2 tools, new `organization/` and `environment/` domains)
-   - `list_organizations` — `OrganizationQueryController.findOrganizations`
-   - `list_environments` — `EnvironmentQueryController.findAuthorized`
-2. Phase 6D: Agent Quality-of-Life (`check_slug_availability`, `search_cloud_object_presets`, `get_cloud_object_preset`)
-3. Phase 6E: Advanced Operations (locks, rename, envvarmap, references)
-4. Hardening: Unit tests, README update, docs, potential `get.go` refactor
+1. **Phase 6D: Agent Quality-of-Life** (3 tools, new `preset/` domain)
+   - `check_slug_availability` — CloudResourceQueryController.checkSlugAvailability
+   - `search_cloud_object_presets` — CloudObjectPresetSearchQueryController (search service)
+   - `get_cloud_object_preset` — CloudObjectPresetQueryController.get
+2. Phase 6E: Advanced Operations (locks, rename, envvarmap, references)
+3. Hardening: Unit tests, README update, docs, potential `get.go` refactor
 
 ## Quick Commands
 
 After loading context:
-- "Start Phase 6C" - Begin context discovery tools
+- "Start Phase 6D" - Begin agent quality-of-life tools
 - "Show project status" - Get overview of progress
 - "Create checkpoint" - Save current progress
 - "Review guidelines" - Check established patterns
