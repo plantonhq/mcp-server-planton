@@ -3,7 +3,7 @@
 // CloudResourceQueryController, and CloudResourceSearchQueryController RPCs
 // on the Planton backend.
 //
-// Six tools are exposed:
+// Eleven tools are exposed:
 //   - apply_cloud_resource: create or update (accepts opaque cloud_object map;
 //     typed validation via generated parsers in gen/cloudresource/)
 //   - get_cloud_resource: retrieve by ID or by (kind, org, env, slug)
@@ -11,6 +11,11 @@
 //   - list_cloud_resources: query the search index for resources in an org
 //   - destroy_cloud_resource: tear down cloud infrastructure (keeps record)
 //   - check_slug_availability: verify slug uniqueness within (org, env, kind)
+//   - list_cloud_resource_locks: show lock status, holder, and queue
+//   - remove_cloud_resource_locks: force-remove all locks on a resource
+//   - rename_cloud_resource: change a resource's display name
+//   - get_env_var_map: extract env vars and secrets from a manifest YAML
+//   - resolve_value_references: resolve all valueFrom refs in a resource
 package cloudresource
 
 import (
@@ -321,6 +326,277 @@ func CheckSlugAvailabilityHandler(serverAddress string) func(context.Context, *m
 		}
 
 		text, err := CheckSlugAvailability(ctx, serverAddress, input.Org, input.Env, kind, input.Slug)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// list_cloud_resource_locks
+// ---------------------------------------------------------------------------
+
+// ListCloudResourceLocksInput defines the parameters for the
+// list_cloud_resource_locks tool. Exactly one identification path must be
+// provided: either id alone, or all of kind + org + env + slug.
+type ListCloudResourceLocksInput struct {
+	ID   string `json:"id,omitempty"   jsonschema:"System-assigned resource ID. Provide this alone OR provide all of kind, org, env, and slug."`
+	Kind string `json:"kind,omitempty" jsonschema:"PascalCase cloud resource kind (e.g. AwsEksCluster). Required with org, env, slug when id is not provided. Read cloud-resource-kinds://catalog for valid kinds."`
+	Org  string `json:"org,omitempty"  jsonschema:"Organization identifier. Required with kind, env, slug when id is not provided."`
+	Env  string `json:"env,omitempty"  jsonschema:"Environment identifier. Required with kind, org, slug when id is not provided."`
+	Slug string `json:"slug,omitempty" jsonschema:"Immutable unique resource slug within (org, env, kind). Required with kind, org, env when id is not provided."`
+}
+
+// ListLocksTool returns the MCP tool definition for list_cloud_resource_locks.
+func ListLocksTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "list_cloud_resource_locks",
+		Description: "List lock information for a cloud resource on the Planton platform. " +
+			"Returns whether the resource is locked, current lock holder details " +
+			"(workflow ID, acquired timestamp, TTL remaining), and any workflows " +
+			"waiting in the lock queue. " +
+			"Identify the resource by 'id' alone, or by all of 'kind', 'org', 'env', and 'slug' together.",
+	}
+}
+
+// ListLocksHandler returns the typed tool handler for list_cloud_resource_locks.
+func ListLocksHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *ListCloudResourceLocksInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *ListCloudResourceLocksInput) (*mcp.CallToolResult, any, error) {
+		id := ResourceIdentifier{
+			ID:   input.ID,
+			Kind: input.Kind,
+			Org:  input.Org,
+			Env:  input.Env,
+			Slug: input.Slug,
+		}
+		if err := validateIdentifier(id); err != nil {
+			return nil, nil, err
+		}
+
+		text, err := ListLocks(ctx, serverAddress, id)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// remove_cloud_resource_locks
+// ---------------------------------------------------------------------------
+
+// RemoveCloudResourceLocksInput defines the parameters for the
+// remove_cloud_resource_locks tool. Exactly one identification path must be
+// provided: either id alone, or all of kind + org + env + slug.
+type RemoveCloudResourceLocksInput struct {
+	ID   string `json:"id,omitempty"   jsonschema:"System-assigned resource ID. Provide this alone OR provide all of kind, org, env, and slug."`
+	Kind string `json:"kind,omitempty" jsonschema:"PascalCase cloud resource kind (e.g. AwsEksCluster). Required with org, env, slug when id is not provided. Read cloud-resource-kinds://catalog for valid kinds."`
+	Org  string `json:"org,omitempty"  jsonschema:"Organization identifier. Required with kind, env, slug when id is not provided."`
+	Env  string `json:"env,omitempty"  jsonschema:"Environment identifier. Required with kind, org, slug when id is not provided."`
+	Slug string `json:"slug,omitempty" jsonschema:"Immutable unique resource slug within (org, env, kind). Required with kind, org, env when id is not provided."`
+}
+
+// RemoveLocksTool returns the MCP tool definition for remove_cloud_resource_locks.
+func RemoveLocksTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "remove_cloud_resource_locks",
+		Description: "Remove all locks (active lock and wait queue) for a cloud resource " +
+			"on the Planton platform. Returns details about what was removed " +
+			"(active lock removed, queue entries cleared). " +
+			"WARNING: Removing locks on a resource with an active stack job may cause " +
+			"IaC state corruption. Verify no stack jobs are in progress before using this tool. " +
+			"Identify the resource by 'id' alone, or by all of 'kind', 'org', 'env', and 'slug' together.",
+	}
+}
+
+// RemoveLocksHandler returns the typed tool handler for remove_cloud_resource_locks.
+func RemoveLocksHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *RemoveCloudResourceLocksInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *RemoveCloudResourceLocksInput) (*mcp.CallToolResult, any, error) {
+		id := ResourceIdentifier{
+			ID:   input.ID,
+			Kind: input.Kind,
+			Org:  input.Org,
+			Env:  input.Env,
+			Slug: input.Slug,
+		}
+		if err := validateIdentifier(id); err != nil {
+			return nil, nil, err
+		}
+
+		text, err := RemoveLocks(ctx, serverAddress, id)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// rename_cloud_resource
+// ---------------------------------------------------------------------------
+
+// RenameCloudResourceInput defines the parameters for the
+// rename_cloud_resource tool. Exactly one identification path must be
+// provided: either id alone, or all of kind + org + env + slug.
+type RenameCloudResourceInput struct {
+	ID      string `json:"id,omitempty"   jsonschema:"System-assigned resource ID. Provide this alone OR provide all of kind, org, env, and slug."`
+	Kind    string `json:"kind,omitempty" jsonschema:"PascalCase cloud resource kind (e.g. AwsEksCluster). Required with org, env, slug when id is not provided. Read cloud-resource-kinds://catalog for valid kinds."`
+	Org     string `json:"org,omitempty"  jsonschema:"Organization identifier. Required with kind, env, slug when id is not provided."`
+	Env     string `json:"env,omitempty"  jsonschema:"Environment identifier. Required with kind, org, slug when id is not provided."`
+	Slug    string `json:"slug,omitempty" jsonschema:"Immutable unique resource slug within (org, env, kind). Required with kind, org, env when id is not provided."`
+	NewName string `json:"new_name"       jsonschema:"required,The new display name for the cloud resource. The slug remains unchanged."`
+}
+
+// RenameTool returns the MCP tool definition for rename_cloud_resource.
+func RenameTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "rename_cloud_resource",
+		Description: "Rename a cloud resource on the Planton platform. " +
+			"Changes the human-readable display name; the immutable slug is unaffected. " +
+			"Returns the updated resource. " +
+			"Identify the resource by 'id' alone, or by all of 'kind', 'org', 'env', and 'slug' together.",
+	}
+}
+
+// RenameHandler returns the typed tool handler for rename_cloud_resource.
+func RenameHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *RenameCloudResourceInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *RenameCloudResourceInput) (*mcp.CallToolResult, any, error) {
+		id := ResourceIdentifier{
+			ID:   input.ID,
+			Kind: input.Kind,
+			Org:  input.Org,
+			Env:  input.Env,
+			Slug: input.Slug,
+		}
+		if err := validateIdentifier(id); err != nil {
+			return nil, nil, err
+		}
+		if input.NewName == "" {
+			return nil, nil, fmt.Errorf("'new_name' is required")
+		}
+
+		text, err := Rename(ctx, serverAddress, id, input.NewName)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// get_env_var_map
+// ---------------------------------------------------------------------------
+
+// GetEnvVarMapInput defines the parameters for the get_env_var_map tool.
+type GetEnvVarMapInput struct {
+	YAMLContent string `json:"yaml_content" jsonschema:"required,Raw YAML content of the cloud resource manifest (OpenMCF format with api_version, kind, metadata, and spec). The server parses this to identify the resource and resolve valueFrom references."`
+}
+
+// GetEnvVarMapTool returns the MCP tool definition for get_env_var_map.
+func GetEnvVarMapTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "get_env_var_map",
+		Description: "Extract the environment variable map from a cloud resource manifest. " +
+			"Provide the raw YAML content of a cloud resource manifest (OpenMCF format). " +
+			"The server parses the YAML, identifies the resource kind, extracts environment " +
+			"variables and secrets, and resolves valueFrom references to plain string values. " +
+			"Returns separate maps for variables and secrets.",
+	}
+}
+
+// GetEnvVarMapHandler returns the typed tool handler for get_env_var_map.
+func GetEnvVarMapHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *GetEnvVarMapInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *GetEnvVarMapInput) (*mcp.CallToolResult, any, error) {
+		if input.YAMLContent == "" {
+			return nil, nil, fmt.Errorf("'yaml_content' is required")
+		}
+
+		text, err := GetEnvVarMap(ctx, serverAddress, input.YAMLContent)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// resolve_value_references
+// ---------------------------------------------------------------------------
+
+// ResolveValueReferencesInput defines the parameters for the
+// resolve_value_references tool. The kind field is always required because the
+// RPC needs it for both authorization and resource transformation. The resource
+// is identified by id alone, or by all of org + env + slug (kind is already
+// provided separately).
+type ResolveValueReferencesInput struct {
+	Kind string `json:"kind" jsonschema:"required,PascalCase cloud resource kind (e.g. AwsEksCluster). Always required for reference resolution. Read cloud-resource-kinds://catalog for valid kinds."`
+	ID   string `json:"id,omitempty"   jsonschema:"System-assigned resource ID. Provide this alone OR provide all of org, env, and slug."`
+	Org  string `json:"org,omitempty"  jsonschema:"Organization identifier. Required with env, slug when id is not provided."`
+	Env  string `json:"env,omitempty"  jsonschema:"Environment identifier. Required with org, slug when id is not provided."`
+	Slug string `json:"slug,omitempty" jsonschema:"Immutable unique resource slug within (org, env, kind). Required with org, env when id is not provided."`
+}
+
+// ResolveValueReferencesTool returns the MCP tool definition for resolve_value_references.
+func ResolveValueReferencesTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "resolve_value_references",
+		Description: "Resolve all valueFrom references in a cloud resource's spec. " +
+			"The server loads the resource, finds all valueFrom references in its " +
+			"specification, resolves them to concrete values, and returns the fully " +
+			"transformed cloud resource as YAML. The response includes resolution " +
+			"status, any errors, and diagnostics. " +
+			"Identify the resource by 'id' or by all of 'org', 'env', and 'slug'. " +
+			"The 'kind' field is always required.",
+	}
+}
+
+// ResolveValueReferencesHandler returns the typed tool handler for resolve_value_references.
+func ResolveValueReferencesHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *ResolveValueReferencesInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *ResolveValueReferencesInput) (*mcp.CallToolResult, any, error) {
+		if input.Kind == "" {
+			return nil, nil, fmt.Errorf("'kind' is required")
+		}
+		kind, err := domains.ResolveKind(input.Kind)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		// Custom validation: kind is always required (already checked above),
+		// and the resource is identified by id alone or by org+env+slug.
+		// This differs from validateIdentifier which treats kind as part of the
+		// slug path — here kind is a separate, always-required field.
+		hasID := input.ID != ""
+		slugFields := [3]string{input.Org, input.Env, input.Slug}
+		slugCount := 0
+		for _, f := range slugFields {
+			if f != "" {
+				slugCount++
+			}
+		}
+
+		switch {
+		case hasID && slugCount > 0:
+			return nil, nil, fmt.Errorf("provide either 'id' alone or all of 'org', 'env', and 'slug' — not both")
+		case hasID:
+			// ID path — valid
+		case slugCount == 3:
+			// Slug path — valid
+		case slugCount > 0:
+			return nil, nil, fmt.Errorf("when not using 'id', all of 'org', 'env', and 'slug' are required")
+		default:
+			return nil, nil, fmt.Errorf("provide 'id' or all of 'org', 'env', and 'slug' to identify the cloud resource")
+		}
+
+		id := ResourceIdentifier{
+			ID:   input.ID,
+			Kind: input.Kind,
+			Org:  input.Org,
+			Env:  input.Env,
+			Slug: input.Slug,
+		}
+
+		text, err := ResolveValueReferences(ctx, serverAddress, kind, id)
 		if err != nil {
 			return nil, nil, err
 		}

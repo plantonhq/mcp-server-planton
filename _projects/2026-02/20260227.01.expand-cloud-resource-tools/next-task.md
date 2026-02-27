@@ -80,9 +80,37 @@ When starting a new session:
 ## Current Status
 
 **Created**: 2026-02-27
-**Current Task**: Phase 6E — Advanced Operations
-**Status**: Phase 6D complete, ready to begin Phase 6E
+**Current Task**: Hardening
+**Status**: All 5 feature phases (6A–6E) complete. 18 tools implemented. Ready for Hardening.
 **Last Session**: 2026-02-27
+
+### Session Progress (2026-02-27, Session 5)
+
+**Phase 6E: Advanced Operations — DONE**
+
+Implemented 5 new tools (`list_cloud_resource_locks`, `remove_cloud_resource_locks`, `rename_cloud_resource`, `get_env_var_map`, `resolve_value_references`) in the existing `cloudresource/` domain package, expanding the MCP server from 13 to 18 tools. This completes the full planned tool surface.
+
+**Proto surprises discovered and resolved:**
+- `get_env_var_map`: plan assumed `id` + `manifest` (as map), but actual proto takes `yaml_content` (raw YAML string). No `id` field — the server extracts identity from the YAML for authorization. Implemented as-is, matching the proto.
+- `resolve_value_references`: plan assumed `cloud_resource_id` + `references` (list), but actual proto takes `cloud_resource_kind` (enum) + `cloud_resource_id` (string). No `references` list — the server resolves ALL valueFrom references automatically. Implemented with `kind` always required.
+
+**Design decisions made:**
+- Dual-path (ID or kind/org/env/slug) for locks, remove locks, and rename — consistent with all other cloudresource tools that identify a resource
+- Dual-path for `resolve_value_references` with `kind` always required — custom handler validation since `validateIdentifier` treats kind as slug-path-only, but this tool's RPC always needs kind
+- `get_env_var_map` takes raw `yaml_content` string only — no dual-path, no wrapper, matches proto directly
+- MCP input field `new_name` (not `name`) for rename tool — clearer agent-facing semantics vs proto's generic `name`
+
+**Files created:**
+- `internal/domains/cloudresource/locks.go` — `ListLocks` and `RemoveLocks` domain functions using `CloudResourceLockControllerClient`
+- `internal/domains/cloudresource/rename.go` — `Rename` domain function using `CloudResourceCommandControllerClient`
+- `internal/domains/cloudresource/envvarmap.go` — `GetEnvVarMap` domain function using `CloudResourceQueryControllerClient`
+- `internal/domains/cloudresource/references.go` — `ResolveValueReferences` domain function using `CloudResourceQueryControllerClient`
+
+**Files modified:**
+- `internal/domains/cloudresource/tools.go` — 5 new input structs, tool defs, handlers; package doc comment updated (6 → 11 tools)
+- `internal/server/server.go` — 5 new `mcp.AddTool` calls, tool count updated (13 → 18)
+
+**Verification:** `go build ./...` and `go test ./...` both pass. Zero linter errors.
 
 ### Session Progress (2026-02-27, Session 4)
 
@@ -215,23 +243,23 @@ Implemented 2 new tools (`list_cloud_resources`, `destroy_cloud_resource`), expa
 - ✅ Phase 6C: Context Discovery (2 tools, 8 → 10) — 2026-02-27
 - ✅ Phase 6D: Agent Quality-of-Life (3 tools, 10 → 13) — 2026-02-27
   - Also: extracted `resolveKind` to shared `domains` package
-- 🔵 Next: **Phase 6E: Advanced Operations** (5 tools: `list_cloud_resource_locks`, `remove_cloud_resource_locks`, `rename_cloud_resource`, `get_env_var_map`, `resolve_value_references`)
-- ⬜ Hardening: Unit tests, README update, docs, potential `get.go` refactor
+- ✅ Phase 6E: Advanced Operations (5 tools, 13 → 18) — 2026-02-27
+  - Proto surprises: `get_env_var_map` takes YAML not ID+manifest; `resolve_value_references` resolves ALL refs not specific ones
+- 🔵 Next: **Hardening** — Unit tests, README update, docs, potential `get.go` refactor
 
 ## Next Steps
 
-1. **Phase 6E: Advanced Operations** (5 tools, all in existing `cloudresource/` domain)
-   - `list_cloud_resource_locks` — CloudResourceLockController.listLocks
-   - `remove_cloud_resource_locks` — CloudResourceLockController.removeLocks
-   - `rename_cloud_resource` — CloudResourceCommandController.rename
-   - `get_env_var_map` — CloudResourceQueryController.getEnvVarMap
-   - `resolve_value_references` — CloudResourceQueryController.resolveValueFromReferences
-2. Hardening: Unit tests, README update, docs, potential `get.go` refactor
+1. **Hardening** (no new tools — polish and documentation)
+   - Unit tests for domain logic worth testing
+   - Update `README.md` tool table (3 → 18 tools)
+   - Update `docs/development.md` with new domain packages
+   - Consider refactoring `get.go` to use `resolveResource` (deferred since Phase 6A)
+   - End-to-end review of all 18 tool descriptions for agent clarity
 
 ## Quick Commands
 
 After loading context:
-- "Start Phase 6E" - Begin advanced operations tools
+- "Start Hardening" - Begin the hardening phase
 - "Show project status" - Get overview of progress
 - "Create checkpoint" - Save current progress
 - "Review guidelines" - Check established patterns

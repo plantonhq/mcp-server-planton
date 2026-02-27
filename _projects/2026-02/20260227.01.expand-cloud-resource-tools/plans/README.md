@@ -9,6 +9,7 @@ Plans created for this project. Each plan documents a specific implementation ef
 | `phase-6a-implementation.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Phase 6A: list_cloud_resources and destroy_cloud_resource |
 | `phase-6c-context-discovery.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Phase 6C: list_organizations and list_environments |
 | `phase-6d-agent-quality-of-life.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Phase 6D: check_slug_availability, search/get presets, resolveKind extraction |
+| `phase-6e-advanced-operations.md` | ✅ Completed | 2026-02-27 | 2026-02-27 | Phase 6E: locks, rename, env var map, value reference resolution |
 
 ### Status Legend
 
@@ -35,6 +36,12 @@ Plans created for this project. Each plan documents a specific implementation ef
 - **Tools added**: `check_slug_availability`, `search_cloud_object_presets`, `get_cloud_object_preset`
 - **Architecture decision**: Extracted `resolveKind` to shared `domains` package, eliminating 3-way duplication
 - **Server expansion**: 10 → 13 tools
+
+### phase-6e-advanced-operations.md
+- **Objective**: Add lock management, rename, env var map, and value reference resolution tools
+- **Tools added**: `list_cloud_resource_locks`, `remove_cloud_resource_locks`, `rename_cloud_resource`, `get_env_var_map`, `resolve_value_references`
+- **Proto surprises**: `get_env_var_map` takes raw YAML (not ID+manifest); `resolve_value_references` resolves all refs (not a specific list)
+- **Server expansion**: 13 → 18 tools (all feature phases complete)
 
 ---
 

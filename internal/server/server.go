@@ -67,7 +67,13 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, preset.SearchTool(), preset.SearchHandler(serverAddress))
 	mcp.AddTool(srv, preset.GetTool(), preset.GetHandler(serverAddress))
 
-	slog.Info("tools registered", "count", 13, "tools", []string{
+	mcp.AddTool(srv, cloudresource.ListLocksTool(), cloudresource.ListLocksHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.RemoveLocksTool(), cloudresource.RemoveLocksHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.RenameTool(), cloudresource.RenameHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.GetEnvVarMapTool(), cloudresource.GetEnvVarMapHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.ResolveValueReferencesTool(), cloudresource.ResolveValueReferencesHandler(serverAddress))
+
+	slog.Info("tools registered", "count", 18, "tools", []string{
 		"apply_cloud_resource",
 		"get_cloud_resource",
 		"delete_cloud_resource",
@@ -81,6 +87,11 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 		"list_environments",
 		"search_cloud_object_presets",
 		"get_cloud_object_preset",
+		"list_cloud_resource_locks",
+		"remove_cloud_resource_locks",
+		"rename_cloud_resource",
+		"get_env_var_map",
+		"resolve_value_references",
 	})
 }
 
