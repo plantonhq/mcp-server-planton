@@ -14,6 +14,8 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/auth"
 	"github.com/plantonhq/mcp-server-planton/internal/config"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/cloudresource"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/environment"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/organization"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/stackjob"
 )
 
@@ -56,7 +58,11 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, stackjob.GetLatestTool(), stackjob.GetLatestHandler(serverAddress))
 	mcp.AddTool(srv, stackjob.ListTool(), stackjob.ListHandler(serverAddress))
 
-	slog.Info("tools registered", "count", 8, "tools", []string{
+	mcp.AddTool(srv, organization.ListTool(), organization.ListHandler(serverAddress))
+
+	mcp.AddTool(srv, environment.ListTool(), environment.ListHandler(serverAddress))
+
+	slog.Info("tools registered", "count", 10, "tools", []string{
 		"apply_cloud_resource",
 		"get_cloud_resource",
 		"delete_cloud_resource",
@@ -65,6 +71,8 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 		"get_stack_job",
 		"get_latest_stack_job",
 		"list_stack_jobs",
+		"list_organizations",
+		"list_environments",
 	})
 }
 
