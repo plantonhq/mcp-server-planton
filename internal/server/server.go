@@ -48,11 +48,15 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, cloudresource.ApplyTool(), cloudresource.ApplyHandler(serverAddress))
 	mcp.AddTool(srv, cloudresource.GetTool(), cloudresource.GetHandler(serverAddress))
 	mcp.AddTool(srv, cloudresource.DeleteTool(), cloudresource.DeleteHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.ListTool(), cloudresource.ListHandler(serverAddress))
+	mcp.AddTool(srv, cloudresource.DestroyTool(), cloudresource.DestroyHandler(serverAddress))
 
-	slog.Info("tools registered", "count", 3, "tools", []string{
+	slog.Info("tools registered", "count", 5, "tools", []string{
 		"apply_cloud_resource",
 		"get_cloud_resource",
 		"delete_cloud_resource",
+		"list_cloud_resources",
+		"destroy_cloud_resource",
 	})
 }
 

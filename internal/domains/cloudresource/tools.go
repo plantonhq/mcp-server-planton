@@ -1,12 +1,15 @@
 // Package cloudresource provides the MCP tools and resource templates for the
-// CloudResource domain, backed by the CloudResourceCommandController and
-// CloudResourceQueryController RPCs on the Planton backend.
+// CloudResource domain, backed by the CloudResourceCommandController,
+// CloudResourceQueryController, and CloudResourceSearchQueryController RPCs
+// on the Planton backend.
 //
-// Three tools are exposed:
+// Five tools are exposed:
 //   - apply_cloud_resource: create or update (accepts opaque cloud_object map;
 //     typed validation via generated parsers in gen/cloudresource/)
 //   - get_cloud_resource: retrieve by ID or by (kind, org, env, slug)
 //   - delete_cloud_resource: remove by ID or by (kind, org, env, slug)
+//   - list_cloud_resources: query the search index for resources in an org
+//   - destroy_cloud_resource: tear down cloud infrastructure (keeps record)
 package cloudresource
 
 import (
@@ -170,6 +173,100 @@ func DeleteHandler(serverAddress string) func(context.Context, *mcp.CallToolRequ
 		}
 
 		text, err := Delete(ctx, serverAddress, id)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// list_cloud_resources
+// ---------------------------------------------------------------------------
+
+// ListCloudResourcesInput defines the parameters for the list_cloud_resources
+// tool. The org field is required; all other fields are optional filters.
+type ListCloudResourcesInput struct {
+	Org        string   `json:"org"                   jsonschema:"required,Organization identifier."`
+	Envs       []string `json:"envs,omitempty"        jsonschema:"Environment slugs to filter by."`
+	SearchText string   `json:"search_text,omitempty" jsonschema:"Free-text search query."`
+	Kinds      []string `json:"kinds,omitempty"       jsonschema:"PascalCase cloud resource kinds to filter by (e.g. AwsVpc). Read cloud-resource-kinds://catalog for valid kinds."`
+}
+
+// ListTool returns the MCP tool definition for list_cloud_resources.
+func ListTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "list_cloud_resources",
+		Description: "List cloud resources in an organization from the Planton platform. " +
+			"Returns resources grouped by environment and kind. " +
+			"Optionally filter by environment slugs, resource kinds, or free-text search. " +
+			"Read cloud-resource-kinds://catalog for valid kind values.",
+	}
+}
+
+// ListHandler returns the typed tool handler for list_cloud_resources.
+func ListHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *ListCloudResourcesInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *ListCloudResourcesInput) (*mcp.CallToolResult, any, error) {
+		if input.Org == "" {
+			return nil, nil, fmt.Errorf("'org' is required")
+		}
+
+		kinds, err := resolveKinds(input.Kinds)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		text, err := List(ctx, serverAddress, input.Org, input.Envs, input.SearchText, kinds)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// destroy_cloud_resource
+// ---------------------------------------------------------------------------
+
+// DestroyCloudResourceInput defines the parameters for the
+// destroy_cloud_resource tool. Exactly one identification path must be
+// provided: either id alone, or all of kind + org + env + slug.
+type DestroyCloudResourceInput struct {
+	ID   string `json:"id,omitempty"   jsonschema:"System-assigned resource ID. Provide this alone OR provide all of kind, org, env, and slug."`
+	Kind string `json:"kind,omitempty" jsonschema:"PascalCase cloud resource kind (e.g. AwsEksCluster). Required with org, env, slug when id is not provided. Read cloud-resource-kinds://catalog for valid kinds."`
+	Org  string `json:"org,omitempty"  jsonschema:"Organization identifier. Required with kind, env, slug when id is not provided."`
+	Env  string `json:"env,omitempty"  jsonschema:"Environment identifier. Required with kind, org, slug when id is not provided."`
+	Slug string `json:"slug,omitempty" jsonschema:"Immutable unique resource slug within (org, env, kind). Required with kind, org, env when id is not provided."`
+}
+
+// DestroyTool returns the MCP tool definition for destroy_cloud_resource.
+func DestroyTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "destroy_cloud_resource",
+		Description: "Destroy the cloud infrastructure (Terraform/Pulumi destroy) for a resource " +
+			"while keeping the resource record on the Planton platform. " +
+			"This tears down the actual cloud resources (VPCs, clusters, databases, etc.). " +
+			"Use delete_cloud_resource to remove the record itself. " +
+			"WARNING: This is a destructive operation that will destroy real cloud infrastructure. " +
+			"Identify the resource by 'id' alone, or by all of 'kind', 'org', 'env', and 'slug' together.",
+	}
+}
+
+// DestroyHandler returns the typed tool handler for destroy_cloud_resource.
+func DestroyHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *DestroyCloudResourceInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *DestroyCloudResourceInput) (*mcp.CallToolResult, any, error) {
+		id := ResourceIdentifier{
+			ID:   input.ID,
+			Kind: input.Kind,
+			Org:  input.Org,
+			Env:  input.Env,
+			Slug: input.Slug,
+		}
+		if err := validateIdentifier(id); err != nil {
+			return nil, nil, err
+		}
+
+		text, err := Destroy(ctx, serverAddress, id)
 		if err != nil {
 			return nil, nil, err
 		}

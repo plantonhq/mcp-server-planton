@@ -29,3 +29,21 @@ func resolveKind(kindStr string) (cloudresourcekind.CloudResourceKind, error) {
 	}
 	return cloudresourcekind.CloudResourceKind(v), nil
 }
+
+// resolveKinds maps a slice of PascalCase kind strings to their corresponding
+// CloudResourceKind enum values. Returns an error on the first unknown kind.
+// A nil or empty input returns a nil slice (no filtering).
+func resolveKinds(kindStrs []string) ([]cloudresourcekind.CloudResourceKind, error) {
+	if len(kindStrs) == 0 {
+		return nil, nil
+	}
+	kinds := make([]cloudresourcekind.CloudResourceKind, len(kindStrs))
+	for i, s := range kindStrs {
+		k, err := resolveKind(s)
+		if err != nil {
+			return nil, err
+		}
+		kinds[i] = k
+	}
+	return kinds, nil
+}
