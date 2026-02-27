@@ -63,7 +63,7 @@ func GetLatestTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "get_latest_stack_job",
 		Description: "Retrieve the most recent stack job for a cloud resource. " +
-			"This is the primary tool to check whether an apply or destroy operation completed successfully. " +
+			"This is the primary tool to check whether an apply_cloud_resource or destroy_cloud_resource operation completed successfully. " +
 			"Returns the full stack job including operation type, progress, result, timestamps, errors, and IaC resource counts.",
 	}
 }
@@ -88,7 +88,7 @@ func GetLatestHandler(serverAddress string) func(context.Context, *mcp.CallToolR
 
 // ListStackJobsInput defines the parameters for the list_stack_jobs tool.
 type ListStackJobsInput struct {
-	Org               string `json:"org"                          jsonschema:"required,Organization identifier."`
+	Org               string `json:"org"                          jsonschema:"required,Organization identifier. Use list_organizations to discover available organizations."`
 	Env               string `json:"env,omitempty"                jsonschema:"Environment name to filter by."`
 	CloudResourceKind string `json:"cloud_resource_kind,omitempty" jsonschema:"PascalCase cloud resource kind to filter by (e.g. AwsEksCluster). Read cloud-resource-kinds://catalog for valid kinds."`
 	CloudResourceID   string `json:"cloud_resource_id,omitempty"  jsonschema:"Cloud resource ID to filter by."`

@@ -35,11 +35,14 @@ Test files live alongside their source files following standard Go conventions:
 |-----------|---------------|
 | `internal/config/config_test.go` | Config validation, log level parsing |
 | `internal/domains/rpcerr_test.go` | gRPC error classification |
+| `internal/domains/kind_test.go` | Shared kind enum resolution |
 | `internal/domains/cloudresource/identifier_test.go` | Resource identifier validation |
-| `internal/domains/cloudresource/kind_test.go` | Kind extraction and enum resolution |
+| `internal/domains/cloudresource/kind_test.go` | Kind extraction and batch resolution |
+| `internal/domains/cloudresource/list_test.go` | `resolveKinds` batch helper |
 | `internal/domains/cloudresource/metadata_test.go` | Metadata extraction from cloud_object |
 | `internal/domains/cloudresource/schema_test.go` | URI parsing, embedded FS, kind catalog |
 | `internal/domains/cloudresource/apply_test.go` | CloudResource proto assembly |
+| `internal/domains/stackjob/enum_test.go` | Stack job enum resolvers (operation, status, result, kind) |
 | `internal/parse/helpers_test.go` | Shared parse utilities |
 
 ## Code Quality
@@ -118,9 +121,14 @@ internal/
   auth/                         Context-based API key propagation
   config/                       Environment-variable configuration
   grpc/                         gRPC client factory
-  server/                       MCP server init + transports
+  server/                       MCP server init + transports (registers all 18 tools)
   domains/
-    cloudresource/              Tool handlers, resource templates, schema lookup
+    kind.go                     Shared kind enum resolution (used by all domains)
+    cloudresource/              Cloud resource lifecycle tools (11 tools)
+    stackjob/                   Stack job observability tools (3 tools)
+    organization/               Organization discovery (1 tool)
+    environment/                Environment discovery (1 tool)
+    preset/                     Cloud object preset tools (2 tools)
   parse/                        Shared utilities for generated parsers
 gen/cloudresource/              Generated typed input structs
 schemas/                        Embedded JSON schemas (go:embed)
