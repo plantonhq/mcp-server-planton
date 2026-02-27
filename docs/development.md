@@ -80,7 +80,7 @@ make codegen-types
 
 - **Tool**: `tools/codegen/generator/`
 - **Input**: `schemas/` directory
-- **Output**: `gen/cloudresource/{cloud}/{kind}_gen.go` + `gen/cloudresource/registry_gen.go`
+- **Output**: `gen/infrahub/cloudresource/{cloud}/{kind}_gen.go` + `gen/infrahub/cloudresource/registry_gen.go`
 
 ### Full Pipeline
 
@@ -91,7 +91,7 @@ make codegen         # Runs Stage 1 then Stage 2
 ### Generated Code Structure
 
 ```
-gen/cloudresource/
+gen/infrahub/cloudresource/
   registry_gen.go              Central ParseFunc registry (imports all 17 cloud packages)
   alicloud/
     alicloudapplicationloadbalancer_gen.go
@@ -121,7 +121,7 @@ internal/
   auth/                         Context-based API key propagation
   config/                       Environment-variable configuration
   grpc/                         gRPC client factory
-  server/                       MCP server init + transports (registers all 18 tools)
+  server/                       MCP server init + transports (registers all tools)
   domains/
     kind.go                     Shared kind enum resolution (used by all domains)
     infrahub/                   Infrastructure Hub bounded context
@@ -132,7 +132,7 @@ internal/
       environment/              Environment discovery (1 tool)
       organization/             Organization discovery (1 tool)
   parse/                        Shared utilities for generated parsers
-gen/cloudresource/              Generated typed input structs
+gen/infrahub/cloudresource/     Generated typed input structs
 schemas/                        Embedded JSON schemas (go:embed)
 tools/codegen/
   proto2schema/                 Stage 1 codegen tool
