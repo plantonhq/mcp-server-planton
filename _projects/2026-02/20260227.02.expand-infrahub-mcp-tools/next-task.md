@@ -21,7 +21,7 @@
 
 ## Current Status
 
-**Current Task**: Phase 1A (InfraChart tools)
+**Current Task**: Phase 1B (InfraProject tools)
 **Status**: Not started — ready to plan
 
 **Current step:**
@@ -30,7 +30,11 @@
   - Updated code generator, Makefile, consumer import
   - Build, tests, vet all pass clean
   - Committed: `refactor(codegen): move generated code to gen/infrahub/cloudresource/`
-- 🔵 Next: **Phase 1A: InfraChart tools** (3 tools: search, get, build)
+- ✅ **Phase 1A: InfraChart tools** (2026-02-27)
+  - 3 new tools: `list_infra_charts`, `get_infra_chart`, `build_infra_chart`
+  - Server expanded from 18 to 21 tools
+  - Build, tests, vet all pass clean
+- 🔵 Next: **Phase 1B: InfraProject tools** (6 tools: search, get, apply, delete, slug check, undeploy)
 
 ---
 
@@ -69,27 +73,73 @@
 
 ---
 
+### ✅ COMPLETED: Phase 1A — InfraChart Tools (2026-02-27)
+
+**Added 3 MCP tools for infra chart discovery and rendering, expanding the server from 18 to 21 tools.**
+
+**What was delivered:**
+
+1. **`list_infra_charts`** - Paginated listing via `InfraChartQueryController.Find`
+   - `internal/domains/infrahub/infrachart/list.go` - Find RPC with org/env filters
+   - 1-based page numbers in tool API, converted to 0-based for proto
+
+2. **`get_infra_chart`** - Retrieve by ID via `InfraChartQueryController.Get`
+   - `internal/domains/infrahub/infrachart/get.go` - Standard get-by-ID pattern
+
+3. **`build_infra_chart`** - Preview rendered chart via Get + Build two-step
+   - `internal/domains/infrahub/infrachart/build.go` - Fetches chart, merges param overrides, builds
+   - `mergeParams()` validates override names against chart's defined params
+
+4. **Tool definitions and handlers**
+   - `internal/domains/infrahub/infrachart/tools.go` - Input structs, tool defs, typed handlers
+
+5. **Server registration**
+   - `internal/server/server.go` - Import + 3 `mcp.AddTool` calls, count 18→21
+   - `internal/domains/infrahub/doc.go` - Updated subpackage list
+
+**Key Decisions Made:**
+- Named `list_infra_charts` (not `search_`) because the Find RPC only supports org/env/pagination, not free-text search
+- Build tool uses simplified `chart_id` + `params` map input (two RPCs) instead of raw InfraChart proto passthrough
+- Hard-coded `ApiResourceKind_infra_chart` (enum value 31) for the Find request's required kind field
+
+**Files Created:**
+- `internal/domains/infrahub/infrachart/tools.go`
+- `internal/domains/infrahub/infrachart/get.go`
+- `internal/domains/infrahub/infrachart/list.go`
+- `internal/domains/infrahub/infrachart/build.go`
+
+**Files Modified:**
+- `internal/server/server.go` - Tool registration + count
+- `internal/domains/infrahub/doc.go` - Subpackage docs
+
+**Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
+
+---
+
 ## Objectives for Next Conversations
 
-### Option A (Recommended): Phase 1A — InfraChart (3 tools)
+### Option A (Recommended): Phase 1B — InfraProject (6 tools)
 
-The highest-impact next step. InfraChart tools let agents discover, inspect, and preview infrastructure chart templates.
+The natural continuation. InfraProject tools give agents full project lifecycle management.
 
 | Tool | Backend RPC | Purpose |
 |------|-------------|---------|
-| `search_infra_charts` | `InfraChartQueryController.find` | Browse available chart templates |
-| `get_infra_chart` | `InfraChartQueryController.get` | Retrieve full chart details |
-| `build_infra_chart` | `InfraChartQueryController.build` | Preview rendered output |
+| `search_infra_projects` | `InfraHubSearchQueryController.searchInfraProjects` | Search projects by org, env, text |
+| `get_infra_project` | `InfraProjectQueryController.get` / `getByOrgBySlug` | Retrieve full project |
+| `apply_infra_project` | `InfraProjectCommandController.apply` | Create or update |
+| `delete_infra_project` | `InfraProjectCommandController.delete` | Remove project |
+| `check_infra_project_slug` | `InfraProjectQueryController.checkSlugAvailability` | Slug uniqueness check |
+| `undeploy_infra_project` | `InfraProjectCommandController.undeploy` | Tear down all deployed resources |
 
-Files to create: `internal/domains/infrahub/infrachart/` (tools.go, search.go, get.go, build.go)
+Files to create: `internal/domains/infrahub/infraproject/` (tools.go, search.go, get.go, apply.go, delete.go, slug.go, undeploy.go)
 
-### Option B: Phase 1B — InfraProject (6 tools)
+### Option B: Phase 1C — InfraPipeline (5 tools)
 
-If InfraChart is blocked or lower priority, InfraProject provides full project lifecycle management.
+Pipeline observability and control (list, get, get latest, run, cancel).
 
-### Option C: Phase 1A + 1B combined
+### Option C: Phase 1B + 1C combined
 
-If scope allows, tackle both InfraChart and InfraProject in one session.
+If scope allows, tackle both InfraProject and InfraPipeline in one session.
 
 ---
 
@@ -120,6 +170,7 @@ _projects/2026-02/20260227.02.expand-infrahub-mcp-tools/design-decisions/
 ### 5. Patterns to Follow
 Existing domain implementations to use as reference:
 - `internal/domains/infrahub/cloudresource/` — full CRUD + search (11 tools)
+- `internal/domains/infrahub/infrachart/` — list + get + two-step build (3 tools)
 - `internal/domains/infrahub/stackjob/` — read-only query tools (3 tools)
 - `internal/domains/infrahub/preset/` — search + get pair (2 tools)
 
