@@ -1,0 +1,10 @@
+package audit
+
+import "github.com/modelcontextprotocol/go-sdk/mcp"
+
+// Register adds all audit tools to the MCP server.
+func Register(srv *mcp.Server, serverAddress string) {
+	mcp.AddTool(srv, ListTool(), ListHandler(serverAddress))
+	mcp.AddTool(srv, GetTool(), GetHandler(serverAddress))
+	mcp.AddTool(srv, CountTool(), CountHandler(serverAddress))
+}

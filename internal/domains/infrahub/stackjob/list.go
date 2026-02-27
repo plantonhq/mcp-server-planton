@@ -52,7 +52,7 @@ func List(ctx context.Context, serverAddress string, input ListInput) (string, e
 	}
 
 	if input.OperationType != "" {
-		op, err := resolveOperationType(input.OperationType)
+		op, err := operationTypeResolver.Resolve(input.OperationType)
 		if err != nil {
 			return "", err
 		}
@@ -60,7 +60,7 @@ func List(ctx context.Context, serverAddress string, input ListInput) (string, e
 	}
 
 	if input.Status != "" {
-		s, err := resolveExecutionStatus(input.Status)
+		s, err := executionStatusResolver.Resolve(input.Status)
 		if err != nil {
 			return "", err
 		}
@@ -68,7 +68,7 @@ func List(ctx context.Context, serverAddress string, input ListInput) (string, e
 	}
 
 	if input.Result != "" {
-		r, err := resolveExecutionResult(input.Result)
+		r, err := executionResultResolver.Resolve(input.Result)
 		if err != nil {
 			return "", err
 		}

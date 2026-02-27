@@ -48,7 +48,7 @@ func ListHandler(serverAddress string) func(context.Context, *mcp.CallToolReques
 			return nil, nil, fmt.Errorf("'kind' is required")
 		}
 
-		kind, err := resolveApiResourceKind(input.Kind)
+		kind, err := apiResourceKindResolver.Resolve(input.Kind)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -136,7 +136,7 @@ func CountHandler(serverAddress string) func(context.Context, *mcp.CallToolReque
 			return nil, nil, fmt.Errorf("'kind' is required")
 		}
 
-		kind, err := resolveApiResourceKind(input.Kind)
+		kind, err := apiResourceKindResolver.Resolve(input.Kind)
 		if err != nil {
 			return nil, nil, err
 		}
