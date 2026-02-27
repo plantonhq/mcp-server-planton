@@ -80,9 +80,27 @@ When starting a new session:
 ## Current Status
 
 **Created**: 2026-02-27
-**Current Task**: Hardening (docs complete, H4 refactor pending)
-**Status**: All 5 feature phases (6A–6E) and documentation hardening complete. 18 tools implemented and documented.
+**Current Task**: None — project complete
+**Status**: COMPLETE. All 5 feature phases (6A–6E), documentation hardening, and code-quality hardening (H4) complete. 18 tools implemented, documented, and structurally consistent.
 **Last Session**: 2026-02-27
+
+### Session Progress (2026-02-27, Session 7)
+
+**Hardening H4: `get.go` Refactor + Project Close-Out — DONE**
+
+Refactored `get.go` to eliminate duplicated dual-path resolution logic by delegating to the shared `resolveResource` helper in `identifier.go`. This was the last remaining structural inconsistency in the `cloudresource` package — `Get()` was the only domain function that inlined the ID-vs-slug resolution logic instead of using the shared helpers (`resolveResource` or `resolveResourceID`).
+
+**What was delivered:**
+
+1. **`get.go` refactor** — Replaced 25 lines of inline dual-path logic with a 4-line delegation to `resolveResource` + `domains.MarshalJSON`. Removed unused imports (`cloudresourcev1`, `domains.ResolveKind`). Updated doc comment to reference `resolveResource`.
+2. **Project close-out** — Updated `next-task.md` status to Complete, wrote final checkpoint.
+
+**Files modified:**
+- `internal/domains/cloudresource/get.go` — body replaced, imports trimmed (49 → 28 lines)
+
+**Verification:** `go build ./...` and `go test ./...` both pass. Zero linter errors.
+
+---
 
 ### Session Progress (2026-02-27, Session 6)
 
@@ -274,22 +292,13 @@ Implemented 2 new tools (`list_cloud_resources`, `destroy_cloud_resource`), expa
 - ✅ Hardening: Documentation and Tool Description Review — 2026-02-27
   - Normalized tool descriptions, expanded README/tools.md/development.md
   - Surprise: docs/tools.md was the most important update (not in original plan)
-- 🔵 Next: **Remaining Hardening** — H4 (`get.go` refactor) or project close-out
+- ✅ Hardening H4: `get.go` Refactor — 2026-02-27
+  - Eliminated duplicated dual-path logic, `Get()` now delegates to `resolveResource`
+- ✅ **PROJECT COMPLETE** — 2026-02-27
 
-## Next Steps
+## Final Summary
 
-1. **H4: `get.go` refactor** (optional, low priority)
-   - Refactor `get.go` to use `resolveResource` instead of its current inline logic (deferred since Phase 6A)
-   - Code-quality improvement only — no user-facing behavior change
-2. **Project close-out** — if H4 is skipped, the project is complete
-
-## Quick Commands
-
-After loading context:
-- "Start Hardening" - Begin the hardening phase
-- "Show project status" - Get overview of progress
-- "Create checkpoint" - Save current progress
-- "Review guidelines" - Check established patterns
+All planned work is complete. The MCP server expanded from 3 tools to 18 tools across 5 domain packages, with full documentation and zero structural inconsistencies.
 
 ---
 
