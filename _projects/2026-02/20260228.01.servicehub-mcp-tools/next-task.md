@@ -87,8 +87,8 @@ When starting a new session:
 ## Current Status
 
 **Created**: 2026-02-28 18:12
-**Current Task**: Tier 4+5 — DnsDomain + TektonPipeline + TektonTask (7 tools)
-**Status**: Tiers 1, 2, and 3 completed (28/35 tools). Ready for Tier 4+5.
+**Current Task**: PROJECT COMPLETE
+**Status**: All 5 tiers completed (37 tools across 7 bounded contexts). Ready for documentation update.
 
 **Current step:**
 - ✅ Completed T01 planning (architecture and tool catalogue for all 35 tools)
@@ -108,7 +108,14 @@ When starting a new session:
   - 4 tools added beyond original plan: search_variables, search_secrets, transform_variables, transform_secrets (discovered dedicated RPCs during proto review)
   - 7 design decisions confirmed: DD-T3-1 through DD-T3-7
   - Wired into server.go, clean build verified
-- Next: **Tier 4+5 — DnsDomain + TektonPipeline + TektonTask** (7 tools)
+- ✅ **Completed Tier 4+5 — DnsDomain + TektonPipeline + TektonTask (9 tools)** (2026-03-01)
+  - 3 DnsDomain tools: get_dns_domain, apply_dns_domain, delete_dns_domain
+  - 3 TektonPipeline tools: get_tekton_pipeline, apply_tekton_pipeline, delete_tekton_pipeline
+  - 3 TektonTask tools: get_tekton_task, apply_tekton_task, delete_tekton_task
+  - 2 tools added beyond original plan: delete_tekton_pipeline, delete_tekton_task (added for complete CRUD surface)
+  - 4 design decisions confirmed: DD-T4-1 (slug normalization), DD-T4-2 (entity-based Tekton delete), DD-T4-3 (no search tools), DD-T4-4 (separate bounded contexts)
+  - Wired into server.go, clean build verified
+- ✅ **PROJECT COMPLETE** — All 37 tools across 7 ServiceHub bounded contexts implemented
 
 ### Completed: Tier 1 — Service Tools (2026-02-28)
 
@@ -230,26 +237,77 @@ When starting a new session:
 
 **Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
 
+### ✅ COMPLETED: Tier 4+5 — DnsDomain + TektonPipeline + TektonTask (9 tools) (2026-03-01)
+
+**Added 9 MCP tools for DNS domain management, Tekton pipeline templates, and Tekton task templates — completing the ServiceHub MCP tools project.**
+
+**What was delivered:**
+
+1. **New package `internal/domains/servicehub/dnsdomain/`** — 5 Go files
+   - `register.go` — Register function wiring all 3 tools
+   - `tools.go` — 3 input structs, 3 Tool/Handler pairs, validateIdentification
+   - `get.go` — Get, resolveDomain, resolveDomainID, describeDomain (DnsDomainId + ApiResourceByOrgBySlugRequest)
+   - `apply.go` — Apply via protojson unmarshal + DnsDomainCommandController.Apply
+   - `delete.go` — Delete via resolveDomainID + ApiResourceDeleteInput
+
+2. **New package `internal/domains/servicehub/tektonpipeline/`** — 5 Go files
+   - `register.go` — Register function wiring all 3 tools
+   - `tools.go` — 3 input structs, 3 Tool/Handler pairs, validateIdentification
+   - `get.go` — Get, resolvePipeline, describePipeline (ApiResourceId + GetByOrgAndNameInput with slug→Name mapping)
+   - `apply.go` — Apply via protojson unmarshal + TektonPipelineCommandController.Apply
+   - `delete.go` — Delete via get-then-delete pattern (RPC takes full entity)
+
+3. **New package `internal/domains/servicehub/tektontask/`** — 5 Go files (mirrors tektonpipeline structure)
+
+4. **Server wiring** — `internal/server/server.go` updated with `servicehubdnsdomain.Register`, `servicehubtektonpipeline.Register`, `servicehubtektontask.Register`
+
+**Key Decisions Made:**
+- DD-T4-1: Normalized all dual-path lookup to `slug` for consistency with existing tools (TektonPipeline/TektonTask `name` field presented as `slug` in MCP input)
+- DD-T4-2: Added delete tools for TektonPipeline/TektonTask (originally excluded; uses get-then-delete pattern since RPC takes full entity)
+- DD-T4-3: No search tools (no search RPCs exist for these entities)
+- DD-T4-4: Separate packages for TektonPipeline and TektonTask despite near-identical structure (per DD-T3-7 precedent)
+
+**Files Created:**
+- `internal/domains/servicehub/dnsdomain/` — 5 new files (register, tools, get, apply, delete)
+- `internal/domains/servicehub/tektonpipeline/` — 5 new files (register, tools, get, apply, delete)
+- `internal/domains/servicehub/tektontask/` — 5 new files (register, tools, get, apply, delete)
+
+**Files Modified:**
+- `internal/server/server.go` — Added 3 imports + 3 Register calls
+
+**Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
+
 ---
+
+## Project Complete
+
+All 37 ServiceHub MCP tools have been implemented across 7 bounded contexts:
+
+| Tier | Entity | Tools | Status |
+|------|--------|-------|--------|
+| 1 | Service | 7 | ✅ Complete |
+| 2 | Pipeline | 9 | ✅ Complete |
+| 3a | VariablesGroup | 8 | ✅ Complete |
+| 3b | SecretsGroup | 8 | ✅ Complete |
+| 4 | DnsDomain | 3 | ✅ Complete |
+| 5a | TektonPipeline | 3 | ✅ Complete |
+| 5b | TektonTask | 3 | ✅ Complete |
+| | **Total** | **37** (originally planned 35 + 2 discovered tools) | |
 
 ## Objectives for Next Conversations
 
-### Option A (Recommended): Tier 4+5 — DnsDomain + TektonPipeline + TektonTask (7 tools)
-Final 7 tools to complete the project. Simple CRUD entities with 2-3 tools each. Quick session.
-- DnsDomain: get_dns_domain, apply_dns_domain, delete_dns_domain (3 tools)
-- TektonPipeline: get_tekton_pipeline, apply_tekton_pipeline (2 tools)
-- TektonTask: get_tekton_task, apply_tekton_task (2 tools)
+### Option A (Recommended): Update project documentation and tools reference
+Update README.md with the new tool count (63 → 100 tools), update any docs to reflect the full ServiceHub tool surface.
 
-### Option B: Update project documentation and tools reference
-Update README.md with the new tool count (63 → 79+ tools), update any docs.
+### Option B: Wrap up project and archive
+Close out the project, move to archived status, finalize all documentation.
 
 ## Quick Commands
 
 After loading context:
-- "Continue with Tier 4+5" - Start DnsDomain + TektonPipeline + TektonTask tools
+- "Update documentation" - Update README.md and tools reference
 - "Show project status" - Get overview of progress
-- "Create checkpoint" - Save current progress
-- "Review guidelines" - Check established patterns
+- "Archive project" - Mark project as complete and archive
 
 ---
 

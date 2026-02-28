@@ -28,9 +28,12 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/stackjob"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/environment"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/organization"
+	servicehubdnsdomain "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/dnsdomain"
 	servicehubpipeline "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/pipeline"
 	servicehubsecretsgroup "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/secretsgroup"
 	servicehubservice "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/service"
+	servicehubtektonpipeline "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/tektonpipeline"
+	servicehubtektontask "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/tektontask"
 	servicehubvariablesgroup "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/variablesgroup"
 )
 
@@ -81,6 +84,9 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	servicehubpipeline.Register(srv, serverAddress)
 	servicehubvariablesgroup.Register(srv, serverAddress)
 	servicehubsecretsgroup.Register(srv, serverAddress)
+	servicehubdnsdomain.Register(srv, serverAddress)
+	servicehubtektonpipeline.Register(srv, serverAddress)
+	servicehubtektontask.Register(srv, serverAddress)
 
 	slog.Info("tools registered")
 }
