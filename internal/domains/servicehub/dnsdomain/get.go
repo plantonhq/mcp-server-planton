@@ -1,0 +1,79 @@
+package dnsdomain
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
+	apiresource "github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/apiresource"
+	dnsdomainv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/servicehub/dnsdomain/v1"
+	"google.golang.org/grpc"
+)
+
+// Get retrieves a DNS domain by ID or by org+slug via the
+// DnsDomainQueryController RPCs.
+//
+// Two identification paths are supported:
+//   - ID path: calls Get(DnsDomainId) directly.
+//   - Slug path: calls GetByOrgBySlug(ApiResourceByOrgBySlugRequest).
+func Get(ctx context.Context, serverAddress, id, org, slug string) (string, error) {
+	return domains.WithConnection(ctx, serverAddress,
+		func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
+			domain, err := resolveDomain(ctx, conn, id, org, slug)
+			if err != nil {
+				return "", err
+			}
+			return domains.MarshalJSON(domain)
+		})
+}
+
+// resolveDomain fetches the full DnsDomain proto by ID or by org+slug.
+func resolveDomain(ctx context.Context, conn *grpc.ClientConn, id, org, slug string) (*dnsdomainv1.DnsDomain, error) {
+	client := dnsdomainv1.NewDnsDomainQueryControllerClient(conn)
+
+	if id != "" {
+		resp, err := client.Get(ctx, &dnsdomainv1.DnsDomainId{Value: id})
+		if err != nil {
+			return nil, domains.RPCError(err, fmt.Sprintf("DNS domain %q", id))
+		}
+		return resp, nil
+	}
+
+	resp, err := client.GetByOrgBySlug(ctx, &apiresource.ApiResourceByOrgBySlugRequest{
+		Org:  org,
+		Slug: slug,
+	})
+	if err != nil {
+		return nil, domains.RPCError(err, fmt.Sprintf("DNS domain %q in org %q", slug, org))
+	}
+	return resp, nil
+}
+
+// resolveDomainID resolves identification inputs to a system-assigned DNS
+// domain ID string. When an ID is already provided it is returned directly.
+// Otherwise the domain is fetched by org+slug and its metadata ID is extracted.
+func resolveDomainID(ctx context.Context, conn *grpc.ClientConn, id, org, slug string) (string, error) {
+	if id != "" {
+		return id, nil
+	}
+
+	domain, err := resolveDomain(ctx, conn, id, org, slug)
+	if err != nil {
+		return "", err
+	}
+
+	resourceID := domain.GetMetadata().GetId()
+	if resourceID == "" {
+		return "", fmt.Errorf("resolved DNS domain %q in org %q but it has no ID — this indicates a backend issue", slug, org)
+	}
+	return resourceID, nil
+}
+
+// describeDomain returns a human-readable description of the DNS domain for
+// use in error messages.
+func describeDomain(id, org, slug string) string {
+	if id != "" {
+		return fmt.Sprintf("DNS domain %q", id)
+	}
+	return fmt.Sprintf("DNS domain %q in org %q", slug, org)
+}

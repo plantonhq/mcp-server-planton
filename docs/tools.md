@@ -138,6 +138,82 @@ MCP Server. For installation and configuration, see the
 | [`search_iac_modules`](#search_iac_modules) | Read | Find IaC modules by kind, provisioner, or provider |
 | [`get_iac_module`](#get_iac_module) | Read | Get full IaC module details by ID |
 
+**Service Lifecycle**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`search_services`](#search_services) | Read | Search services within an organization |
+| [`get_service`](#get_service) | Read | Retrieve a service by ID or org+slug |
+| [`apply_service`](#apply_service) | Write | Create or update a service (idempotent) |
+| [`delete_service`](#delete_service) | Write | Delete a service record |
+| [`disconnect_service_git_repo`](#disconnect_service_git_repo) | Write | Remove the webhook from the connected Git repository |
+| [`configure_service_webhook`](#configure_service_webhook) | Write | Create or refresh the webhook on the connected Git repository |
+| [`list_service_branches`](#list_service_branches) | Read | List Git branches from the connected repository |
+
+**Service CI/CD Pipelines**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`list_pipelines`](#list_pipelines) | Read | List CI/CD pipelines with optional service and environment filters |
+| [`get_pipeline`](#get_pipeline) | Read | Retrieve full pipeline details by ID |
+| [`get_last_pipeline`](#get_last_pipeline) | Read | Most recent pipeline for a service |
+| [`run_pipeline`](#run_pipeline) | Write | Trigger a new pipeline run for a branch |
+| [`rerun_pipeline`](#rerun_pipeline) | Write | Re-run a previously executed pipeline |
+| [`cancel_pipeline`](#cancel_pipeline) | Write | Cancel a running pipeline |
+| [`resolve_pipeline_gate`](#resolve_pipeline_gate) | Write | Approve or reject a manual deployment gate |
+| [`list_pipeline_files`](#list_pipeline_files) | Read | List Tekton pipeline YAML files in the service repository |
+| [`update_pipeline_file`](#update_pipeline_file) | Write | Create or update a pipeline YAML file in the service repository |
+
+**Service Variables Groups**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`search_variables`](#search_variables) | Read | Search variable entries across all groups in an org |
+| [`get_variables_group`](#get_variables_group) | Read | Retrieve a variables group by ID or org+slug |
+| [`apply_variables_group`](#apply_variables_group) | Write | Create or update a variables group (idempotent) |
+| [`delete_variables_group`](#delete_variables_group) | Write | Delete a variables group |
+| [`upsert_variable`](#upsert_variable) | Write | Add or update a single variable entry in a group |
+| [`delete_variable`](#servicehub-delete_variable) | Write | Remove a single variable entry from a group |
+| [`get_variable_value`](#get_variable_value) | Read | Resolve the value of a specific variable |
+| [`transform_variables`](#transform_variables) | Read | Batch-resolve `$variables-group/` references |
+
+**Service Secrets Groups**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`search_secrets`](#search_secrets) | Read | Search secret entries across all groups in an org |
+| [`get_secrets_group`](#get_secrets_group) | Read | Retrieve a secrets group by ID or org+slug |
+| [`apply_secrets_group`](#apply_secrets_group) | Write | Create or update a secrets group (idempotent) |
+| [`delete_secrets_group`](#delete_secrets_group) | Write | Delete a secrets group |
+| [`upsert_secret`](#upsert_secret) | Write | Add or update a single secret entry in a group |
+| [`delete_secret`](#servicehub-delete_secret) | Write | Remove a single secret entry from a group |
+| [`get_secret_value`](#get_secret_value) | Read | Resolve the plaintext value of a specific secret |
+| [`transform_secrets`](#transform_secrets) | Read | Batch-resolve `$secrets-group/` references |
+
+**DNS Domains**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`get_dns_domain`](#get_dns_domain) | Read | Retrieve a DNS domain by ID or org+slug |
+| [`apply_dns_domain`](#apply_dns_domain) | Write | Create or update a DNS domain (idempotent) |
+| [`delete_dns_domain`](#delete_dns_domain) | Write | Delete a DNS domain record |
+
+**Tekton Pipelines**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`get_tekton_pipeline`](#get_tekton_pipeline) | Read | Retrieve a Tekton pipeline template by ID or org+slug |
+| [`apply_tekton_pipeline`](#apply_tekton_pipeline) | Write | Create or update a Tekton pipeline template (idempotent) |
+| [`delete_tekton_pipeline`](#delete_tekton_pipeline) | Write | Delete a Tekton pipeline template |
+
+**Tekton Tasks**
+
+| Tool | Operation | Description |
+|------|-----------|-------------|
+| [`get_tekton_task`](#get_tekton_task) | Read | Retrieve a Tekton task template by ID or org+slug |
+| [`apply_tekton_task`](#apply_tekton_task) | Write | Create or update a Tekton task template (idempotent) |
+| [`delete_tekton_task`](#delete_tekton_task) | Write | Delete a Tekton task template |
+
 ### MCP Resources
 
 | Resource URI | Description |
@@ -1449,6 +1525,648 @@ assembling a `cloud_object`.
 
 ---
 
+## Service Lifecycle Tools
+
+Services connect Git repositories to Planton Cloud's CI/CD pipeline system. Each service defines where code lives, how to build it, and which environments to deploy to.
+
+### Service identification pattern
+
+`get_service`, `delete_service`, `disconnect_service_git_repo`, `configure_service_webhook`, and `list_service_branches` each accept two identification paths:
+
+- **By ID**: provide `id` alone.
+- **By org + slug**: provide both `org` and `slug` together.
+
+### search_services
+
+Search services within an organization. Returns lightweight search records with service IDs, names, and metadata. Use [`get_service`](#get_service) with a service ID from the results to retrieve full details.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. Use `list_organizations` to discover available organizations. |
+| `search_text` | no | string | Free-text search query to filter services by name or description. |
+| `page_num` | no | integer | Page number (1-based). Defaults to 1. |
+| `page_size` | no | integer | Results per page. Defaults to 20. |
+
+---
+
+### get_service
+
+Retrieve the full details of a service by its ID or by org+slug. Returns the complete service including metadata, spec (Git repo, pipeline config, ingress, deployment targets), and status (per-environment deployment tracking). The output JSON can be modified and passed to [`apply_service`](#apply_service) for updates.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Service ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Service slug. Required with `org` when `id` is not provided. |
+
+---
+
+### apply_service
+
+Create or update a service (idempotent). Accepts the full Service resource as a JSON object. For new services, provide `api_version`, `kind`, `metadata` (name, org), and `spec` (git_repo, pipeline_configuration). For updates, retrieve the service with [`get_service`](#get_service), modify the desired fields, and pass the result here. Returns the applied service with server-assigned ID and audit information.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `service` | **yes** | object | Full Service resource as a JSON object. Must include `api_version` (`service-hub.planton.ai/v1`), `kind` (`Service`), `metadata` (with `name` and `org`), and `spec` (with `git_repo` and `pipeline_configuration`). The output of `get_service` can be modified and passed directly here. |
+
+---
+
+### delete_service
+
+Delete a service record from the platform. Removes the service definition and disconnects webhooks from the Git provider. Does **not** delete deployed cloud resources — those must be removed separately.
+
+> **WARNING:** Removes the service definition and all webhook registrations on the connected Git provider.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Service ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Service slug. Required with `org` when `id` is not provided. |
+
+---
+
+### disconnect_service_git_repo
+
+Remove the webhook from the connected GitHub or GitLab repository. After disconnection, new commits no longer trigger pipelines. The service definition remains in Planton Cloud and can be reconnected later via [`configure_service_webhook`](#configure_service_webhook).
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Service ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Service slug. Required with `org` when `id` is not provided. |
+
+---
+
+### configure_service_webhook
+
+Create or refresh the webhook on GitHub or GitLab for a service. Registers (or updates) the webhook so that push and pull_request events trigger pipelines. Useful for recovering from accidentally deleted webhooks or troubleshooting webhook delivery issues.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Service ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Service slug. Required with `org` when `id` is not provided. |
+
+---
+
+### list_service_branches
+
+List all Git branches in the repository connected to a service. Uses the GitHub or GitLab API to fetch branch information. Useful for selecting a branch before triggering a pipeline run or validating that a branch exists.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Service ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Service slug. Required with `org` when `id` is not provided. |
+
+---
+
+## Service CI/CD Pipeline Tools
+
+Service pipelines represent build-and-deploy runs triggered by Git pushes or manual actions. Use these tools to monitor runs, trigger new runs, and manage the pipeline YAML files stored in the service repository.
+
+### list_pipelines
+
+List CI/CD pipelines within an organization. Optionally filter by service ID and environment names. Returns a paginated list. Use [`get_pipeline`](#get_pipeline) with a pipeline ID from the results to retrieve full details.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. |
+| `service_id` | no | string | Service ID to filter pipelines by. When omitted, all pipelines in the org are returned. |
+| `envs` | no | string[] | Environment names to filter by. Returns pipelines where any deployment task targets one of these environments. |
+| `page_num` | no | integer | Page number (1-based). Defaults to 1. |
+| `page_size` | no | integer | Results per page. Defaults to 20. |
+
+---
+
+### get_pipeline
+
+Retrieve the full details of a CI/CD pipeline by its ID. Returns the complete pipeline including status, build stage, deployment tasks, timestamps, and any errors.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | **yes** | string | The pipeline ID. |
+
+---
+
+### get_last_pipeline
+
+Retrieve the most recent CI/CD pipeline for a service. This is the primary tool to check whether a [`run_pipeline`](#run_pipeline) operation completed successfully. Returns the full pipeline including status, build stage, deployment tasks, timestamps, and any errors.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `service_id` | **yes** | string | The service ID to look up the most recent pipeline for. |
+
+---
+
+### run_pipeline
+
+Trigger a new CI/CD pipeline run for a service on a specific Git branch. Optionally provide a commit SHA to deploy that exact commit; when omitted, the branch HEAD is used. Use [`get_last_pipeline`](#get_last_pipeline) with the service ID to monitor the triggered pipeline.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `service_id` | **yes** | string | The service ID to run the pipeline for. |
+| `branch` | **yes** | string | Git branch name to run the pipeline on. Use `list_service_branches` to discover available branches. |
+| `commit_sha` | no | string | Git commit SHA to deploy. When omitted, the branch HEAD is used. |
+
+---
+
+### rerun_pipeline
+
+Re-run a previously executed CI/CD pipeline using the same service, branch, and commit configuration as the original. Useful for retrying pipelines that failed due to transient issues. Returns the newly created pipeline.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | **yes** | string | The pipeline ID to re-run. |
+
+---
+
+### cancel_pipeline
+
+Cancel a running CI/CD pipeline. During the build stage, Tekton PipelineRun resources are deleted and running build pods are terminated. During the deploy stage, the current deployment task receives a cancellation signal and remaining tasks are skipped. Returns the updated pipeline with its final status.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | **yes** | string | The pipeline ID to cancel. |
+
+---
+
+### resolve_pipeline_gate
+
+Approve or reject a manual gate for a deployment task within a CI/CD pipeline. Manual gates pause pipeline execution at a specific deployment task until explicitly resolved. Use [`get_pipeline`](#get_pipeline) to inspect which deployment tasks have pending gates.
+
+> **WARNING:** Approving a gate for a production deployment task will deploy to production.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `pipeline_id` | **yes** | string | The pipeline ID containing the manual gate. |
+| `deployment_task_name` | **yes** | string | Name of the deployment task with the pending gate. Visible in `get_pipeline` output. |
+| `decision` | **yes** | string | `approve` or `reject`. |
+
+---
+
+### list_pipeline_files
+
+List Tekton pipeline YAML files in the Git repository connected to a service. Discovers pipeline YAMLs under Planton conventions (`.planton/`, `.tekton/`, `tekton/`) and returns their paths, content, and blob SHAs. Use this before making changes with [`update_pipeline_file`](#update_pipeline_file).
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `service_id` | **yes** | string | The service ID whose repository will be scanned. |
+| `branch` | no | string | Git branch to scan. When omitted, the service's default branch is used. |
+
+---
+
+### update_pipeline_file
+
+Create or update a pipeline YAML file in the Git repository connected to a service. Commits the change directly to the specified branch (or the service's default branch). Provide `expected_base_sha` from [`list_pipeline_files`](#list_pipeline_files) for optimistic locking — the write is rejected if the file has been modified since. Returns the new blob SHA, commit SHA, and branch name.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `service_id` | **yes** | string | The service ID whose repository will be updated. |
+| `path` | **yes** | string | Path to write relative to the repository root (e.g. `.planton/pipeline.yaml`). |
+| `content` | **yes** | string | New file content (plain text, typically YAML). |
+| `expected_base_sha` | no | string | Current blob SHA from `list_pipeline_files`. When set, the write is rejected if the file has changed since. Use for safe concurrent editing. |
+| `commit_message` | no | string | Custom commit message. When omitted, a default message is generated. |
+| `branch` | no | string | Target branch. When omitted, the service's default branch is used. |
+
+---
+
+## Service Variables Group Tools
+
+Variables groups are named collections of plaintext environment variables. Services reference entries in a group using `$variables-group/<group-name>/<entry-name>` references. Use these tools to manage groups, individual entries, and resolve references.
+
+### Variables group identification pattern
+
+`get_variables_group`, `delete_variables_group` accept two identification paths:
+
+- **By ID**: provide `id` alone.
+- **By org + slug**: provide both `org` and `slug` together.
+
+For entry-level tools (`upsert_variable`, `delete_variable`), the group can be identified by `group_id` alone, or by both `org` and `group_slug`.
+
+### search_variables
+
+Search variable entries across all variables groups within an organization. Returns individual variable entries (not whole groups) with their group context — useful for finding where a specific variable like `DATABASE_HOST` is defined. Each result includes the group name, group ID, variable name, value, and description.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. |
+| `search_text` | no | string | Free-text search query to filter variable entries by name, value, or description. |
+| `page_num` | no | integer | Page number (1-based). Defaults to 1. |
+| `page_size` | no | integer | Results per page. Defaults to 20. |
+
+---
+
+### get_variables_group
+
+Retrieve the full details of a variables group by its ID or by org+slug. Returns the complete group including metadata, all variable entries (names, values, descriptions), and audit status. The output JSON can be modified and passed to [`apply_variables_group`](#apply_variables_group) for updates.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Variables group ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Group slug. Required with `org` when `id` is not provided. |
+
+---
+
+### apply_variables_group
+
+Create or update a variables group (idempotent). Accepts the full VariablesGroup resource as a JSON object. For new groups, provide `api_version`, `kind`, `metadata` (name, org), and `spec` (description, entries). For updates, retrieve the group with [`get_variables_group`](#get_variables_group), modify the desired fields, and pass here.
+
+> **WARNING:** This replaces **all** entries in the group. To modify a single variable without affecting others, use [`upsert_variable`](#upsert_variable) instead.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `variables_group` | **yes** | object | Full VariablesGroup resource as a JSON object. Must include `api_version` (`service-hub.planton.ai/v1`), `kind` (`VariablesGroup`), `metadata` (with `name` and `org`), and `spec` (with optional `description` and `entries`). |
+
+---
+
+### delete_variables_group
+
+Delete a variables group from the platform.
+
+> **WARNING:** Ensure no services reference this group before deleting — services using `$variables-group/` references to this group will fail during deployment.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Variables group ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Group slug. Required with `org` when `id` is not provided. |
+
+---
+
+### upsert_variable
+
+Add or update a single variable in a variables group. If a variable with the same name already exists it is updated; otherwise it is added. This is safer than [`apply_variables_group`](#apply_variables_group) when modifying a single variable because it does not affect other entries. Returns the updated variables group.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `group_id` | conditional | string | Variables group ID. Provide this alone, or provide both `org` and `group_slug`. |
+| `org` | conditional | string | Organization identifier. Required with `group_slug` when `group_id` is not provided. |
+| `group_slug` | conditional | string | Group slug. Required with `org` when `group_id` is not provided. |
+| `entry` | **yes** | object | Variable entry with `name` (required), optional `description`, and either `value` (a literal string) or `value_from` (a reference object). |
+
+---
+
+### <a name="servicehub-delete_variable"></a>delete_variable (Variables Group)
+
+Remove a single variable entry from a variables group. Other variables in the group remain unchanged. Identify the target group by `group_id` or by `org`+`group_slug`.
+
+> **WARNING:** Services referencing this variable via `$variables-group/` will fail during deployment.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `group_id` | conditional | string | Variables group ID. Provide this alone, or provide both `org` and `group_slug`. |
+| `org` | conditional | string | Organization identifier. Required with `group_slug` when `group_id` is not provided. |
+| `group_slug` | conditional | string | Group slug. Required with `org` when `group_id` is not provided. |
+| `entry_name` | **yes** | string | Name of the variable to remove. |
+
+---
+
+### get_variable_value
+
+Retrieve the resolved value of a specific variable from a variables group. If the variable uses a `value_from` reference, the reference is resolved to its current value. Returns the plain string value without metadata.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. |
+| `group_name` | **yes** | string | Name (slug) of the variables group. |
+| `entry_name` | **yes** | string | Name of the variable whose value to retrieve. |
+
+---
+
+### transform_variables
+
+Batch-resolve `$variables-group/` references in a set of environment variables. Accepts a map of key-value pairs where values may contain `$variables-group/<group-name>/<entry-name>` references. References are resolved to their actual values; literal values pass through unchanged. Returns two maps: successfully transformed entries and any entries that failed resolution with error messages. Useful for debugging configuration issues or previewing resolved values before deployment.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. Determines which variables groups are available for reference resolution. |
+| `entries` | **yes** | object | Map of environment variable names to values. Values starting with `$variables-group/` are resolved; all others pass through unchanged. |
+
+---
+
+## Service Secrets Group Tools
+
+Secrets groups are named collections of encrypted secrets. Services reference entries using `$secrets-group/<group-name>/<entry-name>` references. Use these tools to manage groups, individual entries, and resolve references.
+
+### Secrets group identification pattern
+
+`get_secrets_group`, `delete_secrets_group` accept two identification paths:
+
+- **By ID**: provide `id` alone.
+- **By org + slug**: provide both `org` and `slug` together.
+
+For entry-level tools (`upsert_secret`, `delete_secret`), the group can be identified by `group_id` alone, or by both `org` and `group_slug`.
+
+### search_secrets
+
+Search secret entries across all secrets groups within an organization. Returns individual secret entries (not whole groups) with their group context — useful for finding where a specific secret like `DB_PASSWORD` is defined. Each result includes the group name, group ID, secret name, and description. Secret values are never returned.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. |
+| `search_text` | no | string | Free-text search query to filter secret entries by name or description. |
+| `page_num` | no | integer | Page number (1-based). Defaults to 1. |
+| `page_size` | no | integer | Results per page. Defaults to 20. |
+
+---
+
+### get_secrets_group
+
+Retrieve the full details of a secrets group by its ID or by org+slug. Returns the complete group including metadata, all secret entry names and descriptions (no values), and audit status. The output JSON can be modified and passed to [`apply_secrets_group`](#apply_secrets_group) for updates.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Secrets group ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Group slug. Required with `org` when `id` is not provided. |
+
+---
+
+### apply_secrets_group
+
+Create or update a secrets group (idempotent). Accepts the full SecretsGroup resource as a JSON object. For new groups, provide `api_version`, `kind`, `metadata` (name, org), and `spec` (description, entries). For updates, retrieve the group with [`get_secrets_group`](#get_secrets_group), modify the desired fields, and pass here.
+
+> **WARNING:** This replaces **all** entries in the group. To modify a single secret without affecting others, use [`upsert_secret`](#upsert_secret) instead.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `secrets_group` | **yes** | object | Full SecretsGroup resource as a JSON object. Must include `api_version` (`service-hub.planton.ai/v1`), `kind` (`SecretsGroup`), `metadata` (with `name` and `org`), and `spec` (with optional `description` and `entries`). |
+
+---
+
+### delete_secrets_group
+
+Delete a secrets group from the platform.
+
+> **WARNING:** Ensure no services reference this group before deleting — services using `$secrets-group/` references to this group will fail during deployment.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Secrets group ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Group slug. Required with `org` when `id` is not provided. |
+
+---
+
+### upsert_secret
+
+Add or update a single secret in a secrets group. If a secret with the same name already exists it is updated; otherwise it is added. This is safer than [`apply_secrets_group`](#apply_secrets_group) when modifying a single secret because it does not affect other entries. Returns the updated secrets group.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `group_id` | conditional | string | Secrets group ID. Provide this alone, or provide both `org` and `group_slug`. |
+| `org` | conditional | string | Organization identifier. Required with `group_slug` when `group_id` is not provided. |
+| `group_slug` | conditional | string | Group slug. Required with `org` when `group_id` is not provided. |
+| `entry` | **yes** | object | Secret entry with `name` (required), optional `description`, and either `value` (a literal string) or `value_from` (a reference object). |
+
+---
+
+### <a name="servicehub-delete_secret"></a>delete_secret (Secrets Group)
+
+Remove a single secret entry from a secrets group. Other secrets in the group remain unchanged.
+
+> **WARNING:** Services referencing this secret via `$secrets-group/` will fail during deployment.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `group_id` | conditional | string | Secrets group ID. Provide this alone, or provide both `org` and `group_slug`. |
+| `org` | conditional | string | Organization identifier. Required with `group_slug` when `group_id` is not provided. |
+| `group_slug` | conditional | string | Group slug. Required with `org` when `group_id` is not provided. |
+| `entry_name` | **yes** | string | Name of the secret to remove. |
+
+---
+
+### get_secret_value
+
+Retrieve the resolved value of a specific secret from a secrets group. If the secret uses a `value_from` reference, it is resolved to its current value. Returns the plain string value.
+
+> **WARNING:** This returns the secret value in **PLAINTEXT**. Only use when the user explicitly requests to see a secret value. Never log or display secret values unless specifically asked.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. |
+| `group_name` | **yes** | string | Name (slug) of the secrets group. |
+| `entry_name` | **yes** | string | Name of the secret whose value to retrieve. |
+
+---
+
+### transform_secrets
+
+Batch-resolve `$secrets-group/` references in a set of environment variables. Accepts a map of key-value pairs where values may contain `$secrets-group/<group-name>/<entry-name>` references. References are resolved to their actual values; literal values pass through unchanged. Returns two maps: successfully transformed entries and any entries that failed resolution.
+
+> **WARNING:** Resolved values are returned in **PLAINTEXT**. Use only when debugging or when the user explicitly requests resolved secret values.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `org` | **yes** | string | Organization identifier. |
+| `entries` | **yes** | object | Map of environment variable names to values. Values starting with `$secrets-group/` are resolved; all others pass through unchanged. |
+
+---
+
+## DNS Domain Tools
+
+DNS domains register custom domain names within an organization, making them available for services to use in their ingress configuration.
+
+### get_dns_domain
+
+Retrieve the full details of a DNS domain by its ID or by org+slug. Returns the complete domain including metadata, spec (domain_name, description), and audit status. The output JSON can be modified and passed to [`apply_dns_domain`](#apply_dns_domain) for updates.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | DNS domain ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Domain slug. Required with `org` when `id` is not provided. |
+
+---
+
+### apply_dns_domain
+
+Create or update a DNS domain (idempotent). For new domains, provide `api_version`, `kind`, `metadata` (name, org), and `spec` (domain_name). For updates, retrieve the domain with [`get_dns_domain`](#get_dns_domain), modify the desired fields, and pass the result here. Returns the applied domain with server-assigned ID and audit information.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `dns_domain` | **yes** | object | Full DnsDomain resource as a JSON object. Must include `api_version` (`service-hub.planton.ai/v1`), `kind` (`DnsDomain`), `metadata` (with `name` and `org`), and `spec` (with `domain_name`). |
+
+---
+
+### delete_dns_domain
+
+Delete a DNS domain record from the platform.
+
+> **WARNING:** Services using this domain for ingress hostnames will lose their custom domain routing. Ensure no services reference this domain before deleting.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | DNS domain ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Domain slug. Required with `org` when `id` is not provided. |
+
+---
+
+## Tekton Pipeline Tools
+
+Tekton pipelines are reusable CI/CD pipeline definitions that services reference to orchestrate build and deployment stages.
+
+### get_tekton_pipeline
+
+Retrieve the full details of a Tekton pipeline template by its ID or by org+slug. Returns the complete pipeline including metadata, spec (description, git_repo, yaml_content, overview_markdown), and audit status. The output JSON can be modified and passed to [`apply_tekton_pipeline`](#apply_tekton_pipeline) for updates.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Tekton pipeline ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Pipeline slug (name). Required with `org` when `id` is not provided. |
+
+---
+
+### apply_tekton_pipeline
+
+Create or update a Tekton pipeline template (idempotent). For new pipelines, provide `api_version`, `kind`, `metadata` (name, org), and `spec` (selector, and optionally description, git_repo, yaml_content). For updates, retrieve the pipeline with [`get_tekton_pipeline`](#get_tekton_pipeline), modify the desired fields, and pass here.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `tekton_pipeline` | **yes** | object | Full TektonPipeline resource as a JSON object. Must include `api_version` (`service-hub.planton.ai/v1`), `kind` (`TektonPipeline`), `metadata` (with `name` and `org`), and `spec` (with `selector` and optionally `description`, `git_repo`, `yaml_content`, `overview_markdown`). |
+
+---
+
+### delete_tekton_pipeline
+
+Delete a Tekton pipeline template from the platform.
+
+> **WARNING:** Services referencing this pipeline will lose their CI/CD pipeline definition. Ensure no services reference this pipeline before deleting.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Tekton pipeline ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Pipeline slug (name). Required with `org` when `id` is not provided. |
+
+---
+
+## Tekton Task Tools
+
+Tekton tasks are reusable CI/CD step definitions (e.g., git-clone, docker-build, deploy) that Tekton pipelines reference as individual build steps.
+
+### get_tekton_task
+
+Retrieve the full details of a Tekton task template by its ID or by org+slug. Returns the complete task including metadata, spec (description, git_repo, yaml_content, overview_markdown), and audit status. The output JSON can be modified and passed to [`apply_tekton_task`](#apply_tekton_task) for updates.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Tekton task ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Task slug (name). Required with `org` when `id` is not provided. |
+
+---
+
+### apply_tekton_task
+
+Create or update a Tekton task template (idempotent). For new tasks, provide `api_version`, `kind`, `metadata` (name, org), and `spec` (selector, and optionally description, git_repo, yaml_content). For updates, retrieve the task with [`get_tekton_task`](#get_tekton_task), modify the desired fields, and pass here.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `tekton_task` | **yes** | object | Full TektonTask resource as a JSON object. Must include `api_version` (`service-hub.planton.ai/v1`), `kind` (`TektonTask`), `metadata` (with `name` and `org`), and `spec` (with `selector` and optionally `description`, `git_repo`, `yaml_content`, `overview_markdown`). |
+
+---
+
+### delete_tekton_task
+
+Delete a Tekton task template from the platform.
+
+> **WARNING:** Tekton pipelines referencing this task will fail during execution. Ensure no pipelines reference this task before deleting.
+
+#### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | conditional | string | Tekton task ID. Provide this alone, or provide both `org` and `slug`. |
+| `org` | conditional | string | Organization identifier. Required with `slug` when `id` is not provided. |
+| `slug` | conditional | string | Task slug (name). Required with `org` when `id` is not provided. |
+
+---
+
 ## Error Handling
 
 All tools translate gRPC errors from the Planton backend into user-facing
@@ -1616,4 +2334,94 @@ Secrets (encrypted):
 How many times was this changed?  →  get_resource_version_count (resource_id, kind)
 Full change history:              →  list_resource_versions (resource_id, kind)
 What exactly changed in v3?       →  get_resource_version (version_id)
+```
+
+### Working with services
+
+```
+Find a service:
+  search_services (org)              →  find by name/description
+  get_service (id or org+slug)       →  retrieve full spec and status
+
+Manage Git integration:
+  list_service_branches (id or org+slug)           →  discover available branches
+  configure_service_webhook (id or org+slug)        →  register or refresh webhook
+  disconnect_service_git_repo (id or org+slug)      →  pause CI/CD automation
+
+Create or update a service:
+  get_service (id or org+slug)       →  retrieve current spec
+  apply_service (service)            →  create or update (idempotent)
+  delete_service (id or org+slug)    →  remove record (does NOT remove deployed resources)
+```
+
+### Triggering and monitoring service pipelines
+
+```
+Trigger a run:
+  list_service_branches (service)      →  confirm target branch exists
+  run_pipeline (service_id, branch)    →  trigger; returns immediately
+  get_last_pipeline (service_id)       →  poll for status and result
+
+Inspect a specific run:
+  get_pipeline (id)                    →  full stage-by-stage details
+
+Retry or stop:
+  rerun_pipeline (id)                  →  retry same branch/commit
+  cancel_pipeline (id)                 →  stop in-progress run
+
+Resolve a manual gate:
+  get_pipeline (id)                         →  find deployment tasks with pending gates
+  resolve_pipeline_gate (pipeline_id, deployment_task_name, decision)
+```
+
+### Managing pipeline YAML files in a service repository
+
+```
+list_pipeline_files (service_id)                           →  see current files + blob SHAs
+update_pipeline_file (service_id, path, content)           →  create or update a file
+update_pipeline_file (..., expected_base_sha)              →  with optimistic locking
+```
+
+### Managing variables and secrets groups
+
+```
+Variables (plaintext, use $variables-group/ references):
+  search_variables (org)                          →  find entries across all groups
+  get_variables_group (id or org+slug)            →  see full group with all entries
+  apply_variables_group (variables_group)         →  replace entire group (idempotent)
+  upsert_variable (group_id or org+group_slug, entry)   →  add/update single entry safely
+  delete_variable (group_id or org+group_slug, entry_name)  →  remove single entry
+  get_variable_value (org, group_name, entry_name)         →  quick value lookup
+  transform_variables (org, entries)              →  batch-resolve references
+
+Secrets (encrypted, use $secrets-group/ references):
+  search_secrets (org)                            →  find entries across all groups
+  get_secrets_group (id or org+slug)              →  see full group (no values returned)
+  apply_secrets_group (secrets_group)             →  replace entire group (idempotent)
+  upsert_secret (group_id or org+group_slug, entry)      →  add/update single entry safely
+  delete_secret (group_id or org+group_slug, entry_name)  →  remove single entry
+  get_secret_value (org, group_name, entry_name)          →  plaintext value (use sparingly)
+  transform_secrets (org, entries)                →  batch-resolve references (plaintext output)
+```
+
+### Managing DNS domains
+
+```
+get_dns_domain (id or org+slug)      →  view domain spec
+apply_dns_domain (dns_domain)        →  create or update
+delete_dns_domain (id or org+slug)   →  remove (verify no services use it first)
+```
+
+### Managing Tekton pipeline and task templates
+
+```
+Pipelines (orchestrate build + deploy stages):
+  get_tekton_pipeline (id or org+slug)           →  view pipeline spec
+  apply_tekton_pipeline (tekton_pipeline)        →  create or update
+  delete_tekton_pipeline (id or org+slug)        →  remove (verify no services reference it)
+
+Tasks (individual build steps within a pipeline):
+  get_tekton_task (id or org+slug)               →  view task spec
+  apply_tekton_task (tekton_task)                →  create or update
+  delete_tekton_task (id or org+slug)            →  remove (verify no pipelines reference it)
 ```
