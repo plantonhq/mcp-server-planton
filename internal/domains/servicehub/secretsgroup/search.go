@@ -43,7 +43,7 @@ func Search(ctx context.Context, serverAddress string, input SearchInput) (strin
 		Org:        input.Org,
 		SearchText: input.SearchText,
 		PageInfo: &rpc.PageInfo{
-			Num:      pageNum - 1,
+			Num:  pageNum - 1,
 			Size: pageSize,
 		},
 	}
