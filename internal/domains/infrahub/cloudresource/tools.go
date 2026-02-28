@@ -3,13 +3,14 @@
 // CloudResourceQueryController, and CloudResourceSearchQueryController RPCs
 // on the Planton backend.
 //
-// Eleven tools are exposed:
+// Twelve tools are exposed:
 //   - apply_cloud_resource: create or update (accepts opaque cloud_object map;
 //     typed validation via generated parsers in gen/cloudresource/)
 //   - get_cloud_resource: retrieve by ID or by (kind, org, env, slug)
 //   - delete_cloud_resource: remove by ID or by (kind, org, env, slug)
 //   - list_cloud_resources: query the search index for resources in an org
 //   - destroy_cloud_resource: tear down cloud infrastructure (keeps record)
+//   - purge_cloud_resource: destroy infrastructure + delete record in one workflow
 //   - check_slug_availability: verify slug uniqueness within (org, env, kind)
 //   - list_cloud_resource_locks: show lock status, holder, and queue
 //   - remove_cloud_resource_locks: force-remove all locks on a resource
@@ -276,6 +277,59 @@ func DestroyHandler(serverAddress string) func(context.Context, *mcp.CallToolReq
 		}
 
 		text, err := Destroy(ctx, serverAddress, id)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// purge_cloud_resource
+// ---------------------------------------------------------------------------
+
+// PurgeCloudResourceInput defines the parameters for the purge_cloud_resource
+// tool. Exactly one identification path must be provided: either id alone, or
+// all of kind + org + env + slug.
+type PurgeCloudResourceInput struct {
+	ID   string `json:"id,omitempty"   jsonschema:"System-assigned resource ID. Provide this alone OR provide all of kind, org, env, and slug."`
+	Kind string `json:"kind,omitempty" jsonschema:"PascalCase cloud resource kind (e.g. AwsEksCluster). Required with org, env, slug when id is not provided. Read cloud-resource-kinds://catalog for valid kinds."`
+	Org  string `json:"org,omitempty"  jsonschema:"Organization identifier. Required with kind, env, slug when id is not provided."`
+	Env  string `json:"env,omitempty"  jsonschema:"Environment identifier. Required with kind, org, slug when id is not provided."`
+	Slug string `json:"slug,omitempty" jsonschema:"Immutable unique resource slug within (org, env, kind). Required with kind, org, env when id is not provided."`
+}
+
+// PurgeTool returns the MCP tool definition for purge_cloud_resource.
+func PurgeTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "purge_cloud_resource",
+		Description: "Purge a cloud resource from Planton Cloud: destroy infrastructure AND delete the record in one atomic workflow. " +
+			"The backend orchestrates this as a Temporal workflow that first tears down the IaC-managed " +
+			"cloud resources (Terraform/Pulumi destroy), waits for completion, then deletes the resource record. " +
+			"This is equivalent to calling destroy_cloud_resource followed by delete_cloud_resource, but as a " +
+			"single coordinated operation. " +
+			"Use get_latest_stack_job to monitor the destroy phase. " +
+			"WARNING: This is an irreversible, destructive operation — both the cloud infrastructure and the " +
+			"Planton record will be permanently removed. " +
+			"Identify the resource by 'id' alone, or by all of 'kind', 'org', 'env', and 'slug' together.",
+	}
+}
+
+// PurgeHandler returns the typed tool handler for purge_cloud_resource.
+func PurgeHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *PurgeCloudResourceInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *PurgeCloudResourceInput) (*mcp.CallToolResult, any, error) {
+		id := ResourceIdentifier{
+			ID:   input.ID,
+			Kind: input.Kind,
+			Org:  input.Org,
+			Env:  input.Env,
+			Slug: input.Slug,
+		}
+		if err := validateIdentifier(id); err != nil {
+			return nil, nil, err
+		}
+
+		text, err := Purge(ctx, serverAddress, id)
 		if err != nil {
 			return nil, nil, err
 		}

@@ -1,5 +1,17 @@
 # Next Task: MCP Server Gap Completion
 
+## RULES OF ENGAGEMENT - READ FIRST
+
+**When this file is loaded in a new conversation, the AI MUST:**
+
+1. **DO NOT AUTO-EXECUTE** - Never start implementing without explicit user approval
+2. **GATHER CONTEXT SILENTLY** - Read project files without outputting
+3. **PRESENT STATUS SUMMARY** - Show what's done, what's pending, agreed next steps
+4. **SHOW OPTIONS** - List recommended and alternative actions
+5. **WAIT FOR DIRECTION** - Do NOT proceed until user explicitly says "go" or chooses an option
+
+---
+
 ## Quick Resume Instructions
 
 Drop this file into your conversation to quickly resume work on this project.
@@ -23,7 +35,7 @@ Drop this file into your conversation to quickly resume work on this project.
 | T04 | ResourceManager: Environment Full CRUD | 4 | NOT STARTED |
 | T05 | Connect Domain: Credential Management (depends on T02) | 25-30 | NOT STARTED |
 | T06 | StackJob: AI-Native Tools (error recommendation, IaC resources) | 5 | NOT STARTED |
-| T07 | CloudResource: Lifecycle Completion (purge + cleanup) | 2 | NOT STARTED |
+| T07 | CloudResource: Lifecycle Completion (purge only; cleanup excluded -- platform-operator-only) | 1 | COMPLETED |
 
 ### TIER 2 -- Important Gaps
 
@@ -119,12 +131,45 @@ When starting a new session:
 5. [ ] Review wrong assumptions and dont-dos
 6. [ ] Pick the next task and begin
 
+## Session History
+
+### COMPLETED: T07 CloudResource Lifecycle Completion (2026-03-01)
+
+**Added `purge_cloud_resource` MCP tool to the CloudResource domain.**
+
+**What was delivered:**
+
+1. **`purge_cloud_resource` tool** - Destroy infrastructure + delete record in one atomic Temporal workflow
+   - `purge.go`: Domain function modeled on `delete.go` (resolveResourceID -> cmdClient.Purge)
+   - Tool definition in `tools.go`: Input struct, tool description, handler
+   - Registered in `register.go`
+
+**Key Decisions Made:**
+- `cleanup` RPC excluded -- it requires `platform/operator` authorization, consistent with existing exclusion of `updateOutputs`, `pipelineApply`, `pipelineDestroy`
+- This establishes the pattern: MCP tools expose user-level RPCs only; platform-operator RPCs are not surfaced
+
+**Files Changed/Created:**
+- `internal/domains/infrahub/cloudresource/purge.go` - NEW: Purge domain function
+- `internal/domains/infrahub/cloudresource/tools.go` - Added purge tool definition; updated package doc (11 -> 12 tools)
+- `internal/domains/infrahub/cloudresource/register.go` - Registered purge tool
+
+### COMPLETED: T02 Architecture Decision DD-01 (2026-03-01)
+
+**Connect domain tool architecture decision (see `design-decisions/DD01-connect-domain-tool-architecture.md`).**
+
+---
+
 ## Current Status
 
 **Created**: 2026-03-01
-**Current Task**: T02 (COMPLETED -- Design Decision: DD-01)
-**Next Task**: T03/T04/T06/T07 (parallel, independent of each other)
+**Current Task**: T07 (COMPLETED)
+**Next Task**: T03/T04/T06 (parallel, independent of each other)
 **Status**: Ready for implementation
+
+**Current step:**
+- COMPLETED T02: Architecture Decision DD-01 (2026-03-01)
+- COMPLETED T07: CloudResource Lifecycle Completion -- purge_cloud_resource (2026-03-01)
+- Next: **T03/T04/T06** (parallel, pick any)
 
 ---
 
