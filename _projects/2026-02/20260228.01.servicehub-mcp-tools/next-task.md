@@ -116,6 +116,10 @@ When starting a new session:
   - 4 design decisions confirmed: DD-T4-1 (slug normalization), DD-T4-2 (entity-based Tekton delete), DD-T4-3 (no search tools), DD-T4-4 (separate bounded contexts)
   - Wired into server.go, clean build verified
 - ✅ **PROJECT COMPLETE** — All 37 tools across 7 ServiceHub bounded contexts implemented
+- ✅ **Documentation Updated** (2026-03-01)
+  - README.md: tool count updated from 63 → 100, 7 new ServiceHub section summaries added
+  - docs/tools.md: 37 new tool reference entries (full parameter tables), 6 new Agent Cheat Sheet workflow sections
+  - Committed on branch `feat/add-service-hub-tools` (ba4ace9)
 
 ### Completed: Tier 1 — Service Tools (2026-02-28)
 
@@ -237,6 +241,26 @@ When starting a new session:
 
 **Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
 
+### ✅ COMPLETED: Documentation Update — README + Tools Reference (2026-03-01)
+
+**Updated public-facing documentation to reflect the full 37-tool ServiceHub surface.**
+
+**What was delivered:**
+
+1. **`README.md`** — Tool count updated from 63 → 100 and 7 new ServiceHub section bullets added to the Tools & Resources overview
+2. **`docs/tools.md`** — Full tool reference expanded with:
+   - 7 new tool group tables in the Overview section
+   - 37 new tool parameter reference entries (one per tool, with full parameter tables, descriptions, and warnings)
+   - 6 new Agent Cheat Sheet workflow sections covering service management, pipeline triggering, pipeline file management, variables/secrets groups, DNS domains, and Tekton templates
+
+**Files Changed:**
+- `README.md` — Modified
+- `docs/tools.md` — Modified (+823 lines)
+
+**Commit:** `ba4ace9` on branch `feat/add-service-hub-tools`
+
+---
+
 ### ✅ COMPLETED: Tier 4+5 — DnsDomain + TektonPipeline + TektonTask (9 tools) (2026-03-01)
 
 **Added 9 MCP tools for DNS domain management, Tekton pipeline templates, and Tekton task templates — completing the ServiceHub MCP tools project.**
@@ -296,11 +320,9 @@ All 37 ServiceHub MCP tools have been implemented across 7 bounded contexts:
 
 ## Objectives for Next Conversations
 
-### Option A (Recommended): Update project documentation and tools reference
-Update README.md with the new tool count (63 → 100 tools), update any docs to reflect the full ServiceHub tool surface.
+### ✅ All objectives complete — project fully wrapped up
 
-### Option B: Wrap up project and archive
-Close out the project, move to archived status, finalize all documentation.
+All implementation and documentation work is done. The branch `feat/add-service-hub-tools` in `mcp-server-planton` is ready for a pull request.
 
 ## Quick Commands
 
