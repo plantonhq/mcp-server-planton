@@ -28,6 +28,7 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/stackjob"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/environment"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/organization"
+	servicehubpipeline "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/pipeline"
 	servicehubservice "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/service"
 )
 
@@ -75,6 +76,7 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	deploymentcomponent.Register(srv, serverAddress)
 	iacmodule.Register(srv, serverAddress)
 	servicehubservice.Register(srv, serverAddress)
+	servicehubpipeline.Register(srv, serverAddress)
 
 	slog.Info("tools registered")
 }

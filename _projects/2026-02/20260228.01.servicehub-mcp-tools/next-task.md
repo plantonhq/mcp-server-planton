@@ -87,16 +87,22 @@ When starting a new session:
 ## Current Status
 
 **Created**: 2026-02-28 18:12
-**Current Task**: Tier 2 — Pipeline tools (9 tools)
-**Status**: Tier 1 completed, ready for Tier 2
+**Current Task**: Tier 3 — VariablesGroup + SecretsGroup (12 tools)
+**Status**: Tier 1 and Tier 2 completed, ready for Tier 3
 
 **Current step:**
-- Completed T01 planning (architecture and tool catalogue for all 35 tools)
-- Completed Tier 1 — Service tools (7 tools) (2026-02-28)
+- ✅ Completed T01 planning (architecture and tool catalogue for all 35 tools)
+- ✅ Completed Tier 1 — Service tools (7 tools) (2026-02-28)
   - search_services, get_service, apply_service, delete_service
   - disconnect_service_git_repo, configure_service_webhook, list_service_branches
   - Wired into server.go, clean build verified
-- Next: **Tier 2 — Pipeline tools** (9 tools: list, get, get_last, run, rerun, cancel, gate, files, update_file)
+- ✅ **Completed Tier 2 — Pipeline tools (9 tools)** (2026-02-28)
+  - list_pipelines, get_pipeline, get_last_pipeline, run_pipeline, rerun_pipeline
+  - cancel_pipeline, resolve_pipeline_gate, list_pipeline_files, update_pipeline_file
+  - 3 design decisions confirmed: DD-T2-1 (branch required), DD-T2-2 (bytes-to-string decode), DD-T2-3 (single gate tool)
+  - Custom marshaling for pipeline files (bytes→UTF-8), success message for run (Empty response)
+  - Wired into server.go, clean build verified
+- Next: **Tier 3 — VariablesGroup + SecretsGroup** (12 tools)
 
 ### Completed: Tier 1 — Service Tools (2026-02-28)
 
@@ -134,23 +140,64 @@ When starting a new session:
 - `internal/domains/servicehub/service/branches.go` — New
 - `internal/server/server.go` — Modified (added import + Register call)
 
+### ✅ COMPLETED: Tier 2 — Pipeline Tools (2026-02-28)
+
+**Added 9 MCP tools for ServiceHub Pipeline observability, lifecycle control, gate resolution, and repository pipeline file management.**
+
+**What was delivered:**
+
+1. **New package `internal/domains/servicehub/pipeline/`** — 11 Go files
+   - `register.go` — Register function wiring all 9 tools
+   - `tools.go` — 9 input structs, 9 Tool/Handler pairs
+   - `get.go` — Get pipeline by ID via PipelineQueryController.Get
+   - `list.go` — List pipelines with org/service/envs filters via PipelineQueryController.ListByFilters
+   - `latest.go` — Most recent pipeline for a service via PipelineQueryController.GetLastPipelineByServiceId
+   - `run.go` — Trigger pipeline via PipelineCommandController.RunGitCommit (branch required, commit_sha optional)
+   - `rerun.go` — Re-run pipeline via PipelineCommandController.Rerun
+   - `cancel.go` — Cancel running pipeline via PipelineCommandController.Cancel
+   - `gate.go` — Resolve manual gate via PipelineCommandController.ResolveManualGate + resolveDecision helper
+   - `files.go` — List Tekton pipeline files with custom bytes→UTF-8 marshaling
+   - `update_file.go` — Update pipeline file with string→bytes encoding + optimistic locking
+
+2. **Server wiring** — `internal/server/server.go` updated with `servicehubpipeline.Register`
+
+**Key Decisions Made:**
+- DD-T2-1: `run_pipeline` requires `branch` (proto required field), `commit_sha` optional; RPC returns Empty so tool returns success message directing agent to `get_last_pipeline`
+- DD-T2-2: Custom marshaling for pipeline files — decode `bytes` content to plain UTF-8 string for agent readability (deviates from standard `domains.MarshalJSON` pattern)
+- DD-T2-3: Single `resolve_pipeline_gate` tool with `deployment_task_name` (unlike InfraPipeline's two gate tools)
+
+**Files Created:**
+- `internal/domains/servicehub/pipeline/register.go` — New
+- `internal/domains/servicehub/pipeline/tools.go` — New
+- `internal/domains/servicehub/pipeline/get.go` — New
+- `internal/domains/servicehub/pipeline/list.go` — New
+- `internal/domains/servicehub/pipeline/latest.go` — New
+- `internal/domains/servicehub/pipeline/run.go` — New
+- `internal/domains/servicehub/pipeline/rerun.go` — New
+- `internal/domains/servicehub/pipeline/cancel.go` — New
+- `internal/domains/servicehub/pipeline/gate.go` — New
+- `internal/domains/servicehub/pipeline/files.go` — New
+- `internal/domains/servicehub/pipeline/update_file.go` — New
+
+**Files Modified:**
+- `internal/server/server.go` — Added import + Register call (2 lines)
+
+**Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
+
 ---
 
 ## Objectives for Next Conversations
 
-### Option A (Recommended): Tier 2 — Pipeline Tools (9 tools)
-Highest operational value. Implements list_pipelines, get_pipeline, get_last_pipeline, run_pipeline, rerun_pipeline, cancel_pipeline, resolve_pipeline_gate, list_pipeline_files, update_pipeline_file.
-
-### Option B: Tier 3 — VariablesGroup + SecretsGroup (12 tools)
+### Option A (Recommended): Tier 3 — VariablesGroup + SecretsGroup (12 tools)
 Configuration management. Two entities with symmetric API surface (get, apply, delete, upsert_entry, delete_entry, get_value each).
 
-### Option C: Tier 4+5 — DnsDomain + TektonPipeline + TektonTask (7 tools)
+### Option B: Tier 4+5 — DnsDomain + TektonPipeline + TektonTask (7 tools)
 Quick wins. Simple CRUD entities with 2-3 tools each.
 
 ## Quick Commands
 
 After loading context:
-- "Continue with Tier 2" - Start Pipeline tools implementation
+- "Continue with Tier 3" - Start VariablesGroup + SecretsGroup tools implementation
 - "Show project status" - Get overview of progress
 - "Create checkpoint" - Save current progress
 - "Review guidelines" - Check established patterns
