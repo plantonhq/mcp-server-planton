@@ -28,6 +28,7 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/stackjob"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/environment"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/organization"
+	servicehubservice "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/service"
 )
 
 // Server wraps an mcp.Server with Planton-specific configuration.
@@ -73,6 +74,7 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	audit.Register(srv, serverAddress)
 	deploymentcomponent.Register(srv, serverAddress)
 	iacmodule.Register(srv, serverAddress)
+	servicehubservice.Register(srv, serverAddress)
 
 	slog.Info("tools registered")
 }
