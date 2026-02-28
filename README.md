@@ -161,7 +161,7 @@ configuration flag.
 
 ## Tools & Resources
 
-63 tools span the full Planton Cloud product surface:
+100 tools span the full Planton Cloud product surface:
 
 **Cloud Resource Lifecycle** — create, update, delete, destroy, lock management, env var extraction (11 tools)
 
@@ -184,6 +184,20 @@ configuration flag.
 **Presets** — find and retrieve pre-configured cloud resource templates (2 tools)
 
 **Catalog** — browse deployable component types and the IaC modules that provision them (4 tools)
+
+**Service Lifecycle** — search, create, update, and delete services; manage Git webhook connections (7 tools)
+
+**Service CI/CD Pipelines** — observe build-and-deploy runs, trigger and cancel pipelines, resolve manual gates, read and write pipeline YAML files (9 tools)
+
+**Service Variables Groups** — manage named collections of plaintext environment variables; upsert and delete individual entries; resolve values and batch-transform `$variables-group/` references (8 tools)
+
+**Service Secrets Groups** — manage named collections of encrypted secrets; upsert and delete individual entries; resolve and batch-transform `$secrets-group/` references (8 tools)
+
+**DNS Domains** — register and manage custom domain names for service ingress hostnames (3 tools)
+
+**Tekton Pipelines** — manage reusable Tekton pipeline templates referenced by services (3 tools)
+
+**Tekton Tasks** — manage reusable Tekton task step templates referenced by pipelines (3 tools)
 
 Two read-only MCP resources drive schema discovery before any tool call:
 
