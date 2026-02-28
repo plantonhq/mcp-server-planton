@@ -29,7 +29,9 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/environment"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/organization"
 	servicehubpipeline "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/pipeline"
+	servicehubsecretsgroup "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/secretsgroup"
 	servicehubservice "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/service"
+	servicehubvariablesgroup "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/variablesgroup"
 )
 
 // Server wraps an mcp.Server with Planton-specific configuration.
@@ -77,6 +79,8 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	iacmodule.Register(srv, serverAddress)
 	servicehubservice.Register(srv, serverAddress)
 	servicehubpipeline.Register(srv, serverAddress)
+	servicehubvariablesgroup.Register(srv, serverAddress)
+	servicehubsecretsgroup.Register(srv, serverAddress)
 
 	slog.Info("tools registered")
 }

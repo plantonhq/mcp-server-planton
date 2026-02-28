@@ -87,8 +87,8 @@ When starting a new session:
 ## Current Status
 
 **Created**: 2026-02-28 18:12
-**Current Task**: Tier 3 — VariablesGroup + SecretsGroup (12 tools)
-**Status**: Tier 1 and Tier 2 completed, ready for Tier 3
+**Current Task**: Tier 4+5 — DnsDomain + TektonPipeline + TektonTask (7 tools)
+**Status**: Tiers 1, 2, and 3 completed (28/35 tools). Ready for Tier 4+5.
 
 **Current step:**
 - ✅ Completed T01 planning (architecture and tool catalogue for all 35 tools)
@@ -102,7 +102,13 @@ When starting a new session:
   - 3 design decisions confirmed: DD-T2-1 (branch required), DD-T2-2 (bytes-to-string decode), DD-T2-3 (single gate tool)
   - Custom marshaling for pipeline files (bytes→UTF-8), success message for run (Empty response)
   - Wired into server.go, clean build verified
-- Next: **Tier 3 — VariablesGroup + SecretsGroup** (12 tools)
+- ✅ **Completed Tier 3 — VariablesGroup + SecretsGroup (16 tools)** (2026-02-28)
+  - 8 VariablesGroup tools: search_variables, get_variables_group, apply_variables_group, delete_variables_group, upsert_variable, delete_variable, get_variable_value, transform_variables
+  - 8 SecretsGroup tools: search_secrets, get_secrets_group, apply_secrets_group, delete_secrets_group, upsert_secret, delete_secret, get_secret_value, transform_secrets
+  - 4 tools added beyond original plan: search_variables, search_secrets, transform_variables, transform_secrets (discovered dedicated RPCs during proto review)
+  - 7 design decisions confirmed: DD-T3-1 through DD-T3-7
+  - Wired into server.go, clean build verified
+- Next: **Tier 4+5 — DnsDomain + TektonPipeline + TektonTask** (7 tools)
 
 ### Completed: Tier 1 — Service Tools (2026-02-28)
 
@@ -184,20 +190,63 @@ When starting a new session:
 
 **Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
 
+### ✅ COMPLETED: Tier 3 — VariablesGroup + SecretsGroup (16 tools) (2026-02-28)
+
+**Added 16 MCP tools for ServiceHub configuration management — VariablesGroup and SecretsGroup entities with group-level CRUD, entry-level mutations, value resolution, search, and config key transformation.**
+
+**What was delivered:**
+
+1. **New package `internal/domains/servicehub/variablesgroup/`** — 10 Go files
+   - `register.go` — Register function wiring all 8 tools
+   - `tools.go` — 8 input structs, 8 Tool/Handler pairs, validateIdentification, validateGroupIdentification
+   - `search.go` — Entry-level search via ServiceHubSearchQueryController.SearchVariables
+   - `get.go` — Get + resolveGroup, resolveGroupID, describeGroup helpers
+   - `apply.go` — Apply via protojson unmarshal + VariablesGroupCommandController.Apply
+   - `delete.go` — Delete via resolveGroupID + ApiResourceDeleteInput
+   - `upsert_entry.go` — UpsertEntry via protojson entry conversion + dual-path group identification
+   - `delete_entry.go` — DeleteEntry via dual-path group identification
+   - `get_value.go` — GetValue with StringValue unwrapping
+   - `transform.go` — Transform batch reference resolution
+
+2. **New package `internal/domains/servicehub/secretsgroup/`** — 10 Go files (mirrors variablesgroup with secrets-specific naming and security warnings)
+
+3. **Server wiring** — `internal/server/server.go` updated with `servicehubvariablesgroup.Register` and `servicehubsecretsgroup.Register`
+
+**Key Decisions Made:**
+- DD-T3-1: Entry-level search via dedicated `ServiceHubSearchQueryController` RPCs (not generic searchByKind)
+- DD-T3-2: Dual-path identification (ID or org+slug) on all group-level tools
+- DD-T3-3: Entry mutation tools accept group_id OR org+group_slug (resolves internally)
+- DD-T3-4: Entry input as nested JSON object with protojson unmarshalling
+- DD-T3-5: StringValue unwrapping for get_value tools (plain text, not JSON-wrapped)
+- DD-T3-6: `get_secret_value` and `transform_secrets` include plaintext security warnings
+- DD-T3-7: No shared abstraction between packages — separate bounded contexts
+
+**Files Created:**
+- `internal/domains/servicehub/variablesgroup/` — 10 new files (register, tools, search, get, apply, delete, upsert_entry, delete_entry, get_value, transform)
+- `internal/domains/servicehub/secretsgroup/` — 10 new files (same structure)
+
+**Files Modified:**
+- `internal/server/server.go` — Added 2 imports + 2 Register calls
+
+**Verification:** `go build ./...` ✅ | `go vet ./...` ✅ | `go test ./...` ✅
+
 ---
 
 ## Objectives for Next Conversations
 
-### Option A (Recommended): Tier 3 — VariablesGroup + SecretsGroup (12 tools)
-Configuration management. Two entities with symmetric API surface (get, apply, delete, upsert_entry, delete_entry, get_value each).
+### Option A (Recommended): Tier 4+5 — DnsDomain + TektonPipeline + TektonTask (7 tools)
+Final 7 tools to complete the project. Simple CRUD entities with 2-3 tools each. Quick session.
+- DnsDomain: get_dns_domain, apply_dns_domain, delete_dns_domain (3 tools)
+- TektonPipeline: get_tekton_pipeline, apply_tekton_pipeline (2 tools)
+- TektonTask: get_tekton_task, apply_tekton_task (2 tools)
 
-### Option B: Tier 4+5 — DnsDomain + TektonPipeline + TektonTask (7 tools)
-Quick wins. Simple CRUD entities with 2-3 tools each.
+### Option B: Update project documentation and tools reference
+Update README.md with the new tool count (63 → 79+ tools), update any docs.
 
 ## Quick Commands
 
 After loading context:
-- "Continue with Tier 3" - Start VariablesGroup + SecretsGroup tools implementation
+- "Continue with Tier 4+5" - Start DnsDomain + TektonPipeline + TektonTask tools
 - "Show project status" - Get overview of progress
 - "Create checkpoint" - Save current progress
 - "Review guidelines" - Check established patterns
