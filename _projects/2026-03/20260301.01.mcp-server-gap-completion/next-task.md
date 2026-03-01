@@ -58,7 +58,7 @@ Drop this file into your conversation to quickly resume work on this project.
 |------|-------------|--------|
 | T13 | Investigation: Runner Domain Accessibility | NOT STARTED |
 | T14 | Investigation: Non-Streaming Log Retrieval | NOT STARTED |
-| T15 | MCP Prompts (Exploratory) | NOT STARTED |
+| T15 | MCP Prompts (Exploratory) | COMPLETED |
 
 ## Execution Order
 
@@ -268,12 +268,65 @@ When starting a new session:
 
 ---
 
+### COMPLETED: T15 MCP Prompts — Cross-Domain Workflow Templates (2026-03-01)
+
+**Added 5 MCP prompts — the first implementation of the third MCP primitive alongside the existing 172 tools and 5 resources.**
+
+**What was delivered:**
+
+1. **`debug_failed_deployment` prompt** — Diagnose failed infrastructure deployments
+   - Guides through: stack job retrieval → error analysis → AI recommendation → IaC state review → dependency check
+   - Arguments: `resource_id` (optional), `stack_job_id` (optional)
+
+2. **`assess_change_impact` prompt** — Analyze blast radius before destructive changes
+   - Guides through: impact analysis → dependents → dependencies → version history → risk assessment
+   - Arguments: `resource_id` (required), `change_type` (optional)
+
+3. **`explore_infrastructure` prompt** — Top-down discovery of organization topology
+   - Guides through: org selection → graph visualization → environment summary → health checks
+   - Arguments: `org_id` (optional)
+
+4. **`provision_cloud_resource` prompt** — Guided cloud infrastructure creation
+   - Guides through: type selection → prerequisite checks → configuration → deployment → monitoring
+   - Arguments: `kind` (optional), `org_id` (optional), `env_id` (optional)
+
+5. **`manage_access` prompt** — IAM discovery, audit, and policy management
+   - Guides through: principal discovery → access review → authorization check → role lookup → policy management
+   - Arguments: `org_id` (optional), `resource_id` (optional)
+
+**Architecture:**
+- Cross-cutting `prompts` package at `internal/domains/prompts/` (follows `discovery` precedent)
+- Purely static handlers — no gRPC calls, no failure modes
+- Hybrid content style — goal-oriented with recommended tool sequences
+- `PromptResult` and `UserMessage` helpers added to `internal/domains/toolresult.go`
+
+**Key Decisions Made:**
+- Hybrid content style chosen over prescriptive or goal-oriented — balances discoverability with LLM flexibility
+- Prompts are cross-cutting (not per-domain) because each workflow spans 2-4 bounded contexts
+- No gRPC calls in prompt handlers — keeps them fast, testable, and failure-free
+- 5 prompts selected based on: non-obvious multi-step workflows, cross-domain tool sequences, highest user pain points
+
+**Files Created:**
+- `internal/domains/prompts/doc.go` — Package documentation
+- `internal/domains/prompts/register.go` — Prompt registration
+- `internal/domains/prompts/debug_deployment.go` — debug_failed_deployment prompt
+- `internal/domains/prompts/assess_impact.go` — assess_change_impact prompt
+- `internal/domains/prompts/explore_infrastructure.go` — explore_infrastructure prompt
+- `internal/domains/prompts/provision_resource.go` — provision_cloud_resource prompt
+- `internal/domains/prompts/manage_access.go` — manage_access prompt
+
+**Files Modified:**
+- `internal/domains/toolresult.go` — Added `PromptResult` and `UserMessage` helpers
+- `internal/server/server.go` — Added `registerPrompts(srv)` and prompts import
+
+---
+
 ## Current Status
 
 **Created**: 2026-03-01
-**Current Task**: T12 (COMPLETED)
-**Next Task**: T13/T14/T15 (Tier 4 — Explore / Deferred)
-**Status**: All Tier 1 + all Tier 2 + all Tier 3 complete
+**Current Task**: T15 (COMPLETED)
+**Next Task**: T13/T14 (Tier 4 — Explore / Deferred)
+**Status**: All Tier 1 + all Tier 2 + all Tier 3 + T15 complete
 
 **Current step:**
 - ✅ COMPLETED T02: Architecture Decision DD-01 (2026-03-01)
@@ -284,8 +337,9 @@ When starting a new session:
 - ✅ COMPLETED T05: Connect Domain — 22 tools + 2 MCP resources across 5 sub-packages (2026-03-01)
 - ✅ COMPLETED T08: IAM Domain — 20 tools across 5 sub-packages + 3 ProviderConnectionAuthorization tools (2026-03-01)
 - ✅ COMPLETED T09/T10/T11: Remaining Tier 2 — delete_infra_pipeline + PromotionPolicy (4 tools) + FlowControlPolicy (3 tools) (2026-03-01)
-- ✅ **COMPLETED T12: Expand MCP Resources — api-resource-kinds://catalog (1 resource) (2026-03-01)**
-- 🔵 Next: **T13/T14/T15** (Tier 4 — Runner domain investigation, non-streaming logs, MCP prompts)
+- ✅ COMPLETED T12: Expand MCP Resources — api-resource-kinds://catalog (1 resource) (2026-03-01)
+- ✅ **COMPLETED T15: MCP Prompts — 5 cross-domain workflow templates (2026-03-01)**
+- 🔵 Next: **T13/T14** (Tier 4 — Runner domain investigation, non-streaming logs)
 
 ### ✅ COMPLETED: T05 Connect Domain — Credential Management (2026-03-01)
 
@@ -476,7 +530,7 @@ Scope reduced to 1 genuinely missing resource: `api-resource-kinds://catalog`.
 
 ## Objectives for Next Conversation
 
-**All Tier 1, Tier 2, and Tier 3 tasks are complete.** Remaining work is Tier 4 — exploratory/research tasks.
+**All Tier 1, Tier 2, Tier 3, and T15 are complete.** Remaining work is T13/T14 — exploratory/research tasks.
 
 **Option A: T13 — Investigation: Runner Domain Accessibility (Research)**
 - Determine if Runner domain cloud API wrappers (VPC lookup, subnet discovery, pod listing) are accessible via the MCP server's gRPC connection
@@ -485,11 +539,8 @@ Scope reduced to 1 genuinely missing resource: `api-resource-kinds://catalog`.
 **Option B: T14 — Investigation: Non-Streaming Log Retrieval (Research)**
 - Determine if non-streaming log/progress retrieval endpoints exist or could be added server-side for StackJob and Pipeline logs
 
-**Option C: T15 — MCP Prompts (Exploratory)**
-- Investigate MCP prompt templates for common platform workflows
-
-**Option D: Close out this project**
-- All critical and important gaps are closed. Tier 4 items are exploratory and could be deferred to a separate project.
+**Option C: Close out this project**
+- All critical and important gaps are closed. T13/T14 are exploratory and could be deferred to a separate project.
 
 ---
 

@@ -23,3 +23,20 @@ func ResourceResult(uri, mimeType, text string) *mcp.ReadResourceResult {
 		}},
 	}
 }
+
+// PromptResult constructs a GetPromptResult from a description and one or more
+// prompt messages. Use this in MCP prompt handlers.
+func PromptResult(description string, messages ...*mcp.PromptMessage) *mcp.GetPromptResult {
+	return &mcp.GetPromptResult{
+		Description: description,
+		Messages:    messages,
+	}
+}
+
+// UserMessage creates a user-role PromptMessage with plain text content.
+func UserMessage(text string) *mcp.PromptMessage {
+	return &mcp.PromptMessage{
+		Role:    "user",
+		Content: &mcp.TextContent{Text: text},
+	}
+}

@@ -16,6 +16,7 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/domains/audit"
 	connectcredential "github.com/plantonhq/mcp-server-planton/internal/domains/connect/credential"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/discovery"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/prompts"
 	connectdefaultprovider "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultprovider"
 	connectdefaultrunner "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultrunner"
 	connectgithub "github.com/plantonhq/mcp-server-planton/internal/domains/connect/github"
@@ -69,6 +70,7 @@ func New(cfg *config.Config) *Server {
 
 	registerTools(srv, cfg.ServerAddress)
 	registerResources(srv)
+	registerPrompts(srv)
 
 	return &Server{
 		mcp:    srv,
@@ -125,6 +127,13 @@ func registerResources(srv *mcp.Server) {
 	discovery.RegisterResources(srv)
 
 	slog.Info("resources registered")
+}
+
+// registerPrompts delegates MCP prompt registration to the prompts package.
+func registerPrompts(srv *mcp.Server) {
+	prompts.Register(srv)
+
+	slog.Info("prompts registered")
 }
 
 // ServeStdio runs the MCP server over stdin/stdout until the client
