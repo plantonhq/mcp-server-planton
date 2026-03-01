@@ -32,7 +32,7 @@ Drop this file into your conversation to quickly resume work on this project.
 |------|-------------|------------|--------|
 | T02 | Architecture Decision: Generic vs Per-Type Credential Tools | 0 (design) | COMPLETED |
 | T03 | ResourceManager: Organization Full CRUD | 4 | COMPLETED |
-| T04 | ResourceManager: Environment Full CRUD | 4 | NOT STARTED |
+| T04 | ResourceManager: Environment Full CRUD | 4 | COMPLETED |
 | T05 | Connect Domain: Credential Management (depends on T02) | 25-30 | NOT STARTED |
 | T06 | StackJob: AI-Native Tools (error recommendation, IaC resources) | 5 | NOT STARTED |
 | T07 | CloudResource: Lifecycle Completion (purge only; cleanup excluded -- platform-operator-only) | 1 | COMPLETED |
@@ -191,20 +191,56 @@ When starting a new session:
 - `internal/domains/resourcemanager/organization/tools.go` - Added 4 tool definitions; updated package doc (1 -> 5 tools)
 - `internal/domains/resourcemanager/organization/register.go` - Added 4 mcp.AddTool registrations
 
+### COMPLETED: T04 Environment Full CRUD (2026-03-01)
+
+**Added 4 new MCP tools to the Environment domain, completing the full CRUD lifecycle.**
+
+**What was delivered:**
+
+1. **`get_environment` tool** — Dual-resolution: retrieve by env_id OR by org+slug
+   - `get.go`: Two domain functions — `Get` (by ID via QueryController.Get) and `GetByOrgBySlug` (via QueryController.GetByOrgBySlug)
+   - Handler dispatches based on which inputs are provided
+
+2. **`create_environment` tool** — Provision a new environment within an organization
+   - `create.go`: Assembles full Environment proto (api_version, kind, metadata with org/slug/name, spec with description)
+   - Calls EnvironmentCommandController.Create
+
+3. **`update_environment` tool** — Read-modify-write partial update by env_id
+   - `update.go`: GETs current environment, merges non-empty fields (name, description), calls EnvironmentCommandController.Update
+   - Both RPCs share a single gRPC connection within one WithConnection callback
+
+4. **`delete_environment` tool** — Remove environment by ID with cascading cleanup warning
+   - `delete.go`: Calls EnvironmentCommandController.Delete
+
+**Key Decisions Made:**
+- Dual-resolution `get_environment` (deviation from Organization's ID-only pattern): environments are child resources naturally referenced by slug within an org, and the proto API provides `getByOrgBySlug` for this use case
+- Separate `create` + `update` tools (not `apply`): consistent with Organization pattern — different auth models, clearer LLM intent
+- RPCs excluded: `apply` (use separate create/update), `find` (platform operator), `findByOrg` (list_environments uses superior `findAuthorized`), `checkSlugAvailability` (deferred)
+- Delete tool description warns about cascading cleanup of stack-modules, microservices, secrets, and clusters
+
+**Files Changed/Created:**
+- `internal/domains/resourcemanager/environment/get.go` - NEW
+- `internal/domains/resourcemanager/environment/create.go` - NEW
+- `internal/domains/resourcemanager/environment/update.go` - NEW
+- `internal/domains/resourcemanager/environment/delete.go` - NEW
+- `internal/domains/resourcemanager/environment/tools.go` - Added 4 tool definitions; updated package doc (1 -> 5 tools)
+- `internal/domains/resourcemanager/environment/register.go` - Added 4 mcp.AddTool registrations
+
 ---
 
 ## Current Status
 
 **Created**: 2026-03-01
-**Current Task**: T03 (COMPLETED)
-**Next Task**: T04/T06 (parallel, independent of each other)
-**Status**: Ready for implementation
+**Current Task**: T04 (COMPLETED)
+**Next Task**: T05/T06 (parallel, independent of each other)
+**Status**: Ready for next task
 
 **Current step:**
 - COMPLETED T02: Architecture Decision DD-01 (2026-03-01)
 - COMPLETED T07: CloudResource Lifecycle Completion -- purge_cloud_resource (2026-03-01)
 - COMPLETED T03: Organization Full CRUD -- get, create, update, delete (2026-03-01)
-- Next: **T04/T06** (parallel, pick either)
+- COMPLETED T04: Environment Full CRUD -- get (dual-resolution), create, update, delete (2026-03-01)
+- Next: **T05/T06** (parallel, pick either)
 
 ---
 
