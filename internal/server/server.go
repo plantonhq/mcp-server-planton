@@ -15,6 +15,7 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/config"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/audit"
 	connectcredential "github.com/plantonhq/mcp-server-planton/internal/domains/connect/credential"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/discovery"
 	connectdefaultprovider "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultprovider"
 	connectdefaultrunner "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultrunner"
 	connectgithub "github.com/plantonhq/mcp-server-planton/internal/domains/connect/github"
@@ -121,6 +122,7 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 func registerResources(srv *mcp.Server) {
 	cloudresource.RegisterResources(srv)
 	connectcredential.RegisterResources(srv)
+	discovery.RegisterResources(srv)
 
 	slog.Info("resources registered")
 }

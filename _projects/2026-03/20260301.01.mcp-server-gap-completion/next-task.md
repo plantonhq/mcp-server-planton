@@ -50,7 +50,7 @@ Drop this file into your conversation to quickly resume work on this project.
 
 | Task | Description | Est. Resources | Status |
 |------|-------------|----------------|--------|
-| T12 | Expand MCP Resources (api-resource-kinds, credential-types, presets, catalogs) | 5+ | NOT STARTED |
+| T12 | Expand MCP Resources (api-resource-kinds://catalog) | 1 resource | COMPLETED |
 
 ### TIER 4 -- Explore / Deferred
 
@@ -271,9 +271,9 @@ When starting a new session:
 ## Current Status
 
 **Created**: 2026-03-01
-**Current Task**: T11 (COMPLETED)
-**Next Task**: T12 (Expand MCP Resources)
-**Status**: All Tier 1 + all Tier 2 complete
+**Current Task**: T12 (COMPLETED)
+**Next Task**: T13/T14/T15 (Tier 4 — Explore / Deferred)
+**Status**: All Tier 1 + all Tier 2 + all Tier 3 complete
 
 **Current step:**
 - ✅ COMPLETED T02: Architecture Decision DD-01 (2026-03-01)
@@ -283,8 +283,9 @@ When starting a new session:
 - ✅ COMPLETED T06: StackJob AI-Native Tools — 5 tools (IaC resources, stack input, service env status, error recommendation) (2026-03-01)
 - ✅ COMPLETED T05: Connect Domain — 22 tools + 2 MCP resources across 5 sub-packages (2026-03-01)
 - ✅ COMPLETED T08: IAM Domain — 20 tools across 5 sub-packages + 3 ProviderConnectionAuthorization tools (2026-03-01)
-- ✅ **COMPLETED T09/T10/T11: Remaining Tier 2 — delete_infra_pipeline + PromotionPolicy (4 tools) + FlowControlPolicy (3 tools) (2026-03-01)**
-- 🔵 Next: **T12** (Expand MCP Resources, 5+ resources, Tier 3) or choose from Tier 4 explorations
+- ✅ COMPLETED T09/T10/T11: Remaining Tier 2 — delete_infra_pipeline + PromotionPolicy (4 tools) + FlowControlPolicy (3 tools) (2026-03-01)
+- ✅ **COMPLETED T12: Expand MCP Resources — api-resource-kinds://catalog (1 resource) (2026-03-01)**
+- 🔵 Next: **T13/T14/T15** (Tier 4 — Runner domain investigation, non-streaming logs, MCP prompts)
 
 ### ✅ COMPLETED: T05 Connect Domain — Credential Management (2026-03-01)
 
@@ -431,16 +432,64 @@ When starting a new session:
 
 ---
 
+### ✅ COMPLETED: T12 Expand MCP Resources — api-resource-kinds://catalog (2026-03-01)
+
+**Added `api-resource-kinds://catalog` MCP resource — the platform's navigational index for agents.**
+
+**Architectural Surprise:**
+The original T12 plan proposed 5 new resources. Investigation revealed:
+- `credential-types://catalog` — already delivered in T05
+- `cloud-object-presets://{kind}`, `deployment-components://catalog`, `iac-modules://catalog` — all three already have MCP tools (`search_cloud_object_presets`, `search_deployment_components`, `search_iac_modules`). These are dynamic database records, not static type-system metadata. Adding static MCP resources would be stale or redundant.
+
+Scope reduced to 1 genuinely missing resource: `api-resource-kinds://catalog`.
+
+**What was delivered:**
+
+1. **`api-resource-kinds://catalog` resource** — Curated, static catalog of 29 platform API resource types grouped by 6 bounded contexts
+   - resource_manager (3): organization, environment, promotion_policy
+   - infra_hub (9): cloud_resource, cloud_object_preset, deployment_component, iac_module, stack_job, infra_pipeline, infra_chart, infra_project, flow_control_policy
+   - service_hub (7): service, pipeline, variables_group, secrets_group, dns_domain, tekton_pipeline, tekton_task
+   - config_manager (2): secret, secret_version
+   - connect (4): default_provider_connection, default_runner_binding, runner_registration, provider_connection_authorization
+   - iam (4): identity_account, team, iam_role, api_key
+   - Cross-references to `credential-types://catalog` and `cloud-resource-kinds://catalog`
+
+2. **`discovery` package** — New cross-cutting domain at `internal/domains/discovery/` following the established static-embedded resource pattern
+
+**Key Decisions Made:**
+- 3 of 5 originally planned resources dropped — already covered by existing tools or delivered in T05
+- `RegisterResources(srv)` signature preserved (no `serverAddress`) — static resources only
+- New `discovery` package created for platform-wide resources (not domain-specific)
+- 29 user-relevant kinds curated from ~60+ ApiResourceKind enum values; internal/system kinds excluded
+
+**Files Created:**
+- `schemas/apiresourcekinds/catalog.json` — Hand-crafted catalog data
+- `internal/domains/discovery/doc.go` — Package documentation
+- `internal/domains/discovery/resources.go` — CatalogResource() + CatalogHandler()
+- `internal/domains/discovery/register.go` — RegisterResources(srv)
+
+**Files Modified:**
+- `schemas/embed.go` — Added `ApiResourceKindFS` embed directive
+- `internal/server/server.go` — Imported discovery package, registered resources
+
+---
+
 ## Objectives for Next Conversation
 
-**Recommended: T12 — Expand MCP Resources (5+ resources, Tier 3)**
-- Add MCP resources for api-resource-kinds, credential-types, presets, catalogs
-- Read-only informational resources that help LLMs understand the platform
+**All Tier 1, Tier 2, and Tier 3 tasks are complete.** Remaining work is Tier 4 — exploratory/research tasks.
 
-**Alternatives:**
-- T13 — Investigation: Runner Domain Accessibility (Tier 4, exploratory)
-- T14 — Investigation: Non-Streaming Log Retrieval (Tier 4, exploratory)
-- T15 — MCP Prompts (Tier 4, exploratory)
+**Option A: T13 — Investigation: Runner Domain Accessibility (Research)**
+- Determine if Runner domain cloud API wrappers (VPC lookup, subnet discovery, pod listing) are accessible via the MCP server's gRPC connection
+- If accessible: plan tools for cloud API queries
+
+**Option B: T14 — Investigation: Non-Streaming Log Retrieval (Research)**
+- Determine if non-streaming log/progress retrieval endpoints exist or could be added server-side for StackJob and Pipeline logs
+
+**Option C: T15 — MCP Prompts (Exploratory)**
+- Investigate MCP prompt templates for common platform workflows
+
+**Option D: Close out this project**
+- All critical and important gaps are closed. Tier 4 items are exploratory and could be deferred to a separate project.
 
 ---
 

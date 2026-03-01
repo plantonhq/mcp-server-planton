@@ -1,8 +1,8 @@
-// Package schemas embeds JSON schemas for cloud resource providers and
-// credential types. Provider schemas are produced by the proto2schema codegen
-// tool; credential schemas are hand-crafted from proto spec definitions.
-// Both are consumed at runtime by MCP resource template handlers for
-// per-kind/per-type schema discovery.
+// Package schemas embeds JSON schemas for cloud resource providers,
+// credential types, and the platform-wide API resource kind catalog.
+// Provider schemas are produced by the proto2schema codegen tool; credential
+// schemas and the resource kind catalog are hand-crafted. All are consumed at
+// runtime by MCP resource handlers for agent discovery.
 package schemas
 
 import "embed"
@@ -27,3 +27,12 @@ var FS embed.FS
 //
 //go:embed credentials
 var CredentialFS embed.FS
+
+// ApiResourceKindFS contains the platform-wide API resource kind catalog.
+//
+// Directory layout:
+//
+//	apiresourcekinds/catalog.json — all resource kinds grouped by domain
+//
+//go:embed apiresourcekinds
+var ApiResourceKindFS embed.FS
