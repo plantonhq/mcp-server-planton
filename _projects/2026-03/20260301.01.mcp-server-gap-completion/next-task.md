@@ -31,7 +31,7 @@ Drop this file into your conversation to quickly resume work on this project.
 | Task | Description | Est. Tools | Status |
 |------|-------------|------------|--------|
 | T02 | Architecture Decision: Generic vs Per-Type Credential Tools | 0 (design) | COMPLETED |
-| T03 | ResourceManager: Organization Full CRUD | 4 | NOT STARTED |
+| T03 | ResourceManager: Organization Full CRUD | 4 | COMPLETED |
 | T04 | ResourceManager: Environment Full CRUD | 4 | NOT STARTED |
 | T05 | Connect Domain: Credential Management (depends on T02) | 25-30 | NOT STARTED |
 | T06 | StackJob: AI-Native Tools (error recommendation, IaC resources) | 5 | NOT STARTED |
@@ -157,19 +157,54 @@ When starting a new session:
 
 **Connect domain tool architecture decision (see `design-decisions/DD01-connect-domain-tool-architecture.md`).**
 
+### COMPLETED: T03 Organization Full CRUD (2026-03-01)
+
+**Added 4 new MCP tools to the Organization domain, completing the full CRUD lifecycle.**
+
+**What was delivered:**
+
+1. **`get_organization` tool** - Retrieve organization by ID via OrganizationQueryController.Get
+   - `get.go`: Domain function
+   - Tool definition, input struct, handler in `tools.go`
+
+2. **`create_organization` tool** - Provision new org with slug, name, description, contact_email
+   - `create.go`: Constructs full Organization proto internally (api_version, kind, metadata, spec)
+   - Calls OrganizationCommandController.Create (skips auth -- any authenticated user can create)
+
+3. **`update_organization` tool** - Read-modify-write partial update by org_id
+   - `update.go`: GETs current org, merges non-empty fields, calls OrganizationCommandController.Update
+   - Both RPCs share a single gRPC connection within one WithConnection callback
+
+4. **`delete_organization` tool** - Remove organization by ID
+   - `delete.go`: Calls OrganizationCommandController.Delete(OrganizationId)
+
+**Key Decisions Made:**
+- Separate `create` + `update` tools (not `apply`): different auth models, different input shapes, clearer LLM intent
+- RPCs excluded: `repairFgaTuples` (platform operator), `toggleGettingStartedTasks` (UI onboarding), `find` (platform operator), `checkSlugAvailability` (deferred -- not core CRUD)
+- Update uses empty-string-means-no-change semantics (omitempty); field-clearing deferred to v2 if needed
+
+**Files Changed/Created:**
+- `internal/domains/resourcemanager/organization/get.go` - NEW
+- `internal/domains/resourcemanager/organization/create.go` - NEW
+- `internal/domains/resourcemanager/organization/update.go` - NEW
+- `internal/domains/resourcemanager/organization/delete.go` - NEW
+- `internal/domains/resourcemanager/organization/tools.go` - Added 4 tool definitions; updated package doc (1 -> 5 tools)
+- `internal/domains/resourcemanager/organization/register.go` - Added 4 mcp.AddTool registrations
+
 ---
 
 ## Current Status
 
 **Created**: 2026-03-01
-**Current Task**: T07 (COMPLETED)
-**Next Task**: T03/T04/T06 (parallel, independent of each other)
+**Current Task**: T03 (COMPLETED)
+**Next Task**: T04/T06 (parallel, independent of each other)
 **Status**: Ready for implementation
 
 **Current step:**
 - COMPLETED T02: Architecture Decision DD-01 (2026-03-01)
 - COMPLETED T07: CloudResource Lifecycle Completion -- purge_cloud_resource (2026-03-01)
-- Next: **T03/T04/T06** (parallel, pick any)
+- COMPLETED T03: Organization Full CRUD -- get, create, update, delete (2026-03-01)
+- Next: **T04/T06** (parallel, pick either)
 
 ---
 
