@@ -9,6 +9,7 @@ func Register(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, DeleteTool(), DeleteHandler(serverAddress))
 	mcp.AddTool(srv, ListTool(), ListHandler(serverAddress))
 	mcp.AddTool(srv, DestroyTool(), DestroyHandler(serverAddress))
+	mcp.AddTool(srv, PurgeTool(), PurgeHandler(serverAddress))
 	mcp.AddTool(srv, CheckSlugAvailabilityTool(), CheckSlugAvailabilityHandler(serverAddress))
 	mcp.AddTool(srv, ListLocksTool(), ListLocksHandler(serverAddress))
 	mcp.AddTool(srv, RemoveLocksTool(), RemoveLocksHandler(serverAddress))
