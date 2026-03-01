@@ -34,7 +34,7 @@ Drop this file into your conversation to quickly resume work on this project.
 | T03 | ResourceManager: Organization Full CRUD | 4 | COMPLETED |
 | T04 | ResourceManager: Environment Full CRUD | 4 | COMPLETED |
 | T05 | Connect Domain: Credential Management (depends on T02) | 25-30 | NOT STARTED |
-| T06 | StackJob: AI-Native Tools (error recommendation, IaC resources) | 5 | NOT STARTED |
+| T06 | StackJob: AI-Native Tools (error recommendation, IaC resources) | 5 | COMPLETED |
 | T07 | CloudResource: Lifecycle Completion (purge only; cleanup excluded -- platform-operator-only) | 1 | COMPLETED |
 
 ### TIER 2 -- Important Gaps
@@ -226,13 +226,53 @@ When starting a new session:
 - `internal/domains/resourcemanager/environment/tools.go` - Added 4 tool definitions; updated package doc (1 -> 5 tools)
 - `internal/domains/resourcemanager/environment/register.go` - Added 4 mcp.AddTool registrations
 
+### COMPLETED: T06 StackJob AI-Native Tools (2026-03-01)
+
+**Added 5 new AI-native and diagnostic MCP tools to the StackJob domain, bringing the total from 7 to 12 tools.**
+
+**What was delivered:**
+
+1. **`find_iac_resources_by_stack_job` tool** — List Pulumi/Terraform state entries for a specific stack job
+   - `iac_resources.go`: Domain function via StackJobQueryController.FindIacResourcesByStackJobId
+   - Input: `stack_job_id` (required)
+
+2. **`find_iac_resources_by_api_resource` tool** — List IaC resources for any API resource via its latest stack job
+   - `iac_resources.go`: Domain function via StackJobQueryController.FindIacResourcesByApiResourceId
+   - Input: `api_resource_id` (required)
+
+3. **`get_stack_job_input` tool** — Retrieve safe (credential-free) IaC module input for debugging
+   - `stack_input.go`: Domain function via StackJobQueryController.GetCloudObjectStackInput
+   - Returns the exact data fed to Pulumi/Terraform with backend credentials stripped
+
+4. **`find_service_stack_jobs_by_env` tool** — Cross-environment deployment status for a service
+   - `service_stack_jobs.go`: Domain function via StackJobQueryController.FindServiceStackJobsByEnv
+   - First cross-domain import (servicev1.ServiceId) in the stackjob package
+
+5. **`get_error_resolution_recommendation` tool** — AI-generated fix recommendation for stack job errors
+   - `error_recommendation.go`: Domain function via StackJobQueryController.GetErrorResolutionRecommendation
+   - Returns plain-text recommendation (StringValue), not JSON — unique pattern in the domain
+
+**Key Decisions Made:**
+- Dropped `get_last_stack_job_by_cloud_resource` from plan — already exists as `get_latest_stack_job`
+- Added `get_stack_job_input` (not in original plan) — credential-free debugging tool, approved during planning
+- `get_error_resolution_recommendation` returns `resp.GetValue()` directly instead of `domains.MarshalJSON` — response is plain text, not a proto message to serialize
+- All 5 tools are read-only Query RPCs; no Command RPCs added
+
+**Files Changed/Created:**
+- `internal/domains/infrahub/stackjob/iac_resources.go` - NEW: Two IaC resource lookup functions
+- `internal/domains/infrahub/stackjob/stack_input.go` - NEW: Safe stack input retrieval
+- `internal/domains/infrahub/stackjob/service_stack_jobs.go` - NEW: Service deployment status by env
+- `internal/domains/infrahub/stackjob/error_recommendation.go` - NEW: AI error resolution
+- `internal/domains/infrahub/stackjob/tools.go` - Added 5 input structs, 5 tool definitions, 5 handlers; updated package doc (7 -> 12 tools)
+- `internal/domains/infrahub/stackjob/register.go` - Added 5 mcp.AddTool registrations
+
 ---
 
 ## Current Status
 
 **Created**: 2026-03-01
-**Current Task**: T04 (COMPLETED)
-**Next Task**: T05/T06 (parallel, independent of each other)
+**Current Task**: T06 (COMPLETED)
+**Next Task**: T05 (Connect Domain: Credential Management)
 **Status**: Ready for next task
 
 **Current step:**
@@ -240,7 +280,8 @@ When starting a new session:
 - COMPLETED T07: CloudResource Lifecycle Completion -- purge_cloud_resource (2026-03-01)
 - COMPLETED T03: Organization Full CRUD -- get, create, update, delete (2026-03-01)
 - COMPLETED T04: Environment Full CRUD -- get (dual-resolution), create, update, delete (2026-03-01)
-- Next: **T05/T06** (parallel, pick either)
+- COMPLETED T06: StackJob AI-Native Tools -- 5 tools (IaC resources, stack input, service env status, error recommendation) (2026-03-01)
+- Next: **T05** (Connect Domain: Credential Management, 25-30 tools -- largest remaining task)
 
 ---
 
