@@ -1,0 +1,29 @@
+package identity
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
+	identityaccountv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/iam/identityaccount/v1"
+	"google.golang.org/grpc"
+)
+
+// Invite creates a user invitation for the given email to join an
+// organization with the specified IAM roles, via
+// UserInvitationCommandController.Create.
+func Invite(ctx context.Context, serverAddress, org, email string, iamRoleIDs []string) (string, error) {
+	return domains.WithConnection(ctx, serverAddress,
+		func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
+			client := identityaccountv1.NewUserInvitationCommandControllerClient(conn)
+			resp, err := client.Create(ctx, &identityaccountv1.CreateUserInvitationInput{
+				Org:        org,
+				Email:      email,
+				IamRoleIds: iamRoleIDs,
+			})
+			if err != nil {
+				return "", domains.RPCError(err, fmt.Sprintf("user invitation for %q in org %q", email, org))
+			}
+			return domains.MarshalJSON(resp)
+		})
+}

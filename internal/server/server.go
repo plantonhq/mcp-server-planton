@@ -18,11 +18,17 @@ import (
 	connectdefaultprovider "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultprovider"
 	connectdefaultrunner "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultrunner"
 	connectgithub "github.com/plantonhq/mcp-server-planton/internal/domains/connect/github"
+	connectproviderauth "github.com/plantonhq/mcp-server-planton/internal/domains/connect/providerauth"
 	connectrunner "github.com/plantonhq/mcp-server-planton/internal/domains/connect/runner"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secret"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secretversion"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/variable"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/graph"
+	iamapikey "github.com/plantonhq/mcp-server-planton/internal/domains/iam/apikey"
+	iamidentity "github.com/plantonhq/mcp-server-planton/internal/domains/iam/identity"
+	iampolicy "github.com/plantonhq/mcp-server-planton/internal/domains/iam/policy"
+	iamrole "github.com/plantonhq/mcp-server-planton/internal/domains/iam/role"
+	iamteam "github.com/plantonhq/mcp-server-planton/internal/domains/iam/team"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/cloudresource"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/deploymentcomponent"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/iacmodule"
@@ -97,6 +103,12 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	connectdefaultprovider.Register(srv, serverAddress)
 	connectdefaultrunner.Register(srv, serverAddress)
 	connectrunner.Register(srv, serverAddress)
+	connectproviderauth.Register(srv, serverAddress)
+	iamidentity.Register(srv, serverAddress)
+	iamteam.Register(srv, serverAddress)
+	iampolicy.Register(srv, serverAddress)
+	iamrole.Register(srv, serverAddress)
+	iamapikey.Register(srv, serverAddress)
 
 	slog.Info("tools registered")
 }

@@ -41,7 +41,7 @@ Drop this file into your conversation to quickly resume work on this project.
 
 | Task | Description | Est. Tools | Status |
 |------|-------------|------------|--------|
-| T08 | IAM Domain: Access Control (Team, Policy, Role, ApiKey, Identity) | 12-15 | NOT STARTED |
+| T08 | IAM Domain: Access Control (Team, Policy, Role, ApiKey, Identity) + ProviderConnectionAuthorization | 23 | COMPLETED |
 | T09 | InfraPipeline: Missing Trigger Variants | 2 | NOT STARTED |
 | T10 | PromotionPolicy: Cross-Environment Deployment Governance | 4 | NOT STARTED |
 | T11 | FlowControlPolicy: Change Approval Workflows | 3 | NOT STARTED |
@@ -271,9 +271,9 @@ When starting a new session:
 ## Current Status
 
 **Created**: 2026-03-01
-**Current Task**: T05 (COMPLETED)
-**Next Task**: T08 (IAM Domain: Access Control)
-**Status**: Ready for next task — all Tier 1 tasks complete
+**Current Task**: T08 (COMPLETED)
+**Next Task**: T09 (InfraPipeline: Missing Trigger Variants)
+**Status**: Ready for next task — all Tier 1 + T08 complete
 
 **Current step:**
 - ✅ COMPLETED T02: Architecture Decision DD-01 (2026-03-01)
@@ -281,8 +281,9 @@ When starting a new session:
 - ✅ COMPLETED T03: Organization Full CRUD — get, create, update, delete (2026-03-01)
 - ✅ COMPLETED T04: Environment Full CRUD — get (dual-resolution), create, update, delete (2026-03-01)
 - ✅ COMPLETED T06: StackJob AI-Native Tools — 5 tools (IaC resources, stack input, service env status, error recommendation) (2026-03-01)
-- ✅ **COMPLETED T05: Connect Domain — 22 tools + 2 MCP resources across 5 sub-packages (2026-03-01)**
-- 🔵 Next: **T08** (IAM Domain: Access Control, 12-15 tools) or choose from Tier 2 tasks
+- ✅ COMPLETED T05: Connect Domain — 22 tools + 2 MCP resources across 5 sub-packages (2026-03-01)
+- ✅ **COMPLETED T08: IAM Domain — 20 tools across 5 sub-packages + 3 ProviderConnectionAuthorization tools (2026-03-01)**
+- 🔵 Next: **T09** (InfraPipeline: Missing Trigger Variants, 2 tools) or choose from remaining Tier 2 tasks
 
 ### ✅ COMPLETED: T05 Connect Domain — Credential Management (2026-03-01)
 
@@ -337,16 +338,65 @@ When starting a new session:
 
 ---
 
+### ✅ COMPLETED: T08 IAM Domain + ProviderConnectionAuthorization (2026-03-01)
+
+**Implemented the entire IAM bounded context (20 MCP tools across 5 sub-packages) and ProviderConnectionAuthorization (3 MCP tools in connect/providerauth), totaling 23 new tools delivered in 7 phases.**
+
+**What was delivered:**
+
+1. **IAM Identity (4 tools)** — `whoami`, `get_identity_account` (dual-resolution by ID or email), `invite_member`, `list_invitations` (with enum-mapped status filter)
+   - Uses `UserInvitationCommandController.Create` for invitations (not deprecated v1 IamPolicy)
+   - `list_invitations` maps string status to `UserInvitationStatusType` enum via `domains.NewEnumResolver`
+
+2. **IAM Role (2 tools, read-only)** — `get_iam_role`, `list_iam_roles_for_resource_kind`
+   - Role CRUD excluded (requires `back_office_admin` — platform-operator only)
+
+3. **IAM Team (4 tools)** — `create_team`, `get_team`, `update_team` (read-modify-write), `delete_team`
+   - `list_teams` deliberately skipped — team discovery handled by `list_principals(principal_kind=team)`
+   - TeamMember `member_type` mapped to `ApiResourceKind` enum via `domains.NewEnumResolver`
+
+4. **IAM Policy v2 (7 tools)** — `create_iam_policy`, `delete_iam_policy`, `upsert_iam_policies` (declarative sync), `revoke_org_access` (nuclear revocation), `list_resource_access`, `check_authorization`, `list_principals`
+   - IAM Policy v1 entirely excluded (deprecated)
+   - `list_principals` replaces v1's separate findMembersByOrg/findTeamsByOrg/findMembersByEnv/findTeamsByEnv
+
+5. **IAM API Key (3 tools)** — `create_api_key` (with one-time key visibility warning), `list_api_keys`, `delete_api_key`
+   - Handles RFC3339 timestamp parsing for `expires_at`
+
+6. **Connect ProviderConnectionAuthorization (3 tools)** — `apply_provider_connection_authorization` (protojson bridge), `get_provider_connection_authorization` (dual-resolution by ID or org+provider+connection), `delete_provider_connection_authorization`
+   - Lives at `internal/domains/connect/providerauth/` per Connect bounded context decision
+   - `provider` field mapped via `domains.ResolveProvider`
+
+**Key Decisions Made:**
+- IAM Policy v2 only — v1 is deprecated
+- Skip `list_teams` — team discovery via `list_principals(principal_kind=team)`
+- User Invitations use `UserInvitationCommandController.create` (not deprecated v1 IamPolicy)
+- IAM Role is read-only — CRUD requires `back_office_admin`
+- ProviderConnectionAuthorization placed in `connect/providerauth/` (proto path, Connect bounded context)
+- Tool count expanded from 12-15 estimate to 23 (approved by architect)
+
+**Files Created (38 Go files):**
+- `internal/domains/iam/doc.go`
+- `internal/domains/iam/identity/{doc,register,tools,whoami,get,invite,invitations}.go` (7 files)
+- `internal/domains/iam/role/{doc,register,tools,get}.go` (4 files)
+- `internal/domains/iam/team/{doc,register,tools,create,get,update,delete}.go` (7 files)
+- `internal/domains/iam/policy/{doc,register,tools,create,delete,upsert,revoke_org,list_access,check,list_principals}.go` (10 files)
+- `internal/domains/iam/apikey/{doc,register,tools,create,list,delete}.go` (6 files)
+- `internal/domains/connect/providerauth/{doc,register,tools}.go` (3 files)
+
+**Files Modified:**
+- `internal/server/server.go` — 6 new imports + 6 Register calls
+
+---
+
 ## Objectives for Next Conversation
 
-**Recommended: T08 — IAM Domain: Access Control (12-15 tools)**
-- Team, Policy, Role, ApiKey, Identity management
-- Includes the deferred ProviderConnectionAuthorization from T05
+**Recommended: T09 — InfraPipeline: Missing Trigger Variants (2 tools, quick win)**
+- Small, focused task to add missing pipeline trigger tools
 
 **Alternatives:**
-- T09 — InfraPipeline: Missing Trigger Variants (2 tools, quick win)
 - T10 — PromotionPolicy: Cross-Environment Deployment Governance (4 tools)
 - T11 — FlowControlPolicy: Change Approval Workflows (3 tools)
+- T12 — Expand MCP Resources (5+ resources, Tier 3)
 
 ---
 
