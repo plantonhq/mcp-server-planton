@@ -33,7 +33,7 @@ Drop this file into your conversation to quickly resume work on this project.
 | T02 | Architecture Decision: Generic vs Per-Type Credential Tools | 0 (design) | COMPLETED |
 | T03 | ResourceManager: Organization Full CRUD | 4 | COMPLETED |
 | T04 | ResourceManager: Environment Full CRUD | 4 | COMPLETED |
-| T05 | Connect Domain: Credential Management (depends on T02) | 25-30 | NOT STARTED |
+| T05 | Connect Domain: Credential Management (depends on T02) | 22 + 2 resources | COMPLETED |
 | T06 | StackJob: AI-Native Tools (error recommendation, IaC resources) | 5 | COMPLETED |
 | T07 | CloudResource: Lifecycle Completion (purge only; cleanup excluded -- platform-operator-only) | 1 | COMPLETED |
 
@@ -271,17 +271,82 @@ When starting a new session:
 ## Current Status
 
 **Created**: 2026-03-01
-**Current Task**: T06 (COMPLETED)
-**Next Task**: T05 (Connect Domain: Credential Management)
-**Status**: Ready for next task
+**Current Task**: T05 (COMPLETED)
+**Next Task**: T08 (IAM Domain: Access Control)
+**Status**: Ready for next task — all Tier 1 tasks complete
 
 **Current step:**
-- COMPLETED T02: Architecture Decision DD-01 (2026-03-01)
-- COMPLETED T07: CloudResource Lifecycle Completion -- purge_cloud_resource (2026-03-01)
-- COMPLETED T03: Organization Full CRUD -- get, create, update, delete (2026-03-01)
-- COMPLETED T04: Environment Full CRUD -- get (dual-resolution), create, update, delete (2026-03-01)
-- COMPLETED T06: StackJob AI-Native Tools -- 5 tools (IaC resources, stack input, service env status, error recommendation) (2026-03-01)
-- Next: **T05** (Connect Domain: Credential Management, 25-30 tools -- largest remaining task)
+- ✅ COMPLETED T02: Architecture Decision DD-01 (2026-03-01)
+- ✅ COMPLETED T07: CloudResource Lifecycle Completion — purge_cloud_resource (2026-03-01)
+- ✅ COMPLETED T03: Organization Full CRUD — get, create, update, delete (2026-03-01)
+- ✅ COMPLETED T04: Environment Full CRUD — get (dual-resolution), create, update, delete (2026-03-01)
+- ✅ COMPLETED T06: StackJob AI-Native Tools — 5 tools (IaC resources, stack input, service env status, error recommendation) (2026-03-01)
+- ✅ **COMPLETED T05: Connect Domain — 22 tools + 2 MCP resources across 5 sub-packages (2026-03-01)**
+- 🔵 Next: **T08** (IAM Domain: Access Control, 12-15 tools) or choose from Tier 2 tasks
+
+### ✅ COMPLETED: T05 Connect Domain — Credential Management (2026-03-01)
+
+**Implemented the entire Connect bounded context: 22 MCP tools + 2 MCP resources across 5 sub-packages, covering 19 credential types, GitHub integration extras, and 3 platform connection resource types.**
+
+**What was delivered:**
+
+1. **Generic Credential Tools (5 tools + 2 MCP resources)** — Dispatcher-based architecture serving 19 credential types through a single set of generic tools
+   - `apply_credential` — Create/update any credential type via `kind` discriminator + protojson bridge
+   - `get_credential` — Retrieve by ID or by org+slug, with automatic sensitive field redaction
+   - `delete_credential` — Remove any credential by ID
+   - `search_credentials` — Search by kind within an org, with enum-mapped search filters
+   - `check_credential_slug` — Slug availability check for any credential type
+   - `credential-types://catalog` — MCP resource listing all 19 supported credential types
+   - `credential-schema://{kind}` — MCP resource template returning JSON schema per type
+
+2. **19 Credential Type Schemas** — Hand-crafted JSON schemas with explicit `sensitive` field annotations
+   - Cloud: AWS, GCP, Azure, Kubernetes, DigitalOcean, Civo
+   - DevOps: GitHub, GitLab, Docker, Maven, NPM
+   - SaaS: Auth0, Cloudflare, Confluent, MongoDBAtlas, Snowflake, OpenFGA
+   - IaC Backends: PulumiBackend, TerraformBackend
+
+3. **GitHub Extras (5 dedicated tools)** — GitHub-specific operations beyond CRUD
+   - `configure_github_webhook` / `remove_github_webhook`
+   - `get_github_installation_info` / `list_github_repositories`
+   - `get_github_installation_token`
+
+4. **Platform Connections (12 tools)** — Three resource types, 4 tools each
+   - DefaultProviderConnection: apply, get, resolve, delete
+   - DefaultRunnerBinding: apply, get, resolve, delete
+   - RunnerRegistration: apply, get, delete, search
+
+**Key Decisions Made:**
+- ProviderConnectionAuthorization deferred to T08 (IAM) — authorization concern, not credential CRUD
+- Hand-crafted JSON schemas (not codegen) — pragmatic for ~20 simple types, auditable, explicit sensitive annotations
+- OAuth/CloudFormation controllers excluded — browser/infra flows, not suitable for LLM-driven MCP tools
+- Secret redaction is defense-in-depth — explicit MCP-side field redaction per OWASP MCP01:2025 guidance
+- 19 credential types confirmed (not 20+) — Docker, Maven, NPM validated as having proto stubs
+
+**Files Created (25 Go files + 20 JSON files):**
+- `internal/domains/connect/doc.go`
+- `internal/domains/connect/credential/{doc,register,tools,apply,get,delete,search,slug,registry,redact,resources,schema}.go` (12 files)
+- `internal/domains/connect/github/{doc,register,tools}.go` (3 files)
+- `internal/domains/connect/defaultprovider/{doc,register,tools}.go` (3 files)
+- `internal/domains/connect/defaultrunner/{doc,register,tools}.go` (3 files)
+- `internal/domains/connect/runner/{doc,register,tools}.go` (3 files)
+- `schemas/credentials/{registry.json + 19 credential JSON schemas}`
+
+**Files Modified:**
+- `schemas/embed.go` — Added `CredentialFS` embed directive for credential schemas
+- `internal/server/server.go` — Registered all 5 Connect sub-packages (credential, github, defaultprovider, defaultrunner, runner)
+
+---
+
+## Objectives for Next Conversation
+
+**Recommended: T08 — IAM Domain: Access Control (12-15 tools)**
+- Team, Policy, Role, ApiKey, Identity management
+- Includes the deferred ProviderConnectionAuthorization from T05
+
+**Alternatives:**
+- T09 — InfraPipeline: Missing Trigger Variants (2 tools, quick win)
+- T10 — PromotionPolicy: Cross-Environment Deployment Governance (4 tools)
+- T11 — FlowControlPolicy: Change Approval Workflows (3 tools)
 
 ---
 

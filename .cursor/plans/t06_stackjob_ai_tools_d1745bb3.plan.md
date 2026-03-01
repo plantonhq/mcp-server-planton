@@ -77,7 +77,7 @@ All work is within `internal/domains/infrahub/stackjob/`.
 - `**iac_resources.go`** — Two functions:
   - `FindIacResourcesByStackJob(ctx, serverAddress, stackJobID) (string, error)`
   - `FindIacResourcesByApiResource(ctx, serverAddress, apiResourceID) (string, error)`
-- `**service_stack_jobs.go**` — `FindServiceStackJobsByEnv(ctx, serverAddress, serviceID) (string, error)`
+- `**service_stack_jobs.go`** — `FindServiceStackJobsByEnv(ctx, serverAddress, serviceID) (string, error)`
 - `**stack_input.go**` — `GetStackInput(ctx, serverAddress, stackJobID) (string, error)`
 
 ### Modified Files (2 existing files)
