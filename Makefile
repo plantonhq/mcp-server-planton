@@ -1,6 +1,6 @@
 bump ?= patch
 
-.PHONY: build install test lint fmt vet tidy docker-build docker-run clean release codegen-schemas codegen-types codegen help
+.PHONY: build install test lint check fmt vet tidy docker-build docker-run clean release codegen-schemas codegen-types codegen help
 
 BINARY  := mcp-server-planton
 CMD     := ./cmd/mcp-server-planton
@@ -35,6 +35,8 @@ lint: ## Run golangci-lint (or go vet)
 		echo "golangci-lint not installed, running go vet instead"; \
 		go vet ./...; \
 	fi
+
+check: lint build test ## Run full CI gate locally
 
 fmt: ## Format Go source files
 	go fmt ./...
