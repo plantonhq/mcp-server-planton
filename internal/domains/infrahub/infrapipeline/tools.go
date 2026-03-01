@@ -2,9 +2,10 @@
 // backed by the InfraPipelineQueryController and InfraPipelineCommandController
 // RPCs (ai.planton.infrahub.infrapipeline.v1) on the Planton backend.
 //
-// Eight tools are exposed:
+// Nine tools are exposed:
 //   - list_infra_pipelines:              list pipelines by org with optional project filter
 //   - get_infra_pipeline:                retrieve a pipeline by ID
+//   - get_infra_pipeline_logs:           collect Tekton task logs for an infra pipeline
 //   - get_latest_infra_pipeline:         most recent pipeline for a project
 //   - run_infra_pipeline:                trigger a pipeline run (chart-source or git-commit)
 //   - cancel_infra_pipeline:             cancel a running pipeline
@@ -92,6 +93,44 @@ func GetHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest
 			return nil, nil, fmt.Errorf("'id' is required")
 		}
 		text, err := Get(ctx, serverAddress, input.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// get_infra_pipeline_logs
+// ---------------------------------------------------------------------------
+
+// GetInfraPipelineLogsInput defines the parameters for the
+// get_infra_pipeline_logs tool.
+type GetInfraPipelineLogsInput struct {
+	ID string `json:"id" jsonschema:"required,The infra pipeline ID to retrieve logs for."`
+}
+
+// GetLogsTool returns the MCP tool definition for get_infra_pipeline_logs.
+func GetLogsTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "get_infra_pipeline_logs",
+		Description: "Retrieve raw Tekton task logs for an infra pipeline. " +
+			"Returns stdout/stderr output from build and deployment task pods. " +
+			"For completed or failed pipelines, all logs are returned. " +
+			"For running pipelines, a snapshot of logs collected so far is returned — " +
+			"call again to get updated output. " +
+			"Use get_infra_pipeline for structured status and error summaries; " +
+			"use this tool when you need the actual build output or full CLI output.",
+	}
+}
+
+// GetLogsHandler returns the typed tool handler for get_infra_pipeline_logs.
+func GetLogsHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *GetInfraPipelineLogsInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *GetInfraPipelineLogsInput) (*mcp.CallToolResult, any, error) {
+		if input.ID == "" {
+			return nil, nil, fmt.Errorf("'id' is required")
+		}
+		text, err := GetLogs(ctx, serverAddress, input.ID)
 		if err != nil {
 			return nil, nil, err
 		}

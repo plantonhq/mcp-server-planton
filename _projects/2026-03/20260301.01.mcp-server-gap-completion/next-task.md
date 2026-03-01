@@ -57,7 +57,7 @@ Drop this file into your conversation to quickly resume work on this project.
 | Task | Description | Status |
 |------|-------------|--------|
 | T13 | Investigation: Runner Domain Accessibility | NOT STARTED |
-| T14 | Investigation: Non-Streaming Log Retrieval | NOT STARTED |
+| T14 | Pipeline Log Retrieval: Stream-Collect-Return Tools | COMPLETED |
 | T15 | MCP Prompts (Exploratory) | COMPLETED |
 
 ## Execution Order
@@ -324,9 +324,9 @@ When starting a new session:
 ## Current Status
 
 **Created**: 2026-03-01
-**Current Task**: T15 (COMPLETED)
-**Next Task**: T13/T14 (Tier 4 — Explore / Deferred)
-**Status**: All Tier 1 + all Tier 2 + all Tier 3 + T15 complete
+**Current Task**: T14 (COMPLETED)
+**Next Task**: T13 (Tier 4 — Runner domain investigation)
+**Status**: All Tier 1 + all Tier 2 + all Tier 3 + T15 + T14 complete
 
 **Current step:**
 - ✅ COMPLETED T02: Architecture Decision DD-01 (2026-03-01)
@@ -338,8 +338,9 @@ When starting a new session:
 - ✅ COMPLETED T08: IAM Domain — 20 tools across 5 sub-packages + 3 ProviderConnectionAuthorization tools (2026-03-01)
 - ✅ COMPLETED T09/T10/T11: Remaining Tier 2 — delete_infra_pipeline + PromotionPolicy (4 tools) + FlowControlPolicy (3 tools) (2026-03-01)
 - ✅ COMPLETED T12: Expand MCP Resources — api-resource-kinds://catalog (1 resource) (2026-03-01)
-- ✅ **COMPLETED T15: MCP Prompts — 5 cross-domain workflow templates (2026-03-01)**
-- 🔵 Next: **T13/T14** (Tier 4 — Runner domain investigation, non-streaming logs)
+- ✅ COMPLETED T15: MCP Prompts — 5 cross-domain workflow templates (2026-03-01)
+- ✅ **COMPLETED T14: Pipeline Log Retrieval — 2 tools + generic stream drain utility (2026-03-01)**
+- 🔵 Next: **T13** (Tier 4 — Runner domain investigation)
 
 ### ✅ COMPLETED: T05 Connect Domain — Credential Management (2026-03-01)
 
@@ -528,19 +529,66 @@ Scope reduced to 1 genuinely missing resource: `api-resource-kinds://catalog`.
 
 ---
 
+### ✅ COMPLETED: T14 Pipeline Log Retrieval — Stream-Collect-Return Tools (2026-03-01)
+
+**Added 2 pipeline log retrieval tools + a generic stream drain utility. These tools internally call streaming `getLogStream` RPCs, collect all entries until EOF (completed job) or a 15s timeout (running job), and return the batch as a single text response.**
+
+**What was delivered:**
+
+1. **`get_pipeline_logs` tool** — Retrieve raw Tekton task logs for a ServiceHub CI/CD pipeline
+   - `logs.go`: Domain function using `PipelineQueryController.GetLogStream`
+   - Opens streaming RPC, drains up to 1000 entries, returns formatted text
+
+2. **`get_infra_pipeline_logs` tool** — Retrieve raw Tekton task logs for an InfraPipeline
+   - `logs.go`: Domain function using `InfraPipelineQueryController.GetLogStream`
+   - Same pattern as ServiceHub Pipeline
+
+3. **Generic `DrainStream[T]` utility** — Reusable stream-to-batch collection function
+   - `stream.go`: Generic function that works with any `grpc.ServerStreamingClient[T]`
+   - Caller provides a `format` function, keeping proto imports out of the shared package
+   - Handles EOF (completed), context deadline (running), and max-entries cap
+
+4. **`StreamCollectTimeout` constant** — 15s timeout for stream collection, separate from the 30s `DefaultRPCTimeout`
+
+**Investigation Findings (pre-implementation):**
+- All log RPCs across the entire Planton API are server-streaming — zero unary alternatives exist
+- The unary `get` RPCs return structured status (errors, diagnostics, per-task state) but NOT raw log content
+- Status polling via `get_pipeline` / `get_stack_job` already works for progress monitoring
+- StackJob has no `getLogStream` RPC — its structured progress events are already well-covered by existing tools
+- The server replays logs from the beginning, making the stream-collect pattern viable
+
+**Key Decisions Made:**
+- Stream-collect-return pattern chosen over backend API changes — pragmatic, no server-side work needed
+- 15s stream timeout — fast enough for completed jobs (EOF arrives in seconds), bounded for running jobs
+- 1000 entry cap prevents massive responses and token waste
+- Text output format (not JSON) — logs are inherently textual, fewer tokens for AI agents
+- Generic `DrainStream[T]` — reusable for any future streaming-to-unary bridges
+- Not for StackJob — StackJob has no log stream, its structured diagnostics via `get_stack_job` are sufficient
+
+**Files Created:**
+- `internal/domains/stream.go` — Generic `DrainStream[T]` utility
+- `internal/domains/servicehub/pipeline/logs.go` — Pipeline log domain function
+- `internal/domains/infrahub/infrapipeline/logs.go` — InfraPipeline log domain function
+
+**Files Modified:**
+- `internal/grpc/client.go` — Added `StreamCollectTimeout` constant
+- `internal/domains/servicehub/pipeline/tools.go` — Added log tool definition; updated package doc (9 → 10 tools)
+- `internal/domains/servicehub/pipeline/register.go` — Registered log tool
+- `internal/domains/infrahub/infrapipeline/tools.go` — Added log tool definition; updated package doc (8 → 9 tools)
+- `internal/domains/infrahub/infrapipeline/register.go` — Registered log tool
+
+---
+
 ## Objectives for Next Conversation
 
-**All Tier 1, Tier 2, Tier 3, and T15 are complete.** Remaining work is T13/T14 — exploratory/research tasks.
+**All Tier 1, Tier 2, Tier 3, T15, and T14 are complete.** Remaining work is T13 — exploratory/research.
 
 **Option A: T13 — Investigation: Runner Domain Accessibility (Research)**
 - Determine if Runner domain cloud API wrappers (VPC lookup, subnet discovery, pod listing) are accessible via the MCP server's gRPC connection
 - If accessible: plan tools for cloud API queries
 
-**Option B: T14 — Investigation: Non-Streaming Log Retrieval (Research)**
-- Determine if non-streaming log/progress retrieval endpoints exist or could be added server-side for StackJob and Pipeline logs
-
-**Option C: Close out this project**
-- All critical and important gaps are closed. T13/T14 are exploratory and could be deferred to a separate project.
+**Option B: Close out this project**
+- All critical and important gaps are closed. T13 is exploratory and could be deferred to a separate project.
 
 ---
 
