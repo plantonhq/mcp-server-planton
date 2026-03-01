@@ -13,7 +13,7 @@ import (
 // organization selection through graph visualization to per-resource drill-down.
 func ExploreInfrastructurePrompt() *mcp.Prompt {
 	return &mcp.Prompt{
-		Name:        "explore_infrastructure",
+		Name: "explore_infrastructure",
 		Description: "Get a comprehensive overview of an organization's infrastructure topology. " +
 			"Walks through organization discovery, graph visualization, environment summary, " +
 			"and health checks for key resources.",

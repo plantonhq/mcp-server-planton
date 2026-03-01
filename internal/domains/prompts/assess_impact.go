@@ -13,7 +13,7 @@ import (
 // analysis, and version history into a safety-oriented workflow.
 func AssessImpactPrompt() *mcp.Prompt {
 	return &mcp.Prompt{
-		Name:        "assess_change_impact",
+		Name: "assess_change_impact",
 		Description: "Analyze the blast radius before modifying or deleting a platform resource. " +
 			"Combines impact analysis, dependency graph traversal, and version history " +
 			"into a risk assessment with a go/no-go recommendation.",

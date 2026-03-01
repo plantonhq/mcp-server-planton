@@ -69,7 +69,7 @@ type GetInput struct {
 
 func GetTool() *mcp.Tool {
 	return &mcp.Tool{
-		Name: "get_default_runner_binding",
+		Name:        "get_default_runner_binding",
 		Description: "Retrieve a default runner binding by ID.",
 	}
 }
@@ -144,7 +144,7 @@ type DeleteInput struct {
 
 func DeleteTool() *mcp.Tool {
 	return &mcp.Tool{
-		Name: "delete_default_runner_binding",
+		Name:        "delete_default_runner_binding",
 		Description: "Delete a default runner binding by ID.",
 	}
 }

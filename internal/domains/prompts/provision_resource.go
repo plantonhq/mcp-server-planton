@@ -14,7 +14,7 @@ import (
 // across the connect, cloudresource, stackjob, and discovery domains.
 func ProvisionResourcePrompt() *mcp.Prompt {
 	return &mcp.Prompt{
-		Name:        "provision_cloud_resource",
+		Name: "provision_cloud_resource",
 		Description: "Guide through creating and deploying new cloud infrastructure. " +
 			"Covers resource type selection, prerequisite checks (credentials, provider connections), " +
 			"configuration, deployment, and post-deployment monitoring.",

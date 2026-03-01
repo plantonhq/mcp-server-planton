@@ -69,7 +69,7 @@ type GetInput struct {
 
 func GetTool() *mcp.Tool {
 	return &mcp.Tool{
-		Name: "get_default_provider_connection",
+		Name:        "get_default_provider_connection",
 		Description: "Retrieve a default provider connection by ID.",
 	}
 }

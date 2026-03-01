@@ -14,7 +14,7 @@ import (
 // approach to understanding and modifying access controls.
 func ManageAccessPrompt() *mcp.Prompt {
 	return &mcp.Prompt{
-		Name:        "manage_access",
+		Name: "manage_access",
 		Description: "Discover, audit, and manage access controls for platform resources. " +
 			"Guides through principal discovery, permission checks, role lookup, " +
 			"and IAM policy creation or revocation.",

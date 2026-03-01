@@ -13,7 +13,7 @@ import (
 // spanning the stackjob, cloudresource, and graph domains.
 func DebugDeploymentPrompt() *mcp.Prompt {
 	return &mcp.Prompt{
-		Name:        "debug_failed_deployment",
+		Name: "debug_failed_deployment",
 		Description: "Investigate and diagnose a failed infrastructure deployment (stack job). " +
 			"Walks through error retrieval, AI-generated fix recommendations, IaC resource state " +
 			"inspection, and upstream dependency analysis.",

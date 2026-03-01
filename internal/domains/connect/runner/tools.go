@@ -71,7 +71,7 @@ type GetInput struct {
 
 func GetTool() *mcp.Tool {
 	return &mcp.Tool{
-		Name: "get_runner_registration",
+		Name:        "get_runner_registration",
 		Description: "Retrieve a runner registration by ID. Returns the full registration including status and connectivity info.",
 	}
 }

@@ -92,9 +92,9 @@ func GetHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest
 
 // UpdateTeamInput defines the parameters for the update_team tool.
 type UpdateTeamInput struct {
-	TeamID      string        `json:"team_id"                jsonschema:"required,ID of the team to update."`
-	Name        string        `json:"name,omitempty"         jsonschema:"New display name. Omit to keep unchanged."`
-	Description string        `json:"description,omitempty"  jsonschema:"New description. Omit to keep unchanged."`
+	TeamID      string         `json:"team_id"                jsonschema:"required,ID of the team to update."`
+	Name        string         `json:"name,omitempty"         jsonschema:"New display name. Omit to keep unchanged."`
+	Description string         `json:"description,omitempty"  jsonschema:"New description. Omit to keep unchanged."`
 	Members     *[]MemberInput `json:"members,omitempty"     jsonschema:"New member list (replaces existing). Omit to keep unchanged. Send empty array to remove all members."`
 }
 

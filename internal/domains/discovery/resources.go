@@ -18,8 +18,8 @@ const catalogURI = "api-resource-kinds://catalog"
 // before drilling into domain-specific catalogs or calling tools.
 func CatalogResource() *mcp.Resource {
 	return &mcp.Resource{
-		URI:  catalogURI,
-		Name: "api_resource_kinds_catalog",
+		URI:   catalogURI,
+		Name:  "api_resource_kinds_catalog",
 		Title: "API Resource Kinds Catalog",
 		Description: "Catalog of all Planton Cloud API resource types grouped by domain " +
 			"(ResourceManager, InfraHub, ServiceHub, ConfigManager, Connect, IAM). " +
