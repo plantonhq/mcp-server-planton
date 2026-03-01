@@ -11,4 +11,5 @@ func Register(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, CancelTool(), CancelHandler(serverAddress))
 	mcp.AddTool(srv, ResolveEnvGateTool(), ResolveEnvGateHandler(serverAddress))
 	mcp.AddTool(srv, ResolveNodeGateTool(), ResolveNodeGateHandler(serverAddress))
+	mcp.AddTool(srv, DeleteTool(), DeleteHandler(serverAddress))
 }

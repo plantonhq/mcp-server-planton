@@ -2,7 +2,7 @@
 // backed by the InfraPipelineQueryController and InfraPipelineCommandController
 // RPCs (ai.planton.infrahub.infrapipeline.v1) on the Planton backend.
 //
-// Seven tools are exposed:
+// Eight tools are exposed:
 //   - list_infra_pipelines:              list pipelines by org with optional project filter
 //   - get_infra_pipeline:                retrieve a pipeline by ID
 //   - get_latest_infra_pipeline:         most recent pipeline for a project
@@ -10,6 +10,7 @@
 //   - cancel_infra_pipeline:             cancel a running pipeline
 //   - resolve_infra_pipeline_env_gate:   approve/reject a manual gate for an environment
 //   - resolve_infra_pipeline_node_gate:  approve/reject a manual gate for a DAG node
+//   - delete_infra_pipeline:             delete a pipeline record
 package infrapipeline
 
 import (
@@ -290,6 +291,40 @@ func ResolveNodeGateHandler(serverAddress string) func(context.Context, *mcp.Cal
 			return nil, nil, fmt.Errorf("'decision' is required")
 		}
 		text, err := ResolveNodeGate(ctx, serverAddress, input.InfraPipelineID, input.Env, input.NodeID, input.Decision)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// delete_infra_pipeline
+// ---------------------------------------------------------------------------
+
+// DeleteInfraPipelineInput defines the parameters for the
+// delete_infra_pipeline tool.
+type DeleteInfraPipelineInput struct {
+	ID string `json:"id" jsonschema:"required,The infra pipeline ID to delete."`
+}
+
+// DeleteTool returns the MCP tool definition for delete_infra_pipeline.
+func DeleteTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "delete_infra_pipeline",
+		Description: "Delete an infra pipeline record by ID. " +
+			"This permanently removes the pipeline and its associated metadata. " +
+			"Use list_infra_pipelines or get_infra_pipeline to find the pipeline ID first.",
+	}
+}
+
+// DeleteHandler returns the typed tool handler for delete_infra_pipeline.
+func DeleteHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *DeleteInfraPipelineInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *DeleteInfraPipelineInput) (*mcp.CallToolResult, any, error) {
+		if input.ID == "" {
+			return nil, nil, fmt.Errorf("'id' is required")
+		}
+		text, err := Delete(ctx, serverAddress, input.ID)
 		if err != nil {
 			return nil, nil, err
 		}

@@ -42,9 +42,9 @@ Drop this file into your conversation to quickly resume work on this project.
 | Task | Description | Est. Tools | Status |
 |------|-------------|------------|--------|
 | T08 | IAM Domain: Access Control (Team, Policy, Role, ApiKey, Identity) + ProviderConnectionAuthorization | 23 | COMPLETED |
-| T09 | InfraPipeline: Missing Trigger Variants | 2 | NOT STARTED |
-| T10 | PromotionPolicy: Cross-Environment Deployment Governance | 4 | NOT STARTED |
-| T11 | FlowControlPolicy: Change Approval Workflows | 3 | NOT STARTED |
+| T09 | InfraPipeline: Pipeline Record Cleanup (reduced from 2 — all triggers already covered) | 1 | COMPLETED |
+| T10 | PromotionPolicy: Cross-Environment Deployment Governance | 4 | COMPLETED |
+| T11 | FlowControlPolicy: Stack Job Execution Controls | 3 | COMPLETED |
 
 ### TIER 3 -- MCP Resources
 
@@ -271,9 +271,9 @@ When starting a new session:
 ## Current Status
 
 **Created**: 2026-03-01
-**Current Task**: T08 (COMPLETED)
-**Next Task**: T09 (InfraPipeline: Missing Trigger Variants)
-**Status**: Ready for next task — all Tier 1 + T08 complete
+**Current Task**: T11 (COMPLETED)
+**Next Task**: T12 (Expand MCP Resources)
+**Status**: All Tier 1 + all Tier 2 complete
 
 **Current step:**
 - ✅ COMPLETED T02: Architecture Decision DD-01 (2026-03-01)
@@ -282,8 +282,9 @@ When starting a new session:
 - ✅ COMPLETED T04: Environment Full CRUD — get (dual-resolution), create, update, delete (2026-03-01)
 - ✅ COMPLETED T06: StackJob AI-Native Tools — 5 tools (IaC resources, stack input, service env status, error recommendation) (2026-03-01)
 - ✅ COMPLETED T05: Connect Domain — 22 tools + 2 MCP resources across 5 sub-packages (2026-03-01)
-- ✅ **COMPLETED T08: IAM Domain — 20 tools across 5 sub-packages + 3 ProviderConnectionAuthorization tools (2026-03-01)**
-- 🔵 Next: **T09** (InfraPipeline: Missing Trigger Variants, 2 tools) or choose from remaining Tier 2 tasks
+- ✅ COMPLETED T08: IAM Domain — 20 tools across 5 sub-packages + 3 ProviderConnectionAuthorization tools (2026-03-01)
+- ✅ **COMPLETED T09/T10/T11: Remaining Tier 2 — delete_infra_pipeline + PromotionPolicy (4 tools) + FlowControlPolicy (3 tools) (2026-03-01)**
+- 🔵 Next: **T12** (Expand MCP Resources, 5+ resources, Tier 3) or choose from Tier 4 explorations
 
 ### ✅ COMPLETED: T05 Connect Domain — Credential Management (2026-03-01)
 
@@ -388,15 +389,58 @@ When starting a new session:
 
 ---
 
+### ✅ COMPLETED: T09 + T10 + T11 — Remaining Tier 2 Tools (2026-03-01)
+
+**Completed all remaining Tier 2 tasks in a single session: 8 new tools across 3 domains (InfraPipeline, PromotionPolicy, FlowControlPolicy).**
+
+**What was delivered:**
+
+1. **T09: `delete_infra_pipeline` (1 tool)** — Pipeline record cleanup
+   - Gap analysis originally said "2 missing trigger variants", but upon deep analysis all trigger RPCs were already covered by `run_infra_pipeline`
+   - Reduced scope to the only useful missing tool: `delete_infra_pipeline` via `InfraPipelineCommandController.Delete`
+   - Extended existing infrapipeline package (delete.go + tools.go + register.go updates)
+
+2. **T10: PromotionPolicy (4 tools, new domain)** — Cross-environment deployment governance
+   - `apply_promotion_policy` — Create-or-update with typed graph input (nodes + edges with manual_approval)
+   - `get_promotion_policy` — Dual-resolution: by policy_id or by selector (kind + id)
+   - `which_promotion_policy` — Resolve effective policy with inheritance (org-specific → platform default)
+   - `delete_promotion_policy` — Delete by policy ID
+   - Package: `internal/domains/resourcemanager/promotionpolicy/` (7 files)
+
+3. **T11: FlowControlPolicy (3 tools, new domain)** — Stack job execution controls
+   - `apply_flow_control_policy` — Create-or-update with flat boolean flags (is_manual, disable_on_lifecycle, skip_refresh, preview_before_update, pause_between_preview)
+   - `get_flow_control_policy` — Dual-resolution: by policy_id or by selector (kind + id)
+   - `delete_flow_control_policy` — Delete by policy ID
+   - Package: `internal/domains/infrahub/flowcontrolpolicy/` (6 files)
+
+**Key Decisions Made:**
+- T09 reduced from 2 to 1 tool — gap analysis "missing trigger variants" was inaccurate; all trigger RPCs already covered
+- `apply` pattern chosen over separate create+update — both policies are selector-scoped singletons with identical create/update input shapes (consistent with Connect credentials, not Org/Env pattern)
+- `whichFlowControlPolicy` excluded from T11 — lives in StackJobEssentialsQueryController, returns meta-response (not the policy itself), overlaps with existing `check_stack_job_essentials`
+- Both policy domains use `domains.NewEnumResolver[ApiResourceKind]` for selector kind resolution (same pattern as IAM policy's `list_principals`)
+
+**Files Created (14 Go files):**
+- `internal/domains/infrahub/infrapipeline/delete.go`
+- `internal/domains/resourcemanager/promotionpolicy/{doc,register,tools,apply,get,which,delete}.go` (7 files)
+- `internal/domains/infrahub/flowcontrolpolicy/{doc,register,tools,apply,get,delete}.go` (6 files)
+
+**Files Modified (3 files):**
+- `internal/domains/infrahub/infrapipeline/tools.go` — Added delete tool definition, updated package doc (7 → 8 tools)
+- `internal/domains/infrahub/infrapipeline/register.go` — Added delete tool registration
+- `internal/server/server.go` — 2 new imports + 2 Register calls (promotionpolicy, flowcontrolpolicy)
+
+---
+
 ## Objectives for Next Conversation
 
-**Recommended: T09 — InfraPipeline: Missing Trigger Variants (2 tools, quick win)**
-- Small, focused task to add missing pipeline trigger tools
+**Recommended: T12 — Expand MCP Resources (5+ resources, Tier 3)**
+- Add MCP resources for api-resource-kinds, credential-types, presets, catalogs
+- Read-only informational resources that help LLMs understand the platform
 
 **Alternatives:**
-- T10 — PromotionPolicy: Cross-Environment Deployment Governance (4 tools)
-- T11 — FlowControlPolicy: Change Approval Workflows (3 tools)
-- T12 — Expand MCP Resources (5+ resources, Tier 3)
+- T13 — Investigation: Runner Domain Accessibility (Tier 4, exploratory)
+- T14 — Investigation: Non-Streaming Log Retrieval (Tier 4, exploratory)
+- T15 — MCP Prompts (Tier 4, exploratory)
 
 ---
 

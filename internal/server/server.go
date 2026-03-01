@@ -31,6 +31,7 @@ import (
 	iamteam "github.com/plantonhq/mcp-server-planton/internal/domains/iam/team"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/cloudresource"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/deploymentcomponent"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/flowcontrolpolicy"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/iacmodule"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infrachart"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infrapipeline"
@@ -39,6 +40,7 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/stackjob"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/environment"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/organization"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/promotionpolicy"
 	servicehubdnsdomain "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/dnsdomain"
 	servicehubpipeline "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/pipeline"
 	servicehubsecretsgroup "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/secretsgroup"
@@ -109,6 +111,8 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	iampolicy.Register(srv, serverAddress)
 	iamrole.Register(srv, serverAddress)
 	iamapikey.Register(srv, serverAddress)
+	promotionpolicy.Register(srv, serverAddress)
+	flowcontrolpolicy.Register(srv, serverAddress)
 
 	slog.Info("tools registered")
 }
