@@ -25,6 +25,12 @@ import (
 // localhost (milliseconds) and remote endpoints (low seconds).
 const DefaultRPCTimeout = 30 * time.Second
 
+// StreamCollectTimeout bounds how long a tool may spend draining a
+// server-streaming RPC before returning whatever has been collected.
+// For completed jobs the stream closes well before this limit; for running
+// jobs this prevents the MCP tool call from blocking indefinitely.
+const StreamCollectTimeout = 15 * time.Second
+
 // NewConnection dials a gRPC endpoint and returns an authenticated connection.
 //
 // Transport security is determined by convention:

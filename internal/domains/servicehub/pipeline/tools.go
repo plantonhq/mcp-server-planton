@@ -2,9 +2,10 @@
 // backed by the PipelineQueryController and PipelineCommandController
 // RPCs (ai.planton.servicehub.pipeline.v1) on the Planton backend.
 //
-// Nine tools are exposed:
+// Ten tools are exposed:
 //   - list_pipelines:        list pipelines by org with optional service/env filters
 //   - get_pipeline:          retrieve a pipeline by ID
+//   - get_pipeline_logs:     collect Tekton task logs for a pipeline
 //   - get_last_pipeline:     most recent pipeline for a service
 //   - run_pipeline:          trigger a pipeline run for a branch/commit
 //   - rerun_pipeline:        re-run a previously executed pipeline
@@ -94,6 +95,43 @@ func GetHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest
 			return nil, nil, fmt.Errorf("'id' is required")
 		}
 		text, err := Get(ctx, serverAddress, input.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// get_pipeline_logs
+// ---------------------------------------------------------------------------
+
+// GetPipelineLogsInput defines the parameters for the get_pipeline_logs tool.
+type GetPipelineLogsInput struct {
+	ID string `json:"id" jsonschema:"required,The pipeline ID to retrieve logs for."`
+}
+
+// GetLogsTool returns the MCP tool definition for get_pipeline_logs.
+func GetLogsTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "get_pipeline_logs",
+		Description: "Retrieve raw Tekton task logs for a CI/CD pipeline. " +
+			"Returns stdout/stderr output from build and deployment task pods. " +
+			"For completed or failed pipelines, all logs are returned. " +
+			"For running pipelines, a snapshot of logs collected so far is returned — " +
+			"call again to get updated output. " +
+			"Use get_pipeline for structured status and error summaries; " +
+			"use this tool when you need the actual build output, test results, or full CLI output.",
+	}
+}
+
+// GetLogsHandler returns the typed tool handler for get_pipeline_logs.
+func GetLogsHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *GetPipelineLogsInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *GetPipelineLogsInput) (*mcp.CallToolResult, any, error) {
+		if input.ID == "" {
+			return nil, nil, fmt.Errorf("'id' is required")
+		}
+		text, err := GetLogs(ctx, serverAddress, input.ID)
 		if err != nil {
 			return nil, nil, err
 		}

@@ -1,12 +1,13 @@
-// Package schemas embeds the generated JSON schemas for all OpenMCF cloud
-// resource providers. These schemas are produced by the proto2schema codegen
-// tool (Stage 1) and consumed at runtime by MCP resource template handlers
-// for per-kind schema discovery.
+// Package schemas embeds JSON schemas for cloud resource providers,
+// credential types, and the platform-wide API resource kind catalog.
+// Provider schemas are produced by the proto2schema codegen tool; credential
+// schemas and the resource kind catalog are hand-crafted. All are consumed at
+// runtime by MCP resource handlers for agent discovery.
 package schemas
 
 import "embed"
 
-// FS contains the generated provider schemas and the provider registry.
+// FS contains the cloud resource provider schemas.
 //
 // Directory layout:
 //
@@ -16,3 +17,22 @@ import "embed"
 //
 //go:embed providers shared
 var FS embed.FS
+
+// CredentialFS contains the credential type schemas.
+//
+// Directory layout:
+//
+//	credentials/registry.json       — kind-to-schema-path index
+//	credentials/{kind}.json         — per-type JSON schema
+//
+//go:embed credentials
+var CredentialFS embed.FS
+
+// ApiResourceKindFS contains the platform-wide API resource kind catalog.
+//
+// Directory layout:
+//
+//	apiresourcekinds/catalog.json — all resource kinds grouped by domain
+//
+//go:embed apiresourcekinds
+var ApiResourceKindFS embed.FS

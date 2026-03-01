@@ -17,17 +17,32 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secret"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secretversion"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/variable"
+	connectcredential "github.com/plantonhq/mcp-server-planton/internal/domains/connect/credential"
+	connectdefaultprovider "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultprovider"
+	connectdefaultrunner "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultrunner"
+	connectgithub "github.com/plantonhq/mcp-server-planton/internal/domains/connect/github"
+	connectproviderauth "github.com/plantonhq/mcp-server-planton/internal/domains/connect/providerauth"
+	connectrunner "github.com/plantonhq/mcp-server-planton/internal/domains/connect/runner"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/discovery"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/graph"
+	iamapikey "github.com/plantonhq/mcp-server-planton/internal/domains/iam/apikey"
+	iamidentity "github.com/plantonhq/mcp-server-planton/internal/domains/iam/identity"
+	iampolicy "github.com/plantonhq/mcp-server-planton/internal/domains/iam/policy"
+	iamrole "github.com/plantonhq/mcp-server-planton/internal/domains/iam/role"
+	iamteam "github.com/plantonhq/mcp-server-planton/internal/domains/iam/team"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/cloudresource"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/deploymentcomponent"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/flowcontrolpolicy"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/iacmodule"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infrachart"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infrapipeline"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infraproject"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/preset"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/stackjob"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/prompts"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/environment"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/organization"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/resourcemanager/promotionpolicy"
 	servicehubdnsdomain "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/dnsdomain"
 	servicehubpipeline "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/pipeline"
 	servicehubsecretsgroup "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/secretsgroup"
@@ -55,6 +70,7 @@ func New(cfg *config.Config) *Server {
 
 	registerTools(srv, cfg.ServerAddress)
 	registerResources(srv)
+	registerPrompts(srv)
 
 	return &Server{
 		mcp:    srv,
@@ -87,6 +103,19 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	servicehubdnsdomain.Register(srv, serverAddress)
 	servicehubtektonpipeline.Register(srv, serverAddress)
 	servicehubtektontask.Register(srv, serverAddress)
+	connectcredential.Register(srv, serverAddress)
+	connectgithub.Register(srv, serverAddress)
+	connectdefaultprovider.Register(srv, serverAddress)
+	connectdefaultrunner.Register(srv, serverAddress)
+	connectrunner.Register(srv, serverAddress)
+	connectproviderauth.Register(srv, serverAddress)
+	iamidentity.Register(srv, serverAddress)
+	iamteam.Register(srv, serverAddress)
+	iampolicy.Register(srv, serverAddress)
+	iamrole.Register(srv, serverAddress)
+	iamapikey.Register(srv, serverAddress)
+	promotionpolicy.Register(srv, serverAddress)
+	flowcontrolpolicy.Register(srv, serverAddress)
 
 	slog.Info("tools registered")
 }
@@ -94,8 +123,17 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 // registerResources delegates MCP resource registration to domain packages.
 func registerResources(srv *mcp.Server) {
 	cloudresource.RegisterResources(srv)
+	connectcredential.RegisterResources(srv)
+	discovery.RegisterResources(srv)
 
 	slog.Info("resources registered")
+}
+
+// registerPrompts delegates MCP prompt registration to the prompts package.
+func registerPrompts(srv *mcp.Server) {
+	prompts.Register(srv)
+
+	slog.Info("prompts registered")
 }
 
 // ServeStdio runs the MCP server over stdin/stdout until the client

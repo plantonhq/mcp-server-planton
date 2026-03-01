@@ -11,4 +11,9 @@ func Register(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, CancelTool(), CancelHandler(serverAddress))
 	mcp.AddTool(srv, ResumeTool(), ResumeHandler(serverAddress))
 	mcp.AddTool(srv, CheckEssentialsTool(), CheckEssentialsHandler(serverAddress))
+	mcp.AddTool(srv, FindIacResourcesByStackJobTool(), FindIacResourcesByStackJobHandler(serverAddress))
+	mcp.AddTool(srv, FindIacResourcesByApiResourceTool(), FindIacResourcesByApiResourceHandler(serverAddress))
+	mcp.AddTool(srv, GetStackInputTool(), GetStackInputHandler(serverAddress))
+	mcp.AddTool(srv, FindServiceStackJobsByEnvTool(), FindServiceStackJobsByEnvHandler(serverAddress))
+	mcp.AddTool(srv, GetErrorRecommendationTool(), GetErrorRecommendationHandler(serverAddress))
 }

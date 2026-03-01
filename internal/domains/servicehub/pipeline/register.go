@@ -6,6 +6,7 @@ import "github.com/modelcontextprotocol/go-sdk/mcp"
 func Register(srv *mcp.Server, serverAddress string) {
 	mcp.AddTool(srv, ListTool(), ListHandler(serverAddress))
 	mcp.AddTool(srv, GetTool(), GetHandler(serverAddress))
+	mcp.AddTool(srv, GetLogsTool(), GetLogsHandler(serverAddress))
 	mcp.AddTool(srv, GetLastTool(), GetLastHandler(serverAddress))
 	mcp.AddTool(srv, RunTool(), RunHandler(serverAddress))
 	mcp.AddTool(srv, RerunTool(), RerunHandler(serverAddress))

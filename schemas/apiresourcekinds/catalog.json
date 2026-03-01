@@ -1,0 +1,69 @@
+{
+  "description": "All Planton Cloud API resource types accessible through MCP tools, grouped by domain.",
+  "total_kinds": 29,
+  "related_catalogs": {
+    "credential_types": "credential-types://catalog",
+    "cloud_resource_kinds": "cloud-resource-kinds://catalog"
+  },
+  "domains": {
+    "resource_manager": {
+      "display_name": "Resource Manager",
+      "kinds": [
+        { "kind": "organization", "display_name": "Organization" },
+        { "kind": "environment", "display_name": "Environment" },
+        { "kind": "promotion_policy", "display_name": "Promotion Policy" }
+      ]
+    },
+    "infra_hub": {
+      "display_name": "InfraHub",
+      "kinds": [
+        { "kind": "cloud_resource", "display_name": "Cloud Resource" },
+        { "kind": "cloud_object_preset", "display_name": "Cloud Object Preset" },
+        { "kind": "deployment_component", "display_name": "Deployment Component" },
+        { "kind": "iac_module", "display_name": "IaC Module" },
+        { "kind": "stack_job", "display_name": "Stack Job" },
+        { "kind": "infra_pipeline", "display_name": "Infra Pipeline" },
+        { "kind": "infra_chart", "display_name": "Infra Chart" },
+        { "kind": "infra_project", "display_name": "Infra Project" },
+        { "kind": "flow_control_policy", "display_name": "Flow Control Policy" }
+      ]
+    },
+    "service_hub": {
+      "display_name": "ServiceHub",
+      "kinds": [
+        { "kind": "service", "display_name": "Service" },
+        { "kind": "pipeline", "display_name": "Pipeline" },
+        { "kind": "variables_group", "display_name": "Variables Group" },
+        { "kind": "secrets_group", "display_name": "Secrets Group" },
+        { "kind": "dns_domain", "display_name": "DNS Domain" },
+        { "kind": "tekton_pipeline", "display_name": "Tekton Pipeline" },
+        { "kind": "tekton_task", "display_name": "Tekton Task" }
+      ]
+    },
+    "config_manager": {
+      "display_name": "Config Manager",
+      "kinds": [
+        { "kind": "secret", "display_name": "Secret" },
+        { "kind": "secret_version", "display_name": "Secret Version" }
+      ]
+    },
+    "connect": {
+      "display_name": "Connect",
+      "kinds": [
+        { "kind": "default_provider_connection", "display_name": "Default Provider Connection" },
+        { "kind": "default_runner_binding", "display_name": "Default Runner Binding" },
+        { "kind": "runner_registration", "display_name": "Runner Registration" },
+        { "kind": "provider_connection_authorization", "display_name": "Provider Connection Authorization" }
+      ]
+    },
+    "iam": {
+      "display_name": "IAM",
+      "kinds": [
+        { "kind": "identity_account", "display_name": "Identity Account" },
+        { "kind": "team", "display_name": "Team" },
+        { "kind": "iam_role", "display_name": "IAM Role" },
+        { "kind": "api_key", "display_name": "API Key" }
+      ]
+    }
+  }
+}

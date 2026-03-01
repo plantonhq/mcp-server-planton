@@ -2,14 +2,16 @@
 // backed by the InfraPipelineQueryController and InfraPipelineCommandController
 // RPCs (ai.planton.infrahub.infrapipeline.v1) on the Planton backend.
 //
-// Seven tools are exposed:
+// Nine tools are exposed:
 //   - list_infra_pipelines:              list pipelines by org with optional project filter
 //   - get_infra_pipeline:                retrieve a pipeline by ID
+//   - get_infra_pipeline_logs:           collect Tekton task logs for an infra pipeline
 //   - get_latest_infra_pipeline:         most recent pipeline for a project
 //   - run_infra_pipeline:                trigger a pipeline run (chart-source or git-commit)
 //   - cancel_infra_pipeline:             cancel a running pipeline
 //   - resolve_infra_pipeline_env_gate:   approve/reject a manual gate for an environment
 //   - resolve_infra_pipeline_node_gate:  approve/reject a manual gate for a DAG node
+//   - delete_infra_pipeline:             delete a pipeline record
 package infrapipeline
 
 import (
@@ -91,6 +93,44 @@ func GetHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest
 			return nil, nil, fmt.Errorf("'id' is required")
 		}
 		text, err := Get(ctx, serverAddress, input.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// get_infra_pipeline_logs
+// ---------------------------------------------------------------------------
+
+// GetInfraPipelineLogsInput defines the parameters for the
+// get_infra_pipeline_logs tool.
+type GetInfraPipelineLogsInput struct {
+	ID string `json:"id" jsonschema:"required,The infra pipeline ID to retrieve logs for."`
+}
+
+// GetLogsTool returns the MCP tool definition for get_infra_pipeline_logs.
+func GetLogsTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "get_infra_pipeline_logs",
+		Description: "Retrieve raw Tekton task logs for an infra pipeline. " +
+			"Returns stdout/stderr output from build and deployment task pods. " +
+			"For completed or failed pipelines, all logs are returned. " +
+			"For running pipelines, a snapshot of logs collected so far is returned — " +
+			"call again to get updated output. " +
+			"Use get_infra_pipeline for structured status and error summaries; " +
+			"use this tool when you need the actual build output or full CLI output.",
+	}
+}
+
+// GetLogsHandler returns the typed tool handler for get_infra_pipeline_logs.
+func GetLogsHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *GetInfraPipelineLogsInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *GetInfraPipelineLogsInput) (*mcp.CallToolResult, any, error) {
+		if input.ID == "" {
+			return nil, nil, fmt.Errorf("'id' is required")
+		}
+		text, err := GetLogs(ctx, serverAddress, input.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -290,6 +330,40 @@ func ResolveNodeGateHandler(serverAddress string) func(context.Context, *mcp.Cal
 			return nil, nil, fmt.Errorf("'decision' is required")
 		}
 		text, err := ResolveNodeGate(ctx, serverAddress, input.InfraPipelineID, input.Env, input.NodeID, input.Decision)
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// delete_infra_pipeline
+// ---------------------------------------------------------------------------
+
+// DeleteInfraPipelineInput defines the parameters for the
+// delete_infra_pipeline tool.
+type DeleteInfraPipelineInput struct {
+	ID string `json:"id" jsonschema:"required,The infra pipeline ID to delete."`
+}
+
+// DeleteTool returns the MCP tool definition for delete_infra_pipeline.
+func DeleteTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "delete_infra_pipeline",
+		Description: "Delete an infra pipeline record by ID. " +
+			"This permanently removes the pipeline and its associated metadata. " +
+			"Use list_infra_pipelines or get_infra_pipeline to find the pipeline ID first.",
+	}
+}
+
+// DeleteHandler returns the typed tool handler for delete_infra_pipeline.
+func DeleteHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *DeleteInfraPipelineInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *DeleteInfraPipelineInput) (*mcp.CallToolResult, any, error) {
+		if input.ID == "" {
+			return nil, nil, fmt.Errorf("'id' is required")
+		}
+		text, err := Delete(ctx, serverAddress, input.ID)
 		if err != nil {
 			return nil, nil, err
 		}
