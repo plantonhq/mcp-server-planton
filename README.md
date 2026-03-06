@@ -1,7 +1,7 @@
-# Planton Cloud MCP Server
+# Planton MCP Server
 
 A stateless [MCP](https://modelcontextprotocol.io) server that connects
-AI-powered IDEs to [Planton Cloud](https://planton.cloud). It translates
+AI-powered IDEs to [Planton](https://planton.cloud). It translates
 MCP tool calls and resource reads into gRPC requests against the Planton
 backend, letting Cursor, Claude Desktop, VS Code, Windsurf, and any
 MCP-compliant client manage cloud resources across 17 cloud providers without
@@ -13,7 +13,7 @@ via stack jobs.
 flowchart TD
     IDE["AI IDE\n(Cursor / Claude Desktop / VS Code / Windsurf)"]
     MCP["mcp-server-planton\n(stdio or Streamable HTTP)"]
-    Backend["Planton Cloud Backend\n(gRPC · TLS on :443)"]
+    Backend["Planton Backend\n(gRPC · TLS on :443)"]
     IDE -->|"MCP protocol"| MCP
     MCP -->|"gRPC"| Backend
 ```
@@ -28,7 +28,7 @@ It can serve both STDIO and HTTP transports concurrently from a single process.
 
 | Term | Definition |
 |------|------------|
-| **cloud resource** | Any infrastructure component managed by Planton Cloud (e.g. an EKS cluster, a GCP VPC, an Azure database). |
+| **cloud resource** | Any infrastructure component managed by Planton (e.g. an EKS cluster, a GCP VPC, an Azure database). |
 | **kind** | PascalCase type identifier for a cloud resource (e.g. `AwsEksCluster`, `GcpCloudSqlInstance`). |
 | **org** | Organization identifier -- the tenant-level namespace that owns a resource. |
 | **env** | Environment identifier (e.g. `production`, `staging`). |
@@ -42,7 +42,7 @@ It can serve both STDIO and HTTP transports concurrently from a single process.
 
 ### Prerequisites
 
-1. A [Planton Cloud](https://planton.cloud) account
+1. A [Planton](https://planton.cloud) account
 2. An API key (Console > Profile > **API Keys** > **Create Key**)
 3. A compatible MCP host (Cursor, Claude Desktop, VS Code, Windsurf, or any
    MCP-compliant client)
@@ -94,7 +94,7 @@ location and the top-level key.
 ```json
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "command": "mcp-server-planton",
       "env": {
         "PLANTON_API_KEY": "YOUR_PLANTON_API_KEY"
@@ -109,7 +109,7 @@ location and the top-level key.
 ```json
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "command": "docker",
       "args": [
         "run", "-i", "--rm",
@@ -142,8 +142,8 @@ location and the top-level key.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PLANTON_API_KEY` | *(required for stdio/both)* | API key for Planton Cloud. |
-| `PLANTON_CLOUD_ENVIRONMENT` | `live` | Target environment: `live`, `test`, or `local`. |
+| `PLANTON_API_KEY` | *(required for stdio/both)* | API key for Planton. |
+| `PLANTON_ENVIRONMENT` | `live` | Target environment: `live`, `test`, or `local`. |
 | `PLANTON_APIS_GRPC_ENDPOINT` | *(from environment)* | Explicit gRPC endpoint override. |
 | `PLANTON_MCP_TRANSPORT` | `stdio` | Transport mode: `stdio`, `http`, or `both`. |
 | `PLANTON_MCP_HTTP_PORT` | `8080` | HTTP listen port. |
@@ -161,7 +161,7 @@ configuration flag.
 
 ## Tools & Resources
 
-100 tools span the full Planton Cloud product surface:
+100 tools span the full Planton product surface:
 
 **Cloud Resource Lifecycle** — create, update, delete, destroy, lock management, env var extraction (11 tools)
 

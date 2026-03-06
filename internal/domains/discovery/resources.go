@@ -21,7 +21,7 @@ func CatalogResource() *mcp.Resource {
 		URI:   catalogURI,
 		Name:  "api_resource_kinds_catalog",
 		Title: "API Resource Kinds Catalog",
-		Description: "Catalog of all Planton Cloud API resource types grouped by domain " +
+		Description: "Catalog of all Planton API resource types grouped by domain " +
 			"(ResourceManager, InfraHub, ServiceHub, ConfigManager, Connect, IAM). " +
 			"Each entry includes the snake_case kind name and display name. " +
 			"For cloud infrastructure types, see the cloud-resource-kinds://catalog resource. " +

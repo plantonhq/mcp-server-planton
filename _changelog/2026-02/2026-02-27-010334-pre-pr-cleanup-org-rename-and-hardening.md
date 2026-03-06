@@ -15,7 +15,7 @@ The codebase carried debt from its original creation under a different GitHub or
 - **Three org names in production code**: `go.mod` said `plantoncloud`, the Makefile GHCR image said `plantoncloud-inc`, and the git remote pointed to `plantonhq`. Go tooling would fail to resolve imports if the module were ever published.
 - **Stale .github files**: CODEOWNERS referenced deleted paths (`/internal/mcp/`), issue templates and PR template were premature for a project this early, and workflows pinned Go 1.24 while `go.mod` required 1.25.
 - **Dockerfile ran as root**: The runtime container used `debian:bookworm-slim` without a non-root user, violating container security best practices.
-- **README was developer-centric**: Jumped straight into MCP client JSON configs before explaining what Planton Cloud is, duplicated identical config blocks four times, and omitted Docker networking guidance.
+- **README was developer-centric**: Jumped straight into MCP client JSON configs before explaining what Planton is, duplicated identical config blocks four times, and omitted Docker networking guidance.
 
 ## Solution
 

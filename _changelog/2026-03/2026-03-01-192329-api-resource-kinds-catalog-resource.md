@@ -4,7 +4,7 @@
 
 ## Summary
 
-Added the `api-resource-kinds://catalog` MCP resource, a curated static catalog of all 29 platform API resource types grouped by 6 bounded contexts. This resource serves as the agent's navigational index of the entire Planton Cloud platform, complementing the existing domain-specific catalogs for cloud resource kinds and credential types.
+Added the `api-resource-kinds://catalog` MCP resource, a curated static catalog of all 29 platform API resource types grouped by 6 bounded contexts. This resource serves as the agent's navigational index of the entire Planton platform, complementing the existing domain-specific catalogs for cloud resource kinds and credential types.
 
 ## Problem Statement
 

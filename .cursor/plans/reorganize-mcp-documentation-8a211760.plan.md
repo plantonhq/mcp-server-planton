@@ -26,7 +26,7 @@
 // Remote deployment (when available)
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "type": "http",
       "url": "https://mcp.planton.ai/",
       "headers": {
@@ -39,7 +39,7 @@
 // Local Docker testing
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "type": "http",
       "url": "http://localhost:8080/",
       "headers": {
@@ -52,11 +52,11 @@
 // Local binary (stdio mode)
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "command": "mcp-server-planton",
       "env": {
         "PLANTON_API_KEY": "YOUR_PLANTON_API_KEY",
-        "PLANTON_CLOUD_ENVIRONMENT": "live"
+        "PLANTON_ENVIRONMENT": "live"
       }
     }
   }
@@ -67,7 +67,7 @@
 
 **Current (complex):**
 
-- `PLANTON_API_KEY` for Planton Cloud APIs
+- `PLANTON_API_KEY` for Planton APIs
 - `PLANTON_MCP_HTTP_BEARER_TOKEN` for HTTP transport
 
 **New (simplified):**

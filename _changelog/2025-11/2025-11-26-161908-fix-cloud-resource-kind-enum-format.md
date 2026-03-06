@@ -154,7 +154,7 @@ func kindToFieldName(kindStr string) string {
 Enhanced the tool description to clarify the format returned:
 
 ```go
-Description: "List all available cloud resource kinds in the Planton Cloud system. " +
+Description: "List all available cloud resource kinds in the Planton system. " +
     "Returns the complete taxonomy of deployable infrastructure resource types including " +
     "AWS, GCP, Azure, Kubernetes, and SaaS platform resources. " +
     "Each kind is returned in snake_case format (e.g., 'aws_rds_instance') which can be " +

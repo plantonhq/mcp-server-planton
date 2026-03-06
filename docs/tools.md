@@ -1,6 +1,6 @@
 # Tools & Resources Reference
 
-Complete reference for all MCP tools and resources exposed by the Planton Cloud
+Complete reference for all MCP tools and resources exposed by the Planton
 MCP Server. For installation and configuration, see the
 [README](../README.md).
 
@@ -256,7 +256,7 @@ identification pattern" rather than repeating this table.
 
 ### apply_cloud_resource
 
-Create or update a cloud resource on Planton Cloud. The operation is
+Create or update a cloud resource on Planton. The operation is
 idempotent: if the resource already exists it is updated in-place; if it does
 not exist it is created. This matches `kubectl apply` semantics.
 
@@ -312,7 +312,7 @@ errors from the backend.
 
 ### get_cloud_resource
 
-Retrieve a cloud resource from Planton Cloud. Returns the full resource
+Retrieve a cloud resource from Planton. Returns the full resource
 including metadata, spec, and status. Accepts the standard
 [resource identification pattern](#resource-identification-pattern).
 
@@ -330,7 +330,7 @@ including metadata, spec, and status. Accepts the standard
 
 ### delete_cloud_resource
 
-Delete a cloud resource record from Planton Cloud. This removes the record
+Delete a cloud resource record from Planton. This removes the record
 only — it does **not** tear down the actual cloud infrastructure. Use
 [`destroy_cloud_resource`](#destroy_cloud_resource) first to tear down
 infrastructure, then this tool to remove the record. Accepts the standard
@@ -350,7 +350,7 @@ infrastructure, then this tool to remove the record. Accepts the standard
 
 ### list_cloud_resources
 
-List cloud resources in an organization on Planton Cloud. Returns resources
+List cloud resources in an organization on Planton. Returns resources
 grouped by environment and kind. Use
 [`list_organizations`](#list_organizations) to discover available organization
 identifiers.
@@ -369,7 +369,7 @@ identifiers.
 ### destroy_cloud_resource
 
 Destroy the cloud infrastructure (Terraform/Pulumi destroy) for a resource
-while keeping the resource record on Planton Cloud. This tears down the actual
+while keeping the resource record on Planton. This tears down the actual
 cloud resources (VPCs, clusters, databases, etc.). Use
 [`delete_cloud_resource`](#delete_cloud_resource) to remove the record itself.
 Use [`get_latest_stack_job`](#get_latest_stack_job) to monitor the destroy
@@ -411,7 +411,7 @@ is not already taken.
 
 ### rename_cloud_resource
 
-Rename a cloud resource on Planton Cloud. Changes the human-readable display
+Rename a cloud resource on Planton. Changes the human-readable display
 name; the immutable slug is unaffected. Returns the updated resource. Accepts
 the standard
 [resource identification pattern](#resource-identification-pattern).
@@ -431,7 +431,7 @@ the standard
 
 ### list_cloud_resource_locks
 
-List lock information for a cloud resource on Planton Cloud. Returns whether
+List lock information for a cloud resource on Planton. Returns whether
 the resource is locked, current lock holder details (workflow ID, acquired
 timestamp, TTL remaining), and any workflows waiting in the lock queue. Use
 [`remove_cloud_resource_locks`](#remove_cloud_resource_locks) to force-clear
@@ -1527,7 +1527,7 @@ assembling a `cloud_object`.
 
 ## Service Lifecycle Tools
 
-Services connect Git repositories to Planton Cloud's CI/CD pipeline system. Each service defines where code lives, how to build it, and which environments to deploy to.
+Services connect Git repositories to Planton's CI/CD pipeline system. Each service defines where code lives, how to build it, and which environments to deploy to.
 
 ### Service identification pattern
 
@@ -1595,7 +1595,7 @@ Delete a service record from the platform. Removes the service definition and di
 
 ### disconnect_service_git_repo
 
-Remove the webhook from the connected GitHub or GitLab repository. After disconnection, new commits no longer trigger pipelines. The service definition remains in Planton Cloud and can be reconnected later via [`configure_service_webhook`](#configure_service_webhook).
+Remove the webhook from the connected GitHub or GitLab repository. After disconnection, new commits no longer trigger pipelines. The service definition remains in Planton and can be reconnected later via [`configure_service_webhook`](#configure_service_webhook).
 
 #### Parameters
 

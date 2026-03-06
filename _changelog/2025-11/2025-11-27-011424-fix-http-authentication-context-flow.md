@@ -251,6 +251,6 @@ To verify the fix works:
 
 1. Start server in HTTP mode without `PLANTON_API_KEY` environment variable
 2. Make request with valid `Authorization: Bearer <api-key>` header
-3. Tool handlers should successfully authenticate with Planton Cloud APIs
+3. Tool handlers should successfully authenticate with Planton APIs
 4. No more `UNAUTHENTICATED` errors
 

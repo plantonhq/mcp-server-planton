@@ -15,7 +15,7 @@ All 5 feature phases (6A–6E) were complete with 18 tools implemented across 5 
 - **README.md** said "Three tools cover the full lifecycle" and listed only apply, get, delete
 - **docs/tools.md** documented only 3 tools with parameter tables, agent workflows, and error handling — the primary reference for both agents and developers
 - **docs/development.md** listed only `cloudresource/` in the project structure, missing `stackjob/`, `organization/`, `environment/`, `preset/`, and the shared `kind.go`
-- Tool descriptions in Go code used "Planton platform" inconsistently (README/docs used "Planton Cloud")
+- Tool descriptions in Go code used "Planton platform" inconsistently (README/docs used "Planton")
 - Cross-tool references were uneven — some tools mentioned related tools, others with similar patterns didn't
 
 ## Solution
@@ -56,7 +56,7 @@ Task 1 (Go code) was executed first because description string changes affect wh
 
 Changes to description strings and jsonschema tags only — no logic changes:
 
-- **Naming**: "on the Planton platform" / "from the Planton platform" → "on Planton Cloud" / "from Planton Cloud" across 9 tool descriptions
+- **Naming**: "on the Planton platform" / "from the Planton platform" → "on Planton" / "from Planton" across 9 tool descriptions
 - **Cross-tool references added**:
   - `delete_cloud_resource` → clarifies destroy vs delete distinction
   - `destroy_cloud_resource` → points to `get_latest_stack_job` for monitoring
@@ -92,7 +92,7 @@ The largest task — expanded from 229 lines / 3 tools to ~470 lines / 18 tools:
 ## Benefits
 
 - **Agents get complete documentation** — all 18 tools documented with parameter tables, usage notes, and cross-references
-- **Consistent naming** — "Planton Cloud" used uniformly across Go code and docs
+- **Consistent naming** — "Planton" used uniformly across Go code and docs
 - **Agent workflow guidance** — tools reference related tools (destroy → delete, locks → latest stack job), reducing agent trial-and-error
 - **DRY documentation** — Resource Identification Pattern section eliminates 6 duplicate parameter tables
 - **Expanded cheat sheet** — agents can quickly navigate the full tool surface through decision guides

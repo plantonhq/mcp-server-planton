@@ -4,7 +4,7 @@
 
 ## Summary
 
-Implemented per-user API key authentication for HTTP transport mode, eliminating the critical security vulnerability where all users shared a single machine account API key. Each user now provides their own API key via the `Authorization` header, which is extracted and passed to Planton Cloud APIs, enabling proper Fine-Grained Authorization (FGA) per user with true multi-tenant security.
+Implemented per-user API key authentication for HTTP transport mode, eliminating the critical security vulnerability where all users shared a single machine account API key. Each user now provides their own API key via the `Authorization` header, which is extracted and passed to Planton APIs, enabling proper Fine-Grained Authorization (FGA) per user with true multi-tenant security.
 
 ## Problem Statement
 
@@ -25,7 +25,7 @@ Result: User A can access User B's data! 🚨
 **The vulnerability:**
 - Docker container started with a single `PLANTON_API_KEY` in the environment
 - HTTP authentication validated incoming tokens against this fixed key
-- All gRPC calls to Planton Cloud used the same machine account API key
+- All gRPC calls to Planton used the same machine account API key
 - **Any user who knew the machine account key could access ALL data the account had permissions for**
 - No per-user permission enforcement
 - No per-user audit trail
@@ -315,7 +315,7 @@ This MCP server uses **user API keys** for all operations, ensuring that:
 When using HTTP transport, each user's API key is:
 1. Provided in the `Authorization: Bearer YOUR_API_KEY` header
 2. Extracted and validated by the MCP server
-3. Passed to Planton Cloud APIs for Fine-Grained Authorization
+3. Passed to Planton APIs for Fine-Grained Authorization
 4. Used only for that specific request (not stored)
 
 This architecture ensures true multi-tenant security where users can only 
@@ -334,7 +334,7 @@ of the MCP server with their own API key, or use the hosted endpoint at
 # NEW
 **Multi-User Support:** The HTTP transport now supports multiple users with 
 different API keys accessing the same server instance. Each user's API key is 
-extracted from the `Authorization` header and passed to Planton Cloud APIs, 
+extracted from the `Authorization` header and passed to Planton APIs, 
 ensuring proper Fine-Grained Authorization per user.
 ```
 
@@ -350,7 +350,7 @@ User B → API Key B (Bearer) → MCP Server → API Key B → Planton APIs (Use
 
 - **Per-User Authentication**: Each user's API key is extracted from their 
   `Authorization` header
-- **Context-Based Forwarding**: API keys are passed through to Planton Cloud APIs 
+- **Context-Based Forwarding**: API keys are passed through to Planton APIs 
   per-request
 - **Fine-Grained Authorization**: Each API call enforces the specific user's permissions
 - **Multi-Tenant Security**: Users can only access resources they have permission 
@@ -394,7 +394,7 @@ services:
     image: ghcr.io/plantoncloud/mcp-server-planton:latest
     environment:
       PLANTON_API_KEY: ${PLANTON_API_KEY}
-      PLANTON_CLOUD_ENVIRONMENT: live
+      PLANTON_ENVIRONMENT: live
       PLANTON_MCP_TRANSPORT: stdio
   
   # HTTP mode (multi-user)
@@ -474,7 +474,7 @@ docker run -p 8080:8080 \
 ```json
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "type": "http",
       "url": "http://localhost:8080/",
       "headers": {
@@ -512,12 +512,12 @@ docker run -p 8080:8080 \
 ### Trust Model
 
 ```
-Client → MCP Server → Planton Cloud APIs
+Client → MCP Server → Planton APIs
          (Passthrough)  (Validation + FGA)
 ```
 
 - **MCP Server**: Extracts user credentials, doesn't validate
-- **Planton Cloud APIs**: Validates credentials, enforces permissions
+- **Planton APIs**: Validates credentials, enforces permissions
 - **Principle**: Backend owns authentication and authorization logic
 
 ### Benefits of This Approach

@@ -141,7 +141,7 @@ Completed the documentation hardening pass (H2 + H5 + surprise H3):
 
 **What was delivered:**
 
-1. **Tool description normalization** — "Planton platform" → "Planton Cloud" across 9 descriptions, added cross-tool references for agent workflow, added org discovery hints to `org` jsonschema tags
+1. **Tool description normalization** — "Planton platform" → "Planton" across 9 descriptions, added cross-tool references for agent workflow, added org discovery hints to `org` jsonschema tags
 2. **README.md update** — Intro paragraph expanded, tool table from 3 to 18 tools across 4 grouped sections
 3. **docs/tools.md rewrite** — 229 → ~470 lines, 15 new tool sections, Resource Identification Pattern section, expanded Agent Cheat Sheet with 6 decision guides
 4. **docs/development.md update** — Project structure and test files table updated with all new domain packages

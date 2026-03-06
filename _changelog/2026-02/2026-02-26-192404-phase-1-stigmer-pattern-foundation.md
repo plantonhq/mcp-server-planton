@@ -114,7 +114,7 @@ All existing environment variables preserved with identical names and behavior:
 |----------|---------|
 | `PLANTON_API_KEY` | (required for stdio) |
 | `PLANTON_APIS_GRPC_ENDPOINT` | (override) |
-| `PLANTON_CLOUD_ENVIRONMENT` | `live` |
+| `PLANTON_ENVIRONMENT` | `live` |
 | `PLANTON_MCP_TRANSPORT` | `stdio` |
 | `PLANTON_MCP_HTTP_PORT` | `8080` |
 | `PLANTON_MCP_HTTP_AUTH_ENABLED` | `true` |

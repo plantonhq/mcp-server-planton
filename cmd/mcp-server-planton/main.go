@@ -1,5 +1,5 @@
 // Command mcp-server-planton is the Model Context Protocol server for the
-// Planton Cloud platform.
+// Planton platform.
 //
 // It exposes a set of tools that let MCP-capable AI clients (Cursor,
 // Claude Desktop, Windsurf, etc.) create, update, read, and delete cloud

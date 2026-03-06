@@ -4,7 +4,7 @@
 
 ## Summary
 
-Added 5 MCP prompts to the Planton Cloud MCP server, implementing the third and final MCP primitive alongside the existing 172 tools and 5 resources. Each prompt encodes a cross-domain workflow that an LLM couldn't easily discover from tool descriptions alone — from debugging failed deployments (5+ tools across stackjob, cloudresource, and graph) to guided cloud resource provisioning (4+ domains, 7-step workflow).
+Added 5 MCP prompts to the Planton MCP server, implementing the third and final MCP primitive alongside the existing 172 tools and 5 resources. Each prompt encodes a cross-domain workflow that an LLM couldn't easily discover from tool descriptions alone — from debugging failed deployments (5+ tools across stackjob, cloudresource, and graph) to guided cloud resource provisioning (4+ domains, 7-step workflow).
 
 ## Problem Statement
 

@@ -67,7 +67,7 @@ Implemented complete HTTP transport with:
 └─────────────────────┬────────────────────────────────────┘
                       │
                       ▼
-            Planton Cloud APIs (gRPC)
+            Planton APIs (gRPC)
 ```
 
 ## Implementation Details
@@ -437,7 +437,7 @@ MCP Protocol Processing
     ↓
 Planton API Key Validation (Layer 2 - Resource Access)
     ↓
-Planton Cloud APIs with FGA
+Planton APIs with FGA
 ```
 
 **Layer 1: Bearer Token** - Controls WHO can access the MCP server
@@ -446,8 +446,8 @@ Planton Cloud APIs with FGA
 - Prevents unauthorized connections to server instance
 
 **Layer 2: API Key** - Controls WHAT resources user can access
-- User's Planton Cloud API key
-- Fine-grained authorization by Planton Cloud backend
+- User's Planton API key
+- Fine-grained authorization by Planton backend
 - User-specific permissions enforced
 
 ### Production Security Checklist

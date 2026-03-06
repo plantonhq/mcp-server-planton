@@ -19,7 +19,7 @@ AI agents using the MCP server needed a way to discover which organizations a us
 
 ## Solution
 
-Implemented a complete `list_organizations` tool following the same architectural patterns as the existing environment tools. The tool uses the Planton Cloud `FindOrganizations` RPC, which returns organizations based on the authenticated user's memberships without requiring any input parameters.
+Implemented a complete `list_organizations` tool following the same architectural patterns as the existing environment tools. The tool uses the Planton `FindOrganizations` RPC, which returns organizations based on the authenticated user's memberships without requiring any input parameters.
 
 ### Architecture
 

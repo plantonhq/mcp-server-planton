@@ -8,7 +8,7 @@
 
 ## Background
 
-A comprehensive gap analysis compared the MCP server (100+ tools, 22 domain packages, 2 MCP resources) against the full Planton Cloud API surface (~564 proto files, 30+ domains). The analysis identified ~60-70 missing tools across 8+ domains and significant underutilization of MCP resources.
+A comprehensive gap analysis compared the MCP server (100+ tools, 22 domain packages, 2 MCP resources) against the full Planton API surface (~564 proto files, 30+ domains). The analysis identified ~60-70 missing tools across 8+ domains and significant underutilization of MCP resources.
 
 **Reference**: [MCP Server Gap Analysis Plan](../../../.cursor/plans/mcp_server_gap_analysis_1c322248.plan.md)
 

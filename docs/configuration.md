@@ -8,17 +8,17 @@ All settings are read from environment variables with a `PLANTON_` prefix. Reaso
 
 #### `PLANTON_API_KEY`
 
-API key for authenticating with the Planton Cloud backend.
+API key for authenticating with the Planton backend.
 
 - **STDIO mode**: Required. Loaded once at startup and used for all API calls.
 - **HTTP mode**: Not required in the environment. Each HTTP request carries its own key via the `Authorization: Bearer` header.
 - **Both mode**: Required (for the STDIO transport).
 
-Obtain your key from the [Planton Cloud Console](https://console.planton.cloud) under Profile > API Keys.
+Obtain your key from the [Planton Console](https://console.planton.cloud) under Profile > API Keys.
 
 ### Backend Endpoint
 
-#### `PLANTON_CLOUD_ENVIRONMENT`
+#### `PLANTON_ENVIRONMENT`
 
 Selects a preset gRPC endpoint:
 
@@ -30,7 +30,7 @@ Selects a preset gRPC endpoint:
 
 #### `PLANTON_APIS_GRPC_ENDPOINT`
 
-Explicit gRPC dial target. Takes precedence over `PLANTON_CLOUD_ENVIRONMENT` when set.
+Explicit gRPC dial target. Takes precedence over `PLANTON_ENVIRONMENT` when set.
 
 ```bash
 export PLANTON_APIS_GRPC_ENDPOINT="custom-api.example.com:443"
@@ -95,7 +95,7 @@ The gRPC client determines transport security by convention:
 
 ```bash
 export PLANTON_API_KEY="your-key"
-export PLANTON_CLOUD_ENVIRONMENT="local"
+export PLANTON_ENVIRONMENT="local"
 mcp-server-planton stdio
 ```
 

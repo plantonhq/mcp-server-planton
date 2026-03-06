@@ -11,7 +11,7 @@ Simplified HTTP authentication by using `PLANTON_API_KEY` as the bearer token (e
 ### Complex Authentication
 
 The HTTP transport implementation used two separate credentials:
-- `PLANTON_API_KEY` - For authenticating with Planton Cloud APIs
+- `PLANTON_API_KEY` - For authenticating with Planton APIs
 - `PLANTON_MCP_HTTP_BEARER_TOKEN` - For authenticating HTTP requests to the MCP server
 
 This created confusion:
@@ -45,7 +45,7 @@ Users couldn't easily find:
 **Simplified to single credential approach:**
 - `PLANTON_API_KEY` now serves both purposes:
   - Bearer token for HTTP transport authentication
-  - API key for Planton Cloud API authorization
+  - API key for Planton API authorization
 - Removed `PLANTON_MCP_HTTP_BEARER_TOKEN` environment variable
 - Updated code to use `cfg.PlantonAPIKey` as bearer token
 
@@ -164,7 +164,7 @@ type HTTPServerOptions struct {
 
 **Get Your API Key:**
 ```markdown
-1. Log in to [Planton Cloud Console](https://console.planton.cloud)
+1. Log in to [Planton Console](https://console.planton.cloud)
 2. Click your profile icon → **API Keys**
 3. Click **Create Key** and copy the generated key
 ```
@@ -173,7 +173,7 @@ type HTTPServerOptions struct {
 ```json
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "type": "http",
       "url": "https://mcp.planton.ai/",
       "headers": {
@@ -188,7 +188,7 @@ type HTTPServerOptions struct {
 ```json
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "type": "http",
       "url": "http://localhost:8080/",
       "headers": {
@@ -203,11 +203,11 @@ type HTTPServerOptions struct {
 ```json
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "command": "mcp-server-planton",
       "env": {
         "PLANTON_API_KEY": "YOUR_PLANTON_API_KEY",
-        "PLANTON_CLOUD_ENVIRONMENT": "live"
+        "PLANTON_ENVIRONMENT": "live"
       }
     }
   }
@@ -243,7 +243,7 @@ The easiest way to use the MCP server is via the hosted endpoint at `https://mcp
 **Benefits:**
 - No local installation required
 - Always up-to-date with latest features
-- Managed and monitored by Planton Cloud
+- Managed and monitored by Planton
 - High availability and performance
 ```
 
@@ -285,7 +285,7 @@ This unified approach simplifies authentication while maintaining security throu
 **Authentication mechanism:**
 When enabled, your `PLANTON_API_KEY` is used as the bearer token for HTTP authentication. 
 This simplifies configuration by using a single credential for both MCP server access and 
-Planton Cloud API authorization.
+Planton API authorization.
 ```
 
 **Removed PLANTON_MCP_HTTP_BEARER_TOKEN section:**
@@ -370,7 +370,7 @@ curl -H "Authorization: Bearer wrong-key" http://localhost:8080/sse
 ```json
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "type": "http",
       "url": "https://mcp.planton.ai/",
       "headers": {
@@ -386,7 +386,7 @@ curl -H "Authorization: Bearer wrong-key" http://localhost:8080/sse
 ```json
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "type": "http",
       "url": "http://localhost:8080/",
       "headers": {
@@ -402,11 +402,11 @@ curl -H "Authorization: Bearer wrong-key" http://localhost:8080/sse
 ```json
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "command": "mcp-server-planton",
       "env": {
         "PLANTON_API_KEY": "pck_...",
-        "PLANTON_CLOUD_ENVIRONMENT": "live"
+        "PLANTON_ENVIRONMENT": "live"
       }
     }
   }

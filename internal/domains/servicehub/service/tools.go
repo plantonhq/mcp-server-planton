@@ -39,7 +39,7 @@ func SearchTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "search_services",
 		Description: "Search services within an organization. " +
-			"A service connects a Git repository to Planton Cloud's CI/CD pipeline system. " +
+			"A service connects a Git repository to Planton's CI/CD pipeline system. " +
 			"Returns lightweight search records with service IDs, names, and metadata. " +
 			"Use get_service with a service ID from the results to retrieve full details.",
 	}
@@ -83,7 +83,7 @@ func GetTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "get_service",
 		Description: "Retrieve the full details of a service by its ID or by org+slug. " +
-			"A service connects a Git repository to Planton Cloud's CI/CD pipeline system, " +
+			"A service connects a Git repository to Planton's CI/CD pipeline system, " +
 			"defining where code lives, how to build it, and where to deploy it. " +
 			"Returns the complete service including metadata, spec (Git repo, pipeline config, ingress, deployment targets), " +
 			"and status (per-environment deployment tracking). " +
@@ -120,7 +120,7 @@ func ApplyTool() *mcp.Tool {
 		Name: "apply_service",
 		Description: "Create or update a service (idempotent). " +
 			"Accepts the full Service resource as a JSON object. " +
-			"A service connects a Git repository to Planton Cloud's CI/CD pipeline — defining the code location, " +
+			"A service connects a Git repository to Planton's CI/CD pipeline — defining the code location, " +
 			"build method, and deployment targets. " +
 			"For new services, provide api_version, kind, metadata (name, org), and spec (git_repo, pipeline_configuration). " +
 			"For updates, retrieve the service with get_service, modify the desired fields, and pass the result here. " +
@@ -203,7 +203,7 @@ func DisconnectGitRepoTool() *mcp.Tool {
 		Name: "disconnect_service_git_repo",
 		Description: "Disconnect the Git repository from a service by removing its webhook on GitHub/GitLab. " +
 			"After disconnection, new commits no longer trigger pipelines. " +
-			"The service definition remains in Planton Cloud and can be reconnected later via configure_service_webhook. " +
+			"The service definition remains in Planton and can be reconnected later via configure_service_webhook. " +
 			"Useful for temporarily pausing automation, preparing to move a repository, or cleaning up before repo deletion. " +
 			"Identify the service by ID or by org+slug.",
 	}

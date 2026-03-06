@@ -75,7 +75,7 @@ The new config will preserve all existing env var names with `PLANTON_` prefix a
 | ------------------------------- | ------- | ------------------------------------ |
 | `PLANTON_API_KEY`               | Keep    | API key for STDIO/both modes         |
 | `PLANTON_APIS_GRPC_ENDPOINT`    | Keep    | Direct endpoint override             |
-| `PLANTON_CLOUD_ENVIRONMENT`     | Keep    | Preset selection (live/test/local)   |
+| `PLANTON_ENVIRONMENT`     | Keep    | Preset selection (live/test/local)   |
 | `PLANTON_MCP_TRANSPORT`         | Keep    | stdio/http/both                      |
 | `PLANTON_MCP_HTTP_PORT`         | Keep    | Default 8080                         |
 | `PLANTON_MCP_HTTP_AUTH_ENABLED` | Keep    | Default true                         |
@@ -83,7 +83,7 @@ The new config will preserve all existing env var names with `PLANTON_` prefix a
 | `PLANTON_MCP_LOG_LEVEL`         | **New** | debug/info/warn/error (default info) |
 
 
-The environment preset system (`PLANTON_CLOUD_ENVIRONMENT` -> live/test/local endpoints) is kept because it provides genuine convenience. This is Planton-specific — Stigmer doesn't need it because Stigmer only has one backend.
+The environment preset system (`PLANTON_ENVIRONMENT` -> live/test/local endpoints) is kept because it provides genuine convenience. This is Planton-specific — Stigmer doesn't need it because Stigmer only has one backend.
 
 ---
 
@@ -123,7 +123,7 @@ Following Stigmer's pattern but preserving Planton-specific env vars and the env
 - `Config` struct with: `ServerAddress`, `APIKey`, `Transport`, `HTTPPort`, `HTTPAuthEnabled`, `LogFormat`, `LogLevel`
 - `LoadFromEnv() (*Config, error)` — reads `PLANTON_*` env vars
 - `Validate() error` — checks invariants
-- Endpoint resolution: `PLANTON_APIS_GRPC_ENDPOINT` (override) > `PLANTON_CLOUD_ENVIRONMENT` (preset) > default `api.live.planton.ai:443`
+- Endpoint resolution: `PLANTON_APIS_GRPC_ENDPOINT` (override) > `PLANTON_ENVIRONMENT` (preset) > default `api.live.planton.ai:443`
 - Structured logging support: `LogFormat` (text/json) and `LogLevel` (slog.Level)
 - Transport, LogFormat as typed string constants
 

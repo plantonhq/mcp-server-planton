@@ -6,12 +6,12 @@
 
 ## Summary
 
-Implemented environment-based endpoint selection matching the pattern used in Planton Cloud CLI. Users can now specify `PLANTON_CLOUD_ENVIRONMENT` (live/test/local) instead of manually configuring full endpoint URLs.
+Implemented environment-based endpoint selection matching the pattern used in Planton CLI. Users can now specify `PLANTON_ENVIRONMENT` (live/test/local) instead of manually configuring full endpoint URLs.
 
 ## Problem
 
 The MCP server required users to manually specify the full gRPC endpoint URL via `PLANTON_APIS_GRPC_ENDPOINT`, defaulting to `localhost:8080`. This was:
-- Inconsistent with the Planton Cloud CLI pattern
+- Inconsistent with the Planton CLI pattern
 - Error-prone (users had to remember exact endpoint URLs)
 - Not environment-aware (no automatic selection based on deployment environment)
 
@@ -22,11 +22,11 @@ export PLANTON_APIS_GRPC_ENDPOINT="api.live.planton.cloud:443"
 
 ## Solution
 
-Adopted the same endpoint selection pattern used in Planton Cloud CLI (`planton-cloud/client-apps/planton/internal/cli/backend`):
+Adopted the same endpoint selection pattern used in Planton CLI (`planton-cloud/client-apps/planton/internal/cli/backend`):
 
 1. **Environment variable priority**:
    - `PLANTON_APIS_GRPC_ENDPOINT` (explicit override, highest priority)
-   - `PLANTON_CLOUD_ENVIRONMENT` (environment-based selection)
+   - `PLANTON_ENVIRONMENT` (environment-based selection)
    - Default to `live` environment
 
 2. **Environment-to-endpoint mapping**:
@@ -37,7 +37,7 @@ Adopted the same endpoint selection pattern used in Planton Cloud CLI (`planton-
 3. **Simplified configuration**:
 ```bash
 # Simple environment-based (recommended)
-export PLANTON_CLOUD_ENVIRONMENT="live"
+export PLANTON_ENVIRONMENT="live"
 
 # Or explicit override when needed
 export PLANTON_APIS_GRPC_ENDPOINT="custom-endpoint:443"
@@ -62,7 +62,7 @@ export PLANTON_APIS_GRPC_ENDPOINT="custom-endpoint:443"
   - Updated all integration examples (LangGraph, Claude Desktop, Docker)
   - Simplified Quick Start configuration
 - Updated `docs/configuration.md`:
-  - Added `PLANTON_CLOUD_ENVIRONMENT` documentation
+  - Added `PLANTON_ENVIRONMENT` documentation
   - Clarified `PLANTON_APIS_GRPC_ENDPOINT` as an override
   - Updated all configuration examples
   - Added environment-specific examples (local, test, production)
@@ -88,7 +88,7 @@ export PLANTON_APIS_GRPC_ENDPOINT="api.live.planton.cloud:443"
 
 New recommended configuration:
 ```bash
-export PLANTON_CLOUD_ENVIRONMENT="live"
+export PLANTON_ENVIRONMENT="live"
 ```
 
 ## Testing
@@ -98,9 +98,9 @@ export PLANTON_CLOUD_ENVIRONMENT="live"
 3. **Linting**: ✅ No linter errors
 
 Manual testing required:
-- [ ] Test with `PLANTON_CLOUD_ENVIRONMENT=live`
-- [ ] Test with `PLANTON_CLOUD_ENVIRONMENT=test`
-- [ ] Test with `PLANTON_CLOUD_ENVIRONMENT=local`
+- [ ] Test with `PLANTON_ENVIRONMENT=live`
+- [ ] Test with `PLANTON_ENVIRONMENT=test`
+- [ ] Test with `PLANTON_ENVIRONMENT=local`
 - [ ] Test with `PLANTON_APIS_GRPC_ENDPOINT` override
 - [ ] Test default behavior (no env vars set, should use live)
 
@@ -118,7 +118,7 @@ Use the simplified environment-based configuration:
 
 ```bash
 export PLANTON_API_KEY="your-api-key"
-export PLANTON_CLOUD_ENVIRONMENT="live"  # or 'test', 'local'
+export PLANTON_ENVIRONMENT="live"  # or 'test', 'local'
 ```
 
 ### For Existing Users
@@ -134,7 +134,7 @@ Optional: Simplify to the new pattern:
 
 ```bash
 export PLANTON_API_KEY="your-api-key"
-export PLANTON_CLOUD_ENVIRONMENT="live"
+export PLANTON_ENVIRONMENT="live"
 ```
 
 ## Related Issues

@@ -68,7 +68,7 @@ type GetEnvironmentInput struct {
 func GetTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "get_environment",
-		Description: "Get an environment from Planton Cloud. " +
+		Description: "Get an environment from Planton. " +
 			"Supports two lookup modes: by env_id, or by org + slug. " +
 			"Returns the full environment including metadata (id, slug, name, org), spec (description), and status. " +
 			"Use list_environments to discover environment IDs and slugs within an organization.",
@@ -114,7 +114,7 @@ type CreateEnvironmentInput struct {
 func CreateTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "create_environment",
-		Description: "Create a new environment within an organization on Planton Cloud. " +
+		Description: "Create a new environment within an organization on Planton. " +
 			"Requires a unique slug (2-15 lowercase chars, letters/digits/hyphens, starts with a letter) " +
 			"and the organization identifier. " +
 			"Returns the created environment with its server-assigned ID.",
@@ -155,7 +155,7 @@ type UpdateEnvironmentInput struct {
 func UpdateTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "update_environment",
-		Description: "Update an existing environment on Planton Cloud. " +
+		Description: "Update an existing environment on Planton. " +
 			"Provide the env_id and any fields to change — omitted fields are left unchanged. " +
 			"Requires environment update permission. " +
 			"Returns the updated environment.",
@@ -193,7 +193,7 @@ type DeleteEnvironmentInput struct {
 func DeleteTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "delete_environment",
-		Description: "Delete an environment from Planton Cloud. " +
+		Description: "Delete an environment from Planton. " +
 			"Requires environment delete permission. " +
 			"WARNING: This permanently removes the environment and triggers cascading cleanup " +
 			"of all resources deployed to it, including stack-modules, microservices, secrets, and clusters. " +

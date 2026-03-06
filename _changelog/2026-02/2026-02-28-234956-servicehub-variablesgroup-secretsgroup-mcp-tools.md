@@ -8,7 +8,7 @@ Added 16 MCP tools across two symmetric ServiceHub entities — VariablesGroup a
 
 ## Problem Statement
 
-AI agents managing Planton Cloud services need to inspect and modify shared configuration without risking accidental clobbering. Services reference environment variables and secrets through `$variables-group/` and `$secrets-group/` reference patterns. Without dedicated tools, agents would need to:
+AI agents managing Planton services need to inspect and modify shared configuration without risking accidental clobbering. Services reference environment variables and secrets through `$variables-group/` and `$secrets-group/` reference patterns. Without dedicated tools, agents would need to:
 
 ### Pain Points
 

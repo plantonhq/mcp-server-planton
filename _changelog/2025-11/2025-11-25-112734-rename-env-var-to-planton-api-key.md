@@ -6,14 +6,14 @@
 
 ## Summary
 
-Renamed the authentication environment variable from `USER_JWT_TOKEN` to `PLANTON_API_KEY` to accurately reflect that it accepts both JWT tokens and API keys from the Planton Cloud console.
+Renamed the authentication environment variable from `USER_JWT_TOKEN` to `PLANTON_API_KEY` to accurately reflect that it accepts both JWT tokens and API keys from the Planton console.
 
 ## Motivation
 
 The previous name `USER_JWT_TOKEN` was misleading because:
 
-1. **Not always a JWT**: Users can now obtain API keys directly from the Planton Cloud console (Profile → API Keys), which may not be JWT tokens
-2. **Confusing terminology**: The variable name suggested it only accepts JWT tokens, but the Planton Cloud APIs accept both JWT tokens and API keys
+1. **Not always a JWT**: Users can now obtain API keys directly from the Planton console (Profile → API Keys), which may not be JWT tokens
+2. **Confusing terminology**: The variable name suggested it only accepts JWT tokens, but the Planton APIs accept both JWT tokens and API keys
 3. **Better alignment**: The new name `PLANTON_API_KEY` better represents the purpose and flexibility of the authentication mechanism
 
 ## Changes
@@ -63,7 +63,7 @@ The documentation now provides clear instructions for obtaining an API key:
 
 ### From Web Console (Recommended)
 
-1. Log in to Planton Cloud web console
+1. Log in to Planton web console
 2. Click on your profile icon in the top-right corner
 3. Select **API Keys** from the menu
 4. Click **Create Key** to generate a new API key
@@ -97,7 +97,7 @@ export PLANTON_API_KEY="your-token"
 ```json
 {
   "mcp_servers": {
-    "planton-cloud": {
+    "planton": {
       "command": "mcp-server-planton",
       "env": {
         "PLANTON_API_KEY": "${PLANTON_API_KEY}",
@@ -113,7 +113,7 @@ export PLANTON_API_KEY="your-token"
 ```json
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "command": "mcp-server-planton",
       "env": {
         "PLANTON_API_KEY": "your-api-key",

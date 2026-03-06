@@ -1,5 +1,5 @@
 {
-  "description": "All Planton Cloud API resource types accessible through MCP tools, grouped by domain.",
+  "description": "All Planton API resource types accessible through MCP tools, grouped by domain.",
   "total_kinds": 29,
   "related_catalogs": {
     "credential_types": "credential-types://catalog",

@@ -1,6 +1,6 @@
 # Development
 
-Guide for building, testing, and contributing to the Planton Cloud MCP Server.
+Guide for building, testing, and contributing to the Planton MCP Server.
 
 ## Prerequisites
 
@@ -8,7 +8,7 @@ Guide for building, testing, and contributing to the Planton Cloud MCP Server.
 - **Git**
 - **Docker** (optional, for container builds)
 - **golangci-lint** (optional, for linting)
-- Access to Planton Cloud APIs (local or remote)
+- Access to Planton APIs (local or remote)
 
 For codegen only:
 - Local clone of [plantonhq/openmcf](https://github.com/plantonhq/openmcf) at `~/scm/github.com/plantonhq/openmcf/`

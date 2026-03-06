@@ -1,6 +1,6 @@
-# Contributing to Planton Cloud MCP Server
+# Contributing to Planton MCP Server
 
-Thank you for your interest in contributing to the Planton Cloud MCP Server! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to the Planton MCP Server! This document provides guidelines and instructions for contributing.
 
 ## Getting Started
 

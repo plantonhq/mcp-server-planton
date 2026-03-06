@@ -8,12 +8,12 @@ Fixed a critical authentication bug in the MCP server where all gRPC calls were 
 
 ## Problem Statement
 
-MCP tools that required gRPC calls to Planton Cloud APIs were consistently failing with errors:
+MCP tools that required gRPC calls to Planton APIs were consistently failing with errors:
 
 ```json
 {
   "error": "UNAVAILABLE",
-  "message": "Planton Cloud APIs are currently unavailable. Please try again in a moment.",
+  "message": "Planton APIs are currently unavailable. Please try again in a moment.",
   "org_id": "acme-corp"
 }
 ```
@@ -170,9 +170,9 @@ All tools that depend on gRPC calls are now functional:
 
 ### Users Affected
 
-- **AI agents using MCP server**: Can now successfully query Planton Cloud infrastructure
+- **AI agents using MCP server**: Can now successfully query Planton infrastructure
 - **LangGraph integrations**: Full MCP tool functionality restored
-- **Cursor IDE users**: Complete access to Planton Cloud data through MCP protocol
+- **Cursor IDE users**: Complete access to Planton data through MCP protocol
 
 ## Related Work
 
@@ -215,7 +215,7 @@ To verify the fix works correctly:
 1. **Environment setup**:
    ```bash
    export PLANTON_API_KEY="your-api-key"
-   export PLANTON_CLOUD_ENVIRONMENT="live"  # or "test" or "local"
+   export PLANTON_ENVIRONMENT="live"  # or "test" or "local"
    ```
 
 2. **Test static tool** (should work before and after):

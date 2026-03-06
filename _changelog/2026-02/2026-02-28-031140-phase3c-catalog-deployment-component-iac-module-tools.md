@@ -135,7 +135,7 @@ This is the **final phase** of the InfraHub MCP Tools Expansion project:
 
 ### Domain Coverage
 
-The MCP server now covers the full Planton Cloud product surface:
+The MCP server now covers the full Planton product surface:
 
 - **Infrastructure composition**: charts, projects, pipelines
 - **Cloud resource lifecycle**: CRUD, locks, references, env vars

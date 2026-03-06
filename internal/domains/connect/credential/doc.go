@@ -1,4 +1,4 @@
-// Package credential provides MCP tools for managing Planton Cloud credentials
+// Package credential provides MCP tools for managing Planton credentials
 // across all supported provider types (AWS, GCP, Azure, GitHub, Kubernetes, etc.).
 //
 // All credential types share the same OpenMCF envelope structure:

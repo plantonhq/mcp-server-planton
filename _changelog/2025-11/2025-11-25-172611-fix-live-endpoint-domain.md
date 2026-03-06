@@ -4,11 +4,11 @@
 
 ## Summary
 
-Fixed a critical DNS resolution error in the MCP server by correcting the live environment endpoint domain from `api.live.planton.cloud` to `api.live.planton.ai`. This bug prevented the MCP server from connecting to the production Planton Cloud APIs, resulting in "name resolver error: produced zero addresses" failures.
+Fixed a critical DNS resolution error in the MCP server by correcting the live environment endpoint domain from `api.live.planton.cloud` to `api.live.planton.ai`. This bug prevented the MCP server from connecting to the production Planton APIs, resulting in "name resolver error: produced zero addresses" failures.
 
 ## Problem Statement
 
-The MCP server was unable to connect to the live Planton Cloud APIs, causing all cloud resource queries and operations to fail with DNS resolution errors.
+The MCP server was unable to connect to the live Planton APIs, causing all cloud resource queries and operations to fail with DNS resolution errors.
 
 ### Pain Points
 
@@ -20,9 +20,9 @@ The MCP server was unable to connect to the live Planton Cloud APIs, causing all
 
 ## Root Cause
 
-When the environment-based endpoint selection feature was implemented (2025-11-25-165245), the live endpoint was incorrectly set to `api.live.planton.cloud:443`. However, the actual Planton Cloud backend uses the domain `planton.ai`, not `planton.cloud`.
+When the environment-based endpoint selection feature was implemented (2025-11-25-165245), the live endpoint was incorrectly set to `api.live.planton.cloud:443`. However, the actual Planton backend uses the domain `planton.ai`, not `planton.cloud`.
 
-The correct endpoint, as confirmed by checking the Planton Cloud CLI codebase, is `api.live.planton.ai:443`.
+The correct endpoint, as confirmed by checking the Planton CLI codebase, is `api.live.planton.ai:443`.
 
 **Incorrect code:**
 ```go
@@ -71,7 +71,7 @@ const (
 
 ### Verification
 
-Confirmed the correct endpoint by examining the Planton Cloud CLI codebase:
+Confirmed the correct endpoint by examining the Planton CLI codebase:
 
 ```go
 // From planton-cloud/client-apps/cli/internal/plantoncloud/domain/connect/connectbackend/connect_backend.go
@@ -84,7 +84,7 @@ All backend services (connect, service-hub, kube-ops, search, etc.) use `api.liv
 
 ## Benefits
 
-- ✅ **MCP server now connects successfully** to live Planton Cloud APIs
+- ✅ **MCP server now connects successfully** to live Planton APIs
 - ✅ **DNS resolution works** - hostname resolves correctly
 - ✅ **Cloud resource operations functional** - search, lookup, get operations now work
 - ✅ **Consistent with CLI** - MCP server uses same endpoints as the official CLI
@@ -114,7 +114,7 @@ Users can verify the fix by:
 ## Related Work
 
 - `2025-11-25-165245-environment-based-endpoint-selection.md` - Original feature that introduced the bug
-- Aligns with Planton Cloud CLI endpoint configuration patterns
+- Aligns with Planton CLI endpoint configuration patterns
 - Matches backend service endpoint conventions
 
 ---

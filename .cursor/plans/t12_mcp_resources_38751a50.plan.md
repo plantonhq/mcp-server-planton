@@ -60,7 +60,7 @@ Domain groupings (derived from server.go package structure):
 
 ```json
 {
-  "description": "All Planton Cloud API resource types accessible through MCP tools, grouped by domain.",
+  "description": "All Planton API resource types accessible through MCP tools, grouped by domain.",
   "total_kinds": 30,
   "credential_catalog_uri": "credential-types://catalog",
   "cloud_resource_catalog_uri": "cloud-resource-kinds://catalog",

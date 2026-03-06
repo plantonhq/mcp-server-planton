@@ -504,7 +504,7 @@ Client → Bearer Token → MCP Server → PLANTON_API_KEY → Planton APIs
 
 **Layer 2: PLANTON_API_KEY** (Resource access control)
 - Controls what resources the user can access
-- Fine-grained authorization (FGA) from Planton Cloud
+- Fine-grained authorization (FGA) from Planton
 - User-specific permissions enforced by backend APIs
 
 ### Production Security Checklist
@@ -571,7 +571,7 @@ docker run -p 8080:8080 \
 
 ### Broader Context
 
-This change aligns with Planton Cloud's infrastructure modernization:
+This change aligns with Planton's infrastructure modernization:
 - **Cloud-native patterns**: 12-factor app, stateless services
 - **Multi-environment support**: Local, staging, production
 - **Developer experience**: Flexible tooling for different workflows

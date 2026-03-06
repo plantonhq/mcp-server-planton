@@ -16,7 +16,7 @@ import (
 //   - Slug path: first resolves org+slug to a service ID via the query
 //     controller, then calls DisconnectGitRepo.
 //
-// The service definition remains in Planton Cloud; only the webhook is
+// The service definition remains in Planton; only the webhook is
 // removed so that new commits no longer trigger pipelines.
 func DisconnectGitRepo(ctx context.Context, serverAddress, id, org, slug string) (string, error) {
 	return domains.WithConnection(ctx, serverAddress,

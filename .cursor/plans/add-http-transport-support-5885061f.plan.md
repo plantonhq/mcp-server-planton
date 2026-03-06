@@ -30,7 +30,7 @@ Client → Bearer Token → MCP HTTP Server → PLANTON_API_KEY → Planton APIs
 **Why two layers?**
 
 1. **Bearer token** - Controls WHO can use your MCP server (prevents unauthorized access to your endpoint)
-2. **PLANTON_API_KEY** - Controls WHAT resources the user can access (FGA enforcement from Planton Cloud)
+2. **PLANTON_API_KEY** - Controls WHAT resources the user can access (FGA enforcement from Planton)
 
 **Industry standard:** OAuth 2.1 with bearer tokens is the MCP spec standard for HTTP transport.
 

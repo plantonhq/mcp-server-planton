@@ -84,7 +84,7 @@ type Config struct {
 //
 //	PLANTON_API_KEY               – API key (required for stdio/both; per-request for http)
 //	PLANTON_APIS_GRPC_ENDPOINT    – gRPC address override (takes precedence over environment preset)
-//	PLANTON_CLOUD_ENVIRONMENT     – "live" | "test" | "local" (default "live")
+//	PLANTON_ENVIRONMENT     – "live" | "test" | "local" (default "live")
 //	PLANTON_MCP_TRANSPORT         – "stdio" | "http" | "both" (default "stdio")
 //	PLANTON_MCP_HTTP_PORT         – HTTP listen port (default "8080")
 //	PLANTON_MCP_HTTP_AUTH_ENABLED – "true" | "false" (default "true")
@@ -121,7 +121,7 @@ func (c *Config) Validate() error {
 	}
 
 	if c.ServerAddress == "" {
-		return fmt.Errorf("server address must not be empty — set PLANTON_APIS_GRPC_ENDPOINT or PLANTON_CLOUD_ENVIRONMENT")
+		return fmt.Errorf("server address must not be empty — set PLANTON_APIS_GRPC_ENDPOINT or PLANTON_ENVIRONMENT")
 	}
 
 	switch c.LogFormat {
@@ -156,13 +156,13 @@ func ParseLogLevel(s string) (slog.Level, error) {
 
 // resolveEndpoint determines the gRPC endpoint using the following priority:
 //  1. PLANTON_APIS_GRPC_ENDPOINT (explicit override)
-//  2. PLANTON_CLOUD_ENVIRONMENT  (preset: live, test, local)
+//  2. PLANTON_ENVIRONMENT  (preset: live, test, local)
 //  3. Default to the live endpoint
 func resolveEndpoint() string {
 	if ep := os.Getenv("PLANTON_APIS_GRPC_ENDPOINT"); ep != "" {
 		return ep
 	}
-	switch strings.ToLower(os.Getenv("PLANTON_CLOUD_ENVIRONMENT")) {
+	switch strings.ToLower(os.Getenv("PLANTON_ENVIRONMENT")) {
 	case "test":
 		return EndpointTest
 	case "local":
