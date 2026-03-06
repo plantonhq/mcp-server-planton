@@ -125,13 +125,13 @@ Align with [stigmer/mcp-server/Makefile](../stigmer/stigmer/mcp-server/Makefile)
 
 Following the **Lead Technical Document Writer** role from `_roles/002_document_writer`:
 
-**Audience**: MCP client users who want to connect their AI IDE to Planton Cloud.
+**Audience**: MCP client users who want to connect their AI IDE to Planton.
 
 **Key improvements** (using stigmer README as the structural reference):
 
-- **Opening paragraph**: One clear sentence explaining what the server is and what it connects. Add the ASCII architecture diagram like stigmer: `AI IDE <-> MCP protocol <-> mcp-server-planton <-> gRPC <-> Planton Cloud`.
+- **Opening paragraph**: One clear sentence explaining what the server is and what it connects. Add the ASCII architecture diagram like stigmer: `AI IDE <-> MCP protocol <-> mcp-server-planton <-> gRPC <-> Planton`.
 - **Key Concepts**: Define `cloud resource`, `kind`, `org`, `env`, `slug`, `apply`, `api_version` for users who are new to Planton. Stigmer does this and it eliminates assumed knowledge.
-- **Installation**: Reorder to: Prerequisites (Planton Cloud account + API key) -> Go install (one-liner) -> Pre-built binary -> Docker. Currently Quick Start jumps straight into MCP client config before the binary is even installed.
+- **Installation**: Reorder to: Prerequisites (Planton account + API key) -> Go install (one-liner) -> Pre-built binary -> Docker. Currently Quick Start jumps straight into MCP client config before the binary is even installed.
 - **MCP Client Configuration**: Consolidate the 4 duplicate JSON blocks (Cursor STDIO, Cursor HTTP, Claude Desktop, LangGraph) into one canonical config with a per-client location table (like stigmer). The Cursor STDIO and Claude Desktop blocks are identical -- redundancy hurts scanability.
 - **Configuration Reference**: Keep the env var table.
 - **Tools**: Document each tool properly with parameter tables (like stigmer does for its tools). Current README only has a 3-row summary table.

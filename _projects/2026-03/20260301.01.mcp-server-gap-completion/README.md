@@ -1,7 +1,7 @@
 # Project: 20260301.01.mcp-server-gap-completion
 
 ## Overview
-Close all gaps between the MCP server (100+ tools) and the Planton Cloud API surface (~564 proto files). Add missing bounded contexts: Connect (credentials), IAM, full ResourceManager CRUD, StackJob AI-native tools, CloudResource lifecycle completion, PromotionPolicy, FlowControlPolicy, and expanded MCP resources.
+Close all gaps between the MCP server (100+ tools) and the Planton API surface (~564 proto files). Add missing bounded contexts: Connect (credentials), IAM, full ResourceManager CRUD, StackJob AI-native tools, CloudResource lifecycle completion, PromotionPolicy, FlowControlPolicy, and expanded MCP resources.
 
 **Created**: 2026-03-01
 **Status**: Active 🟢
@@ -9,7 +9,7 @@ Close all gaps between the MCP server (100+ tools) and the Planton Cloud API sur
 ## Project Information
 
 ### Primary Goal
-Add ~60-70 missing tools and 5+ MCP resources across 8+ new/expanded domains to achieve comprehensive coverage of the Planton Cloud platform API surface.
+Add ~60-70 missing tools and 5+ MCP resources across 8+ new/expanded domains to achieve comprehensive coverage of the Planton platform API surface.
 
 ### Timeline
 **Target Completion**: 2-3 weeks

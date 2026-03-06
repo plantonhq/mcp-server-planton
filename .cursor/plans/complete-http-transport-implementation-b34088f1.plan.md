@@ -202,7 +202,7 @@ Add HTTP transport variables to the configuration table:
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `PLANTON_API_KEY` | Yes | - | User's API key |
-| `PLANTON_CLOUD_ENVIRONMENT` | No | `live` | Target environment |
+| `PLANTON_ENVIRONMENT` | No | `live` | Target environment |
 | `PLANTON_APIS_GRPC_ENDPOINT` | No | (based on env) | Override endpoint |
 | `PLANTON_MCP_TRANSPORT` | No | `stdio` | Transport mode: `stdio`, `http`, or `both` |
 | `PLANTON_MCP_HTTP_PORT` | No | `8080` | HTTP server port |
@@ -237,7 +237,7 @@ Add a **"Running Locally"** section in README under Development:
 
 ```bash
 export PLANTON_API_KEY="your-api-key"
-export PLANTON_CLOUD_ENVIRONMENT="local"  # or "live"
+export PLANTON_ENVIRONMENT="local"  # or "live"
 ./bin/mcp-server-planton
 ````
 
@@ -245,7 +245,7 @@ export PLANTON_CLOUD_ENVIRONMENT="local"  # or "live"
 
 ```bash
 export PLANTON_API_KEY="your-api-key"
-export PLANTON_CLOUD_ENVIRONMENT="local"
+export PLANTON_ENVIRONMENT="local"
 export PLANTON_MCP_TRANSPORT="http"
 export PLANTON_MCP_HTTP_PORT="8080"
 export PLANTON_MCP_HTTP_AUTH_ENABLED="false"  # disable for local testing

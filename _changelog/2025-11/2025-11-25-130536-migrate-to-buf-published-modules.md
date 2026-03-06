@@ -24,7 +24,7 @@ This local path exists in the development environment but not in the GitHub Acti
 
 ## Solution
 
-Migrated from the local `replace` directive to using Buf Schema Registry's published Go modules. The Planton Cloud APIs are publicly available at https://buf.build/blintora/apis.
+Migrated from the local `replace` directive to using Buf Schema Registry's published Go modules. The Planton APIs are publicly available at https://buf.build/blintora/apis.
 
 ### Key Changes
 

@@ -88,7 +88,7 @@ The Architecture section's plain-text diagram is converted to a Mermaid diagram 
 flowchart TD
     IDE["AI IDE\n(Cursor / Claude Desktop / VS Code / Windsurf)"]
     MCP["mcp-server-planton\n(stdio or Streamable HTTP)"]
-    Backend["Planton Cloud Backend\n(gRPC · TLS on :443)"]
+    Backend["Planton Backend\n(gRPC · TLS on :443)"]
     IDE -->|"MCP protocol"| MCP
     MCP -->|"gRPC"| Backend
 ```

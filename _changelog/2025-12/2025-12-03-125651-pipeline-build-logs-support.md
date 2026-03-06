@@ -4,7 +4,7 @@
 
 ## Summary
 
-Added pipeline build log streaming capability to the Planton Cloud MCP Server, enabling AI agents to access real-time and historical Tekton task logs for troubleshooting service build failures. This completes the foundation for autonomous troubleshooting agents by providing visibility into pipeline execution details and build logs that were previously only accessible through the web console.
+Added pipeline build log streaming capability to the Planton MCP Server, enabling AI agents to access real-time and historical Tekton task logs for troubleshooting service build failures. This completes the foundation for autonomous troubleshooting agents by providing visibility into pipeline execution details and build logs that were previously only accessible through the web console.
 
 ## Problem Statement
 

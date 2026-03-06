@@ -48,7 +48,7 @@ func DebugDeploymentHandler() mcp.PromptHandler {
 func buildDebugDeploymentText(resourceID, stackJobID string) string {
 	var b strings.Builder
 
-	b.WriteString("I need help diagnosing a failed infrastructure deployment on Planton Cloud.")
+	b.WriteString("I need help diagnosing a failed infrastructure deployment on Planton.")
 
 	if resourceID != "" {
 		b.WriteString("\n\nThe affected resource is: ")

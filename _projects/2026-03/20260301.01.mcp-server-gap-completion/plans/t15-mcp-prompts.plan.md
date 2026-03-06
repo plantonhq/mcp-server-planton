@@ -1,6 +1,6 @@
 ---
 name: MCP Prompts v1
-overview: Add 5 MCP prompts to the Planton Cloud MCP server — the first implementation of the third MCP primitive (alongside the existing 172 tools and 5 resources). Each prompt encodes a cross-domain workflow that an LLM couldn't easily discover from tool descriptions alone.
+overview: Add 5 MCP prompts to the Planton MCP server — the first implementation of the third MCP primitive (alongside the existing 172 tools and 5 resources). Each prompt encodes a cross-domain workflow that an LLM couldn't easily discover from tool descriptions alone.
 todos:
   - id: helpers
     content: Add PromptResult and UserMessage helpers to internal/domains/toolresult.go

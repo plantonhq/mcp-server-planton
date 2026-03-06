@@ -62,7 +62,7 @@ type GetOrganizationInput struct {
 func GetTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "get_organization",
-		Description: "Get an organization by ID from Planton Cloud. " +
+		Description: "Get an organization by ID from Planton. " +
 			"Returns the full organization including metadata (id, slug, name), spec (description, contact email), and status. " +
 			"Use list_organizations first to discover organization IDs.",
 	}
@@ -99,7 +99,7 @@ type CreateOrganizationInput struct {
 func CreateTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "create_organization",
-		Description: "Create a new organization on Planton Cloud. " +
+		Description: "Create a new organization on Planton. " +
 			"Requires a unique slug (2-15 lowercase chars, letters/digits/hyphens, starts with a letter). " +
 			"Any authenticated user can create an organization. " +
 			"Returns the created organization with its server-assigned ID.",
@@ -139,7 +139,7 @@ type UpdateOrganizationInput struct {
 func UpdateTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "update_organization",
-		Description: "Update an existing organization on Planton Cloud. " +
+		Description: "Update an existing organization on Planton. " +
 			"Provide the org_id and any fields to change — omitted fields are left unchanged. " +
 			"Requires organization update permission. " +
 			"Returns the updated organization.",
@@ -179,7 +179,7 @@ type DeleteOrganizationInput struct {
 func DeleteTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "delete_organization",
-		Description: "Delete an organization from Planton Cloud. " +
+		Description: "Delete an organization from Planton. " +
 			"Requires organization delete permission. " +
 			"WARNING: This permanently removes the organization and is not reversible.",
 	}

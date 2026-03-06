@@ -6,7 +6,7 @@
 
 ## Summary
 
-Reorganized the mcp-server-planton codebase from a flat, generic structure into a domain-first architecture that mirrors Planton Cloud's API structure (InfraHub and ResourceManager). The new structure provides clear separation of concerns, scalable tool registration, and eliminates redundant naming patterns. This transformation sets the foundation for rapid expansion as we add dozens of new tools across multiple domains and resources.
+Reorganized the mcp-server-planton codebase from a flat, generic structure into a domain-first architecture that mirrors Planton's API structure (InfraHub and ResourceManager). The new structure provides clear separation of concerns, scalable tool registration, and eliminates redundant naming patterns. This transformation sets the foundation for rapid expansion as we add dozens of new tools across multiple domains and resources.
 
 The reorganization was inspired by examining GitHub's MCP server structure while adapting it to our specific needs for domain-level organization and resource-based tool grouping.
 
@@ -36,7 +36,7 @@ internal/
 
 ### Pain Points
 
-1. **No Domain Boundaries**: Clients for different API domains (InfraHub vs ResourceManager) were separated but not organized hierarchically to reflect their relationship to the broader Planton Cloud API structure
+1. **No Domain Boundaries**: Clients for different API domains (InfraHub vs ResourceManager) were separated but not organized hierarchically to reflect their relationship to the broader Planton API structure
 
 2. **Flat Tool Directory**: All InfraHub tools in a single `tools/` directory with no indication they all belong to the "cloud resource" API resource. As we add stack jobs, this would become a confusing mix
 
@@ -65,7 +65,7 @@ The flat structure would have become:
 
 ## Solution
 
-Adopted a **domain-first architecture** with hierarchical organization that mirrors the Planton Cloud API structure. Each domain owns its clients and tools, resources are explicitly grouped, and operations are separated into focused files.
+Adopted a **domain-first architecture** with hierarchical organization that mirrors the Planton API structure. Each domain owns its clients and tools, resources are explicitly grouped, and operations are separated into focused files.
 
 ### Target Structure
 
@@ -119,7 +119,7 @@ internal/
 
 #### 1. Domain-First, Not Service-First
 
-We organize by Planton Cloud API domain (InfraHub, ResourceManager), not by technical service layer (grpc, tools, clients). This mirrors how developers think about the API.
+We organize by Planton API domain (InfraHub, ResourceManager), not by technical service layer (grpc, tools, clients). This mirrors how developers think about the API.
 
 **Rationale**: Developers think "I need an InfraHub cloud resource operation" not "I need a gRPC tool from the infrahub service."
 
@@ -612,10 +612,10 @@ This reorganization complements:
 
 - **Previous**: [2025-11-25-132221-reorganize-package-structure.md](../2025-11-25-132221-reorganize-package-structure.md) - Initial organization attempt
 - **Previous**: [2025-11-24-231122-mcp-server-extraction-to-standalone-repo.md](../2025-11-24-231122-mcp-server-extraction-to-standalone-repo.md) - Extracted MCP server from monolith
-- **Foundation for**: Future expansion of tool catalog across all Planton Cloud domains
+- **Foundation for**: Future expansion of tool catalog across all Planton domains
 
 The structure now aligns with:
-- Planton Cloud API domain architecture (InfraHub, ResourceManager, IAM, etc.)
+- Planton API domain architecture (InfraHub, ResourceManager, IAM, etc.)
 - Project Planton deployment components organization
 - GitHub MCP Server patterns (adapted for our needs)
 

@@ -22,7 +22,7 @@ Tool description review (Go code) must happen FIRST because any wording changes 
 
 Review all 18 tool descriptions in Go `tools.go` files for consistency. Issues spotted during exploration:
 
-- **"Planton platform" vs "Planton Cloud"**: Tool descriptions say "on the Planton platform" (e.g. `get_cloud_resource`, `delete_cloud_resource`), but README/docs use "Planton Cloud". Normalize to one term.
+- **"Planton platform" vs "Planton"**: Tool descriptions say "on the Planton platform" (e.g. `get_cloud_resource`, `delete_cloud_resource`), but README/docs use "Planton". Normalize to one term.
 - **Dual-path identification phrasing**: Tools that accept ID-or-coordinates describe the pattern in slightly different wording. Standardize.
 - **Cross-tool references**: Some tools mention related tools (e.g. `check_slug_availability` says "Use this before apply_cloud_resource"), others that should don't. Audit and add where it helps agent workflow.
 

@@ -8,7 +8,7 @@ Produced the foundational architecture decision for the Connect bounded context,
 
 ## Problem Statement
 
-The Connect domain in Planton Cloud manages credentials for 20+ third-party providers and platform connection resources, but the MCP server had zero Connect domain tools. Before implementation could begin, a critical architecture question needed resolution: should each credential type get its own set of tools (60-80 tools), or should a single set of generic tools handle all types through a discriminator?
+The Connect domain in Planton manages credentials for 20+ third-party providers and platform connection resources, but the MCP server had zero Connect domain tools. Before implementation could begin, a critical architecture question needed resolution: should each credential type get its own set of tools (60-80 tools), or should a single set of generic tools handle all types through a discriminator?
 
 ### Pain Points
 

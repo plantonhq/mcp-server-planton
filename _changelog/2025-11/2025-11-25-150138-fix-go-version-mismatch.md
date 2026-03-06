@@ -455,7 +455,7 @@ The change is backward compatible, requires no code modifications, and sets the 
 **Complete fix implemented:**
 - Updated go.mod to `go 1.24.7` (matching dependency requirements)
 - Updated Dockerfile to use `golang:1.25-alpine` (since Go 1.24 Docker images don't exist)
-- Aligned with Planton Cloud's stack-job-runner standard (Go 1.25.0)
+- Aligned with Planton's stack-job-runner standard (Go 1.25.0)
 - Added comprehensive documentation in `docs/development.md`
 
 See the follow-up changelog for the complete solution that addresses the dependency chain issue.

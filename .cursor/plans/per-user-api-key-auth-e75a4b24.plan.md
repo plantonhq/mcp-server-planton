@@ -7,12 +7,12 @@ Currently, the MCP server uses a **machine account pattern** where:
 
 - Docker starts with `PLANTON_API_KEY` environment variable
 - All HTTP users must use the SAME API key to authenticate
-- All gRPC calls to Planton Cloud use the SAME API key
+- All gRPC calls to Planton use the SAME API key
 - **Security Issue**: User A can access User B's data if they share the MCP server instance
 
 ## Solution: Per-User Passthrough Authentication
 
-Extract each user's API key from the HTTP `Authorization` header and pass it directly to Planton Cloud APIs (no intermediate validation).
+Extract each user's API key from the HTTP `Authorization` header and pass it directly to Planton APIs (no intermediate validation).
 
 ```
 User A → Bearer user_a_key → MCP Server → gRPC with user_a_key → Planton APIs (validates + FGA)
@@ -197,7 +197,7 @@ export PLANTON_MCP_HTTP_AUTH_ENABLED="true"
 ```json
 {
   "mcpServers": {
-    "planton-cloud": {
+    "planton": {
       "type": "http",
       "url": "http://localhost:8080/",
       "headers": {
@@ -234,7 +234,7 @@ of the MCP server with their own API key, or use the hosted endpoint...
 
 ```markdown
 **Multi-User Support**: The HTTP transport extracts each user's API key from 
-the Authorization header and passes it to Planton Cloud APIs, ensuring proper 
+the Authorization header and passes it to Planton APIs, ensuring proper 
 Fine-Grained Authorization per user.
 ```
 

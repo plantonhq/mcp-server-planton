@@ -42,7 +42,7 @@ type ApplyCloudResourceInput struct {
 func ApplyTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "apply_cloud_resource",
-		Description: "Create or update a cloud resource on Planton Cloud (idempotent). " +
+		Description: "Create or update a cloud resource on Planton (idempotent). " +
 			"The cloud_object must follow the OpenMCF format: " +
 			"{ api_version, kind, metadata: { name, org, env }, spec: { ... } }. " +
 			"Step 1: Read cloud-resource-kinds://catalog to discover supported kinds and api_versions. " +
@@ -112,7 +112,7 @@ type GetCloudResourceInput struct {
 func GetTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "get_cloud_resource",
-		Description: "Get a cloud resource from Planton Cloud. " +
+		Description: "Get a cloud resource from Planton. " +
 			"Identify the resource by 'id' alone, or by all of 'kind', 'org', 'env', and 'slug' together. " +
 			"Returns the full resource including metadata, spec, and status.",
 	}
@@ -159,7 +159,7 @@ type DeleteCloudResourceInput struct {
 func DeleteTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "delete_cloud_resource",
-		Description: "Delete a cloud resource record from Planton Cloud. " +
+		Description: "Delete a cloud resource record from Planton. " +
 			"This removes the record only — it does NOT tear down cloud infrastructure. " +
 			"Use destroy_cloud_resource first to tear down infrastructure, then this tool to remove the record. " +
 			"Identify the resource by 'id' alone, or by all of 'kind', 'org', 'env', and 'slug' together.",
@@ -205,7 +205,7 @@ type ListCloudResourcesInput struct {
 func ListTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "list_cloud_resources",
-		Description: "List cloud resources in an organization on Planton Cloud. " +
+		Description: "List cloud resources in an organization on Planton. " +
 			"Returns resources grouped by environment and kind. " +
 			"Optionally filter by environment slugs, resource kinds, or free-text search. " +
 			"Use list_organizations to discover available organization identifiers. " +
@@ -253,7 +253,7 @@ func DestroyTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "destroy_cloud_resource",
 		Description: "Destroy the cloud infrastructure (Terraform/Pulumi destroy) for a resource " +
-			"while keeping the resource record on Planton Cloud. " +
+			"while keeping the resource record on Planton. " +
 			"This tears down the actual cloud resources (VPCs, clusters, databases, etc.). " +
 			"Use delete_cloud_resource to remove the record itself. " +
 			"Use get_latest_stack_job to monitor the destroy operation's progress. " +
@@ -303,7 +303,7 @@ type PurgeCloudResourceInput struct {
 func PurgeTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "purge_cloud_resource",
-		Description: "Purge a cloud resource from Planton Cloud: destroy infrastructure AND delete the record in one atomic workflow. " +
+		Description: "Purge a cloud resource from Planton: destroy infrastructure AND delete the record in one atomic workflow. " +
 			"The backend orchestrates this as a Temporal workflow that first tears down the IaC-managed " +
 			"cloud resources (Terraform/Pulumi destroy), waits for completion, then deletes the resource record. " +
 			"This is equivalent to calling destroy_cloud_resource followed by delete_cloud_resource, but as a " +
@@ -409,7 +409,7 @@ type ListCloudResourceLocksInput struct {
 func ListLocksTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "list_cloud_resource_locks",
-		Description: "List lock information for a cloud resource on Planton Cloud. " +
+		Description: "List lock information for a cloud resource on Planton. " +
 			"Returns whether the resource is locked, current lock holder details " +
 			"(workflow ID, acquired timestamp, TTL remaining), and any workflows " +
 			"waiting in the lock queue. " +
@@ -460,7 +460,7 @@ func RemoveLocksTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "remove_cloud_resource_locks",
 		Description: "Remove all locks (active lock and wait queue) for a cloud resource " +
-			"on Planton Cloud. Returns details about what was removed " +
+			"on Planton. Returns details about what was removed " +
 			"(active lock removed, queue entries cleared). " +
 			"WARNING: Removing locks on a resource with an active stack job may cause " +
 			"IaC state corruption. Use get_latest_stack_job to verify no jobs are running, " +
@@ -511,7 +511,7 @@ type RenameCloudResourceInput struct {
 func RenameTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "rename_cloud_resource",
-		Description: "Rename a cloud resource on Planton Cloud. " +
+		Description: "Rename a cloud resource on Planton. " +
 			"Changes the human-readable display name; the immutable slug is unaffected. " +
 			"Returns the updated resource. " +
 			"Identify the resource by 'id' alone, or by all of 'kind', 'org', 'env', and 'slug' together.",

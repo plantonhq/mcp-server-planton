@@ -4,7 +4,7 @@
 
 ## Summary
 
-Extended the Planton Cloud MCP Server with 8 new tools across two domains (Service Hub and Connect), enabling AI agents to query services, manage Tekton pipelines, and access GitHub credentials. This empowers agents to help users create and modify CI/CD pipelines by providing complete context about their services, Git repositories, and available pipeline templates.
+Extended the Planton MCP Server with 8 new tools across two domains (Service Hub and Connect), enabling AI agents to query services, manage Tekton pipelines, and access GitHub credentials. This empowers agents to help users create and modify CI/CD pipelines by providing complete context about their services, Git repositories, and available pipeline templates.
 
 ## Problem Statement
 
@@ -32,7 +32,7 @@ Created two new domain packages in the MCP server following the established arch
 2. **Connect domain** (`internal/domains/connect/`): Tools for accessing GitHub credential metadata and repository listings
 
 Each domain includes:
-- **gRPC clients** for Planton Cloud APIs with user authentication
+- **gRPC clients** for Planton APIs with user authentication
 - **Tool implementations** with JSON serialization for agent consumption
 - **Registration logic** following the MCP server's tool registration pattern
 - **Error handling** with user-friendly messages
@@ -66,7 +66,7 @@ internal/domains/
 
 **Authentication flow**:
 - Each tool uses per-user API keys (HTTP: from Authorization header, STDIO: from environment)
-- gRPC clients authenticate with Planton Cloud APIs using user credentials
+- gRPC clients authenticate with Planton APIs using user credentials
 - Fine-Grained Authorization (FGA) ensures users only see resources they have access to
 
 ## Implementation Details

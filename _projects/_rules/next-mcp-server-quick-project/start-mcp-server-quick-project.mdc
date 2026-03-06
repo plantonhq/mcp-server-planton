@@ -251,7 +251,7 @@ User: add-deployment-tool
 
 AI: Great! Briefly describe what this project does (1-2 sentences):
 
-User: Add a new MCP tool handler for listing Planton Cloud deployments
+User: Add a new MCP tool handler for listing Planton deployments
 
 AI: Perfect! What's the main goal?
 

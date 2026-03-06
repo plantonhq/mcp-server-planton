@@ -2,11 +2,11 @@
 
 **Date**: November 25, 2025  
 **Type**: Bug Fix / Infrastructure Alignment  
-**Impact**: High - Permanently fixes Go version drift and aligns with Planton Cloud standards
+**Impact**: High - Permanently fixes Go version drift and aligns with Planton standards
 
 ## Summary
 
-Fixed the persistent Go version mismatch by aligning `go.mod` with the actual dependency requirements (`go 1.24.7`) while using Go 1.25 for Docker builds and CI/CD. This change addresses the root cause of automatic version upgrades during `go mod tidy` and establishes consistency with Planton Cloud's infrastructure standards.
+Fixed the persistent Go version mismatch by aligning `go.mod` with the actual dependency requirements (`go 1.24.7`) while using Go 1.25 for Docker builds and CI/CD. This change addresses the root cause of automatic version upgrades during `go mod tidy` and establishes consistency with Planton's infrastructure standards.
 
 ## Problem Statement
 
@@ -24,11 +24,11 @@ The previous fix attempted to standardize on Go 1.23, but this was incomplete be
 - ❌ Go version kept reverting to 1.24.7 after `go mod tidy`
 - ❌ Version mismatch between go.mod (1.24.7) and Dockerfile (1.23)
 - ❌ Confusion about which Go version to use
-- ❌ Not aligned with Planton Cloud infrastructure standards
+- ❌ Not aligned with Planton infrastructure standards
 
 ## Solution
 
-Embrace the dependency requirement and align with Planton Cloud's infrastructure standards:
+Embrace the dependency requirement and align with Planton's infrastructure standards:
 
 1. **Set go.mod to `go 1.24.7`** - Matches the `project-planton` dependency requirement
 2. **Use `golang:1.25-alpine` in Dockerfile** - Go 1.25 is backward compatible and is the standard in `planton-cloud/backend/services/stack-job-runner`
@@ -44,12 +44,12 @@ Embrace the dependency requirement and align with Planton Cloud's infrastructure
 **Go 1.25 in Docker:**
 - Official `golang:1.25-alpine` images exist (unlike 1.24)
 - Backward compatible with Go 1.24.7 code
-- Matches Planton Cloud's `stack-job-runner` service (Go 1.25.0)
-- Production-tested in Planton Cloud infrastructure
+- Matches Planton's `stack-job-runner` service (Go 1.25.0)
+- Production-tested in Planton infrastructure
 
 **Benefits:**
 - ✅ `go mod tidy` no longer changes the Go version
-- ✅ Consistent with Planton Cloud infrastructure standards
+- ✅ Consistent with Planton infrastructure standards
 - ✅ No Docker image availability issues
 - ✅ Clear documentation prevents future confusion
 
@@ -81,7 +81,7 @@ Embrace the dependency requirement and align with Planton Cloud's infrastructure
 ```
 
 **Rationale**: 
-- Go 1.25 is the actual Go version used in Planton Cloud's infrastructure (see `stack-job-runner/Dockerfile`)
+- Go 1.25 is the actual Go version used in Planton's infrastructure (see `stack-job-runner/Dockerfile`)
 - Official Docker images for Go 1.24 don't exist (it's a toolchain version)
 - Go 1.25 is backward compatible with Go 1.24.7
 
@@ -100,7 +100,7 @@ Added new section "Go Version Requirements" that explains:
 - Why we use Go 1.25 in Docker
 - How developers with different Go versions should handle builds
 - Installation instructions for Go 1.25
-- Alignment with Planton Cloud infrastructure
+- Alignment with Planton infrastructure
 
 ### 5. Updated Previous Changelog
 
@@ -113,9 +113,9 @@ Added update section explaining:
 
 ## Infrastructure Alignment
 
-This change aligns `mcp-server-planton` with Planton Cloud's infrastructure standards:
+This change aligns `mcp-server-planton` with Planton's infrastructure standards:
 
-### Planton Cloud Go Versions
+### Planton Go Versions
 
 | Component | Go Version | Location |
 |-----------|-----------|----------|
@@ -131,7 +131,7 @@ This change aligns `mcp-server-planton` with Planton Cloud's infrastructure stan
 | go.mod | **1.24.7** | Required by `project-planton` dependency |
 | Dockerfile | **1.25** | Matches `stack-job-runner`, official Docker image |
 
-**Why stack-job-runner matters**: The stack-job-runner is Planton Cloud's core infrastructure component that executes Pulumi deployments. Using the same Go version ensures compatibility and consistency across the deployment pipeline.
+**Why stack-job-runner matters**: The stack-job-runner is Planton's core infrastructure component that executes Pulumi deployments. Using the same Go version ensures compatibility and consistency across the deployment pipeline.
 
 ## Technical Details
 
@@ -228,7 +228,7 @@ $ cat go.mod | grep "^go "
 go 1.24.7  # Version stayed the same ✅
 ```
 
-### 2. Alignment with Planton Cloud Infrastructure
+### 2. Alignment with Planton Infrastructure
 
 - ✅ Uses same Go version as `stack-job-runner` (Go 1.25)
 - ✅ Compatible with `project-planton` dependency (Go 1.24.7)
@@ -342,7 +342,7 @@ bin/mcp-server-planton: go1.24.7  # ✅ Correct version
 This fix complements recent infrastructure improvements:
 
 - **Supersedes**: [2025-11-25-150138-fix-go-version-mismatch.md](./2025-11-25-150138-fix-go-version-mismatch.md) - Previous incomplete fix
-- **Aligns with**: Planton Cloud stack-job-runner infrastructure standards
+- **Aligns with**: Planton stack-job-runner infrastructure standards
 - **Foundation for**: Reliable dependency management and consistent builds
 
 ## Best Practices Established
@@ -368,7 +368,7 @@ $ grep "^go " $(go list -m -f '{{.Dir}}' github.com/project-planton/project-plan
 
 ### 2. Periodic Infrastructure Alignment Review
 
-Quarterly review of Go versions across Planton Cloud infrastructure:
+Quarterly review of Go versions across Planton infrastructure:
 - stack-job-runner
 - copilot-agent
 - project-planton
@@ -444,20 +444,20 @@ grep "FROM golang" Dockerfile
 - **Go 1.24 Toolchain**: https://go.dev/dl/#go1.24.7
 - **Go 1.25 Release Notes**: https://go.dev/doc/go1.25
 - **Docker Go Images**: https://hub.docker.com/_/golang
-- **Planton Cloud Infrastructure**: `planton-cloud/backend/services/stack-job-runner/`
+- **Planton Infrastructure**: `planton-cloud/backend/services/stack-job-runner/`
 
 ## Conclusion
 
 This fix establishes a stable Go version configuration that:
 - ✅ Aligns with dependency requirements (`project-planton`)
-- ✅ Matches Planton Cloud infrastructure standards (`stack-job-runner`)
+- ✅ Matches Planton infrastructure standards (`stack-job-runner`)
 - ✅ Uses production-tested versions (Go 1.25)
 - ✅ Prevents version drift during `go mod tidy`
 - ✅ Provides clear documentation for developers
 
 By embracing the dependency chain requirements and aligning with infrastructure standards, we've created a sustainable solution that won't require future revisions.
 
-The go.mod file now correctly reflects the minimum Go version requirement imposed by dependencies, while Docker builds use the production-standard Go 1.25, ensuring consistency across the entire Planton Cloud ecosystem.
+The go.mod file now correctly reflects the minimum Go version requirement imposed by dependencies, while Docker builds use the production-standard Go 1.25, ensuring consistency across the entire Planton ecosystem.
 
 ---
 
@@ -478,7 +478,7 @@ The go.mod file now correctly reflects the minimum Go version requirement impose
 **Next Steps**: 
 - Verify Docker build succeeds
 - Monitor for any version drift in future dependency updates
-- Periodic alignment review with Planton Cloud infrastructure
+- Periodic alignment review with Planton infrastructure
 
 
 

@@ -12,7 +12,7 @@ The MCP server currently has **18 tools** across 5 subdomains:
 - `organization` (1 tool) — list only
 - `environment` (1 tool) — list only
 
-This plan expands the server to **~55+ tools** across the full Planton Cloud product surface.
+This plan expands the server to **~55+ tools** across the full Planton product surface.
 
 ## Decision: Credentials Excluded
 

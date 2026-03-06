@@ -19,7 +19,7 @@ spec:
           PLANTON_MCP_TRANSPORT: http
           PLANTON_MCP_HTTP_PORT: "8080"
           PLANTON_MCP_HTTP_AUTH_ENABLED: "true"
-          PLANTON_CLOUD_ENVIRONMENT: live
+          PLANTON_ENVIRONMENT: live
       resources:
         limits:
           cpu: 500m

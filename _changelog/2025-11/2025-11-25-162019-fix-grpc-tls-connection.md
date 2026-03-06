@@ -4,16 +4,16 @@
 
 ## Summary
 
-Fixed a critical bug in the MCP server where gRPC clients were hardcoded to use insecure transport credentials for all connections, causing failures when connecting to production endpoints on port 443 (`api.live.planton.cloud:443`). The fix implements port-based TLS detection matching the pattern used across other Planton Cloud clients (Java, Python, CLI).
+Fixed a critical bug in the MCP server where gRPC clients were hardcoded to use insecure transport credentials for all connections, causing failures when connecting to production endpoints on port 443 (`api.live.planton.cloud:443`). The fix implements port-based TLS detection matching the pattern used across other Planton clients (Java, Python, CLI).
 
 ## Problem Statement
 
-The MCP server's gRPC clients were failing to connect to production Planton Cloud APIs with the error:
+The MCP server's gRPC clients were failing to connect to production Planton APIs with the error:
 
 ```json
 {
   "error": "UNAVAILABLE",
-  "message": "Planton Cloud APIs are currently unavailable. Please try again in a moment.",
+  "message": "Planton APIs are currently unavailable. Please try again in a moment.",
   "org_id": "acme-corp"
 }
 ```
@@ -33,7 +33,7 @@ This configuration works for local development endpoints (e.g., `localhost:8080`
 
 ### Pain Points
 
-- MCP server could not connect to production Planton Cloud APIs
+- MCP server could not connect to production Planton APIs
 - Error message was misleading - suggested the APIs were down when actually it was a client TLS configuration issue
 - Pattern inconsistency - Java, Python, and CLI clients all properly detected port 443 and used TLS
 
@@ -41,7 +41,7 @@ This configuration works for local development endpoints (e.g., `localhost:8080`
 
 Implement port-based TLS detection in all gRPC client constructors. When the endpoint ends with `:443`, use TLS credentials; otherwise, use insecure credentials for local development.
 
-This matches the established pattern across Planton Cloud client implementations:
+This matches the established pattern across Planton client implementations:
 
 **Java** (DownstreamServicesChannelInitializer):
 ```java
@@ -131,7 +131,7 @@ func NewCloudResourceQueryClient(grpcEndpoint, apiKey string) (*CloudResourceQue
 
 ## Benefits
 
-- ✅ MCP server can now connect to production Planton Cloud APIs
+- ✅ MCP server can now connect to production Planton APIs
 - ✅ Maintains compatibility with local development endpoints
 - ✅ Pattern consistency across all client implementations (Java, Python, Go)
 - ✅ Clear logging indicates which transport mode is being used
@@ -141,7 +141,7 @@ func NewCloudResourceQueryClient(grpcEndpoint, apiKey string) (*CloudResourceQue
 
 ### Before
 - MCP tools failed with "UNAVAILABLE" error when configured with `api.live.planton.cloud:443`
-- Users couldn't use MCP server against production Planton Cloud environments
+- Users couldn't use MCP server against production Planton environments
 - Debugging was difficult due to misleading error message
 
 ### After

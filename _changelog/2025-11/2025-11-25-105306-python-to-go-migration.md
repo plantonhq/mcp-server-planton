@@ -4,7 +4,7 @@
 
 ## Summary
 
-The Planton Cloud MCP Server has been completely rewritten from Python to Go, maintaining 100% functional parity while achieving better performance, easier distribution, and stronger alignment with the Planton Cloud technology stack. This migration adopts GitHub's proven distribution approach with both pre-built binaries (via GoReleaser) and Docker images (via GHCR), providing users with flexible installation options while maintaining the same configuration and API contracts.
+The Planton MCP Server has been completely rewritten from Python to Go, maintaining 100% functional parity while achieving better performance, easier distribution, and stronger alignment with the Planton technology stack. This migration adopts GitHub's proven distribution approach with both pre-built binaries (via GoReleaser) and Docker images (via GHCR), providing users with flexible installation options while maintaining the same configuration and API contracts.
 
 ## Problem Statement
 
@@ -12,7 +12,7 @@ The initial Python implementation of the MCP server worked well functionally but
 
 ### Pain Points
 
-- **Team Skill Mismatch**: Planton Cloud is primarily a Go codebase with deep Go expertise on the team, but limited Python experience. This created maintenance friction and slowed iteration.
+- **Team Skill Mismatch**: Planton is primarily a Go codebase with deep Go expertise on the team, but limited Python experience. This created maintenance friction and slowed iteration.
 
 - **Distribution Complexity**: Python packaging (PyPI, Poetry, pip) required users to manage Python environments, virtual environments, and dependencies. This added friction to adoption, especially for users primarily working with containerized or binary-based tooling.
 
@@ -20,7 +20,7 @@ The initial Python implementation of the MCP server worked well functionally but
 
 - **Performance Overhead**: While not critical for current workloads, Python's GIL and interpreter overhead presented scalability limitations for future features requiring concurrent gRPC calls or local caching.
 
-- **gRPC Integration**: Python's gRPC support is adequate but requires generated stubs and async handling patterns that differ from the native patterns already used across Planton Cloud services.
+- **gRPC Integration**: Python's gRPC support is adequate but requires generated stubs and async handling patterns that differ from the native patterns already used across Planton services.
 
 - **Lack of Industry Examples**: When researching MCP server distribution patterns, GitHub's official MCP server (written in Go with dual distribution via binaries and Docker) provided a proven reference that Python implementations couldn't match.
 
@@ -31,7 +31,7 @@ Migrate the entire MCP server implementation to Go while maintaining 100% functi
 ### Key Design Decisions
 
 **Language Choice**: Go was selected for:
-- Native alignment with Planton Cloud's existing codebase and team expertise
+- Native alignment with Planton's existing codebase and team expertise
 - Superior gRPC support with existing Buf-generated API stubs
 - Static binary compilation eliminating runtime dependencies
 - Excellent concurrency model for future scalability
@@ -79,7 +79,7 @@ Migrate the entire MCP server implementation to Go while maintaining 100% functi
                                  │
                                  ▼
                     ┌────────────────────────┐
-                    │  Planton Cloud APIs    │
+                    │  Planton APIs    │
                     │  (gRPC)                │
                     └────────────────────────┘
 ```
@@ -356,7 +356,7 @@ jobs:
 
 ### Dependency Management
 
-Updated `go.mod` to use Planton Cloud's API module:
+Updated `go.mod` to use Planton's API module:
 
 ```go
 module github.com/plantoncloud/mcp-server-planton
@@ -382,7 +382,7 @@ replace github.com/plantoncloud-inc/planton-cloud/apis => ../planton-cloud/apis
 ### For Developers
 
 **Simplified Maintenance**:
-- Single language (Go) across entire Planton Cloud stack
+- Single language (Go) across entire Planton stack
 - Familiar patterns and idioms for the team
 - Faster iteration cycles due to team expertise
 
@@ -437,7 +437,7 @@ go install github.com/plantoncloud/mcp-server-planton/cmd/mcp-server-planton@lat
 
 **Better Observability**:
 - Standard Go logging and metrics patterns
-- Native integration with Planton Cloud's observability stack
+- Native integration with Planton's observability stack
 - Consistent error handling across all Go services
 
 ## Impact
@@ -504,7 +504,7 @@ go install github.com/plantoncloud/mcp-server-planton/cmd/mcp-server-planton@lat
 ```json
 {
   "mcp_servers": {
-    "planton-cloud": {
+    "planton": {
       "command": "mcp-server-planton",
       "env": {
         "USER_JWT_TOKEN": "${USER_JWT_TOKEN}",
@@ -520,7 +520,7 @@ Or switch to Docker:
 ```json
 {
   "mcp_servers": {
-    "planton-cloud": {
+    "planton": {
       "command": "docker",
       "args": [
         "run", "-i", "--rm",
@@ -634,9 +634,9 @@ This migration follows the patterns established by [GitHub's official MCP server
 - Multi-platform support with automated releases
 - Stdio transport for LangGraph/Claude Desktop integration
 
-### Planton Cloud Architecture
+### Planton Architecture
 
-Aligns with broader Planton Cloud patterns:
+Aligns with broader Planton patterns:
 - Go as primary language for all backend services
 - Buf for protobuf/gRPC code generation
 - GitHub Container Registry for Docker images
@@ -644,7 +644,7 @@ Aligns with broader Planton Cloud patterns:
 
 ### Future MCP Servers
 
-This implementation serves as a template for future Planton Cloud MCP servers:
+This implementation serves as a template for future Planton MCP servers:
 - Organization query server
 - Cloud resource mutation server
 - Infrastructure pipeline server

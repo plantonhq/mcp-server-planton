@@ -50,7 +50,7 @@ type Config struct {
 //
 //	PLANTON_API_KEY               – API key (required for stdio/both)
 //	PLANTON_APIS_GRPC_ENDPOINT    – gRPC address override
-//	PLANTON_CLOUD_ENVIRONMENT     – "live" | "test" | "local" (default "live")
+//	PLANTON_ENVIRONMENT     – "live" | "test" | "local" (default "live")
 //	PLANTON_MCP_TRANSPORT         – "stdio" | "http" | "both" (default "stdio")
 //	PLANTON_MCP_HTTP_PORT         – HTTP listen port (default "8080")
 //	PLANTON_MCP_HTTP_AUTH_ENABLED – "true" | "false" (default "true")

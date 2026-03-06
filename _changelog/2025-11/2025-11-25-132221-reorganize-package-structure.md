@@ -6,7 +6,7 @@
 
 ## Summary
 
-Reorganized the mcp-server-planton Go codebase from a flat, generic structure into domain-aligned packages that mirror Planton Cloud's API architecture (InfraHub and ResourceManager). The new structure follows Go best practices, eliminates redundant naming, and creates clear separation of concerns between gRPC clients and MCP tool implementations.
+Reorganized the mcp-server-planton Go codebase from a flat, generic structure into domain-aligned packages that mirror Planton's API architecture (InfraHub and ResourceManager). The new structure follows Go best practices, eliminates redundant naming, and creates clear separation of concerns between gRPC clients and MCP tool implementations.
 
 This refactoring transforms the codebase from a proof-of-concept layout into a production-ready, professionally organized structure suitable for a public open-source repository.
 
@@ -41,7 +41,7 @@ internal/
 
 4. **Not Scalable**: Adding new domains (e.g., AI Agents, Projects) would continue to clutter the flat structure
 
-5. **Unprofessional for Public Repo**: The organization didn't reflect the careful architectural thinking behind the Planton Cloud API design
+5. **Unprofessional for Public Repo**: The organization didn't reflect the careful architectural thinking behind the Planton API design
 
 6. **Violates Go Conventions**: Standard Go projects organize by domain/function, not by technology layer alone
 
@@ -74,7 +74,7 @@ internal/
 
 ### Design Principles
 
-1. **Domain Alignment**: Packages mirror Planton Cloud API domains
+1. **Domain Alignment**: Packages mirror Planton API domains
    - `infrahub/` - Cloud resource management (CloudResourceQueryController, CloudResourceSearchController)
    - `resourcemanager/` - Environments, organizations, projects (EnvironmentQueryController)
    - `common/` - Shared utilities used across domains
@@ -201,7 +201,7 @@ package resourcemanager
 
 import "github.com/plantoncloud/mcp-server-planton/internal/common/auth"
 
-// EnvironmentClient is a gRPC client for querying Planton Cloud Environment resources.
+// EnvironmentClient is a gRPC client for querying Planton Environment resources.
 type EnvironmentClient struct { /* ... */ }
 
 // NewEnvironmentClient creates a new Environment gRPC client.
@@ -462,7 +462,7 @@ Structure matches plan exactly. ✅
 ## Related Work
 
 This refactoring follows the architectural patterns established in:
-- Planton Cloud monorepo organization (InfraHub vs ResourceManager domains)
+- Planton monorepo organization (InfraHub vs ResourceManager domains)
 - Project Planton API structure (domain-aligned protobuf packages)
 - Previous changelog: [Migrate to Buf Published Modules](./2025-11-25-130536-migrate-to-buf-published-modules.md) - Established clean import patterns
 

@@ -9,7 +9,7 @@
 
 ## Context
 
-The Connect domain in Planton Cloud manages credentials for 20+ third-party providers (AWS, GCP, Azure, GitHub, etc.) and platform connection resources (DefaultProviderConnection, DefaultRunnerBinding, RunnerRegistration). The MCP server currently has zero Connect domain tools. Adding this domain raises a fundamental architecture question: should each credential type get its own dedicated tools, or should a single set of generic tools handle all types through a discriminator?
+The Connect domain in Planton manages credentials for 20+ third-party providers (AWS, GCP, Azure, GitHub, etc.) and platform connection resources (DefaultProviderConnection, DefaultRunnerBinding, RunnerRegistration). The MCP server currently has zero Connect domain tools. Adding this domain raises a fundamental architecture question: should each credential type get its own dedicated tools, or should a single set of generic tools handle all types through a discriminator?
 
 ### Prior Art in This Codebase
 

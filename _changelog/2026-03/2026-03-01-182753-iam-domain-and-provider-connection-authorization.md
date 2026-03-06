@@ -8,7 +8,7 @@ Implemented the entire IAM bounded context (20 MCP tools across 5 sub-packages) 
 
 ## Problem Statement
 
-The MCP server had zero coverage of the IAM domain — one of the most critical areas of the Planton Cloud platform. An AI agent could create organizations, deploy infrastructure, and manage credentials, but could not:
+The MCP server had zero coverage of the IAM domain — one of the most critical areas of the Planton platform. An AI agent could create organizations, deploy infrastructure, and manage credentials, but could not:
 
 - Look up who it was authenticated as
 - Invite users to an organization

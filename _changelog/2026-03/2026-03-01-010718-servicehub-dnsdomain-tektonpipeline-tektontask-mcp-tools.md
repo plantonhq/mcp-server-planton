@@ -8,7 +8,7 @@ Added 9 MCP tools across three ServiceHub entities — DnsDomain, TektonPipeline
 
 ## Problem Statement
 
-AI agents managing Planton Cloud services needed tooling for three remaining ServiceHub entities to complete the domain surface:
+AI agents managing Planton services needed tooling for three remaining ServiceHub entities to complete the domain surface:
 
 ### Pain Points
 
