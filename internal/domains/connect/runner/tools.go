@@ -136,6 +136,83 @@ func DeleteHandler(serverAddress string) func(context.Context, *mcp.CallToolRequ
 }
 
 // ---------------------------------------------------------------------------
+// generate_runner_credentials
+// ---------------------------------------------------------------------------
+
+type GenerateCredentialsInput struct {
+	ID string `json:"id" jsonschema:"required,RunnerRegistration ID to generate credentials for."`
+}
+
+func GenerateCredentialsTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "generate_runner_credentials",
+		Description: "Generate initial authentication credentials for a runner registration. " +
+			"SECURITY WARNING: The response contains sensitive cryptographic material including " +
+			"private keys, certificates, and API keys. Handle the output with extreme care.",
+	}
+}
+
+func GenerateCredentialsHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *GenerateCredentialsInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *GenerateCredentialsInput) (*mcp.CallToolResult, any, error) {
+		if input.ID == "" {
+			return nil, nil, fmt.Errorf("'id' is required")
+		}
+		text, err := domains.WithConnection(ctx, serverAddress,
+			func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
+				client := runnerregistrationv1.NewRunnerRegistrationCommandControllerClient(conn)
+				resp, err := client.GenerateCredentials(ctx, &apiresource.ApiResourceId{Value: input.ID})
+				if err != nil {
+					return "", domains.RPCError(err, fmt.Sprintf("credentials for runner registration %q", input.ID))
+				}
+				return domains.MarshalJSON(resp)
+			})
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// regenerate_runner_credentials
+// ---------------------------------------------------------------------------
+
+type RegenerateCredentialsInput struct {
+	ID string `json:"id" jsonschema:"required,RunnerRegistration ID to regenerate credentials for."`
+}
+
+func RegenerateCredentialsTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "regenerate_runner_credentials",
+		Description: "Rotate and regenerate authentication credentials for a runner registration. " +
+			"This invalidates the previous credentials. The runner must be reconfigured with the new credentials. " +
+			"SECURITY WARNING: The response contains sensitive cryptographic material including " +
+			"private keys, certificates, and API keys. Handle the output with extreme care.",
+	}
+}
+
+func RegenerateCredentialsHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *RegenerateCredentialsInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *RegenerateCredentialsInput) (*mcp.CallToolResult, any, error) {
+		if input.ID == "" {
+			return nil, nil, fmt.Errorf("'id' is required")
+		}
+		text, err := domains.WithConnection(ctx, serverAddress,
+			func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
+				client := runnerregistrationv1.NewRunnerRegistrationCommandControllerClient(conn)
+				resp, err := client.RegenerateCredentials(ctx, &apiresource.ApiResourceId{Value: input.ID})
+				if err != nil {
+					return "", domains.RPCError(err, fmt.Sprintf("credentials for runner registration %q", input.ID))
+				}
+				return domains.MarshalJSON(resp)
+			})
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
 // search_runner_registrations
 // ---------------------------------------------------------------------------
 

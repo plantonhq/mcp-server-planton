@@ -131,17 +131,76 @@ func GetHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest
 }
 
 // ---------------------------------------------------------------------------
+// sync_provider_connection_authorization
+// ---------------------------------------------------------------------------
+
+type SyncInput struct {
+	Org        string `json:"org" jsonschema:"required,Organization ID."`
+	Provider   string `json:"provider" jsonschema:"required,Cloud provider (e.g. 'aws', 'gcp', 'azure')."`
+	Connection string `json:"connection" jsonschema:"required,Connection slug within the organization."`
+}
+
+func SyncTool() *mcp.Tool {
+	return &mcp.Tool{
+		Name: "sync_provider_connection_authorization",
+		Description: "Reconcile the authorization state for a provider connection. " +
+			"Ensures the authorization matches the desired state based on the connection's " +
+			"current configuration. Identified by the semantic key (org + provider + connection).",
+	}
+}
+
+func SyncHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *SyncInput) (*mcp.CallToolResult, any, error) {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, input *SyncInput) (*mcp.CallToolResult, any, error) {
+		if input.Org == "" {
+			return nil, nil, fmt.Errorf("'org' is required")
+		}
+		if input.Provider == "" {
+			return nil, nil, fmt.Errorf("'provider' is required")
+		}
+		if input.Connection == "" {
+			return nil, nil, fmt.Errorf("'connection' is required")
+		}
+		providerEnum, resolveErr := domains.ResolveProvider(input.Provider)
+		if resolveErr != nil {
+			return nil, nil, resolveErr
+		}
+		text, err := domains.WithConnection(ctx, serverAddress,
+			func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
+				client := pcav1.NewProviderConnectionAuthorizationCommandControllerClient(conn)
+				resp, err := client.Sync(ctx, &pcav1.ProviderConnectionAuthorizationSyncRequest{
+					Org:        input.Org,
+					Provider:   providerEnum,
+					Connection: input.Connection,
+				})
+				if err != nil {
+					return "", domains.RPCError(err,
+						fmt.Sprintf("sync authorization for %s/%s in org %q", input.Provider, input.Connection, input.Org))
+				}
+				return domains.MarshalJSON(resp)
+			})
+		if err != nil {
+			return nil, nil, err
+		}
+		return domains.TextResult(text)
+	}
+}
+
+// ---------------------------------------------------------------------------
 // delete_provider_connection_authorization
 // ---------------------------------------------------------------------------
 
 type DeleteInput struct {
-	ID string `json:"id" jsonschema:"required,Authorization ID to delete."`
+	ID         string `json:"id,omitempty"         jsonschema:"Authorization ID. Provide this OR the semantic key fields (org + provider + connection), not both."`
+	Org        string `json:"org,omitempty"        jsonschema:"Organization ID (for semantic key deletion)."`
+	Provider   string `json:"provider,omitempty"   jsonschema:"Cloud provider (e.g. 'aws', 'gcp') (for semantic key deletion)."`
+	Connection string `json:"connection,omitempty" jsonschema:"Connection slug (for semantic key deletion)."`
 }
 
 func DeleteTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name: "delete_provider_connection_authorization",
-		Description: "Delete a provider connection authorization by ID. " +
+		Description: "Delete a provider connection authorization by ID or by semantic key (org + provider + connection). " +
+			"Provide either 'id' alone, or all three of 'org', 'provider', and 'connection'. " +
 			"After deletion, the credential will no longer be usable in any environment " +
 			"unless a new authorization is created.",
 	}
@@ -149,18 +208,48 @@ func DeleteTool() *mcp.Tool {
 
 func DeleteHandler(serverAddress string) func(context.Context, *mcp.CallToolRequest, *DeleteInput) (*mcp.CallToolResult, any, error) {
 	return func(ctx context.Context, _ *mcp.CallToolRequest, input *DeleteInput) (*mcp.CallToolResult, any, error) {
-		if input.ID == "" {
-			return nil, nil, fmt.Errorf("'id' is required")
+		hasID := input.ID != ""
+		hasSemantic := input.Org != "" || input.Provider != "" || input.Connection != ""
+		if hasID == hasSemantic {
+			return nil, nil, fmt.Errorf("provide either 'id' alone, or all three of 'org', 'provider', and 'connection'")
 		}
-		text, err := domains.WithConnection(ctx, serverAddress,
-			func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
-				client := pcav1.NewProviderConnectionAuthorizationCommandControllerClient(conn)
-				resp, err := client.Delete(ctx, &apiresource.ApiResourceId{Value: input.ID})
-				if err != nil {
-					return "", domains.RPCError(err, fmt.Sprintf("provider connection authorization %q", input.ID))
-				}
-				return domains.MarshalJSON(resp)
-			})
+
+		var text string
+		var err error
+
+		if hasID {
+			text, err = domains.WithConnection(ctx, serverAddress,
+				func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
+					client := pcav1.NewProviderConnectionAuthorizationCommandControllerClient(conn)
+					resp, err := client.Delete(ctx, &apiresource.ApiResourceId{Value: input.ID})
+					if err != nil {
+						return "", domains.RPCError(err, fmt.Sprintf("provider connection authorization %q", input.ID))
+					}
+					return domains.MarshalJSON(resp)
+				})
+		} else {
+			if input.Org == "" || input.Provider == "" || input.Connection == "" {
+				return nil, nil, fmt.Errorf("all three of 'org', 'provider', and 'connection' are required for semantic key deletion")
+			}
+			providerEnum, resolveErr := domains.ResolveProvider(input.Provider)
+			if resolveErr != nil {
+				return nil, nil, resolveErr
+			}
+			text, err = domains.WithConnection(ctx, serverAddress,
+				func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
+					client := pcav1.NewProviderConnectionAuthorizationCommandControllerClient(conn)
+					resp, err := client.DeleteBySemanticKey(ctx, &pcav1.DeleteBySemanticKeyRequest{
+						Org:        input.Org,
+						Provider:   providerEnum,
+						Connection: input.Connection,
+					})
+					if err != nil {
+						return "", domains.RPCError(err,
+							fmt.Sprintf("provider connection authorization for %s/%s in org %q", input.Provider, input.Connection, input.Org))
+					}
+					return domains.MarshalJSON(resp)
+				})
+		}
 		if err != nil {
 			return nil, nil, err
 		}

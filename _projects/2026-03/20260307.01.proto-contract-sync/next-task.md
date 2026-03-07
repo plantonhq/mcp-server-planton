@@ -109,24 +109,69 @@ _projects/2026-03/20260307.01.proto-contract-sync/design-decisions/
 ## Current Status
 
 **Created**: 2026-03-07 19:45
-**Last Updated**: 2026-03-08 00:17
+**Last Updated**: 2026-03-08
 
 **Current step:**
 - ✅ **Phase 1: Fix the Build** — T01 Credential-to-Connection Migration (2026-03-07)
   - Build is green, all 20 connection types callable, schemas migrated, redaction removed
-- 🔵 Next: **Phase 2: Enrich Existing Connect Tools** (T02.1–T02.5) or choose from other objectives
+- ✅ **Phase 2: Enrich Existing Connect Tools** — T02.1–T02.4 (2026-03-08)
+  - 9 new tools + 1 enhanced tool + 1 bug fix across 4 connect sub-packages
+  - T02.5 (provider-specific controllers) deferred — needs design decision on OAuth scope
+- 🔵 Next: **T02.5** or choose from Phase 3/4/5
+
+---
+
+### ✅ COMPLETED: Phase 2 — Enrich Existing Connect Tools (2026-03-08)
+
+**What was delivered:**
+
+1. **Bug fix: defaultprovider ResolveHandler** — Provider field was collected from user but never passed to gRPC call (sent UNSPECIFIED). Now correctly resolves and passes the provider enum.
+
+2. **T02.1: defaultprovider — 4 new tools** (4→8 tools)
+   - `get_org_default_provider_connection` — explicit org-level lookup (no fallback)
+   - `get_env_default_provider_connection` — explicit env-level lookup (no fallback)
+   - `delete_org_default_provider_connection` — delete org-level default by org+provider
+   - `delete_env_default_provider_connection` — delete env-level default by org+provider+env
+
+3. **T02.2: runner — 2 new tools** (4→6 tools)
+   - `generate_runner_credentials` — generate initial auth credentials (sensitive output warning)
+   - `regenerate_runner_credentials` — rotate/regenerate auth credentials (sensitive output warning)
+
+4. **T02.4: providerauth — 1 new tool + 1 enhanced tool** (3→4 tools)
+   - `sync_provider_connection_authorization` — reconcile authorization state by semantic key
+   - Enhanced `delete_provider_connection_authorization` — now accepts ID or semantic key (org+provider+connection), mirroring how Get already works
+
+5. **T02.3: defaultrunner — 2 new tools + ApiResourceKind resolver** (4→6 tools)
+   - `get_default_runner_binding_by_selector` — lookup by resource selector (kind+ID)
+   - `delete_default_runner_binding_by_selector` — delete by resource selector (kind+ID)
+   - Added `ResolveApiResourceKind` to shared domains package
+
+6. **Build verification** — `go build ./...` and `go vet ./...` pass cleanly
+
+**Key Design Decisions:**
+- Separate tools for org-level vs env-level operations (not overloaded into existing Get/Delete)
+- Enhanced providerauth Delete to support semantic key (instead of a new 50-char tool name)
+- `Find` methods explicitly skipped — proto docs say "restricted to platform operators only"
+- `Create`/`Update` methods skipped — already covered by `Apply`
+- T02.5 deferred — OAuth callback handlers are browser redirect endpoints, not agent-callable
+
+**Files Changed:**
+- `internal/domains/connect/defaultprovider/` — tools.go (bug fix + 4 new tools), register.go, doc.go
+- `internal/domains/connect/runner/` — tools.go (2 new tools), register.go, doc.go
+- `internal/domains/connect/providerauth/` — tools.go (1 new tool + enhanced delete), register.go, doc.go
+- `internal/domains/connect/defaultrunner/` — tools.go (2 new tools), register.go, doc.go
+- `internal/domains/kind.go` — Added `ResolveApiResourceKind` and `apiResourceKindResolver`
 
 ---
 
 ## Objectives for Next Conversations
 
-### Option A (Recommended): Phase 2 — Enrich Existing Connect Tools
-Quick wins — expose new gRPC methods that already exist but aren't wired as MCP tools:
-- T02.1: `connect/defaultprovider` — GetOrgDefault, GetEnvDefault, DeleteOrgDefault, DeleteEnvDefault
-- T02.2: `connect/runner` — GenerateCredentials, RegenerateCredentials
-- T02.3: `connect/defaultrunner` — GetBySelector, DeleteBySelector
-- T02.4: `connect/providerauth` — Sync, DeleteBySemanticKey, Find
-- T02.5: Provider-specific controllers (AWS CloudFormation, GCP OAuth, Azure OAuth)
+### Option A: T02.5 — Provider-Specific Controllers (Pending Decision)
+Wire CloudFormation setup + OAuth initiation tools:
+- `initiate_aws_cloudformation_setup` + `get_aws_cloudformation_setup_status` (2 tools, new package)
+- `initiate_gcp_oauth` (1 tool, new package)
+- `initiate_azure_oauth` (1 tool, new package)
+- Skip: OAuth callback handlers (browser redirect endpoints)
 
 ### Option B: Phase 3 — New Resources in Existing Domains
 Implement MCP tools for entirely new resources:
@@ -146,10 +191,10 @@ Low priority enrichments to configmanager, iam, etc.
 ## Quick Commands
 
 After loading context:
-- "Continue with Phase 2" - Start enriching connect tools
+- "Continue with T02.5" - Wire provider-specific controllers
+- "Start Phase 3" - Implement new resources
 - "Show project status" - Get overview of progress
 - "Create checkpoint" - Save current progress
-- "Review plan" - See full T01 plan details
 
 ---
 
