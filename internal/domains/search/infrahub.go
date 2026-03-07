@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	searchcloudresource "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/search/v1/infrahub/cloudresource"
 	searchinfrahub "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/search/v1/infrahub"
+	searchcloudresource "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/search/v1/infrahub/cloudresource"
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 )

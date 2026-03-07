@@ -38,7 +38,7 @@ func ListVirtualMachinesHandler(serverAddress string) func(context.Context, *mcp
 		text, err := domains.WithConnection(ctx, serverAddress,
 			func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
 				resp, err := azurecompute.NewVirtualMachineQueryControllerClient(conn).List(ctx, &azurecompute.ListVirtualMachinesRequest{
-					Context:      opsCtx,
+					Context:       opsCtx,
 					ResourceGroup: input.ResourceGroup,
 				})
 				if err != nil {
@@ -54,13 +54,13 @@ func ListVirtualMachinesHandler(serverAddress string) func(context.Context, *mcp
 }
 
 type listBlobContainersInput struct {
-	Org                 string `json:"org"                        jsonschema:"required,Organization slug."`
-	Env                 string `json:"env,omitempty"              jsonschema:"Environment slug. Required for cloud_resource access mode."`
-	CloudResourceKind   string `json:"cloud_resource_kind,omitempty" jsonschema:"Cloud resource kind (PascalCase). Use with cloud_resource_slug for cloud resource access mode."`
-	CloudResourceSlug string `json:"cloud_resource_slug,omitempty" jsonschema:"Cloud resource slug. Use with cloud_resource_kind for cloud resource access mode."`
-	Connection          string `json:"connection,omitempty"       jsonschema:"Provider connection slug for direct access. Mutually exclusive with cloud resource fields."`
-	StorageAccountName  string `json:"storage_account_name"      jsonschema:"required,Azure storage account name to list containers from."`
-	ResourceGroup       string `json:"resource_group,omitempty"  jsonschema:"Azure resource group containing the storage account. Optional."`
+	Org                string `json:"org"                        jsonschema:"required,Organization slug."`
+	Env                string `json:"env,omitempty"              jsonschema:"Environment slug. Required for cloud_resource access mode."`
+	CloudResourceKind  string `json:"cloud_resource_kind,omitempty" jsonschema:"Cloud resource kind (PascalCase). Use with cloud_resource_slug for cloud resource access mode."`
+	CloudResourceSlug  string `json:"cloud_resource_slug,omitempty" jsonschema:"Cloud resource slug. Use with cloud_resource_kind for cloud resource access mode."`
+	Connection         string `json:"connection,omitempty"       jsonschema:"Provider connection slug for direct access. Mutually exclusive with cloud resource fields."`
+	StorageAccountName string `json:"storage_account_name"      jsonschema:"required,Azure storage account name to list containers from."`
+	ResourceGroup      string `json:"resource_group,omitempty"  jsonschema:"Azure resource group containing the storage account. Optional."`
 }
 
 func ListBlobContainersTool() *mcp.Tool {
@@ -82,7 +82,7 @@ func ListBlobContainersHandler(serverAddress string) func(context.Context, *mcp.
 		text, err := domains.WithConnection(ctx, serverAddress,
 			func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
 				resp, err := azurestorage.NewBlobContainerQueryControllerClient(conn).List(ctx, &azurestorage.ListBlobContainersRequest{
-					Context:           opsCtx,
+					Context:            opsCtx,
 					StorageAccountName: input.StorageAccountName,
 					ResourceGroup:      input.ResourceGroup,
 				})

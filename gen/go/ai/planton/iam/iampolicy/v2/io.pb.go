@@ -1130,6 +1130,7 @@ func (x *ResourceAccessByRoleList) GetEntries() []*RoleAccess {
 // This is one entry in the ResourceAccessByRoleList - essentially one section in the access display.
 //
 // Use Cases:
+//
 //   - Organization settings → "Members by Role" view
 //     Shows "Admins", "Editors", "Viewers" sections, each with their members
 //
@@ -1389,6 +1390,7 @@ func (x *PrincipalResourceRoles) GetRoles() []*RoleInfo {
 // "Does principal X have relation Y on resource Z?"
 //
 // Use Cases:
+//
 //   - Pre-flight authorization checks before showing UI elements
 //     → "Should we show the 'Delete' button to this user?"
 //
@@ -2455,6 +2457,7 @@ func (x *ListAuthorizedPrincipalIdsInput) GetContextualPolicies() []*IamPolicySp
 // - To get display information (names, emails), fetch principal details using these IDs
 //
 // Relationship to listResourceAccessByPrincipal:
+//
 //   - listAuthorizedPrincipalIds: Returns simple ID list filtered by principal kind and relation
 //     → Fast, efficient, focused query: "Which users have admin access?"
 //     → Returns: ["ia-alice", "ia-bob"]

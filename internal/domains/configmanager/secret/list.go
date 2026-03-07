@@ -3,11 +3,11 @@ package secret
 import (
 	"context"
 
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	apiresource "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource"
 	"github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource/apiresourcekind"
 	"github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/rpc"
 	secretv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/configmanager/secret/v1"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 )
 

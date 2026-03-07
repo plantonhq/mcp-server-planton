@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	apiresource "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource"
 	promotionpolicyv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/resourcemanager/promotionpolicy/v1"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 )
 

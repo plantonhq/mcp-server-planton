@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	infrapipelinev1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/infrahub/infrapipeline/v1"
 	infraprojectv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/infrahub/infraproject/v1"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 )
 

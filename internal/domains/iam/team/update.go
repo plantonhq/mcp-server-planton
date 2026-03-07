@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	teamv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/iam/team/v1"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 )
 

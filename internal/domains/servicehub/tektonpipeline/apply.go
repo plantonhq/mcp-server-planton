@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	tektonpipelinev1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/servicehub/tektonpipeline/v1"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 )

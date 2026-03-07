@@ -12,8 +12,8 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource"
-	auth0connectionv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/connect/auth0providerconnection/v1"
 	atlasconnectionv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/connect/atlasproviderconnection/v1"
+	auth0connectionv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/connect/auth0providerconnection/v1"
 	awsconnectionv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/connect/awsproviderconnection/v1"
 	azureconnectionv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/connect/azureproviderconnection/v1"
 	civoconnectionv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/connect/civoproviderconnection/v1"
@@ -49,26 +49,26 @@ type connectionDispatcher struct {
 
 // dispatchers maps PascalCase connection kind to its dispatcher.
 var dispatchers = map[string]connectionDispatcher{
-	"Auth0ProviderConnection":               auth0Dispatcher(),
-	"AtlasProviderConnection":               atlasDispatcher(),
-	"AwsProviderConnection":                 awsDispatcher(),
-	"AzureProviderConnection":               azureDispatcher(),
-	"CivoProviderConnection":                civoDispatcher(),
-	"CloudflareProviderConnection":          cloudflareDispatcher(),
-	"CloudflareWorkerScriptsR2Connection":   cloudflareWorkerScriptsR2Dispatcher(),
-	"ConfluentProviderConnection":           confluentDispatcher(),
-	"ContainerRegistryConnection":           containerRegistryDispatcher(),
-	"DigitalOceanProviderConnection":        digitalOceanDispatcher(),
-	"GcpProviderConnection":                 gcpDispatcher(),
-	"GithubConnection":                      githubDispatcher(),
-	"GitlabConnection":                      gitlabDispatcher(),
-	"KubernetesProviderConnection":          kubernetesDispatcher(),
-	"MavenConnection":                       mavenDispatcher(),
-	"NpmConnection":                         npmDispatcher(),
-	"OpenFgaProviderConnection":             openFgaDispatcher(),
-	"PulumiBackendConnection":               pulumiBackendDispatcher(),
-	"SnowflakeProviderConnection":           snowflakeDispatcher(),
-	"TerraformBackendConnection":            terraformBackendDispatcher(),
+	"Auth0ProviderConnection":             auth0Dispatcher(),
+	"AtlasProviderConnection":             atlasDispatcher(),
+	"AwsProviderConnection":               awsDispatcher(),
+	"AzureProviderConnection":             azureDispatcher(),
+	"CivoProviderConnection":              civoDispatcher(),
+	"CloudflareProviderConnection":        cloudflareDispatcher(),
+	"CloudflareWorkerScriptsR2Connection": cloudflareWorkerScriptsR2Dispatcher(),
+	"ConfluentProviderConnection":         confluentDispatcher(),
+	"ContainerRegistryConnection":         containerRegistryDispatcher(),
+	"DigitalOceanProviderConnection":      digitalOceanDispatcher(),
+	"GcpProviderConnection":               gcpDispatcher(),
+	"GithubConnection":                    githubDispatcher(),
+	"GitlabConnection":                    gitlabDispatcher(),
+	"KubernetesProviderConnection":        kubernetesDispatcher(),
+	"MavenConnection":                     mavenDispatcher(),
+	"NpmConnection":                       npmDispatcher(),
+	"OpenFgaProviderConnection":           openFgaDispatcher(),
+	"PulumiBackendConnection":             pulumiBackendDispatcher(),
+	"SnowflakeProviderConnection":         snowflakeDispatcher(),
+	"TerraformBackendConnection":          terraformBackendDispatcher(),
 }
 
 // supportedKinds returns a comma-separated list of all registered connection

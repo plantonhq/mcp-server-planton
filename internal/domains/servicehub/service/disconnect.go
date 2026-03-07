@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	servicev1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/servicehub/service/v1"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 )
 

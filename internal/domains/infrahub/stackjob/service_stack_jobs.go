@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	stackjobv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/infrahub/stackjob/v1"
 	servicev1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/servicehub/service/v1"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 )
 

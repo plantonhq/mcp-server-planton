@@ -3,9 +3,9 @@ package infraproject
 import (
 	"context"
 
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	apiresource "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource"
 	infraprojectv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/infrahub/infraproject/v1"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 )
 

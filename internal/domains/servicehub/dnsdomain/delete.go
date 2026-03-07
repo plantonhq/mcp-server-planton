@@ -3,9 +3,9 @@ package dnsdomain
 import (
 	"context"
 
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	apiresource "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource"
 	dnsdomainv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/servicehub/dnsdomain/v1"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 )
 

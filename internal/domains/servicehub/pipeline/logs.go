@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	plantongrpc "github.com/plantonhq/mcp-server-planton/internal/grpc"
 	tekton "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/integration/tekton"
 	pipelinev1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/servicehub/pipeline/v1"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
+	plantongrpc "github.com/plantonhq/mcp-server-planton/internal/grpc"
 	"google.golang.org/grpc"
 )
 

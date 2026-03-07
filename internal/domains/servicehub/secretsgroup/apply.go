@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	secretsgroupv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/servicehub/secretsgroup/v1"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 )

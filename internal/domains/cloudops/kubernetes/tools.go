@@ -8,8 +8,8 @@ import (
 	"fmt"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	k8sobject "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/kubernetes/v1/object"
 	k8sns "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/kubernetes/v1/namespace"
+	k8sobject "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/kubernetes/v1/object"
 	k8spod "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/kubernetes/v1/pod"
 	k8ssecret "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/kubernetes/v1/secret"
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
@@ -27,10 +27,10 @@ type kubernetesContextInput struct {
 
 type GetKubernetesObjectInput struct {
 	kubernetesContextInput
-	Namespace string `json:"namespace" jsonschema:"required,Namespace of the object. Empty for cluster-scoped resources."`
+	Namespace  string `json:"namespace" jsonschema:"required,Namespace of the object. Empty for cluster-scoped resources."`
 	ApiVersion string `json:"api_version" jsonschema:"required,API version of the resource (e.g. apps/v1, v1)."`
-	Kind      string `json:"kind"       jsonschema:"required,Kind of the resource (e.g. Deployment, Service)."`
-	Name      string `json:"name"      jsonschema:"required,Name of the resource."`
+	Kind       string `json:"kind"       jsonschema:"required,Kind of the resource (e.g. Deployment, Service)."`
+	Name       string `json:"name"      jsonschema:"required,Name of the resource."`
 }
 
 func GetKubernetesObjectTool() *mcp.Tool {
@@ -59,11 +59,11 @@ func GetKubernetesObjectHandler(serverAddress string) func(context.Context, *mcp
 		text, err := domains.WithConnection(ctx, serverAddress,
 			func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
 				req := &k8sobject.GetKubernetesObjectRequest{
-					Context:   opsCtx,
-					Namespace: input.Namespace,
+					Context:    opsCtx,
+					Namespace:  input.Namespace,
 					ApiVersion: input.ApiVersion,
-					Kind:      input.Kind,
-					Name:      input.Name,
+					Kind:       input.Kind,
+					Name:       input.Name,
 				}
 				resp, err := k8sobject.NewKubernetesObjectQueryControllerClient(conn).Get(ctx, req)
 				if err != nil {
@@ -255,9 +255,9 @@ func GetKubernetesPodHandler(serverAddress string) func(context.Context, *mcp.Ca
 
 type LookupKubernetesSecretKeyValueInput struct {
 	kubernetesContextInput
-	Namespace   string `json:"namespace"    jsonschema:"required,Namespace of the secret."`
-	SecretName  string `json:"secret_name" jsonschema:"required,Name of the Kubernetes Secret resource."`
-	Key         string `json:"key"          jsonschema:"required,Key within the secret's data map to look up."`
+	Namespace  string `json:"namespace"    jsonschema:"required,Namespace of the secret."`
+	SecretName string `json:"secret_name" jsonschema:"required,Name of the Kubernetes Secret resource."`
+	Key        string `json:"key"          jsonschema:"required,Key within the secret's data map to look up."`
 }
 
 func LookupKubernetesSecretKeyValueTool() *mcp.Tool {
@@ -330,8 +330,8 @@ func UpdateKubernetesObjectHandler(serverAddress string) func(context.Context, *
 		text, err := domains.WithConnection(ctx, serverAddress,
 			func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
 				req := &k8sobject.UpdateKubernetesObjectRequest{
-					Context:   opsCtx,
-					Namespace: input.Namespace,
+					Context:    opsCtx,
+					Namespace:  input.Namespace,
 					YamlBase64: input.YamlBase64,
 				}
 				resp, err := k8sobject.NewKubernetesObjectCommandControllerClient(conn).Update(ctx, req)
@@ -381,11 +381,11 @@ func DeleteKubernetesObjectHandler(serverAddress string) func(context.Context, *
 		text, err := domains.WithConnection(ctx, serverAddress,
 			func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
 				req := &k8sobject.DeleteKubernetesObjectRequest{
-					Context:   opsCtx,
-					Namespace: input.Namespace,
+					Context:    opsCtx,
+					Namespace:  input.Namespace,
 					ApiVersion: input.ApiVersion,
-					Kind:      input.Kind,
-					Name:      input.Name,
+					Kind:       input.Kind,
+					Name:       input.Name,
 				}
 				resp, err := k8sobject.NewKubernetesObjectCommandControllerClient(conn).Delete(ctx, req)
 				if err != nil {

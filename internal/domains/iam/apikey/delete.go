@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	apikeyv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/iam/apikey/v1"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 )
 

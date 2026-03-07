@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	cloudresourcev1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/infrahub/cloudresource/v1"
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"github.com/plantonhq/openmcf/apis/org/openmcf/shared/cloudresourcekind"
-	cloudresourcev1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/infrahub/cloudresource/v1"
 	"google.golang.org/grpc"
 )
 

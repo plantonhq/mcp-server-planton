@@ -36,7 +36,7 @@ lint: ## Run golangci-lint (or go vet)
 		go vet ./...; \
 	fi
 
-check: lint build test ## Run full CI gate locally
+check: fmt lint build test ## Run full CI gate locally
 
 fmt: ## Format Go source files
 	go fmt ./...

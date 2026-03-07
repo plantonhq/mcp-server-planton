@@ -9,9 +9,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource"
 	defaultrunnerbindingv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/connect/defaultrunnerbinding/v1"
+	"github.com/plantonhq/mcp-server-planton/internal/domains"
 )
 
 // ---------------------------------------------------------------------------

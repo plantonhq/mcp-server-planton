@@ -6,12 +6,12 @@ import (
 	"context"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	awsec2 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/aws/v1/ec2"
-	awsvpc "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/aws/v1/vpc"
-	awssubnet "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/aws/v1/subnet"
-	awssg "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/aws/v1/securitygroup"
 	awsaz "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/aws/v1/availabilityzone"
+	awsec2 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/aws/v1/ec2"
 	awss3 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/aws/v1/s3"
+	awssg "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/aws/v1/securitygroup"
+	awssubnet "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/aws/v1/subnet"
+	awsvpc "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/cloudops/provider/aws/v1/vpc"
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	cloudopsctx "github.com/plantonhq/mcp-server-planton/internal/domains/cloudops"
 	"google.golang.org/grpc"
@@ -49,8 +49,8 @@ func ListEc2InstancesHandler(serverAddress string) func(context.Context, *mcp.Ca
 		text, err := domains.WithConnection(ctx, serverAddress,
 			func(ctx context.Context, conn *grpc.ClientConn) (string, error) {
 				resp, err := awsec2.NewEc2InstanceQueryControllerClient(conn).List(ctx, &awsec2.ListEc2InstancesRequest{
-					Context:    opsCtx,
-					Region:     input.Region,
+					Context:     opsCtx,
+					Region:      input.Region,
 					InstanceIds: input.InstanceIds,
 				})
 				if err != nil {
