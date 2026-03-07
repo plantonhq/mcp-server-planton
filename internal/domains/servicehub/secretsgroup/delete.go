@@ -3,9 +3,9 @@ package secretsgroup
 import (
 	"context"
 
+	apiresource "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource"
+	secretsgroupv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/servicehub/secretsgroup/v1"
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	apiresource "github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/apiresource"
-	secretsgroupv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/servicehub/secretsgroup/v1"
 	"google.golang.org/grpc"
 )
 

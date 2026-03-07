@@ -1,0 +1,19 @@
+{
+  "name": "OpenFgaProviderConnection",
+  "kind": "OpenFgaProviderConnection",
+  "provider": "openfga",
+  "apiVersion": "connect.planton.ai/v1",
+  "description": "OpenFGA authorization server connection supporting API token and OAuth2 client credentials authentication.",
+  "spec": {
+    "name": "OpenFgaProviderConnectionSpec",
+    "fields": [
+      {"name": "api_url", "type": "string", "description": "OpenFGA API base URL (e.g. 'https://api.us1.fga.dev').", "required": true},
+      {"name": "api_token", "type": "string", "description": "API token for token-based authentication. Mutually exclusive with client credentials.", "required": false, "sensitive": true},
+      {"name": "client_id", "type": "string", "description": "OAuth2 client ID for client credentials authentication.", "required": false},
+      {"name": "client_secret", "type": "string", "description": "OAuth2 client secret for client credentials authentication.", "required": false, "sensitive": true},
+      {"name": "api_token_issuer", "type": "string", "description": "Token issuer URL for client credentials flow.", "required": false},
+      {"name": "api_scopes", "type": "string", "description": "OAuth2 scopes (space-separated). Optional.", "required": false},
+      {"name": "api_audience", "type": "string", "description": "OAuth2 audience for the access token. Optional.", "required": false}
+    ]
+  }
+}

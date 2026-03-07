@@ -2,8 +2,9 @@
 // authorizations, which control which credentials can be used in which
 // environments.
 //
-// Three tools are exposed:
+// Four tools are exposed:
 //   - apply_provider_connection_authorization:    create or update via OpenMCF envelope
 //   - get_provider_connection_authorization:      dual-resolution by ID or semantic key
-//   - delete_provider_connection_authorization:   remove an authorization by ID
+//   - sync_provider_connection_authorization:     reconcile authorization state by semantic key
+//   - delete_provider_connection_authorization:   dual-resolution delete by ID or semantic key
 package providerauth

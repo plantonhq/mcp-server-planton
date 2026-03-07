@@ -3,8 +3,8 @@ package infraproject
 import (
 	"context"
 
+	infraprojectv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/infrahub/infraproject/v1"
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	infraprojectv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/infrahub/infraproject/v1"
 	"google.golang.org/grpc"
 )
 

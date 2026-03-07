@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	identityaccountv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/iam/identityaccount/v1"
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	identityaccountv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/iam/identityaccount/v1"
 	"google.golang.org/grpc"
 )
 

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/rpc"
+	servicehubsearch "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/search/v1/servicehub"
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	"github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/rpc"
-	servicehubsearch "github.com/plantonhq/planton/apis/stubs/go/ai/planton/search/v1/servicehub"
 	"google.golang.org/grpc"
 )
 

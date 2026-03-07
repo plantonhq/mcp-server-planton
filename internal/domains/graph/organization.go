@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	graphv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/graph/v1"
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	graphv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/graph/v1"
 	"google.golang.org/grpc"
 )
 

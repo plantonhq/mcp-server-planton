@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	apiresourceversionv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/audit/apiresourceversion/v1"
+	"github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource/apiresourcekind"
+	"github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/rpc"
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	apiresourceversionv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/audit/apiresourceversion/v1"
-	"github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/apiresource/apiresourcekind"
-	"github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/rpc"
 	"google.golang.org/grpc"
 )
 

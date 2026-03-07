@@ -14,10 +14,16 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/auth"
 	"github.com/plantonhq/mcp-server-planton/internal/config"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/audit"
+	cloudopsaws "github.com/plantonhq/mcp-server-planton/internal/domains/cloudops/aws"
+	cloudopsazure "github.com/plantonhq/mcp-server-planton/internal/domains/cloudops/azure"
+	cloudopsgcp "github.com/plantonhq/mcp-server-planton/internal/domains/cloudops/gcp"
+	cloudopskubernetes "github.com/plantonhq/mcp-server-planton/internal/domains/cloudops/kubernetes"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secret"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secretbackend"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secretversion"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/variable"
-	connectcredential "github.com/plantonhq/mcp-server-planton/internal/domains/connect/credential"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/variablegroup"
+	connectconnection "github.com/plantonhq/mcp-server-planton/internal/domains/connect/connection"
 	connectdefaultprovider "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultprovider"
 	connectdefaultrunner "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultrunner"
 	connectgithub "github.com/plantonhq/mcp-server-planton/internal/domains/connect/github"
@@ -29,11 +35,13 @@ import (
 	iamidentity "github.com/plantonhq/mcp-server-planton/internal/domains/iam/identity"
 	iampolicy "github.com/plantonhq/mcp-server-planton/internal/domains/iam/policy"
 	iamrole "github.com/plantonhq/mcp-server-planton/internal/domains/iam/role"
+	iamserviceaccount "github.com/plantonhq/mcp-server-planton/internal/domains/iam/serviceaccount"
 	iamteam "github.com/plantonhq/mcp-server-planton/internal/domains/iam/team"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/cloudresource"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/deploymentcomponent"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/flowcontrolpolicy"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/iacmodule"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/iacprovisionermapping"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infrachart"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infrapipeline"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/infraproject"
@@ -50,6 +58,8 @@ import (
 	servicehubtektonpipeline "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/tektonpipeline"
 	servicehubtektontask "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/tektontask"
 	servicehubvariablesgroup "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/variablesgroup"
+
+	"github.com/plantonhq/mcp-server-planton/internal/domains/search"
 )
 
 // Server wraps an mcp.Server with Planton-specific configuration.
@@ -92,7 +102,9 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	graph.Register(srv, serverAddress)
 	variable.Register(srv, serverAddress)
 	secret.Register(srv, serverAddress)
+	secretbackend.Register(srv, serverAddress)
 	secretversion.Register(srv, serverAddress)
+	variablegroup.Register(srv, serverAddress)
 	audit.Register(srv, serverAddress)
 	deploymentcomponent.Register(srv, serverAddress)
 	iacmodule.Register(srv, serverAddress)
@@ -103,7 +115,7 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	servicehubdnsdomain.Register(srv, serverAddress)
 	servicehubtektonpipeline.Register(srv, serverAddress)
 	servicehubtektontask.Register(srv, serverAddress)
-	connectcredential.Register(srv, serverAddress)
+	connectconnection.Register(srv, serverAddress)
 	connectgithub.Register(srv, serverAddress)
 	connectdefaultprovider.Register(srv, serverAddress)
 	connectdefaultrunner.Register(srv, serverAddress)
@@ -114,8 +126,15 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	iampolicy.Register(srv, serverAddress)
 	iamrole.Register(srv, serverAddress)
 	iamapikey.Register(srv, serverAddress)
+	iamserviceaccount.Register(srv, serverAddress)
 	promotionpolicy.Register(srv, serverAddress)
 	flowcontrolpolicy.Register(srv, serverAddress)
+	iacprovisionermapping.Register(srv, serverAddress)
+	search.Register(srv, serverAddress)
+	cloudopskubernetes.Register(srv, serverAddress)
+	cloudopsaws.Register(srv, serverAddress)
+	cloudopsgcp.Register(srv, serverAddress)
+	cloudopsazure.Register(srv, serverAddress)
 
 	slog.Info("tools registered")
 }
@@ -123,7 +142,7 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 // registerResources delegates MCP resource registration to domain packages.
 func registerResources(srv *mcp.Server) {
 	cloudresource.RegisterResources(srv)
-	connectcredential.RegisterResources(srv)
+	connectconnection.RegisterResources(srv)
 	discovery.RegisterResources(srv)
 
 	slog.Info("resources registered")

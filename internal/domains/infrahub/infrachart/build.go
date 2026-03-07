@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	apiresource "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource"
+	infrachartv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/infrahub/infrachart/v1"
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	apiresource "github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/apiresource"
-	infrachartv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/infrahub/infrachart/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/structpb"
 )

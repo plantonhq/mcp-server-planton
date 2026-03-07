@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	pipelinev1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/servicehub/pipeline/v1"
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	pipelinev1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/servicehub/pipeline/v1"
 	"google.golang.org/grpc"
 )
 

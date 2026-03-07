@@ -3,7 +3,7 @@ package cloudresource
 import (
 	"fmt"
 
-	apiresource "github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/apiresource"
+	apiresource "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource"
 )
 
 // extractMetadata maps the cloud_object["metadata"] sub-map to an
