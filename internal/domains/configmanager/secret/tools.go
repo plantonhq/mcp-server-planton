@@ -19,7 +19,7 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	secretv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/configmanager/secret/v1"
+	secretv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/configmanager/secret/v1"
 )
 
 // ---------------------------------------------------------------------------

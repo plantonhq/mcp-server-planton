@@ -17,7 +17,7 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secret"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secretversion"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/variable"
-	connectcredential "github.com/plantonhq/mcp-server-planton/internal/domains/connect/credential"
+	connectconnection "github.com/plantonhq/mcp-server-planton/internal/domains/connect/connection"
 	connectdefaultprovider "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultprovider"
 	connectdefaultrunner "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultrunner"
 	connectgithub "github.com/plantonhq/mcp-server-planton/internal/domains/connect/github"
@@ -103,7 +103,7 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	servicehubdnsdomain.Register(srv, serverAddress)
 	servicehubtektonpipeline.Register(srv, serverAddress)
 	servicehubtektontask.Register(srv, serverAddress)
-	connectcredential.Register(srv, serverAddress)
+	connectconnection.Register(srv, serverAddress)
 	connectgithub.Register(srv, serverAddress)
 	connectdefaultprovider.Register(srv, serverAddress)
 	connectdefaultrunner.Register(srv, serverAddress)
@@ -123,7 +123,7 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 // registerResources delegates MCP resource registration to domain packages.
 func registerResources(srv *mcp.Server) {
 	cloudresource.RegisterResources(srv)
-	connectcredential.RegisterResources(srv)
+	connectconnection.RegisterResources(srv)
 	discovery.RegisterResources(srv)
 
 	slog.Info("resources registered")

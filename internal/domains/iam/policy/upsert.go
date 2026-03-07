@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	iampolicyv2 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/iam/iampolicy/v2"
+	iampolicyv2 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/iam/iampolicy/v2"
 	"google.golang.org/grpc"
 )
 

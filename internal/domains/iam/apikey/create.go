@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	apiresource "github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/apiresource"
-	apikeyv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/iam/apikey/v1"
+	apiresource "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource"
+	apikeyv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/iam/apikey/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

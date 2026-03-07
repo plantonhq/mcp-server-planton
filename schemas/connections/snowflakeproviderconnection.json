@@ -1,0 +1,16 @@
+{
+  "name": "SnowflakeProviderConnection",
+  "kind": "SnowflakeProviderConnection",
+  "provider": "snowflake",
+  "apiVersion": "connect.planton.ai/v1",
+  "description": "Snowflake connection for managing databases, warehouses, and roles via Pulumi.",
+  "spec": {
+    "name": "SnowflakeProviderConnectionSpec",
+    "fields": [
+      {"name": "account", "type": "string", "description": "Snowflake account identifier.", "required": true},
+      {"name": "region", "type": "string", "description": "Snowflake region (e.g. 'us-west').", "required": false, "default": "us-west"},
+      {"name": "username", "type": "string", "description": "Snowflake username.", "required": true},
+      {"name": "password", "type": "string", "description": "Snowflake password.", "required": true, "sensitive": true}
+    ]
+  }
+}

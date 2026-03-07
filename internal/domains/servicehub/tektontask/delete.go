@@ -6,7 +6,7 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"google.golang.org/grpc"
 
-	tektontaskv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/servicehub/tektontask/v1"
+	tektontaskv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/servicehub/tektontask/v1"
 )
 
 // Delete removes a Tekton task template via the

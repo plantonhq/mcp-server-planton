@@ -6,7 +6,7 @@ import (
 
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	"github.com/plantonhq/openmcf/apis/org/openmcf/shared/cloudresourcekind"
-	infrahubsearch "github.com/plantonhq/planton/apis/stubs/go/ai/planton/search/v1/infrahub"
+	infrahubsearch "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/search/v1/infrahub"
 	"google.golang.org/grpc"
 )
 

@@ -10,9 +10,9 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	"github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/apiresource"
-	runnerregistrationv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/connect/runnerregistration/v1"
-	connectsearch "github.com/plantonhq/planton/apis/stubs/go/ai/planton/search/v1/connect"
+	"github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource"
+	runnerregistrationv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/connect/runnerregistration/v1"
+	connectsearch "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/search/v1/connect"
 )
 
 // ---------------------------------------------------------------------------

@@ -6,8 +6,8 @@ import (
 
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
 	plantongrpc "github.com/plantonhq/mcp-server-planton/internal/grpc"
-	infrapipelinev1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/infrahub/infrapipeline/v1"
-	tekton "github.com/plantonhq/planton/apis/stubs/go/ai/planton/integration/tekton"
+	infrapipelinev1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/infrahub/infrapipeline/v1"
+	tekton "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/integration/tekton"
 	"google.golang.org/grpc"
 )
 

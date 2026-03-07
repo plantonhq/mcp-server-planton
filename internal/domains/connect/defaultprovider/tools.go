@@ -10,8 +10,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	"github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/apiresource"
-	defaultproviderconnectionv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/connect/defaultproviderconnection/v1"
+	"github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource"
+	defaultproviderconnectionv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/connect/defaultproviderconnection/v1"
 )
 
 // ---------------------------------------------------------------------------

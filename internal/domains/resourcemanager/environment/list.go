@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	environmentv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/resourcemanager/environment/v1"
-	organizationv1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/resourcemanager/organization/v1"
+	environmentv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/resourcemanager/environment/v1"
+	organizationv1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/resourcemanager/organization/v1"
 	"google.golang.org/grpc"
 )
 

@@ -1,0 +1,14 @@
+{
+  "name": "AtlasProviderConnection",
+  "kind": "AtlasProviderConnection",
+  "provider": "mongodbatlas",
+  "apiVersion": "connect.planton.ai/v1",
+  "description": "MongoDB Atlas connection for infrastructure provisioning and management via Pulumi.",
+  "spec": {
+    "name": "AtlasProviderConnectionSpec",
+    "fields": [
+      {"name": "public_key", "type": "string", "description": "MongoDB Atlas public key for API authentication.", "required": true},
+      {"name": "private_key", "type": "string", "description": "MongoDB Atlas private key. Keep secure.", "required": true, "sensitive": true}
+    ]
+  }
+}

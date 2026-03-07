@@ -1,0 +1,14 @@
+{
+  "name": "ConfluentProviderConnection",
+  "kind": "ConfluentProviderConnection",
+  "provider": "confluent",
+  "apiVersion": "connect.planton.ai/v1",
+  "description": "Confluent Cloud connection for managing Kafka clusters and other Confluent resources.",
+  "spec": {
+    "name": "ConfluentProviderConnectionSpec",
+    "fields": [
+      {"name": "api_key", "type": "string", "description": "Confluent Cloud API key.", "required": true},
+      {"name": "api_secret", "type": "string", "description": "Confluent Cloud API secret.", "required": true, "sensitive": true}
+    ]
+  }
+}

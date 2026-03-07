@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/plantonhq/mcp-server-planton/internal/domains"
-	apiresource "github.com/plantonhq/planton/apis/stubs/go/ai/planton/commons/apiresource"
-	tektonpipelinev1 "github.com/plantonhq/planton/apis/stubs/go/ai/planton/servicehub/tektonpipeline/v1"
+	apiresource "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/commons/apiresource"
+	tektonpipelinev1 "github.com/plantonhq/mcp-server-planton/gen/go/ai/planton/servicehub/tektonpipeline/v1"
 	"google.golang.org/grpc"
 )
 

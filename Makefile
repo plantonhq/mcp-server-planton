@@ -1,6 +1,6 @@
 bump ?= patch
 
-.PHONY: build install test lint check fmt vet tidy docker-build docker-run clean release codegen-schemas codegen-types codegen help
+.PHONY: build install test lint check fmt vet tidy docker-build docker-run clean release protos codegen-schemas codegen-types codegen help
 
 BINARY  := mcp-server-planton
 CMD     := ./cmd/mcp-server-planton
@@ -49,6 +49,9 @@ tidy: ## Run go mod tidy
 
 # ─── Codegen ──────────────────────────────────
 
+protos: ## Generate Go protobuf + gRPC stubs from planton/apis
+	./tools/buf-generate-go.sh
+
 codegen-schemas: ## Stage 1: proto to JSON schemas
 	go run ./tools/codegen/proto2schema/ --all
 
@@ -56,7 +59,7 @@ codegen-types: ## Stage 2: JSON schemas to Go types
 	rm -rf gen/infrahub/cloudresource/
 	go run ./tools/codegen/generator/ --schemas-dir=schemas --output-dir=gen/infrahub/cloudresource
 
-codegen: codegen-schemas codegen-types ## Full codegen pipeline (Stage 1 + 2)
+codegen: protos codegen-schemas codegen-types ## Full codegen pipeline
 
 # ─── Docker ───────────────────────────────────
 

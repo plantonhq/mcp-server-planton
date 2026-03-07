@@ -1,0 +1,28 @@
+version: v2
+managed:
+  enabled: true
+  disable:
+    - file_option: go_package
+      module: google/protobuf/empty
+    - file_option: go_package
+      module: google/protobuf/timestamp
+    - file_option: go_package
+      module: buf.build/bufbuild/protovalidate
+  override:
+    - file_option: optimize_for
+      value: SPEED
+    - file_option: go_package_prefix
+      value: github.com/plantonhq/mcp-server-planton/gen/go
+    - file_option: go_package_prefix
+      value: github.com/plantonhq/openmcf/apis
+      module: buf.build/openmcf/openmcf
+plugins:
+  - remote: buf.build/protocolbuffers/go:v1.36.6
+    out: .buf-generated
+  - remote: buf.build/grpc/go:v1.5.1
+    out: .buf-generated
+    opt: require_unimplemented_servers=false
+inputs:
+  - git_repo: https://github.com/plantonhq/planton.git
+    branch: main
+    subdir: apis
