@@ -15,8 +15,10 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/config"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/audit"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secret"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secretbackend"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secretversion"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/variable"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/variablegroup"
 	connectconnection "github.com/plantonhq/mcp-server-planton/internal/domains/connect/connection"
 	connectdefaultprovider "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultprovider"
 	connectdefaultrunner "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultrunner"
@@ -27,10 +29,12 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/domains/graph"
 	iamapikey "github.com/plantonhq/mcp-server-planton/internal/domains/iam/apikey"
 	iamidentity "github.com/plantonhq/mcp-server-planton/internal/domains/iam/identity"
+	iamserviceaccount "github.com/plantonhq/mcp-server-planton/internal/domains/iam/serviceaccount"
 	iampolicy "github.com/plantonhq/mcp-server-planton/internal/domains/iam/policy"
 	iamrole "github.com/plantonhq/mcp-server-planton/internal/domains/iam/role"
 	iamteam "github.com/plantonhq/mcp-server-planton/internal/domains/iam/team"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/cloudresource"
+	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/iacprovisionermapping"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/deploymentcomponent"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/flowcontrolpolicy"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/infrahub/iacmodule"
@@ -92,7 +96,9 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	graph.Register(srv, serverAddress)
 	variable.Register(srv, serverAddress)
 	secret.Register(srv, serverAddress)
+	secretbackend.Register(srv, serverAddress)
 	secretversion.Register(srv, serverAddress)
+	variablegroup.Register(srv, serverAddress)
 	audit.Register(srv, serverAddress)
 	deploymentcomponent.Register(srv, serverAddress)
 	iacmodule.Register(srv, serverAddress)
@@ -114,8 +120,10 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	iampolicy.Register(srv, serverAddress)
 	iamrole.Register(srv, serverAddress)
 	iamapikey.Register(srv, serverAddress)
+	iamserviceaccount.Register(srv, serverAddress)
 	promotionpolicy.Register(srv, serverAddress)
 	flowcontrolpolicy.Register(srv, serverAddress)
+	iacprovisionermapping.Register(srv, serverAddress)
 
 	slog.Info("tools registered")
 }
