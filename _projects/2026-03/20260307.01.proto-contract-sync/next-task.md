@@ -106,17 +106,18 @@ _projects/2026-03/20260307.01.proto-contract-sync/design-decisions/
 
 ---
 
-## Current Status
+## Current Status — CLOSED
 
 **Created**: 2026-03-07 19:45
-**Last Updated**: 2026-03-08
+**Closed**: 2026-03-08
 
-**Current step:**
+**All phases complete. Project closed.**
+
 - ✅ **Phase 1: Fix the Build** — T01 Credential-to-Connection Migration (2026-03-07)
   - Build is green, all 20 connection types callable, schemas migrated, redaction removed
 - ✅ **Phase 2: Enrich Existing Connect Tools** — T02.1–T02.4 (2026-03-08)
   - 9 new tools + 1 enhanced tool + 1 bug fix across 4 connect sub-packages
-  - T02.5 (provider-specific controllers) deferred — needs design decision on OAuth scope
+  - T02.5 (provider-specific controllers) — not needed, skipped
 - ✅ **Phase 3: New Resources in Existing Domains** — T03.1–T03.4 (2026-03-08)
   - 23 new tools across 4 new packages, 1 security boundary (SecretBackend redaction)
 - ✅ **Phase 4: Search + CloudOps** (2026-03-08)
@@ -124,7 +125,7 @@ _projects/2026-03/20260307.01.proto-contract-sync/design-decisions/
   - 18 CloudOps tools across Kubernetes (8), AWS (6), GCP (2), Azure (2)
   - Shared `BuildContext` helper for `CloudOpsRequestContext` with two access modes
   - AgentFleet domain excluded per user direction (will be deprecated)
-- 🔵 Next: **T02.5** or choose from Phase 5
+- ✅ **Cleanup** — Removed empty `internal/domains/agentfleet/` directory
 
 ---
 
@@ -275,28 +276,14 @@ _projects/2026-03/20260307.01.proto-contract-sync/design-decisions/
 
 ---
 
-## Objectives for Next Conversations
+## Deferred / Not Needed
 
-### Option A: T02.5 — Provider-Specific Controllers (Pending Decision)
-Wire CloudFormation setup + OAuth initiation tools:
-- `initiate_aws_cloudformation_setup` + `get_aws_cloudformation_setup_status` (2 tools, new package)
-- `initiate_gcp_oauth` (1 tool, new package)
-- `initiate_azure_oauth` (1 tool, new package)
-- Skip: OAuth callback handlers (browser redirect endpoints)
+The following were evaluated and intentionally not implemented:
 
-### Option B: Phase 5 — Enrich Existing Stable Domains
-Low priority enrichments to configmanager, iam, etc.
+- **T02.5 (Provider-Specific Controllers)** — OAuth initiation and CloudFormation setup endpoints. Not needed for agent workflows.
+- **Phase 5 (Enrich Existing Stable Domains)** — Low-priority enrichments. Not needed.
+- **AgentFleet, Billing, Copilot, Integration, Reporting, Runner domains** — Deliberately skipped with documented rationale (deprecated, admin-only, legacy, overlapping, or runner-side).
 
 ---
 
-## Quick Commands
-
-After loading context:
-- "Continue with T02.5" - Wire provider-specific controllers
-- "Start Phase 3" - Implement new resources
-- "Show project status" - Get overview of progress
-- "Create checkpoint" - Save current progress
-
----
-
-*This file provides direct paths to all project resources for quick context loading.*
+*Project closed. All protobuf contract sync work is complete.*
