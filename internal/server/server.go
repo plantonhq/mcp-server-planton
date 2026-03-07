@@ -19,6 +19,10 @@ import (
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/secretversion"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/variable"
 	"github.com/plantonhq/mcp-server-planton/internal/domains/configmanager/variablegroup"
+	cloudopsaws "github.com/plantonhq/mcp-server-planton/internal/domains/cloudops/aws"
+	cloudopsazure "github.com/plantonhq/mcp-server-planton/internal/domains/cloudops/azure"
+	cloudopsgcp "github.com/plantonhq/mcp-server-planton/internal/domains/cloudops/gcp"
+	cloudopskubernetes "github.com/plantonhq/mcp-server-planton/internal/domains/cloudops/kubernetes"
 	connectconnection "github.com/plantonhq/mcp-server-planton/internal/domains/connect/connection"
 	connectdefaultprovider "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultprovider"
 	connectdefaultrunner "github.com/plantonhq/mcp-server-planton/internal/domains/connect/defaultrunner"
@@ -54,6 +58,8 @@ import (
 	servicehubtektonpipeline "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/tektonpipeline"
 	servicehubtektontask "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/tektontask"
 	servicehubvariablesgroup "github.com/plantonhq/mcp-server-planton/internal/domains/servicehub/variablesgroup"
+
+	"github.com/plantonhq/mcp-server-planton/internal/domains/search"
 )
 
 // Server wraps an mcp.Server with Planton-specific configuration.
@@ -124,6 +130,11 @@ func registerTools(srv *mcp.Server, serverAddress string) {
 	promotionpolicy.Register(srv, serverAddress)
 	flowcontrolpolicy.Register(srv, serverAddress)
 	iacprovisionermapping.Register(srv, serverAddress)
+	search.Register(srv, serverAddress)
+	cloudopskubernetes.Register(srv, serverAddress)
+	cloudopsaws.Register(srv, serverAddress)
+	cloudopsgcp.Register(srv, serverAddress)
+	cloudopsazure.Register(srv, serverAddress)
 
 	slog.Info("tools registered")
 }

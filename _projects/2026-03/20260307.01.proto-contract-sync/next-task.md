@@ -119,7 +119,12 @@ _projects/2026-03/20260307.01.proto-contract-sync/design-decisions/
   - T02.5 (provider-specific controllers) deferred — needs design decision on OAuth scope
 - ✅ **Phase 3: New Resources in Existing Domains** — T03.1–T03.4 (2026-03-08)
   - 23 new tools across 4 new packages, 1 security boundary (SecretBackend redaction)
-- 🔵 Next: **T02.5** or choose from Phase 4/5
+- ✅ **Phase 4: Search + CloudOps** (2026-03-08)
+  - 11 cross-domain search tools in `internal/domains/search/`
+  - 18 CloudOps tools across Kubernetes (8), AWS (6), GCP (2), Azure (2)
+  - Shared `BuildContext` helper for `CloudOpsRequestContext` with two access modes
+  - AgentFleet domain excluded per user direction (will be deprecated)
+- 🔵 Next: **T02.5** or choose from Phase 5
 
 ---
 
@@ -226,6 +231,50 @@ _projects/2026-03/20260307.01.proto-contract-sync/design-decisions/
 
 ---
 
+### ✅ COMPLETED: Phase 4 — Search + CloudOps (2026-03-08)
+
+**Added 29 MCP tools across 2 new domain packages: cross-domain Search (11 tools) and multi-provider CloudOps (18 tools).**
+
+**What was delivered:**
+
+1. **Search domain** (`internal/domains/search/`) — 11 query-only tools
+   - Core search (3): `search_api_resources_by_text`, `search_api_resources_by_kind`, `get_api_resource_by_org_kind_name`
+   - Connect search (3): `search_connections_by_context`, `get_connections_by_env`, `search_runner_registrations_by_org`
+   - InfraHub search (2): `search_iac_modules_by_org`, `lookup_cloud_resource`
+   - ResourceManager search (2): `get_context_hierarchy`, `search_quick_actions`
+   - ServiceHub search (1): `search_infra_charts_by_org`
+
+2. **CloudOps domain** (`internal/domains/cloudops/`) — 18 tools + shared context builder
+   - Kubernetes (8): get/find/update/delete objects, find namespaces, find/get pods, lookup secret key values
+   - AWS (6): list EC2 instances, VPCs, subnets, security groups, availability zones, S3 buckets
+   - GCP (2): list compute instances, storage buckets
+   - Azure (2): list virtual machines, blob containers
+   - Shared `BuildContext` helper for `CloudOpsRequestContext` (cloud resource or provider connection access mode)
+
+3. **Domain evaluation** — Surveyed 8 domains, classified into tiers
+   - AgentFleet: EXCLUDED (will be deprecated per user direction)
+   - Reporting: EXCLUDED (not needed)
+   - Billing, Copilot, Integration, Runner: SKIP (wrong abstraction or overlap)
+
+**Key Decisions Made:**
+- No AgentFleet tools anywhere (search or standalone) — domain will be deprecated
+- CloudOps RPCs are control-plane-callable (no raw credentials needed) — validated via `CloudOpsRequestContext` investigation
+- `search_infra_projects` skipped in search domain — already exists in `infraproject/tools.go`
+- Streaming CloudOps methods skipped — MCP does not support streaming
+
+**Files Created:**
+- `internal/domains/search/` — doc.go, register.go, apiresource.go, connect.go, infrahub.go, resourcemanager.go, servicehub.go
+- `internal/domains/cloudops/` — doc.go, context.go
+- `internal/domains/cloudops/kubernetes/` — register.go, tools.go
+- `internal/domains/cloudops/aws/` — register.go, tools.go
+- `internal/domains/cloudops/gcp/` — register.go, tools.go
+- `internal/domains/cloudops/azure/` — register.go, tools.go
+
+**Files Modified:**
+- `internal/server/server.go` — 5 new imports + Register calls
+
+---
+
 ## Objectives for Next Conversations
 
 ### Option A: T02.5 — Provider-Specific Controllers (Pending Decision)
@@ -235,10 +284,7 @@ Wire CloudFormation setup + OAuth initiation tools:
 - `initiate_azure_oauth` (1 tool, new package)
 - Skip: OAuth callback handlers (browser redirect endpoints)
 
-### Option B: Phase 4 — Evaluate New Domains
-Survey 7 new domains (agentfleet, search, integration, runner, billing, copilot, reporting) and decide which need MCP tool coverage.
-
-### Option C: Phase 5 — Enrich Existing Stable Domains
+### Option B: Phase 5 — Enrich Existing Stable Domains
 Low priority enrichments to configmanager, iam, etc.
 
 ---
