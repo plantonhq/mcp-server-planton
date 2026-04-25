@@ -282,15 +282,6 @@ OpenStack, Scaleway -- 362 resource kinds total.
 
 ---
 
-## Development
-
-Source code and development happens in the
-[Planton monorepo](https://github.com/plantonhq/planton) under
-`backend/services/mcp-server/`. This repository hosts releases and
-documentation only.
-
----
-
 ## License
 
 Apache License 2.0. See [LICENSE](LICENSE).
