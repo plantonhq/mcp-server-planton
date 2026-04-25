@@ -1,18 +1,18 @@
 # Planton MCP Server
 
 A stateless [MCP](https://modelcontextprotocol.io) server that connects
-AI-powered IDEs to [Planton](https://planton.cloud). It translates
+AI-powered IDEs to [Planton](https://planton.ai). It translates
 MCP tool calls and resource reads into gRPC requests against the Planton
 backend, letting Cursor, Claude Desktop, VS Code, Windsurf, and any
 MCP-compliant client manage cloud resources across 17 cloud providers without
-leaving the editor — from discovering organizations and environments through
+leaving the editor -- from discovering organizations and environments through
 creating, listing, and destroying resources to observing provisioning outcomes
 via stack jobs.
 
 ```mermaid
 flowchart TD
     IDE["AI IDE\n(Cursor / Claude Desktop / VS Code / Windsurf)"]
-    MCP["mcp-server-planton\n(stdio or Streamable HTTP)"]
+    MCP["planton-mcp-server\n(stdio or Streamable HTTP)"]
     Backend["Planton Backend\n(gRPC · TLS on :443)"]
     IDE -->|"MCP protocol"| MCP
     MCP -->|"gRPC"| Backend
@@ -42,31 +42,25 @@ It can serve both STDIO and HTTP transports concurrently from a single process.
 
 ### Prerequisites
 
-1. A [Planton](https://planton.cloud) account
+1. A [Planton](https://planton.ai) account
 2. An API key (Console > Profile > **API Keys** > **Create Key**)
 3. A compatible MCP host (Cursor, Claude Desktop, VS Code, Windsurf, or any
    MCP-compliant client)
-
-### Go Install
-
-```bash
-go install github.com/plantonhq/mcp-server-planton/cmd/mcp-server-planton@latest
-```
 
 ### Pre-built Binary
 
 ```bash
 # macOS (ARM64)
-curl -L https://github.com/plantonhq/mcp-server-planton/releases/latest/download/mcp-server-planton_Darwin_arm64.tar.gz | tar xz
-sudo mv mcp-server-planton /usr/local/bin/
+curl -L https://github.com/plantonhq/planton-mcp-server/releases/latest/download/planton-mcp-server_Darwin_arm64.tar.gz | tar xz
+sudo mv planton-mcp-server /usr/local/bin/
 
 # macOS (Intel)
-curl -L https://github.com/plantonhq/mcp-server-planton/releases/latest/download/mcp-server-planton_Darwin_x86_64.tar.gz | tar xz
-sudo mv mcp-server-planton /usr/local/bin/
+curl -L https://github.com/plantonhq/planton-mcp-server/releases/latest/download/planton-mcp-server_Darwin_x86_64.tar.gz | tar xz
+sudo mv planton-mcp-server /usr/local/bin/
 
 # Linux (AMD64)
-curl -L https://github.com/plantonhq/mcp-server-planton/releases/latest/download/mcp-server-planton_Linux_x86_64.tar.gz | tar xz
-sudo mv mcp-server-planton /usr/local/bin/
+curl -L https://github.com/plantonhq/planton-mcp-server/releases/latest/download/planton-mcp-server_Linux_x86_64.tar.gz | tar xz
+sudo mv planton-mcp-server /usr/local/bin/
 ```
 
 ### Docker
@@ -74,13 +68,34 @@ sudo mv mcp-server-planton /usr/local/bin/
 ```bash
 docker run -i --rm \
   -e PLANTON_API_KEY=your-api-key \
-  ghcr.io/plantonhq/mcp-server-planton
+  ghcr.io/plantonhq/planton-mcp-server
 ```
 
 > **Docker networking:** `localhost` inside a container refers to the
 > container's own loopback, not the host machine. To reach a custom endpoint
 > running on the host, use `host.docker.internal` on Docker Desktop
 > (macOS / Windows) or add `--network host` on Linux.
+
+### Hosted (Zero Install)
+
+Planton hosts a shared MCP server at `mcp.planton.ai`. No binary or Docker
+required -- connect directly from any MCP client over HTTPS:
+
+```json
+{
+  "mcpServers": {
+    "planton": {
+      "type": "http",
+      "url": "https://mcp.planton.ai/",
+      "headers": {
+        "Authorization": "Bearer YOUR_PLANTON_API_KEY"
+      }
+    }
+  }
+}
+```
+
+Each request carries its own API key, so multiple users share the same endpoint.
 
 ---
 
@@ -89,13 +104,13 @@ docker run -i --rm \
 All MCP clients use the same JSON structure. The differences are the config file
 location and the top-level key.
 
-### Using the standalone binary or Go install
+### Using the standalone binary
 
 ```json
 {
   "mcpServers": {
     "planton": {
-      "command": "mcp-server-planton",
+      "command": "planton-mcp-server",
       "env": {
         "PLANTON_API_KEY": "YOUR_PLANTON_API_KEY"
       }
@@ -114,7 +129,7 @@ location and the top-level key.
       "args": [
         "run", "-i", "--rm",
         "-e", "PLANTON_API_KEY",
-        "ghcr.io/plantonhq/mcp-server-planton"
+        "ghcr.io/plantonhq/planton-mcp-server"
       ],
       "env": {
         "PLANTON_API_KEY": "YOUR_PLANTON_API_KEY"
@@ -151,63 +166,61 @@ location and the top-level key.
 | `PLANTON_MCP_LOG_FORMAT` | `text` | Log encoding: `text` or `json`. |
 | `PLANTON_MCP_LOG_LEVEL` | `info` | Minimum log level: `debug`, `info`, `warn`, `error`. |
 
-See [docs/configuration.md](docs/configuration.md) for details.
-
 **TLS:** Connections to endpoints on port `443` automatically use TLS with the
 system root CA pool. All other ports use plaintext. There is no separate TLS
 configuration flag.
 
 ---
 
-## Tools & Resources
+## Tools and Resources
 
-100 tools span the full Planton product surface:
+238 tools span the full Planton product surface across 15 domain groups:
 
-**Cloud Resource Lifecycle** — create, update, delete, destroy, lock management, env var extraction (11 tools)
+**Cloud Resource Lifecycle** -- apply, get, delete, list, destroy, purge, lock management, slug check, rename, env var extraction (12 tools)
 
-**Stack Jobs** — observe provisioning outcomes, retry failures, cancel or approve jobs, pre-validate prerequisites (7 tools)
+**Stack Jobs** -- observe provisioning outcomes, retry failures, cancel or approve jobs, get essentials, IaC resources, error recommendation (12 tools)
 
-**InfraChart Templates** — browse and preview reusable infrastructure chart templates (3 tools)
+**InfraChart Templates** -- browse and preview reusable infrastructure chart templates (3 tools)
 
-**InfraProject Lifecycle** — create and manage infrastructure projects sourced from charts or Git repos (6 tools)
+**InfraProject Lifecycle** -- create and manage infrastructure projects sourced from charts or Git repos (6 tools)
 
-**InfraPipeline Monitoring & Control** — track deployment pipelines, trigger runs, resolve manual gates (7 tools)
+**InfraPipeline Monitoring and Control** -- track deployment pipelines, trigger runs, resolve manual gates (9 tools)
 
-**Dependency Graph** — explore resource topology, trace dependencies and dependents, analyze blast radius (7 tools)
+**Dependency Graph** -- explore resource topology, trace dependencies and dependents, analyze blast radius (7 tools)
 
-**Config Manager** — manage plaintext variables and encrypted secrets with full version history (11 tools)
+**Config Manager** -- manage plaintext variables, encrypted secrets, secret backends, and variable groups with full version history (23 tools)
 
-**Audit & Version History** — paginated change history and unified diffs for any platform resource (3 tools)
+**Audit and Version History** -- paginated change history and unified diffs for any platform resource (3 tools)
 
-**Context Discovery** — discover organizations and environments (2 tools)
+**Organizations and Environments** -- discover and manage orgs, environments, promotion policies, and flow control (17 tools)
 
-**Presets** — find and retrieve pre-configured cloud resource templates (2 tools)
+**Presets and Catalog** -- find pre-configured templates, deployment components, and IaC modules (9 tools)
 
-**Catalog** — browse deployable component types and the IaC modules that provision them (4 tools)
+**Service Hub** -- manage services, CI/CD pipelines, DNS domains, Tekton pipelines and tasks, variable groups, and secret groups (46 tools)
 
-**Service Lifecycle** — search, create, update, and delete services; manage Git webhook connections (7 tools)
+**Connect** -- manage cloud provider connections, runners, GitHub integrations, default providers, and provider auth across 22 connection kinds (34 tools)
 
-**Service CI/CD Pipelines** — observe build-and-deploy runs, trigger and cancel pipelines, resolve manual gates, read and write pipeline YAML files (9 tools)
+**IAM** -- identity management, API keys, teams, service accounts, roles, and authorization policies (28 tools)
 
-**Service Variables Groups** — manage named collections of plaintext environment variables; upsert and delete individual entries; resolve values and batch-transform `$variables-group/` references (8 tools)
+**CloudOps** -- live queries against AWS, GCP, Azure, and Kubernetes for real-time cloud resource inspection (18 tools)
 
-**Service Secrets Groups** — manage named collections of encrypted secrets; upsert and delete individual entries; resolve and batch-transform `$secrets-group/` references (8 tools)
+**Search and Discovery** -- text search, kind search, context hierarchy, quick actions (11 tools)
 
-**DNS Domains** — register and manage custom domain names for service ingress hostnames (3 tools)
+Plus **9 MCP prompts** for guided workflows (debug deployments, assess change impact,
+explore infrastructure, provision resources, manage access, onboard teammates,
+diagnose services, set up environments, investigate security incidents).
 
-**Tekton Pipelines** — manage reusable Tekton pipeline templates referenced by services (3 tools)
-
-**Tekton Tasks** — manage reusable Tekton task step templates referenced by pipelines (3 tools)
-
-Two read-only MCP resources drive schema discovery before any tool call:
+And **7 MCP resources** for schema discovery:
 
 | URI | What It Returns |
 |-----|-----------------|
 | `cloud-resource-kinds://catalog` | All 362 supported kinds grouped by 17 cloud providers |
-| `cloud-resource-schema://{kind}` | Full JSON schema for a specific kind — field types, validation rules, and defaults |
-
-For full parameter reference, agent workflow guidance, and error handling, see
-[docs/tools.md](docs/tools.md).
+| `cloud-resource-schema://{kind}` | Full JSON schema for a specific kind |
+| `connection-types://catalog` | All 22 connection types with descriptions |
+| `api-resource-kinds://catalog` | All API resource kinds in the platform |
+| `talent-pool://catalog` | Available talent profiles with expertise and rates |
+| `environment://summary/{org}` | Org environments with connection and resource counts |
+| `get_my_capabilities` | What the authenticated identity can do |
 
 ---
 
@@ -219,7 +232,7 @@ MCP Streamable HTTP transport -- not a REST API.
 ```bash
 PLANTON_MCP_TRANSPORT=http \
 PLANTON_API_KEY=your-api-key \
-  mcp-server-planton
+  planton-mcp-server
 ```
 
 Or with Docker:
@@ -229,7 +242,7 @@ docker run --rm \
   -e PLANTON_MCP_TRANSPORT=http \
   -e PLANTON_MCP_HTTP_AUTH_ENABLED=true \
   -p 8080:8080 \
-  ghcr.io/plantonhq/mcp-server-planton
+  ghcr.io/plantonhq/planton-mcp-server
 ```
 
 Connect your MCP client to `http://host:8080` with an
@@ -257,7 +270,7 @@ cloud load balancer) in front of the MCP server.
 - **HTTP mode**: Each request carries its own key via `Authorization: Bearer` header -- true multi-tenant support
 - Keys are held in memory only during request execution and never persisted
 - All API calls are validated and logged with the caller's identity
-- Fine-grained authorization is enforced by the Planton backend
+- Fine-grained authorization is enforced by the Planton backend via OpenFGA
 
 ---
 
@@ -271,33 +284,10 @@ OpenStack, Scaleway -- 362 resource kinds total.
 
 ## Development
 
-### Build and test
-
-```bash
-make build          # Build binary to bin/mcp-server-planton
-make test           # Run tests with race detection
-make lint           # Run golangci-lint (falls back to go vet)
-make vet            # Run go vet (excludes gen/)
-make fmt            # Format all Go source files
-make tidy           # Run go mod tidy
-```
-
-### Code generation
-
-MCP input types are auto-generated from OpenMCF protobuf definitions via a
-two-stage pipeline:
-
-```bash
-make codegen-schemas   # Stage 1: Proto -> JSON schemas
-make codegen-types     # Stage 2: JSON schemas -> Go input types in gen/
-make codegen           # Both stages
-```
-
-The `gen/` directory is entirely machine-generated. **Never edit files in `gen/`
-by hand** -- they will be overwritten on the next `make codegen` run.
-
-See [docs/development.md](docs/development.md) for codegen details and project
-structure.
+Source code and development happens in the
+[Planton monorepo](https://github.com/plantonhq/planton) under
+`backend/services/mcp-server/`. This repository hosts releases and
+documentation only.
 
 ---
 
